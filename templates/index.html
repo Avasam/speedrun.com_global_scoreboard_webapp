@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="container">
+
+        <div class="col-md-3">
+            <form action="." method="POST">
+                <div class="form-group">
+                    <label for="user_name_or_id"> Update runner:</label>
+                    <div class="input-group">
+                        <input type=text class="form-control " id="user_name_or_id" name="user_name_or_id" placeholder="Name or ID" required>
+                        <span class="input-group-btn">
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </span>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-responsive col-md-auto">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                       <th class="col-sm-1"> # </th>
+                       <th class="col-sm-auto"> Name </th>
+                       <th class="col-sm-1"> Score </th>
+                       <th class="col-sm-3"> Last Updated </th>
+                       <th class="col-sm-1"> ID </th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% set vars = {'last_score': None, 'rank': 1} %}
+                {% for player in players %}
+                    {% if player.score != vars.last_score %}
+                        {% set _=vars.update({'rank': loop.index}) %}
+                    {% endif %}
+                    {% set _=vars.update({'last_score': player.score}) %}
+                    <tr>
+                       <th> {{ vars.rank }} </th>
+                       <td> {{ player.name }} </td>
+                       <td> {{ player.score }} </td>
+                       <td> {{ player.last_update }} </td>
+                       <td> {{ player.user_id }} </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+{% endblock %}

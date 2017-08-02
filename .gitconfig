@@ -1,0 +1,21 @@
+[core]
+        editor = vim
+        pager = less
+
+[color]
+        diff = auto
+        status = auto
+        branch = auto
+        interactive = auto
+        pager = true
+        ui = auto
+
+[alias]
+        hist = log --graph --oneline --decorate
+        st = status
+
+[user]
+	email = samuel.06@hotmail.com
+	name = Samuel Therrien
+[push]
+	default = simple
