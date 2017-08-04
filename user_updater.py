@@ -96,6 +96,7 @@ class Run():
 class User():
     _points = 0
     _name = ""
+    _weblink = ""
     _ID = ""
     _banned = False
 
@@ -113,6 +114,7 @@ class User():
             if "status" in infos: raise UserUpdaterError({"error":"{} (speedrun.com)".format(infos["status"]), "details":infos["message"]})
             if infos["data"]["role"] != "banned":
                 self._ID = infos["data"]["id"]
+                self._weblink = infos["data"]["weblink"]
                 self._name = infos["data"]["names"].get("international")
                 japanese_name = infos["data"]["names"].get("japanese")
                 if japanese_name: self._name += " ({})".format(japanese_name)
@@ -239,16 +241,18 @@ def update_user(p_user_name_or_ID):
         if player:
             textOutput = "{} found. Updated its entry.".format(user)
             flask_app.Player.query.filter(flask_app.Player.user_id == user._ID).\
-                         update({"user_id": user._ID,
-                                 "name": user._name,
-                                 "score": user._points,
-                                 "last_update": timestamp})
+                            update({"user_id": user._ID,
+                                    "name": user._name,
+                                    "weblink": user._weblink,
+                                    "score": user._points,
+                                    "last_update": timestamp})
             flask_app.db.session.commit()
         # If user not found and has points, add it to the database
         elif user._points > 0:
             textOutput = "{} not found. Added a new row.".format(user)
             player = flask_app.Player(user_id = user._ID,
                                       name = user._name,
+                                      weblink = user._weblink,
                                       score = user._points,
                                       last_update = timestamp)
             flask_app.db.session.add(player)

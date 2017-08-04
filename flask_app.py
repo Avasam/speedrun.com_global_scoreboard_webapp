@@ -3,6 +3,7 @@
 
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text
 from flask_login import LoginManager, logout_user, login_user, UserMixin
 from user_updater import update_user, UserUpdaterError, get_file
 import traceback
@@ -12,6 +13,7 @@ import configs
 app = Flask(__name__)
 app.config['DEBUG'] = configs.debug
 app.config["PREFERRED_URL_SCHEME"] = "https"
+app.config["TEMPLATE_AUTO_RELOAD"] = configs.auto_reload_templates
 
 # Setup SQLAlchemy
 SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://{username}:{password}@{hostname}/{databasename}".format(
@@ -29,9 +31,15 @@ class Player(db.Model, UserMixin):
 
     user_id = db.Column(db.String(8), primary_key=True)
     name = db.Column(db.String(32), nullable=False)
+    weblink = db.Column(db.String(48))
     score = db.Column(db.Integer, nullable=False)
     last_update = db.Column(db.DateTime())
+    nemesis_id = db.Column(db.String(8), db.ForeignKey("player.user_id"))
 
+    def get_nemesis(self):
+        return self.query.get(self.nemesis_id)
+
+    # Override from UserMixin for Flask-Login
     def get_id(self):
         return self.user_id
 
@@ -46,8 +54,6 @@ def load_user(user_id):
 
 
 
-
-
 def write_text(s):
     pass
 
@@ -55,7 +61,18 @@ def write_text(s):
 def index():
     action = request.form.get("action")
     if request.method == "GET":
-        return render_template('index.html', players=Player.query.order_by(Player.score.desc(), Player.name).filter(Player.score>0))
+        sql = text("SELECT *, rank FROM "
+                   "(SELECT *, "
+                   "@curRank := IF(@prevRank = score, @curRank, @incRank) AS rank, "
+                   "@incRank := @incRank + 1, "
+                   "@prevRank := score "
+                   "FROM player p, ( "
+                   "SELECT @curRank :=0, @prevRank := NULL, @incRank := 1 "
+                   ") r "
+                   "ORDER BY score DESC) s")
+        result = db.engine.execute(sql)
+        return render_template('index.html', players=result)#Player.query.order_by(Player.score.desc(), Player.name).filter(Player.score>2))
+
     elif request.method == "POST" and action:
         if action == "update-user":
             try:

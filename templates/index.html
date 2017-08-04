@@ -3,26 +3,25 @@
 <head>
     <!-- Compiled and minified bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <!-- Compiled and minified JQuery -->
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.slim.min.js"></script>
     <!-- Compiled and minified bootstrap JavaScript -->
     <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <!-- Optional bootstrap theme -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/assets/css/custom.css">
-    <!-- Compiled and minified JQuery -->
-    <script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.slim.min.js"></script>
-
-    <script type="text/javascript" src="/assets/js/bootstrap.js"></script>
 
     <link rel="icon" href="/assets/images/favicon.ico">
     <title>Ava's speedrun.com global leaderboard</title>
 </head>
 <body>
+    {% include "loginModal.html" %}
     {% include "navbar.html" %}
 
     <div class="container">
 
-        <div class="col-md-3">
+        <div class="col-md-4">
             <form method="POST">
                 <div class="form-group">
                     <input type="hidden" id="action" name="action" value="update-user">
@@ -33,71 +32,138 @@
                     </div>
                 </div>
             </form>
-            <table class="table">
+            <!--<table class="table">
                 <tbody>
-                    <tr class="info">
-                        <th>You: {{ current_user.name }}</th>
+                    <tr>
+                        <th class="info">You:</th>
+                        <th class="danger">Nemesis:</th>
                     </tr>
-                    <tr class="danger">
-                        <th>Nemesis: {{ current_user.nemesis }}</th>
+                    {% if current_user.is_authenticated %}
+                    <tr >
+                        <td class="info">{{ current_user.name }} [{{ current_user.score }}] <a href="#{{ current_user.user_id }}">Jump</a></td>
+                        {% set nemesis = current_user.get_nemesis() %}
+                        <td class="danger">{{ nemesis.name }} [{{ nemesis.score }}] <a href="#{{ nemesis.user_id }}">Jump</a></td>
                     </tr>
+                    {% endif %}
                     <tr class="success">
-                        <th>Friends: {{ current_user.friends }}</th>
+                        <th colspan="2">Friends:</th>
                     </tr>
+                    {% if current_user.is_authenticated %}
+                    <tr class="success">
+                        <th colspan="2">{{ current_user.friends }}</th>
+                    </tr>
+                    {% endif %}
                     <tr class="warning">
-                        <th>Creator: Avasam</th>
+                        <th colspan="2">Creator: Avasam</th>
                     </tr>
                 </tbody>
-            </table>
-
+            </table>-->
+            <!--<form>
+                <div class="form-group">
+                    <label for="name-or-id"> Search runner:</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="#" name="#" placeholder="Name or ID" required>
+                        <span class="input-group-btn"><button type="submit" class="btn btn-primary">Submit</button></span>
+                    </div>
+                </div>
+            </form>-->
         </div>
 
-        <div class="table-responsive col-md-auto">
-            <table class="table table-bordered">
+
+        <div class="col-md-8">
+
+            <table class="table table-responsive table-bordered table-condensed">
                 <thead>
                     <tr>
-                        <th class="col-sm-1"> # </th>
-                        <th class="col-sm-auto"> Name </th>
-                        <th class="col-sm-1"> Score </th>
-                        <th class="col-sm-3"> Last Updated </th>
-                        <th class="col-sm-1"> ID </th>
+                        <th class="col-xs-1">#</th>
+                        <th class="col-xs-6">Name</th>
+                        <th class="col-xs-1">Score</th>
+                        <th class="col-xs-3">Last Updated</th>
+                        <th class="col-xs-1">ID</th>
                     </tr>
                 </thead>
                 <tbody>
-                {% set vars = {'last_score': None, 'rank': 1} %}
+                {% if current_user.is_authenticated %}
+                    {% set vars = {"last_score": None, "rank": 1} %}
+                    {% for player in players %}
+                        {% if player.score != vars.last_score %}
+                            {% set _=vars.update({"rank": loop.index}) %}
+                        {% endif %}
+                        {% set _=vars.update({"last_score": player.score}) %}
+
+                        {% set include = False %}
+                        {% set colorclass = "" %}
+                        {% if player.user_id == current_user.user_id %}
+                            {% set colorclass = "info" %}
+                            {% set include = True %}
+                        {% elif player.user_id == current_user.nemesis_id %}
+                            {% set colorclass = "danger" %}
+                            {% set include = True %}
+                        {% elif player.user_id in current_user.friends %}
+                            {% set colorclass = "success" %}
+                            {% set include = True %}
+                        {% elif player.user_id == "kjp4y75j" %}
+                            {% set colorclass = "warning" %}
+                            {% set include = True %}
+                        {% endif %}
+                        {% if include %}
+                        <tr class="{{ colorclass }}">
+                            <th><a href="#{{ player.user_id }}">{{ player.rank }}<span class="glyphicon glyphicon-circle-arrow-right"></span></a></th>
+                            <td>
+                                {% if player.weblink %}<a href="{{ player.weblink }}" target="_blank">{{ player.name }}</a>{% else %}{{ player.name }}{% endif %}
+                                {% if player.user_id in current_user.friends %}<a href="#{{ player.user_id }}"><span class="pull-right glyphicon glyphicon-remove"></span></a>
+                                {% else %}<a href="#{{ player.user_id }}"><span class="pull-right glyphicon glyphicon-heart-empty"></span></a>{% endif %}
+                                {% if player.user_id != current_user.nemesis_id %}<a href="#{{ player.user_id }}"><span class="pull-right glyphicon glyphicon-fire"></span></a>{% endif %}
+                            </td>
+                            <td>{{ player.score }}</td>
+                            <td>{{ player.last_update }}</td>
+                            <td>{{ player.user_id }}</td>
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+                    <tr class="active"><th></th><td></td><td></td><td></td><td></td></tr>
+                {% endif %}
+
+                {% set vars = {"last_score": None, "rank": 1} %}
                 {% for player in players %}
                     {% if player.score != vars.last_score %}
-                        {% set _=vars.update({'rank': loop.index}) %}
+                        {% set _=vars.update({"rank": loop.index}) %}
                     {% endif %}
-                    {% set _=vars.update({'last_score': player.score}) %}
+                    {% set _=vars.update({"last_score": player.score}) %}
 
                     {% set colorclass = "" %}
-                    {% if player.user_id == current_user.name %}
+                    {% if player.user_id == current_user.user_id %}
                         {% set colorclass = "info" %}
-                    {% elif player.user_id == current_user.nemesis %}
+                    {% elif player.user_id == current_user.nemesis_id %}
                         {% set colorclass = "danger" %}
                     {% elif player.user_id in current_user.friends %}
                         {% set colorclass = "success" %}
                     {% elif player.user_id == "kjp4y75j" %}
                         {% set colorclass = "warning" %}
                     {% endif %}
-                    <tr class={{ colorclass }}>
-                        <th> {{ vars.rank }} </th>
-                        <td> {{ player.name }} </td>
-                        <td> {{ player.score }} </td>
-                        <td> {{ player.last_update }} </td>
-                        <td> {{ player.user_id }} </td>
+                    <tr class="{{ colorclass }}">
+                        <th>{{ player.rank }}</th>
+                        <td id="{{ player.name }}">
+                            {% if player.weblink %}<a href="{{ player.weblink }}" target="_blank">{{ player.name }}</a>{% else %}{{ player.name }}{% endif %}
+                            {% if current_user.is_authenticated %}
+                            {% if player.user_id in current_user.friends %}<a href="#{{ player.user_id }}"><span class="pull-right glyphicon glyphicon-remove"></span></a>
+                            {% else %}<a href="#{{ player.user_id }}"><span class="pull-right glyphicon glyphicon-heart-empty"></span></a>{% endif %}
+                            {% if player.user_id != current_user.nemesis_id %}<a href="#{{ player.user_id }}"><span class="pull-right glyphicon glyphicon-fire"></span></a>{% endif %}
+                            {% endif %}
+                        </td>
+                        <td>{{ player.score }}</td>
+                        <td>{{ player.last_update }}</td>
+                        <td id="{{ player.user_id }}">{{ player.user_id }}</td>
                     </tr>
                 {% endfor %}
                 </tbody>
             </table>
-        </div>
 
+        </div>
     </div>
 
-    &copy; Copyright 2017 by <a href="https://github.com/Avasam/">Samuel Therrien</a>.
-    Powered by <a href="https://speedrun.com/">speedrun.com</a> and <a href="https://www.pythonanywhere.com/">PythonAnywhere</a>
+    &copy; <a href="https://github.com/Avasam/speedrun.com_global_leaderboard_webapp/blob/master/LICENSE">Copyright</a> 2017 by <a href="https://github.com/Avasam/">Samuel Therrien</a>.
+    Powered by <a href="https://www.speedrun.com/">speedrun.com</a> and <a href="https://www.pythonanywhere.com/">PythonAnywhere</a>
 
-    {% include "loginModal.html" %}
 </body>
 </html>

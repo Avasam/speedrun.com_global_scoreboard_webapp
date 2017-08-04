@@ -19,10 +19,13 @@
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 {% if current_user.is_authenticated %}
-                    <li>Connected as {{ current_user.name }}</li>
-                    <li><a href='?action=logout'>Log out</a></li>
+                    <li><a>Connected as {{ current_user.name }}</a></li>
+                    <li><form action="." method="POST" role="button">
+                        <input type="hidden" id="action" name="action" value=logout>
+                        <button type="submit" class="btn btn-danger">Log out</button>
+                    </form></li>
                 {% else %}
-                    <li><a href="#"><span data-toggle='modal' data-target='#loginModal'>Log in</span></a></li>
+                    <li><button class="btn btn-success" data-toggle='modal' data-target='#loginModal'>Log in</button></li>
                 {% endif %}
             </ul>
         </div>
