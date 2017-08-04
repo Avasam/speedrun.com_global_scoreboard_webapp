@@ -115,7 +115,7 @@ class User():
                 self._ID = infos["data"]["id"]
                 self._name = infos["data"]["names"].get("international")
                 japanese_name = infos["data"]["names"].get("japanese")
-                if japanese_name: self._name += " {}".format(japanese_name)
+                if japanese_name: self._name += " ({})".format(japanese_name)
             else:
                 self._banned = True
                 self._points = 0
@@ -187,7 +187,7 @@ class User():
             threadsException.append({"error":"Unhandled", "details":traceback.format_exc()})
 
 
-def get_file(p_url):
+def get_file(p_url, p_headers=None):
     """
     Returns the content of "url" parsed as JSON dict.
 
@@ -198,7 +198,7 @@ def get_file(p_url):
     print("\n{}".format(p_url)) #debugstr
     while True:
         try:
-            data = requests.get(p_url)
+            data = requests.get(p_url, headers=p_headers)
             data.raise_for_status()
             break
         except requests.exceptions.ConnectionError as exception:

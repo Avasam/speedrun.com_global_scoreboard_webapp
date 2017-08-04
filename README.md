@@ -2,12 +2,10 @@
 The webapp version of an unofficial speedrun.com global leaderboard for competitive speedrunning
 
 Disclaimer: This is still in early testing and subject to drastic changes if needed.
-Ex.: I'm planning of making this an actual webap with its own SQL database rather than a client connecting to GSheets.
 
 
-### **[See the leaderboard](https://docs.google.com/spreadsheets/d/1KpMnCdzFHmfU0XDzUon5XviRis1MvlB5M6Y8fyIvcmo#gid=518408346)**
-### **[DOWNLOAD THE CLIENT](https://github.com/Avasam/speedrun.com_-unofficial-_global_leaderboard/releases)**
-You can download this compiled version of the client to update any user you want.
+### **[See the leaderboard](https://avasam.pythonanywhere.com/)**
+There you can also update any user you want.
 
 
 How the score is calculated:

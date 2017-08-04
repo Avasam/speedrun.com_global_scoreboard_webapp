@@ -1,30 +1,66 @@
-{% extends "base.html" %}
-{% block content %}
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Compiled and minified bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <!-- Compiled and minified bootstrap JavaScript -->
+    <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <!-- Optional bootstrap theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/assets/css/custom.css">
+    <!-- Compiled and minified JQuery -->
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.slim.min.js"></script>
+
+    <script type="text/javascript" src="/assets/js/bootstrap.js"></script>
+
+    <link rel="icon" href="/assets/images/favicon.ico">
+    <title>Ava's speedrun.com global leaderboard</title>
+</head>
+<body>
+    {% include "navbar.html" %}
+
     <div class="container">
 
         <div class="col-md-3">
-            <form action="." method="POST">
+            <form method="POST">
                 <div class="form-group">
-                    <label for="user_name_or_id"> Update runner:</label>
+                    <input type="hidden" id="action" name="action" value="update-user">
+                    <label for="name-or-id"> Update runner:</label>
                     <div class="input-group">
-                        <input type=text class="form-control " id="user_name_or_id" name="user_name_or_id" placeholder="Name or ID" required>
-                        <span class="input-group-btn">
-                            <button type="submit" class="btn btn-primary">Submit</button>
-                        </span>
+                        <input type="text" class="form-control" id="name-or-id" name="name-or-id" placeholder="Name or ID" required>
+                        <span class="input-group-btn"><button type="submit" class="btn btn-primary">Submit</button></span>
                     </div>
                 </div>
             </form>
+            <table class="table">
+                <tbody>
+                    <tr class="info">
+                        <th>You: {{ current_user.name }}</th>
+                    </tr>
+                    <tr class="danger">
+                        <th>Nemesis: {{ current_user.nemesis }}</th>
+                    </tr>
+                    <tr class="success">
+                        <th>Friends: {{ current_user.friends }}</th>
+                    </tr>
+                    <tr class="warning">
+                        <th>Creator: Avasam</th>
+                    </tr>
+                </tbody>
+            </table>
+
         </div>
 
         <div class="table-responsive col-md-auto">
             <table class="table table-bordered">
                 <thead>
                     <tr>
-                       <th class="col-sm-1"> # </th>
-                       <th class="col-sm-auto"> Name </th>
-                       <th class="col-sm-1"> Score </th>
-                       <th class="col-sm-3"> Last Updated </th>
-                       <th class="col-sm-1"> ID </th>
+                        <th class="col-sm-1"> # </th>
+                        <th class="col-sm-auto"> Name </th>
+                        <th class="col-sm-1"> Score </th>
+                        <th class="col-sm-3"> Last Updated </th>
+                        <th class="col-sm-1"> ID </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -34,12 +70,23 @@
                         {% set _=vars.update({'rank': loop.index}) %}
                     {% endif %}
                     {% set _=vars.update({'last_score': player.score}) %}
-                    <tr>
-                       <th> {{ vars.rank }} </th>
-                       <td> {{ player.name }} </td>
-                       <td> {{ player.score }} </td>
-                       <td> {{ player.last_update }} </td>
-                       <td> {{ player.user_id }} </td>
+
+                    {% set colorclass = "" %}
+                    {% if player.user_id == current_user.name %}
+                        {% set colorclass = "info" %}
+                    {% elif player.user_id == current_user.nemesis %}
+                        {% set colorclass = "danger" %}
+                    {% elif player.user_id in current_user.friends %}
+                        {% set colorclass = "success" %}
+                    {% elif player.user_id == "kjp4y75j" %}
+                        {% set colorclass = "warning" %}
+                    {% endif %}
+                    <tr class={{ colorclass }}>
+                        <th> {{ vars.rank }} </th>
+                        <td> {{ player.name }} </td>
+                        <td> {{ player.score }} </td>
+                        <td> {{ player.last_update }} </td>
+                        <td> {{ player.user_id }} </td>
                     </tr>
                 {% endfor %}
                 </tbody>
@@ -47,4 +94,10 @@
         </div>
 
     </div>
-{% endblock %}
+
+    &copy; Copyright 2017 by <a href="https://github.com/Avasam/">Samuel Therrien</a>.
+    Powered by <a href="https://speedrun.com/">speedrun.com</a> and <a href="https://www.pythonanywhere.com/">PythonAnywhere</a>
+
+    {% include "loginModal.html" %}
+</body>
+</html>
