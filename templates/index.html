@@ -1,19 +1,27 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <!-- Compiled and minified bootstrap CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
     <!-- Compiled and minified JQuery -->
     <script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.slim.min.js"></script>
-    <!-- Compiled and minified bootstrap JavaScript -->
+
+    <!-- DataTables -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.16/css/dataTables.bootstrap.min.css">
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.16/js/dataTables.bootstrap.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.10.16/api/page.jumpToData().js"></script>
+
+    <!-- Compiled and minified bootstrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
     <!-- Optional bootstrap theme -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/assets/css/custom.css">
 
     <link rel="icon" href="/assets/images/favicon.ico">
-    <title>Ava's speedrun.com global leaderboard</title>
+    <title>Ava's speedrun.com global scoreboard</title>
 </head>
 <body>
     {% include "loginModal.html" %}
@@ -27,52 +35,37 @@
                     <input type="hidden" id="action" name="action" value="update-user">
                     <label for="name-or-id"> Update runner:</label>
                     <div class="input-group">
-                        <input type="text" class="form-control" id="name-or-id" name="name-or-id" placeholder="Name or ID" required>
-                        <span class="input-group-btn"><button type="submit" class="btn btn-primary">Submit</button></span>
+                        <input type="text" class="form-control" id="name-or-id" name="name-or-id" required placeholder={% if not current_user.is_authenticated %}"Please log in first" disabled {% else %}"Name or ID"{% endif %}>
+                        <span class="input-group-btn"><button type="submit" class="btn btn-primary" {% if not current_user.is_authenticated %}disabled{% endif %}>Submit</button> </span>
                     </div>
                 </div>
             </form>
-            <!--<table class="table">
+            <table class="table">
                 <tbody>
                     <tr>
-                        <th class="info">You:</th>
-                        <th class="danger">Nemesis:</th>
+                        <th class="info">You</th>
+                        <th class="success">Friends</th>
+                        <th class="warning">Creator</th>
                     </tr>
                     {% if current_user.is_authenticated %}
-                    <tr >
-                        <td class="info">{{ current_user.name }} [{{ current_user.score }}] <a href="#{{ current_user.user_id }}">Jump</a></td>
-                        {% set nemesis = current_user.get_nemesis() %}
-                        <td class="danger">{{ nemesis.name }} [{{ nemesis.score }}] <a href="#{{ nemesis.user_id }}">Jump</a></td>
+                    <tr class="info">
+                        <td colspan="3">#{{ current_user.rank }} <a href="https://speedrun.com/user/{{ current_user.name }}">{{ current_user.name }}</a> [{{ current_user.score }}] <a href="javascript:jumpToPlayer('{{ current_user.user_id }}');"><span class="glyphicon glyphicon-circle-arrow-right"></span></a></td>
                     </tr>
-                    {% endif %}
                     <tr class="success">
-                        <th colspan="2">Friends:</th>
-                    </tr>
-                    {% if current_user.is_authenticated %}
-                    <tr class="success">
-                        <th colspan="2">{{ current_user.friends }}</th>
+                        <td colspan="3">{{ current_user.friends }}</td>
                     </tr>
                     {% endif %}
                     <tr class="warning">
-                        <th colspan="2">Creator: Avasam</th>
+                        <td colspan="3">#?? <a href="https://speedrun.com/user/Avasam">Avasam</a> [???] <a href="javascript:jumpToPlayer('kjp4y75j');"><span class="glyphicon glyphicon-circle-arrow-right"></span></a></td>
                     </tr>
                 </tbody>
-            </table>-->
-            <!--<form>
-                <div class="form-group">
-                    <label for="name-or-id"> Search runner:</label>
-                    <div class="input-group">
-                        <input type="text" class="form-control" id="#" name="#" placeholder="Name or ID" required>
-                        <span class="input-group-btn"><button type="submit" class="btn btn-primary">Submit</button></span>
-                    </div>
-                </div>
-            </form>-->
+            </table>
         </div>
 
 
         <div class="col-md-8">
 
-            <table class="table table-responsive table-bordered table-condensed">
+            <table class="table table-bordered table-striped" id="scoreboard" style="display:none;">
                 <thead>
                     <tr>
                         <th class="col-xs-1">#</th>
@@ -83,59 +76,10 @@
                     </tr>
                 </thead>
                 <tbody>
-                {% if current_user.is_authenticated %}
-                    {% set vars = {"last_score": None, "rank": 1} %}
-                    {% for player in players %}
-                        {% if player.score != vars.last_score %}
-                            {% set _=vars.update({"rank": loop.index}) %}
-                        {% endif %}
-                        {% set _=vars.update({"last_score": player.score}) %}
-
-                        {% set include = False %}
-                        {% set colorclass = "" %}
-                        {% if player.user_id == current_user.user_id %}
-                            {% set colorclass = "info" %}
-                            {% set include = True %}
-                        {% elif player.user_id == current_user.nemesis_id %}
-                            {% set colorclass = "danger" %}
-                            {% set include = True %}
-                        {% elif player.user_id in current_user.friends %}
-                            {% set colorclass = "success" %}
-                            {% set include = True %}
-                        {% elif player.user_id == "kjp4y75j" %}
-                            {% set colorclass = "warning" %}
-                            {% set include = True %}
-                        {% endif %}
-                        {% if include %}
-                        <tr class="{{ colorclass }}">
-                            <th><a href="#{{ player.user_id }}">{{ player.rank }}<span class="glyphicon glyphicon-circle-arrow-right"></span></a></th>
-                            <td>
-                                {% if player.weblink %}<a href="{{ player.weblink }}" target="_blank">{{ player.name }}</a>{% else %}{{ player.name }}{% endif %}
-                                {% if player.user_id in current_user.friends %}<a href="#{{ player.user_id }}"><span class="pull-right glyphicon glyphicon-remove"></span></a>
-                                {% else %}<a href="#{{ player.user_id }}"><span class="pull-right glyphicon glyphicon-heart-empty"></span></a>{% endif %}
-                                {% if player.user_id != current_user.nemesis_id %}<a href="#{{ player.user_id }}"><span class="pull-right glyphicon glyphicon-fire"></span></a>{% endif %}
-                            </td>
-                            <td>{{ player.score }}</td>
-                            <td>{{ player.last_update }}</td>
-                            <td>{{ player.user_id }}</td>
-                        </tr>
-                        {% endif %}
-                    {% endfor %}
-                    <tr class="active"><th></th><td></td><td></td><td></td><td></td></tr>
-                {% endif %}
-
-                {% set vars = {"last_score": None, "rank": 1} %}
                 {% for player in players %}
-                    {% if player.score != vars.last_score %}
-                        {% set _=vars.update({"rank": loop.index}) %}
-                    {% endif %}
-                    {% set _=vars.update({"last_score": player.score}) %}
-
                     {% set colorclass = "" %}
                     {% if player.user_id == current_user.user_id %}
                         {% set colorclass = "info" %}
-                    {% elif player.user_id == current_user.nemesis_id %}
-                        {% set colorclass = "danger" %}
                     {% elif player.user_id in current_user.friends %}
                         {% set colorclass = "success" %}
                     {% elif player.user_id == "kjp4y75j" %}
@@ -144,11 +88,10 @@
                     <tr class="{{ colorclass }}">
                         <th>{{ player.rank }}</th>
                         <td id="{{ player.name }}">
-                            {% if player.weblink %}<a href="{{ player.weblink }}" target="_blank">{{ player.name }}</a>{% else %}{{ player.name }}{% endif %}
+                            <a href="https://www.speedrun.com/user/{{ player.name }}" target="_blank">{{ player.name }}</a>
                             {% if current_user.is_authenticated %}
-                            {% if player.user_id in current_user.friends %}<a href="#{{ player.user_id }}"><span class="pull-right glyphicon glyphicon-remove"></span></a>
-                            {% else %}<a href="#{{ player.user_id }}"><span class="pull-right glyphicon glyphicon-heart-empty"></span></a>{% endif %}
-                            {% if player.user_id != current_user.nemesis_id %}<a href="#{{ player.user_id }}"><span class="pull-right glyphicon glyphicon-fire"></span></a>{% endif %}
+                                {% if player.user_id in current_user.friends %}<a href="#{{ player.user_id }}"><span class="pull-right glyphicon glyphicon-remove"></span></a>
+                                {% else %}<a href="#{{ player.user_id }}"><span class="pull-right glyphicon glyphicon-heart-empty"></span></a>{% endif %}
                             {% endif %}
                         </td>
                         <td>{{ player.score }}</td>
@@ -162,8 +105,21 @@
         </div>
     </div>
 
-    &copy; <a href="https://github.com/Avasam/speedrun.com_global_leaderboard_webapp/blob/master/LICENSE">Copyright</a> 2017 by <a href="https://github.com/Avasam/">Samuel Therrien</a>.
+    &copy; <a href="https://github.com/Avasam/speedrun.com_global_leaderboard_webapp/blob/master/LICENSE">Copyright</a> 2018 by <a href="https://github.com/Avasam/">Samuel Therrien</a>.
     Powered by <a href="https://www.speedrun.com/">speedrun.com</a> and <a href="https://www.pythonanywhere.com/">PythonAnywhere</a>
 
+    <script>
+        var pageSize = 20;
+        var page = 1;
+        var scoreboard;
+        $(function() {
+            scoreboard = $('#scoreboard');
+            scoreboard.DataTable();
+            scoreboard.css( 'display', '' );
+        });
+    function jumpToPlayer(user_id) {
+        scoreboard.DataTable().page.jumpToData( user_id, 4 );
+    }
+    </script>
 </body>
 </html>

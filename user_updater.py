@@ -25,6 +25,7 @@ from collections import Counter
 from math import log, ceil
 import requests
 import time
+import threading
 from threading import Thread
 import traceback
 
@@ -33,6 +34,7 @@ MIN_LEADERBOARD_SIZE = 4
 MIN_RANK_PERCENT = 60/100
 HTTPERROR_RETRY_DELAY = 5
 HTTP_RETRYABLE_ERRORS = [401, 420, 500, 502]
+session = requests.Session()
 
 class UserUpdaterError(Exception):
     """ raise UserUpdaterError({"error":"On Status Label", "details":"Details of error"}) """
@@ -172,10 +174,11 @@ class User():
                 for t in threads:
                     while True:
                         try:
-                            t.start()
-                            break
-                        except RuntimeError:
-                            print("RuntimeError: can't start new thread. Trying to just wait a bit as I don't have a better way to deal w/ it atm.")
+                            if threading.active_count() <= 8:
+                                t.start()
+                                break
+                        except RuntimeError as error:
+                            print("RuntimeError: Can't start {}th thread. Trying to just wait a bit as I don't have a better way to deal w/ it atm.".format(threading.active_count()+1))
                             time.sleep(0.5)
                 for t in threads: t.join()
                 # Sum up the runs' score
@@ -197,10 +200,11 @@ def get_file(p_url, p_headers=None):
     ----------
     url : str   # The url to query
     """
+    global session
     print("\n{}".format(p_url)) #debugstr
     while True:
         try:
-            data = requests.get(p_url, headers=p_headers)
+            data = session.get(p_url, headers=p_headers)
             data.raise_for_status()
             break
         except requests.exceptions.ConnectionError as exception:

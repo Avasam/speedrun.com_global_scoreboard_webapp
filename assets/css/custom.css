@@ -1,3 +1,18 @@
 body {
     padding-top: 60px;
 }
+
+.page-navigation a {
+  margin: 0 2px;
+  display: inline-block;
+  padding: 3px 5px;
+  color: #ffffff;
+  background-color: #70b7ec;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.page-navigation a[data-selected] {
+  background-color: #3d9be0;
+}
