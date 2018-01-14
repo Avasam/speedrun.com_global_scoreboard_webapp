@@ -1,18 +1,34 @@
 body {
     padding-top: 60px;
 }
-
-.page-navigation a {
-  margin: 0 2px;
-  display: inline-block;
-  padding: 3px 5px;
-  color: #ffffff;
-  background-color: #70b7ec;
-  border-radius: 5px;
-  text-decoration: none;
-  font-weight: bold;
+/*
+.alert {
+    text-align:center;
+}
+*/
+#ajaxResponseMessage {
+    display:none;
+}
+.user_rank {
+    font-weight:bold;
 }
 
-.page-navigation a[data-selected] {
-  background-color: #3d9be0;
+.daysSince1 {
+    color: blue;
+}
+
+.daysSince7 {
+    color: green;
+}
+
+.daysSince30 {
+    color: yellow;
+}
+
+.daysSince {
+    color: red;
+}
+
+footer {
+    text-align:center;
 }

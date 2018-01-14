@@ -1,11 +1,32 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+##########################################################################
+# Ava's Global Speedrunning Scoreboard
+# Copyright (C) 2018 Samuel Therrien
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# Contact:
+# samuel.06@hotmail.com
+##########################################################################
+
 from flask import Flask, render_template, request, redirect, url_for
 from flask_login import LoginManager, logout_user, login_user, UserMixin, current_user
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
-from user_updater import update_user, UserUpdaterError, get_file
+from user_updater import get_updated_user, UserUpdaterError, get_file
 import json
 import traceback
 import configs
@@ -17,7 +38,7 @@ app.config['DEBUG'] = configs.debug
 app.config["PREFERRED_URL_SCHEME"] = "https"
 app.config["TEMPLATE_AUTO_RELOAD"] = configs.auto_reload_templates
 
-# Setup the dao (SQLAlchemy)
+# Setup the dal (SQLAlchemy)
 SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://{username}:{password}@{hostname}/{databasename}".format(
     username=configs.sql_username,
     password=configs.sql_password,
@@ -51,9 +72,6 @@ def load_user(user_id):
     return Player.query.get(user_id)
 
 
-def write_text(s):
-    pass
-
 @app.route('/', methods=["GET", "POST"])
 def index():
     action = request.form.get("action")
@@ -70,24 +88,20 @@ def index():
         return render_template('index.html', players=result.fetchall())#Player.query.order_by(Player.score.desc(), Player.name).filter(Player.score>2))
 
     elif request.method == "POST" and action:
-        if action == "update-user" and current_user.is_authenticated:
-            try:
-                result = update_user(request.form.get("name-or-id"))
-                write_text(result)
-            except UserUpdaterError as exception:
-                print("\n{}\n{}".format(exception.args[0]["error"], exception.args[0]["details"]))
-                write_text(exception.args[0]["details"])
-            except Exception as exception:
-                print("\nError: Unknown\n{}".format(traceback.format_exc()))
-                write_text(traceback.format_exc())
-            finally:
-                rank = None;
-                name = None;
-                score = None;
-                last_updated = None;
-                user_id = None;
-                return json.dumps({'status':'danger','rank':rank,'name':name, 'score':score, 'last_updated':last_updated, 'user_id':user_id, "raw_result":result});
-
+        if action == "update-user":
+            if current_user.is_authenticated or True:
+                try:
+                    result = get_updated_user(request.form.get("name-or-id"))
+                except UserUpdaterError as exception:
+                    print("\n{}\n{}".format(exception.args[0]["error"], exception.args[0]["details"]))
+                    result = {"state": "danger", "message":exception.args[0]["details"]}
+                except Exception as exception:
+                    print("\nError: Unknown\n{}".format(traceback.format_exc()))
+                    result = {"state": "danger", "message":traceback.format_exc()}
+                finally:
+                    return json.dumps(result);
+            else:
+                return json.dumps({'state':'warning', 'message':'You must be logged in to update a user!'});
         elif action == "login":
             api_key = request.form.get("api-key")
 
@@ -101,7 +115,8 @@ def index():
                 login_user(load_user(user_id))
                 return redirect(url_for('index'))
             else:
-                write_text("Invalid key")
+                pass
+                #"Invalid key"
 
         elif action == "logout":
             logout_user()

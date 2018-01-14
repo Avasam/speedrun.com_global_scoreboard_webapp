@@ -1,22 +1,24 @@
 <!doctype html>
 <html lang="en">
 <head>
-
     <!-- Compiled and minified JQuery -->
-    <script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.slim.min.js"></script>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
 
-    <!-- DataTables -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.16/css/dataTables.bootstrap.min.css">
+    <!-- Compiled and minified Moment Timezone -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.14/moment-timezone-with-data.min.js"></script>
+
+    <!-- DataTables w/ bootstrap -->
     <script type="text/javascript" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/1.10.16/js/dataTables.bootstrap.min.js"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.10.16/api/page.jumpToData().js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.16/css/dataTables.bootstrap.min.css">
 
-    <!-- Compiled and minified bootstrap -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <!-- Compiled and minified bootstrap w/ optionnal theme-->
     <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-
-    <!-- Optional bootstrap theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/assets/css/custom.css">
 
@@ -28,15 +30,16 @@
     {% include "navbar.html" %}
 
     <div class="container">
+        <div class="alert alert-success" id="ajaxResponseMessage"></div>
 
-        <div class="col-md-4">
-            <form method="POST">
+        <div class="col-md-3">
+            <form method="POST" class="ajax">
                 <div class="form-group">
                     <input type="hidden" id="action" name="action" value="update-user">
                     <label for="name-or-id"> Update runner:</label>
                     <div class="input-group">
-                        <input type="text" class="form-control" id="name-or-id" name="name-or-id" required placeholder={% if not current_user.is_authenticated %}"Please log in first" disabled {% else %}"Name or ID"{% endif %}>
-                        <span class="input-group-btn"><button type="submit" class="btn btn-primary" {% if not current_user.is_authenticated %}disabled{% endif %}>Submit</button> </span>
+                        <input type="text" class="form-control" id="name-or-id" name="name-or-id" required placeholder={% if not current_user.is_authenticated %}"Please log in first" disable {% else %}"Name or ID"{% endif %}>
+                        <span class="input-group-btn"><button type="button" class="btn btn-primary" {% if not current_user.is_authenticated %}disable{% endif %}>Submit</button> </span>
                     </div>
                 </div>
             </form>
@@ -63,7 +66,7 @@
         </div>
 
 
-        <div class="col-md-8">
+        <div class="col-md-9">
 
             <table class="table table-bordered table-striped" id="scoreboard" style="display:none;">
                 <thead>
@@ -85,8 +88,8 @@
                     {% elif player.user_id == "kjp4y75j" %}
                         {% set colorclass = "warning" %}
                     {% endif %}
-                    <tr class="{{ colorclass }}">
-                        <th>{{ player.rank }}</th>
+                    <tr class="{{ colorclass }}" id="{{ player.user_id }}">
+                        <td class="user_rank">{{ player.rank }}</td>
                         <td id="{{ player.name }}">
                             <a href="https://www.speedrun.com/user/{{ player.name }}" target="_blank">{{ player.name }}</a>
                             {% if current_user.is_authenticated %}
@@ -96,30 +99,153 @@
                         </td>
                         <td>{{ player.score }}</td>
                         <td>{{ player.last_update }}</td>
-                        <td id="{{ player.user_id }}">{{ player.user_id }}</td>
+                        <td>{{ player.user_id }}</td>
                     </tr>
                 {% endfor %}
                 </tbody>
             </table>
 
         </div>
+
+        <footer>&copy; <a href="https://github.com/Avasam/speedrun.com_global_leaderboard_webapp/blob/master/LICENSE">Copyright</a> 2018 by <a href="https://github.com/Avasam/">Samuel Therrien</a>.
+        Powered by <a href="https://www.speedrun.com/">speedrun.com</a> and <a href="https://www.pythonanywhere.com/">PythonAnywhere</a></footer>
     </div>
 
-    &copy; <a href="https://github.com/Avasam/speedrun.com_global_leaderboard_webapp/blob/master/LICENSE">Copyright</a> 2018 by <a href="https://github.com/Avasam/">Samuel Therrien</a>.
-    Powered by <a href="https://www.speedrun.com/">speedrun.com</a> and <a href="https://www.pythonanywhere.com/">PythonAnywhere</a>
 
     <script>
-        var pageSize = 20;
-        var page = 1;
         var scoreboard;
+        var timeFormat = "YYYY-MM-DD HH:mm";
+        var userZone = moment.tz.guess();
+        function serverToUserTime(serverTime){
+            // Create a moment using server's timezone
+            var serverTimeMoment = moment.tz(serverTime, timeFormat, "Europe/London");
+            // Set the time to user local time
+            return serverTimeMoment.tz(userZone).format(timeFormat);
+        }
+
         $(function() {
+            var currentTime = moment();
+            var ajaxResponseMessage = $('#ajaxResponseMessage');
             scoreboard = $('#scoreboard');
-            scoreboard.DataTable();
+            scoreboard.DataTable( {
+                "fnCreatedRow": function( nRow, aData, iDataIndex ) {
+                    // Adapt the times to user's timezone
+                    $('td:eq(3)', nRow).text( serverToUserTime(aData[3]) );
+                },
+                "fnRowCallback": function( nRow, aData, iDisplayIndex ) {
+                    // Set the color of the cell according to the last time user was updated
+                    var cell = $('td:eq(3)', nRow);
+                    var daysSince = currentTime.diff(aData[3], 'days');
+                    if (daysSince < 1) {
+                        cell.attr("class","daysSince1");
+                    } else if (daysSince < 7) {
+                        cell.attr("class","daysSince7");
+                    } else if (daysSince < 30) {
+                        cell.attr("class","daysSince30");
+                    } else {
+                        cell.attr("class","daysSince");
+                    }
+
+                }
+            });
             scoreboard.css( 'display', '' );
+
+            $( 'form.ajax' ).submit(function( event ) {
+                $.post('/', $(this).serialize(), function() {}, "json")
+                .done(function(data) {
+                    if (data.state == "success"){
+                        var tableData = scoreboard.DataTable().row('#'+data.user_id).data();
+                        console.log(tableData);
+                        if (tableData) {
+                            // Update the row
+                            tableData[0] = data.rank;
+                            tableData[1] = '<a href="https://www.speedrun.com/user/"'+data.name+' target="_blank">'+data.name+'</a>';
+                            tableData[2] = data.score;
+                            tableData[3] = serverToUserTime(data.last_updated);
+                            // Redraw the table
+                            scoreboard.DataTable().row('#'+data.user_id).data(tableData).draw(); //TODO: might be able to do better here
+                        } else {
+                            // Add a new row
+                            var rowNode = scoreboard.DataTable().row.add( [
+                                data.rank,
+                                '<a href="https://www.speedrun.com/user/"'+data.name+' target="_blank">'+data.name+'</a>',
+                                data.score,
+                                data.last_updated,
+                                data.user_id
+                            // Redraw the table
+                            ] ).draw().node();
+                            // Add the css class back
+                            $( rowNode ).children().first().addClass("user_rank");
+                        }
+                    }
+
+                    ajaxResponseMessage.show();
+                    ajaxResponseMessage.attr('class', 'alert alert-'+data.state);
+                    ajaxResponseMessage.html(data.message
+                        .replace(/</g, "&lt")
+                        .replace(/>/g, "&gt")
+                        .replace(/\n/g, "<br />")
+                    );
+                })
+                .fail(function(data){
+                    alert( "There was an unknown error with the AJAX request. Status code: "+data.status );
+                })
+                .always(function (data) {
+                    console.log(data);
+                })
+                event.preventDefault();
+            });
+            // This is to avoid the form being submitted as we take control of it's submit function only after the DOM is ready
+            $( 'form.ajax button' ).attr('type', 'submit');
+
+            // Autoupdater
+            // Get all rows
+            var rows = scoreboard.DataTable().rows().data();
+            var i = 0;
+            autoUpdater();
+            function autoUpdater(){
+                if (currentTime.diff(rows[i][3], 'days') >= 30) {
+                    $.post('/', {'action':'update-user', 'name-or-id':rows[i][4]}, function() {}, "json")
+                    .done(function(data) {
+                        var tableData = scoreboard.DataTable().row('#'+data.user_id).data();
+                        if (data.state == "success"){
+                            // Update the row
+                            tableData[0] = data.rank;
+                            tableData[1] = '<a href="https://www.speedrun.com/user/"'+data.name+' target="_blank">'+data.name+'</a>';
+                            tableData[2] = data.score;
+                            tableData[3] = serverToUserTime(data.last_updated);
+                            // Redraw the table
+                            scoreboard.DataTable().row('#'+data.user_id).data(tableData).draw(); //TODO: might be able to do better here
+                        }
+
+                        ajaxResponseMessage.show();
+                        ajaxResponseMessage.attr('class', 'alert alert-'+data.state);
+                        ajaxResponseMessage.html(data.message
+                            .replace(/</g, "&lt")
+                            .replace(/>/g, "&gt")
+                            .replace(/\n/g, "<br />")
+                        );
+                        i++;
+                        autoUpdater();
+                    })
+                    .fail(function(data){
+                        alert( "There was an unknown error with the AJAX request. Status code: "+data.status );
+                    })
+                    .always(function (data) {
+                        console.log(data);
+                    })
+                } else {
+                    i++;
+                    autoUpdater();
+                }
+            }
+
+
         });
-    function jumpToPlayer(user_id) {
-        scoreboard.DataTable().page.jumpToData( user_id, 4 );
-    }
+
+        function jumpToPlayer(user_id) {
+            scoreboard.DataTable().page.jumpToData( user_id, 4 );
+        }
     </script>
 </body>
 </html>
