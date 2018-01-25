@@ -288,7 +288,7 @@ class User:
             self._points = 0
 
 
-def get_file(p_url: str) -> dict:
+def get_file(p_url: str, p_headers=None) -> dict:
     """
     Returns the content of "url" parsed as JSON dict.
 
@@ -300,7 +300,7 @@ def get_file(p_url: str) -> dict:
     print(p_url)  # debugstr
     while True:
         try:
-            rawdata = session.get(p_url)
+            rawdata = session.get(p_url, headers=p_headers)
         except requests.exceptions.ConnectionError as exception:  # Connexion error
             raise UserUpdaterError({"error": "Can't establish connexion to speedrun.com", "details": exception})
 
@@ -366,18 +366,10 @@ def get_updated_user(p_user_id: str) -> str:
         else:
             #Setup a few checks
             player = flask_app.Player.query.get(user._id)
-            can_update_user = True
-            existing_player = False
-            # If user exists...
-            if player:
-                existing_player = True
-                # ... check if last update was over a day ago
-                time_since = (datetime.now()-player.last_update)
-                if (time_since.days < 1):
-                    can_update_user = False
 
             # If user doesn't exists or enough time passed since last update
-            if can_update_user:
+            if not (player and (datetime.now()-player.last_update).days < 1):
+
                 user.set_points()
                 if threadsException == []:
 
@@ -385,7 +377,7 @@ def get_updated_user(p_user_id: str) -> str:
                     timestamp = strftime("%Y-%m-%d %H:%M")
 
                     # If user exists, update the database entry
-                    if existing_player:
+                    if player:
                         text_output = "{} found. Updated its entry.".format(user)
                         result_state = "success"
                         flask_app.Player.query.filter(flask_app.Player.user_id == user._id).\

@@ -30,48 +30,65 @@
     {% include "navbar.html" %}
 
     <div class="container">
-        <div class="alert alert-success" id="ajaxResponseMessage"></div>
+        <div class="alert alert-info" id="ajaxResponseMessage">Building the DataTable. Please wait...</div>
 
-        <div class="col-md-3">
-            <form method="POST" class="ajax">
-                <div class="form-group">
-                    <input type="hidden" id="action" name="action" value="update-user">
-                    <label for="name-or-id"> Update runner:</label>
-                    <div class="input-group">
-                        <input type="text" class="form-control" id="name-or-id" name="name-or-id" required placeholder={% if not current_user.is_authenticated %}"Please log in first" disable {% else %}"Name or ID"{% endif %}>
-                        <span class="input-group-btn"><button type="button" class="btn btn-primary" {% if not current_user.is_authenticated %}disable{% endif %}>Submit</button> </span>
+        <div class="col-sm-4 ">
+            <div class="row">
+                <form method="POST" class="ajax" id="update-user-form">
+                    <div class="form-group">
+                        <input type="hidden" id="action" name="action" value="update-user">
+                        <label for="name-or-id"> Update runner:</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="name-or-id" name="name-or-id" required placeholder={% if not current_user.is_authenticated %}"Please log in first" disabled {% else %}"Name or ID"{% endif %}>
+                            <span class="input-group-btn"><button id="update-runner-button" type="button" class="btn btn-primary" {% if not current_user.is_authenticated %}disabled{% endif %}>Submit</button> </span>
+                        </div>
                     </div>
-                </div>
-            </form>
-            <table class="table">
-                <tbody>
-                    <tr>
-                        <th class="info">You</th>
-                        <th class="success">Friends</th>
-                        <th class="warning">Creator</th>
-                    </tr>
-                    {% if current_user.is_authenticated %}
-                    <tr class="info">
-                        <td colspan="3">#{{ current_user.rank }} <a href="https://speedrun.com/user/{{ current_user.name }}">{{ current_user.name }}</a> [{{ current_user.score }}] <a href="javascript:jumpToPlayer('{{ current_user.user_id }}');"><span class="glyphicon glyphicon-circle-arrow-right"></span></a></td>
-                    </tr>
-                    <tr class="success">
-                        <td colspan="3">{{ current_user.friends }}</td>
-                    </tr>
-                    {% endif %}
-                    <tr class="warning">
-                        <td colspan="3">#?? <a href="https://speedrun.com/user/Avasam">Avasam</a> [???] <a href="javascript:jumpToPlayer('kjp4y75j');"><span class="glyphicon glyphicon-circle-arrow-right"></span></a></td>
-                    </tr>
-                </tbody>
-            </table>
+                </form>
+            </div>
+
+            <div class="row">
+                <label for="preview">Quick view:</label>
+                <table class="table" id="preview">
+                    <tbody>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Name</th>
+                            <th colspan="2">Score</th>
+                        </tr>
+                        <tr class="highlight-current-user" id="preview-{{ current_user.user_id }}">
+                            {% if current_user.is_authenticated %}
+                            <td>???</td>
+                            <td><a href="https://speedrun.com/user/{{ current_user.name }}" target="_blank">{{ current_user.name }}</a></td>
+                            <td>{{ current_user.score }}</td>
+                            <td><a href="javascript:jumpToPlayer('{{ current_user.user_id }}');"><span class="pull-right glyphicon glyphicon-circle-arrow-right"></span></a></td>
+                            {% else %}
+                            <td colspan="4"></td>
+                            {% endif %}
+                        </tr>
+                        {% if current_user.is_authenticated %}
+                            {% for friend_id in friends %}
+                            <tr class="highlight-friend" id="preview-{{ friend_id }}">
+                                <td>[???]</td>
+                                <td>[{{ friend_id }}]<span class="pull-right friend-icon" onClick="javascript:unfriend('{{ friend_id }}');"></span></td>
+                                <td>[???]</td>
+                                <td><a href="javascript:jumpToPlayer('{{ friend_id }}');"><span class="pull-right glyphicon glyphicon-circle-arrow-right"></span></a></td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr class="highlight-friend"><td colspan="4"></td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
         </div>
 
 
-        <div class="col-md-9">
-
+        <div class="col-sm-8">
+            <div class="col-xs-12"><label for="preview">Scoreboard:</label></div>
             <table class="table table-bordered table-striped" id="scoreboard" style="display:none;">
                 <thead>
                     <tr>
-                        <th class="col-xs-1">#</th>
+                        <th class="col-xs-1">Rank</th>
                         <th class="col-xs-6">Name</th>
                         <th class="col-xs-1">Score</th>
                         <th class="col-xs-3">Last Updated</th>
@@ -82,19 +99,21 @@
                 {% for player in players %}
                     {% set colorclass = "" %}
                     {% if player.user_id == current_user.user_id %}
-                        {% set colorclass = "info" %}
-                    {% elif player.user_id in current_user.friends %}
-                        {% set colorclass = "success" %}
+                        {% set colorclass = colorclass + " highlight-current-user" %}
+                    {% elif player.user_id in friends %}
+                        {% set colorclass = colorclass + " highlight-friend" %}
                     {% elif player.user_id == "kjp4y75j" %}
-                        {% set colorclass = "warning" %}
+                        {% set colorclass = colorclass + " highlight-vip" %}
                     {% endif %}
-                    <tr class="{{ colorclass }}" id="{{ player.user_id }}">
-                        <td class="user_rank">{{ player.rank }}</td>
+                    <tr class="{{ colorclass }}" name="{{ player.name }}" id="{{ player.user_id }}">
+                        <td>{{ player.rank }}</td>
                         <td id="{{ player.name }}">
                             <a href="https://www.speedrun.com/user/{{ player.name }}" target="_blank">{{ player.name }}</a>
                             {% if current_user.is_authenticated %}
-                                {% if player.user_id in current_user.friends %}<a href="#{{ player.user_id }}"><span class="pull-right glyphicon glyphicon-remove"></span></a>
-                                {% else %}<a href="#{{ player.user_id }}"><span class="pull-right glyphicon glyphicon-heart-empty"></span></a>{% endif %}
+                                <span
+                                    class="pull-right friend-icon"
+                                    onClick="javascript:{% if player.user_id in friends %}unfriend{% else %}befriend{% endif %}('{{ player.user_id }}');"
+                                ></span>
                             {% endif %}
                         </td>
                         <td>{{ player.score }}</td>
@@ -107,13 +126,14 @@
 
         </div>
 
-        <footer>&copy; <a href="https://github.com/Avasam/speedrun.com_global_leaderboard_webapp/blob/master/LICENSE">Copyright</a> 2018 by <a href="https://github.com/Avasam/">Samuel Therrien</a>.
-        Powered by <a href="https://www.speedrun.com/">speedrun.com</a> and <a href="https://www.pythonanywhere.com/">PythonAnywhere</a></footer>
+        <footer>&copy; <a href="https://github.com/Avasam/speedrun.com_global_leaderboard_webapp/blob/master/LICENSE" target="about">Copyright</a> 2018 by <a href="https://github.com/Avasam/" target="about">Samuel Therrien</a>.
+        Powered by <a href="https://www.speedrun.com/" target="src">speedrun.com</a> and <a href="https://www.pythonanywhere.com/" target="about">PythonAnywhere</a></footer>
     </div>
 
 
     <script>
         var scoreboard;
+        var ajaxResponseMessage;
         var timeFormat = "YYYY-MM-DD HH:mm";
         var userZone = moment.tz.guess();
         function serverToUserTime(serverTime){
@@ -124,18 +144,23 @@
         }
 
         $(function() {
-            var currentTime = moment();
-            var ajaxResponseMessage = $('#ajaxResponseMessage');
+            var currentTimeOnLoad = moment();
+            ajaxResponseMessage = $('#ajaxResponseMessage');
             scoreboard = $('#scoreboard');
             scoreboard.DataTable( {
                 "fnCreatedRow": function( nRow, aData, iDataIndex ) {
                     // Adapt the times to user's timezone
-                    $('td:eq(3)', nRow).text( serverToUserTime(aData[3]) );
+                    $('td:eq(3)', nRow).html( serverToUserTime(aData[3]) );
+                    // Fill the preview's missing data using the scoreboard
+                    var userID = $('td:eq(4)', nRow).html()
+                    $('td:eq(0)', `#preview-${userID}`).html($('td:eq(0)', nRow).html())
+                    $('td:eq(1)', `#preview-${userID}`).html($('td:eq(1)', nRow).html())
+                    $('td:eq(2)', `#preview-${userID}`).html($('td:eq(2)', nRow).html())
                 },
                 "fnRowCallback": function( nRow, aData, iDisplayIndex ) {
                     // Set the color of the cell according to the last time user was updated
                     var cell = $('td:eq(3)', nRow);
-                    var daysSince = currentTime.diff(aData[3], 'days');
+                    var daysSince = currentTimeOnLoad.diff(aData[3], 'days');
                     if (daysSince < 1) {
                         cell.attr("class","daysSince1");
                     } else if (daysSince < 7) {
@@ -148,104 +173,236 @@
 
                 }
             });
+            $("#scoreboard_filter").parent().attr("class","col-xs-6");
+            $("#scoreboard_length").parent().attr("class","col-xs-6");
+            $("#scoreboard_info").parent().attr("class","col-xs-12");
+            $("#scoreboard_paginate").parent().attr("class","col-xs-12");
             scoreboard.css( 'display', '' );
 
-            $( 'form.ajax' ).submit(function( event ) {
-                $.post('/', $(this).serialize(), function() {}, "json")
-                .done(function(data) {
-                    if (data.state == "success"){
-                        var tableData = scoreboard.DataTable().row('#'+data.user_id).data();
-                        console.log(tableData);
-                        if (tableData) {
-                            // Update the row
-                            tableData[0] = data.rank;
-                            tableData[1] = '<a href="https://www.speedrun.com/user/"'+data.name+' target="_blank">'+data.name+'</a>';
-                            tableData[2] = data.score;
-                            tableData[3] = serverToUserTime(data.last_updated);
-                            // Redraw the table
-                            scoreboard.DataTable().row('#'+data.user_id).data(tableData).draw(); //TODO: might be able to do better here
-                        } else {
-                            // Add a new row
-                            var rowNode = scoreboard.DataTable().row.add( [
-                                data.rank,
-                                '<a href="https://www.speedrun.com/user/"'+data.name+' target="_blank">'+data.name+'</a>',
-                                data.score,
-                                data.last_updated,
-                                data.user_id
-                            // Redraw the table
-                            ] ).draw().node();
-                            // Add the css class back
-                            $( rowNode ).children().first().addClass("user_rank");
+            sortTable("preview");
+            console.log("here");
+            ajaxResponseMessage.css('visibility','hidden');
+
+            // Updating a user
+            $("#update-user-form").submit(function( event ) {
+                var name_or_id = $('#name-or-id').val()
+                var row = scoreboard.DataTable().row(`[name='${name_or_id}'], [id='${name_or_id}']`)
+                var unfriendbefriend = $(row.node()).hasClass("highlight-friend") ? "unfriend" : "befriend";
+                var userData = row.data();
+                if (userData) {
+                    var daysSince = currentTimeOnLoad.diff(userData[3], 'days');
+                }
+                if (userData && daysSince < 1) {
+                    ajaxResponseMessage.attr('class', 'alert alert-warning');
+                    ajaxResponseMessage.html(`Runner ${userData[1]} has already been updated in the last 24h.`);
+                    ajaxResponseMessage.css('visibility','visible');
+                } else {
+                    ajaxResponseMessage.attr('class', 'alert alert-info');
+                    ajaxResponseMessage.html(`Updating "${name_or_id}". This may take some time depending on the ammount of runs to analyse. Please Wait...`);
+                    ajaxResponseMessage.css('visibility','visible');
+                    $("#update-runner-button").prop('disabled', true);
+                    $("#name-or-id").prop('readonly', true);
+
+                    $.post('/', $(this).serialize(), function() {}, "json")
+                    .done(function(data) {
+                        if (data.state == "success"){
+                            var tableData = scoreboard.DataTable().row(`#${data.user_id}`).data();
+                            console.log(tableData);
+                            if (tableData) {
+                                // Update the row
+                                tableData[0] = data.rank;
+                                tableData[1] = `<a href="https://www.speedrun.com/user/${data.name}" target="_blank">${data.name}</a>
+                                                <span
+                                                    class="pull-right friend-icon"
+                                                    onClick="javascript:${unfriendbefriend}('${data.user_id}');"
+                                                ></span>`;
+                                tableData[2] = data.score;
+                                tableData[3] = serverToUserTime(data.last_updated);
+                                // Redraw the entire table (TODO: will be required to recalculate the rank)
+                                scoreboard.DataTable().row(`#${data.user_id}`).data(tableData).draw(); //TODO: might be able to do better here
+
+                                // Update the preview table
+                                previewRow = $(`#preview-${tableData[4]}`);
+                                $('td:eq(0)', previewRow).html(tableData[0])
+                                $('td:eq(1)', previewRow).html(tableData[1])
+                                $('td:eq(2)', previewRow).html(tableData[2])
+                                sortTable("preview");
+                            } else {
+                                // Add a new row
+                                scoreboard.DataTable().row.add( [
+                                    data.rank,
+                                    `<a href="https://www.speedrun.com/user/${data.name}" target="_blank">${data.name}</a>
+                                    <span
+                                        class="pull-right friend-icon"
+                                        onClick="javascript:unfriendbefriend('${data.user_id}');"
+                                    ></span>`,
+                                    data.score,
+                                    data.last_updated,
+                                    data.user_id
+                                // Redraw the table
+                                ] ).draw();
+                            }
                         }
+                        ajaxResponseMessage.attr('class', `alert alert-${data.state}`);
+                        ajaxResponseMessage.html(htmlReplace(data.message));
+                        ajaxResponseMessage.css('visibility','visible');
+                    })
+                    .fail(function(data){
+                        alert( `There was an unknown error with the AJAX request. Status code: ${data.status}` );
+                    })
+                    .always(function (data) {
+                        console.log(data);
+                        $("#update-runner-button").prop('disabled', false);
+                        $("#name-or-id").prop('readonly', false);
+                    })
+
+                }
+                event.preventDefault();
+            });
+            // This is to prevent the form being submitted before we take control of it's submit function
+            $( 'form.ajax button' ).attr('type', 'submit');
+
+            /*// Autoupdater
+            // Get all rows
+            var rows = scoreboard.DataTable().rows().data();
+            var i = 0;
+            //autoUpdater();
+            function autoUpdater(){
+                while (currentTimeOnLoad.diff(rows[i][3], 'days') < 30) {
+                    i++
+                }
+                $.post('/', {'action':'update-user', 'name-or-id':rows[i][4]}, function() {}, "json")
+                .done(function(data) {
+                    //var row = scoreboard.DataTable().row('#'+data.user_id);
+                    var tableData = scoreboard.DataTable().row('#'+data.user_id).data()
+                    if (data.state == "success"){
+                        // Update the row
+                        tableData[0] = data.rank;
+                        tableData[1] = '<a href="https://www.speedrun.com/user/"'+data.name+' target="_blank">'+data.name+'</a>';
+                        tableData[2] = data.score;
+                        tableData[3] = serverToUserTime(data.last_updated);
+                        // Redraw the table
+                        scoreboard.DataTable().draw(); //TODO: might be able to do better here using invalidate --> row.invalidate().draw()
                     }
 
-                    ajaxResponseMessage.show();
-                    ajaxResponseMessage.attr('class', 'alert alert-'+data.state);
-                    ajaxResponseMessage.html(data.message
-                        .replace(/</g, "&lt")
-                        .replace(/>/g, "&gt")
-                        .replace(/\n/g, "<br />")
-                    );
+                    ajaxResponseMessage.attr('class', `alert alert-${data.state}`);
+                    ajaxResponseMessage.html(htmlReplace(data.message));
+                    ajaxResponseMessage.css('visibility','visible');
+                    i++;
+                    autoUpdater();
                 })
                 .fail(function(data){
-                    alert( "There was an unknown error with the AJAX request. Status code: "+data.status );
+                    alert( `There was an unknown error with the AJAX request. Status code: ${data.status}` );
                 })
                 .always(function (data) {
                     console.log(data);
                 })
-                event.preventDefault();
-            });
-            // This is to avoid the form being submitted as we take control of it's submit function only after the DOM is ready
-            $( 'form.ajax button' ).attr('type', 'submit');
 
-            // Autoupdater
-            // Get all rows
-            var rows = scoreboard.DataTable().rows().data();
-            var i = 0;
-            autoUpdater();
-            function autoUpdater(){
-                if (currentTime.diff(rows[i][3], 'days') >= 30) {
-                    $.post('/', {'action':'update-user', 'name-or-id':rows[i][4]}, function() {}, "json")
-                    .done(function(data) {
-                        var tableData = scoreboard.DataTable().row('#'+data.user_id).data();
-                        if (data.state == "success"){
-                            // Update the row
-                            tableData[0] = data.rank;
-                            tableData[1] = '<a href="https://www.speedrun.com/user/"'+data.name+' target="_blank">'+data.name+'</a>';
-                            tableData[2] = data.score;
-                            tableData[3] = serverToUserTime(data.last_updated);
-                            // Redraw the table
-                            scoreboard.DataTable().row('#'+data.user_id).data(tableData).draw(); //TODO: might be able to do better here
-                        }
-
-                        ajaxResponseMessage.show();
-                        ajaxResponseMessage.attr('class', 'alert alert-'+data.state);
-                        ajaxResponseMessage.html(data.message
-                            .replace(/</g, "&lt")
-                            .replace(/>/g, "&gt")
-                            .replace(/\n/g, "<br />")
-                        );
-                        i++;
-                        autoUpdater();
-                    })
-                    .fail(function(data){
-                        alert( "There was an unknown error with the AJAX request. Status code: "+data.status );
-                    })
-                    .always(function (data) {
-                        console.log(data);
-                    })
-                } else {
-                    i++;
-                    autoUpdater();
-                }
-            }
-
+            }*/
 
         });
 
         function jumpToPlayer(user_id) {
+            scoreboard.DataTable().search('').draw();
             scoreboard.DataTable().page.jumpToData( user_id, 4 );
         }
+
+        // Add a friend
+        function befriend(friendID) {
+            $.post('/', {'action':'befriend', 'friend-id':friendID}, function() {}, 'json')
+            .done(function(data) {
+                if (data.state == "success") {
+                    // Add on the scoreboard
+                    var row = scoreboard.DataTable().row(`#${friendID}`)
+                    var rowData = row.data();
+                    var rowNode = row.node();
+                    $( rowNode ).addClass("highlight-friend");
+                    $( rowNode ).find("span.friend-icon").attr('onClick', `javascript:unfriend('${friendID}');`);
+
+                    // Add on the preview
+                    var friendRank = rowData[0];
+                    var nameLink = rowData[1];
+                    var friendScore = rowData[2];
+                    $('tbody', $("#preview")).append(
+                        `<tr class="highlight-friend" id="preview-${friendID}">
+                            <td>${friendRank}</td>
+                            <td>${nameLink.replace("befriend","unfriend")}</td>
+                            <td>${friendScore}</td>
+                            <td><a href="javascript:jumpToPlayer('${friendID}');"><span class="pull-right glyphicon glyphicon-circle-arrow-right"></span></a></td>
+                        </tr>`
+                    );
+                    sortTable("preview");
+                }
+                ajaxResponseMessage.attr('class', `alert alert-${data.state}`);
+                ajaxResponseMessage.html(htmlReplace(data.message));
+                ajaxResponseMessage.css('visibility','visible');
+            })
+            .fail(function(data) {
+                alert( `There was an unknown error with the AJAX request. Status code: ${data.status}` );
+            })
+            .always(function(data) {
+                console.log(data);
+            })
+        }
+
+        // Remove a friend
+        function unfriend(friendID) {
+            // Remove a friend
+            $.post('/', {'action':'unfriend', 'friend-id':friendID}, function() {}, 'json')
+            .done(function(data) {
+                if (data.state == "success") {
+                    // Remove from the scoreboard
+                    var rowNode = scoreboard.DataTable().row(`#${friendID}`).node();
+                    $( rowNode ).removeClass("highlight-friend");
+                    $( rowNode ).find("span.friend-icon").attr('onClick', `javascript:befriend('${friendID}');`);
+
+                    // Remove from the preview table
+                    $(`#preview-${friendID}`).remove();
+                    sortTable("preview");
+                }
+                ajaxResponseMessage.attr('class', `alert alert-${data.state}`);
+                ajaxResponseMessage.html(htmlReplace(data.message));
+                ajaxResponseMessage.css('visibility','visible');
+            })
+            .fail(function(data) {
+                alert( `There was an unknown error with the AJAX request. Status code: ${data.status}` );
+            })
+            .always(function(data) {
+                console.log(data);
+            })
+        }
+
+        // https://stackoverflow.com/a/7558600
+        // Sort a table by first column
+        function sortTable(tableID){
+            var tbl = document.getElementById(tableID).tBodies[0];
+            var store = [];
+            for(var i=0, len=tbl.rows.length; i<len; i++){
+                var row = tbl.rows[i];
+                var sortnr = parseFloat(row.cells[0].textContent || row.cells[0].innerText);
+                if(!isNaN(sortnr)) store.push([sortnr, row]);
+            }
+            store.sort(function(x,y){
+                return x[0] - y[0];
+            });
+            for(var i=0, len=store.length; i<len; i++){
+                tbl.appendChild(store[i][1]);
+            }
+            store = null;
+        }
+
+        function isString (value) {
+            return typeof value === 'string' || value instanceof String;
+        };
+
+        function htmlReplace(message){
+            if (!isString(message)) return "";
+            return message
+                .replace(/</g, "&lt")
+                .replace(/>/g, "&gt")
+                .replace(/\n/g, "<br />");
+        }
+
     </script>
 </body>
 </html>
