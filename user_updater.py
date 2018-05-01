@@ -23,7 +23,7 @@
 ##########################################################################
 from collections import Counter
 from datetime import datetime
-from math import ceil, floor
+from math import ceil, exp, floor
 from sys import stdout
 from threading import Thread, active_count
 from time import strftime, sleep
@@ -162,10 +162,10 @@ class Run():
                         # Bonus points for long games
                         length_bonus = (1+(wr_time/TIME_BONUS_DIVISOR))
                         # More people means more accurate relative time and more optimised/hard to reach high times
-                        certainty_adjustment = 1-1/original_population
+                        certainty_adjustment = 1 #1-1/original_population
 
                         # Give points
-                        self._points = ((normalized_deviation * certainty_adjustment) ** 2) * length_bonus * 10
+                        self._points = math.exp(normalized_deviation * certainty_adjustment) * length_bonus * 10
                         # Set names
                         game_category = re.split("/|#", leaderboard["data"]["weblink"][leaderboard["data"]["weblink"].rindex("com/")+4:].replace("_", " ").title())
                         self.game_name = game_category[0]  # Always first of 2-3 items

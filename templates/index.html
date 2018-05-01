@@ -134,6 +134,7 @@
     <script>
         var scoreboard;
         var ajaxResponseMessage;
+        var loginResponseMessage;
         var timeFormat = "YYYY-MM-DD HH:mm";
         var userZone = moment.tz.guess();
         function serverToUserTime(serverTime){
@@ -146,6 +147,7 @@
         $(function() {
             var currentTimeOnLoad = moment();
             ajaxResponseMessage = $('#ajaxResponseMessage');
+            loginResponseMessage = $('#loginResponseMessage');
             scoreboard = $('#scoreboard');
             scoreboard.DataTable( {
                 "fnCreatedRow": function( nRow, aData, iDataIndex ) {
@@ -180,13 +182,43 @@
             scoreboard.css( 'display', '' );
 
             sortTable("preview");
-            console.log("here");
             ajaxResponseMessage.css('visibility','hidden');
+
+            // Login
+            $("#login-form").submit(function( event ) {
+                $("#login-button").prop('disabled', true);
+                $("#api-key").prop('readonly', true);
+                $.post('/', $(this).serialize(), function() {}, "json")
+                .done(function(data) {
+                    if (data.state == "success"){ location.reload(); }
+                    loginResponseMessage.attr('class', `alert alert-${data.state}`);
+                    loginResponseMessage.html(htmlReplace(data.message));
+                    loginResponseMessage.css('visibility','visible');
+                })
+                .fail(function(data){
+                    alert( `There was an unknown error with the AJAX request. Status code: ${data.status}` );
+                })
+                .always(function (data) {
+                    console.log(data);
+                    $("#login-button").prop('disabled', false);
+                    $("#api-key").prop('readonly', false);
+                })
+                event.preventDefault();
+            });
 
             // Updating a user
             $("#update-user-form").submit(function( event ) {
-                var name_or_id = $('#name-or-id').val()
-                var row = scoreboard.DataTable().row(`[name='${name_or_id}'], [id='${name_or_id}']`)
+                var name_or_id = $('#name-or-id').val();
+                try {
+                    var row = scoreboard.DataTable().row(`[name='${name_or_id}'], [id='${name_or_id}']`);
+                }
+                catch (_) {
+                    ajaxResponseMessage.attr('class', 'alert alert-danger');
+                    ajaxResponseMessage.html(`"${name_or_id}" isn't a valid username or ID.`);
+                    ajaxResponseMessage.css('visibility','visible');
+                    event.preventDefault();
+                    return;
+                }
                 var unfriendbefriend = $(row.node()).hasClass("highlight-friend") ? "unfriend" : "befriend";
                 var userData = row.data();
                 if (userData) {
@@ -234,7 +266,7 @@
                                     `<a href="https://www.speedrun.com/user/${data.name}" target="_blank">${data.name}</a>
                                     <span
                                         class="pull-right friend-icon"
-                                        onClick="javascript:unfriendbefriend('${data.user_id}');"
+                                        onClick="javascript:befriend('${data.user_id}');"
                                     ></span>`,
                                     data.score,
                                     data.last_updated,

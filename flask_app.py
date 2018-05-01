@@ -25,7 +25,7 @@ from flask import Flask, render_template, request, redirect, url_for
 from flask_login import LoginManager, logout_user, login_user, UserMixin, current_user
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text, exc
-from user_updater import get_updated_user, UserUpdaterError, get_file
+from user_updater import get_updated_user, UserUpdaterError, SpeedrunComError, get_file
 import json
 import traceback
 import configs
@@ -74,23 +74,25 @@ class Player(db.Model, UserMixin):
 
     def get_friends(self):
         sql = text( "SELECT DISTINCT friend_id FROM friend "
-                    "INNER JOIN player ON friend.user_id = player.user_id;")
+                    "WHERE friend.user_id = '{user_id}';".format(
+                        user_id = self.user_id
+                    ))
         return [friend_id[0] for friend_id in db.engine.execute(sql).fetchall()]
 
     def befriend(self, friend_id):
         if self.user_id == friend_id : return None
         sql = text( "INSERT INTO friend (user_id, friend_id) "
                     "VALUES ('{user_id}', '{friend_id}');".format(
-                    user_id = self.user_id,
-                    friend_id = friend_id
+                        user_id = self.user_id,
+                        friend_id = friend_id
                     ))
         return db.engine.execute(sql)
 
     def unfriend(self, friend_id):
         sql = text( "DELETE FROM friend "
                     "WHERE user_id = '{user_id}' AND friend_id = '{friend_id}';".format(
-                    user_id = self.user_id,
-                    friend_id = friend_id
+                        user_id = self.user_id,
+                        friend_id = friend_id
                     ))
         return db.engine.execute(sql)
 
@@ -112,9 +114,7 @@ def load_user(user_id):
 def index():
     action = request.form.get("action")
     if request.method == "GET":
-        friends = [] if not current_user.is_authenticated else current_user.get_friends();
-        print(friends)
-        for friend in friends: print(friend)
+        friends = [] if not current_user.is_authenticated else current_user.get_friends()
         return render_template('index.html', players=Player.get_all(), friends=friends)
 
     elif request.method == "POST" and action:
@@ -130,21 +130,21 @@ def index():
                     print("\nError: Unknown\n{}".format(traceback.format_exc()))
                     result = {"state": "danger", "message":traceback.format_exc()}
                 finally:
-                    return json.dumps(result);
+                    return json.dumps(result)
             else:
-                return json.dumps({'state':'warning', 'message':'You must be logged in to update a user!'});
+                return json.dumps({'state':'warning', 'message':'You must be logged in to update a user!'})
 
         elif action == "unfriend":
             if current_user.is_authenticated:
                 if friend_id:
                     if current_user.unfriend(friend_id).rowcount > 0:
-                        return json.dumps({'state':'success', 'message':"Successfully removed user ID \"{}\" from your friends.".format(friend_id)});
+                        return json.dumps({'state':'success', 'message':"Successfully removed user ID \"{}\" from your friends.".format(friend_id)})
                     else:
-                        return json.dumps({'state':'warning', 'message':"User ID \"{}\" isn't one of your friends.".format(friend_id)});
+                        return json.dumps({'state':'warning', 'message':"User ID \"{}\" isn't one of your friends.".format(friend_id)})
                 else:
-                    return json.dumps({'state':'warning', 'message':'You must specify a friend ID to remove!'});
+                    return json.dumps({'state':'warning', 'message':'You must specify a friend ID to remove!'})
             else:
-                return json.dumps({'state':'warning', 'message':'You must be logged in to remove friends!'});
+                return json.dumps({'state':'warning', 'message':'You must be logged in to remove friends!'})
 
         elif action == "befriend":
             if current_user.is_authenticated:
@@ -152,32 +152,40 @@ def index():
                     try:
                         result = current_user.befriend(friend_id)
                     except exc.IntegrityError:
-                        return json.dumps({'state':'warning', 'message':"User ID \"{}\" is already one of your friends.".format(friend_id)});
+                        return json.dumps({'state':'warning', 'message':"User ID \"{}\" is already one of your friends.".format(friend_id)})
                     else:
                         if result:
-                            return json.dumps({'state':'success', 'message':"Successfully added user ID \"{}\" as a friend.".format(friend_id)});
+                            return json.dumps({'state':'success', 'message':"Successfully added user ID \"{}\" as a friend.".format(friend_id)})
                         else:
-                            return json.dumps({'state':'warning', 'message':"You can't add yourself as a friend!"});
+                            return json.dumps({'state':'warning', 'message':"You can't add yourself as a friend!"})
                 else:
-                    return json.dumps({'state':'warning', 'message':'You must specify a friend ID to add!'});
+                    return json.dumps({'state':'warning', 'message':'You must specify a friend ID to add!'})
             else:
-                return json.dumps({'state':'warning', 'message':'You must be logged in to add friends!'});
+                return json.dumps({'state':'warning', 'message':'You must be logged in to add friends!'})
 
         elif action == "login":
             api_key = request.form.get("api-key")
+            print("api_key = ",api_key)
+            if(api_key):
+                try: # Get user from speedrun.com using the API key
+                    print("in try")
+                    user_id = get_file("https://www.speedrun.com/api/v1/profile", {"X-API-Key": api_key})["data"]["id"]
+                    print("user_id = ", user_id)
+                except SpeedrunComError as exception:
+                    print("\nError: Unknown\n{}".format(traceback.format_exc()))
+                    return json.dumps({'state':'warning', 'message':'Invalid API key.'})
+                except Exception as exception:
+                    print("\nError: Unknown\n{}".format(traceback.format_exc()))
+                    return json.dumps({"state": "danger", "message":traceback.format_exc()})
 
-            try: # Get user from speedrun.com using the API key
-                user_id = get_file("https://www.speedrun.com/api/v1/profile", {"X-API-Key": api_key})["data"]["id"]
-            except Exception as e:
-                print(e)
-                user_id = None
-            if(user_id): # Confirms the API key is valid
-                #TODO: optionally update that user
-                login_user(load_user(user_id))
-                return redirect(url_for('index'))
+                if(user_id): # Confirms the API key is valid
+                    #TODO: optionally update that user
+                    login_user(load_user(user_id))
+                    return json.dumps({'state':'success', 'message':"Successfully logged in. Please refresh the page if it isn't done automatically."})
+                else:
+                    return json.dumps({'state':'warning', 'message':'Invalid API key.'})
             else:
-                pass
-                #"Invalid key"
+                return json.dumps({'state':'warning', 'message':'You must specify an API key to log in!'})
 
         elif action == "logout":
             logout_user()
