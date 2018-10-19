@@ -160,12 +160,12 @@ class Run():
                         # Scale all the normalized deviations so that the mean is worth 1 but the worse stays 0
                         normalized_deviation = (adjusted_deviation/adjusted_standard_deviation) * (1/(adjusted_mean_deviation/adjusted_standard_deviation))
                         # Bonus points for long games
-                        length_bonus = (1+(wr_time/TIME_BONUS_DIVISOR))
+                        length_bonus = 1+(wr_time/TIME_BONUS_DIVISOR)
                         # More people means more accurate relative time and more optimised/hard to reach high times
-                        certainty_adjustment = 1 #1-1/original_population
+                        certainty_adjustment = 1-1/(population+1)
 
                         # Give points
-                        self._points = math.exp(normalized_deviation * certainty_adjustment) * length_bonus * 10
+                        self._points = exp(normalized_deviation * certainty_adjustment) * length_bonus * 10
                         # Set names
                         game_category = re.split("/|#", leaderboard["data"]["weblink"][leaderboard["data"]["weblink"].rindex("com/")+4:].replace("_", " ").title())
                         self.game_name = game_category[0]  # Always first of 2-3 items
