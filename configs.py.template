@@ -1,0 +1,13 @@
+import os
+secret_key = os.urandom(16)
+
+debug: bool = True
+auto_reload_templates: bool = True
+
+# Database settings
+sql_track_modifications: bool = False
+sql_connector = "mysqlconnector"
+sql_username = "admin"
+sql_password = "admin"
+sql_hostname = "localhost:3306"
+sql_database_name = "speedrun_global_leaderboard"

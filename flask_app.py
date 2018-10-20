@@ -32,17 +32,18 @@ import configs
 
 
 # Setup Flask app
-app = Flask(__name__)
+app = Flask(__name__, static_folder="assets")
 app.config['DEBUG'] = configs.debug
 app.config["PREFERRED_URL_SCHEME"] = "https"
 app.config["TEMPLATE_AUTO_RELOAD"] = configs.auto_reload_templates
 
 # Setup the dal (SQLAlchemy)
-SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://{username}:{password}@{hostname}/{databasename}".format(
+SQLALCHEMY_DATABASE_URI = "mysql+{connector}://{username}:{password}@{hostname}/{database_name}".format(
+    connector=configs.sql_connector,
     username=configs.sql_username,
     password=configs.sql_password,
     hostname=configs.sql_hostname,
-    databasename=configs.sql_databasename)
+    database_name=configs.sql_database_name)
 app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
 app.config["SQLALCHEMY_POOL_RECYCLE"] = 299
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = configs.sql_track_modifications
@@ -61,6 +62,7 @@ class Player(db.Model, UserMixin):
     score = db.Column(db.Integer, nullable=False)
     last_update = db.Column(db.DateTime())
 
+    @staticmethod
     def get_all():
         sql = text( "SELECT *, rank FROM ( "
                     "    SELECT *, "
@@ -191,3 +193,7 @@ def index():
             logout_user()
             return redirect(url_for('index'))
     return redirect(url_for('index'))
+
+
+if __name__ == '__main__':
+    app.run()
