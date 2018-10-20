@@ -95,6 +95,13 @@ ENV/
 # Rope project settings
 .ropeproject
 
+# PyCharm
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/gradle.xml
+.idea/dictionaries/*.xml
+.idea/libraries/*.xml
+
 # =========================
 # Operating System Files
 # =========================
