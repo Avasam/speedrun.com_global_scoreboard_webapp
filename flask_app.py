@@ -124,7 +124,7 @@ def index():
     elif request.method == "POST" and action:
         friend_id: str = request.form.get("friend-id")
         if action == "update-user":
-            if current_user.is_authenticated:
+            if current_user.is_authenticated or configs.bypass_update_restrictions:
                 try:
                     result = get_updated_user(request.form.get("name-or-id"))
                 except UserUpdaterError as exception:

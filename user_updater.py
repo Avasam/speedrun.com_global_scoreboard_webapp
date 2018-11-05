@@ -29,6 +29,7 @@ from threading import Thread, active_count
 from time import strftime, sleep
 
 from typing import Any, Dict, List, Tuple, Union
+import configs
 import httplib2
 import json
 import simplejson
@@ -406,7 +407,7 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
             player = flask_app.Player.query.get(user._id)
 
             # If user doesn't exists or enough time passed since last update
-            if not (player and (datetime.now() - player.last_update).days < 1):
+            if not player or (datetime.now() - player.last_update).days >= 1 or configs.bypass_update_restrictions:
 
                 user.set_points()
                 if not threadsException:
