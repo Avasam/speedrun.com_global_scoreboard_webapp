@@ -152,12 +152,10 @@ class Run:
                 valid_runs = sorted(valid_runs[:int(original_population * 0.95) or None],
                                     key=lambda r: r["run"]["times"]["primary_t"])
 
-
                 # TODO: This is not optimized
                 pre_fix_worst_time = valid_runs[-1]["run"]["times"]["primary_t"]
-                # Find the time that is most often repeated in the leaderboard (after the median)
-                # and cut off that time
-                cut_off_median_time: int = valid_runs[ceil(len(valid_runs)/2)]["run"]["times"]["primary_t"]
+                # Find the time that is most often repeated in the leaderboard (after the median) and cut off that time
+                cut_off_median_time: int = valid_runs[int(len(valid_runs)*0.8)]["run"]["times"]["primary_t"]
                 count: int = 0
                 most_repeated_time_pos: int = 0
                 most_repeated_time_count: int = 0
@@ -180,12 +178,10 @@ class Run:
                     if value < cut_off_median_time:
                         # Have the most repeated time be at least a certain number
                         if most_repeated_time_count > MIN_LEADERBOARD_SIZE:
-                            # Actually keep the last one (the +1) as it'll be worth 0 points
+                            # Actually keep the last one (+1) as it'll be worth 0 points and used for other calculations
                             del valid_runs[most_repeated_time_pos+1:]
                         break
                     i -= 1
-
-
 
                 # Second iteration: maths!
                 mean: float = 0.0
