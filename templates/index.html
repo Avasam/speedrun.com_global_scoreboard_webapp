@@ -224,7 +224,7 @@
                 if (userData) {
                     var daysSince = currentTimeOnLoad.diff(userData[3], 'days');
                 }
-                if (userData && daysSince < 1) {
+                if ({{ str(not bypass_update_restrictions).lower() }} && userData && daysSince < 1 ) {
                     ajaxResponseMessage.attr('class', 'alert alert-warning');
                     ajaxResponseMessage.html(`Runner ${userData[1]} has already been updated in the last 24h.`);
                     ajaxResponseMessage.css('visibility','visible');

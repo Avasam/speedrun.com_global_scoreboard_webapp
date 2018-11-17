@@ -119,7 +119,11 @@ def index():
     action: str = request.form.get("action")
     if request.method == "GET":
         friends: List[Player] = [] if not current_user.is_authenticated else current_user.get_friends()
-        return render_template('index.html', players=Player.get_all(), friends=friends)
+        return render_template(
+            'index.html',
+            players=Player.get_all(),
+            friends=friends,
+            bypass_update_restrictions=configs.bypass_update_restrictions)
 
     elif request.method == "POST" and action:
         friend_id: str = request.form.get("friend-id")
