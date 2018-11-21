@@ -21,7 +21,7 @@
 # Contact:
 # samuel.06@hotmail.com
 ##########################################################################
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, Response, request, redirect, url_for
 from flask_login import LoginManager, logout_user, login_user, UserMixin, current_user
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text, exc
@@ -116,18 +116,27 @@ def load_user(user_id):
 @app.route('/', methods=["GET", "POST"])
 def index():
     global result
-    action: str = request.form.get("action")
+    form_action: str = request.form.get("action")
+    arg_action: str = request.args.get('action')
     if request.method == "GET":
-        friends: List[Player] = [] if not current_user.is_authenticated else current_user.get_friends()
-        return render_template(
-            'index.html',
-            players=Player.get_all(),
-            friends=friends,
-            bypass_update_restrictions=configs.bypass_update_restrictions)
+        if arg_action == "ajaxDataTable":
+            players = Player.get_all()
+            return Response(
+                    response=json.dumps({'data': [(dict(player.items())) for player in players]}, default=str),
+                    status=200,
+                    mimetype="application/json")
+            # return json.dumps({'data': [(dict(player.items())) for player in players]}, default=str)
+        else:
+            friends: List[Player] = [] if not current_user.is_authenticated else current_user.get_friends()
+            return render_template(
+                'index.html',
+                # players=Player.get_all(),
+                friends=friends,
+                bypass_update_restrictions=str(not configs.bypass_update_restrictions).lower())
 
-    elif request.method == "POST" and action:
+    elif request.method == "POST" and form_action:
         friend_id: str = request.form.get("friend-id")
-        if action == "update-user":
+        if form_action == "update-user":
             if current_user.is_authenticated or configs.bypass_update_restrictions:
                 try:
                     result = get_updated_user(request.form.get("name-or-id"))
@@ -142,7 +151,7 @@ def index():
             else:
                 return json.dumps({'state': 'warning', 'message': 'You must be logged in to update a user!'})
 
-        elif action == "unfriend":
+        elif form_action == "unfriend":
             if current_user.is_authenticated:
                 if friend_id:
                     if current_user.unfriend(friend_id).rowcount > 0:
@@ -159,7 +168,7 @@ def index():
                 return json.dumps({'state': 'warning',
                                    'message': 'You must be logged in to remove friends!'})
 
-        elif action == "befriend":
+        elif form_action == "befriend":
             if current_user.is_authenticated:
                 if friend_id:
                     try:
@@ -181,7 +190,7 @@ def index():
                 return json.dumps({'state': 'warning',
                                    'message': 'You must be logged in to add friends!'})
 
-        elif action == "login":
+        elif form_action == "login":
             api_key = request.form.get("api-key")
             print("api_key = ", api_key)
             if api_key:
@@ -211,7 +220,7 @@ def index():
                 return json.dumps({'state': 'warning',
                                    'message': 'You must specify an API key to log in!'})
 
-        elif action == "logout":
+        elif form_action == "logout":
             logout_user()
             return redirect(url_for('index'))
     return redirect(url_for('index'))
