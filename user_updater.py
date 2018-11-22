@@ -29,6 +29,7 @@ from threading import Thread, active_count
 from time import strftime, sleep
 
 from typing import Any, Dict, List, Tuple, Union
+import configs
 import httplib2
 import json
 import simplejson
@@ -151,6 +152,37 @@ class Run:
                 valid_runs = sorted(valid_runs[:int(original_population * 0.95) or None],
                                     key=lambda r: r["run"]["times"]["primary_t"])
 
+                # TODO: This is not optimized
+                pre_fix_worst_time = valid_runs[-1]["run"]["times"]["primary_t"]
+                # Find the time that is most often repeated in the leaderboard (after the median) and cut off that time
+                cut_off_median_time: int = valid_runs[int(len(valid_runs)*0.8)]["run"]["times"]["primary_t"]
+                count: int = 0
+                most_repeated_time_pos: int = 0
+                most_repeated_time_count: int = 0
+                last_value: int = 0
+                i: int = len(valid_runs)
+                # Go in reverse this way we can break at median
+                for run in reversed(valid_runs):
+                    value: int = run["run"]["times"]["primary_t"]
+                    if value == last_value:
+                        count += 1
+                    else:
+                        if count >= most_repeated_time_count:
+                            most_repeated_time_count = count
+                            most_repeated_time_pos = i
+                        count = 0
+                    last_value = value
+
+                    # We hit the median, there's no more to be analyzed
+                    # If the most repeated time IS the median, still remove it (< not <=)
+                    if value < cut_off_median_time:
+                        # Have the most repeated time be at least a certain number
+                        if most_repeated_time_count > MIN_LEADERBOARD_SIZE:
+                            # Actually keep the last one (+1) as it'll be worth 0 points and used for other calculations
+                            del valid_runs[most_repeated_time_pos+1:]
+                        break
+                    i -= 1
+
                 # Second iteration: maths!
                 mean: float = 0.0
                 sigma: float = 0.0
@@ -163,28 +195,30 @@ class Run:
                     sigma += (value - mean_temp) * (value - mean)
 
                 wr_time = valid_runs[0]["run"]["times"]["primary_t"]
-                worst_time = valid_runs[-1]["run"]["times"]["primary_t"]
+
                 standard_deviation = (sigma / population) ** 0.5
                 if standard_deviation > 0:  # All runs must not have the exact same time
                     # Get the +- deviation from the mean
                     signed_deviation = mean - self.primary_t
                     # Get the deviation from the mean of the worse time as a positive number
+                    worst_time = valid_runs[-1]["run"]["times"]["primary_t"]
                     lowest_deviation = worst_time - mean
                     # These three shift the deviations up so that the worse time is now 0
                     adjusted_deviation = signed_deviation + lowest_deviation
-                    adjusted_standard_deviation = standard_deviation + lowest_deviation
-                    adjusted_mean_deviation = 0 + lowest_deviation
-                    if adjusted_deviation > 0:  # The last 5% of runs isn't worth any points
-                        # Scale all the normalized deviations so that the mean is worth 1 but the worse stays 0
-                        normalized_deviation = (adjusted_deviation / adjusted_standard_deviation) \
-                                               * (1 / (adjusted_mean_deviation / adjusted_standard_deviation))
+                    if adjusted_deviation > 0:  # The last counted run isn't worth any points
+                        # Scale all the adjusted deviations so that the mean is worth 1 but the worse stays 0...
+                        # using the lowest time's deviation from before the "similar times" fix!
+                        # (runs not affected by the prior fix won't see any difference)
+                        adjusted_lowest_deviation = pre_fix_worst_time - mean
+                        normalized_deviation = adjusted_deviation / adjusted_lowest_deviation
+
                         # Bonus points for long games
                         length_bonus = 1 + (wr_time / TIME_BONUS_DIVISOR)
-                        # More people means more accurate relative time and more optimised/hard to reach high times
+                        # More people means more accurate relative time and more optimised/hard to reach low times
                         certainty_adjustment = 1 - 1 / (population + 1)
 
                         # Give points
-                        self._points = exp(normalized_deviation * certainty_adjustment) * length_bonus * 10
+                        self._points = exp(normalized_deviation * certainty_adjustment) * 10 * length_bonus
                         # Set names
                         game_category = re.split(
                             "[/#]",
@@ -406,7 +440,7 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
             player = flask_app.Player.query.get(user._id)
 
             # If user doesn't exists or enough time passed since last update
-            if not (player and (datetime.now() - player.last_update).days < 1):
+            if not player or (datetime.now() - player.last_update).days >= 1 or configs.bypass_update_restrictions:
 
                 user.set_points()
                 if not threadsException:
