@@ -125,12 +125,10 @@ def index():
                     response=json.dumps({'data': [(dict(player.items())) for player in players]}, default=str),
                     status=200,
                     mimetype="application/json")
-            # return json.dumps({'data': [(dict(player.items())) for player in players]}, default=str)
         else:
             friends: List[Player] = [] if not current_user.is_authenticated else current_user.get_friends()
             return render_template(
                 'index.html',
-                # players=Player.get_all(),
                 friends=friends,
                 bypass_update_restrictions=str(not configs.bypass_update_restrictions).lower())
 

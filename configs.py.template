@@ -2,7 +2,9 @@ import os
 secret_key = os.urandom(16)
 
 debug: bool = True
-bypass_update_restrictions = True
+bypass_update_restrictions: bool = True
+# Timezone: https://momentjs.com/timezone/#format-dates-in-any-timezone
+server_timezone: str = "America/New_York"
 auto_reload_templates: bool = True
 
 # Database settings
