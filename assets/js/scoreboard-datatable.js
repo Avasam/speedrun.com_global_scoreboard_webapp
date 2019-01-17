@@ -3,9 +3,10 @@ var ajaxResponseMessage;
 var loginResponseMessage;
 var timeFormat = "YYYY-MM-DD HH:mm";
 var userZone = moment.tz.guess();
+
 function serverToUserTime(serverTime){
     // Create a moment using server's timezone
-    var serverTimeMoment = moment.tz(serverTime, timeFormat, "Europe/London");
+    var serverTimeMoment = moment.tz(serverTime, timeFormat, window.server_timezone);
     // Set the time to user local time
     return serverTimeMoment.tz(userZone).format(timeFormat);
 }
@@ -26,17 +27,32 @@ $(function() {
         ],
         fnCreatedRow: function( nRow, aData, iDataIndex ) {
             // Adapt the times to user's timezone
-            $('td:eq(3)', nRow).html( serverToUserTime(aData[3]) );
-            // Fill the preview's missing data using the scoreboard
-            var userID = $('td:eq(4)', nRow).html()
-            $('td:eq(0)', `#preview-${userID}`).html($('td:eq(0)', nRow).html())
-            $('td:eq(1)', `#preview-${userID}`).html($('td:eq(1)', nRow).html())
-            $('td:eq(2)', `#preview-${userID}`).html($('td:eq(2)', nRow).html())
+            $('td:eq(3)', nRow).html( serverToUserTime(aData['last_update']) );
+            // ID for quick find and update
+            $(nRow).attr("id",aData['user_id']);
+            // User link and friend button
+            var friendFunction = "befriend";
+            if (window.friends[aData['user_id']]) {
+                $(nRow).attr("class","highlight-friend");
+                friendFunction = "unfriend";
+            }
+            $('td:eq(1)', nRow).html(
+                `<a href="https://www.speedrun.com/user/${aData['name']}" target="_blank">${aData['name']}</a>
+                <span class="pull-right friend-icon" onClick="javascript:${friendFunction}('${aData['user_id']}');"></span>`
+            );
+
+            // Fill the friends preview's missing data using the scoreboard
+            $('td:eq(0)', `#preview-${aData['user_id']}`).html(aData['rank']);
+            $('td:eq(1)', `#preview-${aData['user_id']}`).html(
+                `<a href="https://www.speedrun.com/user/${aData['name']}" target="_blank">${aData['name']}</a>
+                <span class="pull-right friend-icon" onClick="javascript:unfriend('${aData['user_id']}');"></span>`
+            );
+            $('td:eq(2)', `#preview-${aData['user_id']}`).html(aData['score']);
         },
         fnRowCallback: function( nRow, aData, iDisplayIndex ) {
             // Set the color of the cell according to the last time user was updated
             var cell = $('td:eq(3)', nRow);
-            var daysSince = currentTimeOnLoad.diff(aData[3], 'days');
+            var daysSince = currentTimeOnLoad.diff(aData['last_update'], 'days');
             if (daysSince < 1) {
                 cell.attr("class","daysSince1");
             } else if (daysSince < 7) {
@@ -46,7 +62,9 @@ $(function() {
             } else {
                 cell.attr("class","daysSince");
             }
-
+        },
+        fnInitComplete: function(oSettings, json) {
+            sortTable("preview");
         }
     });
     $("#scoreboard_filter").parent().attr("class","col-xs-6");
@@ -55,7 +73,6 @@ $(function() {
     $("#scoreboard_paginate").parent().attr("class","col-xs-12");
     scoreboard.css( 'display', '' );
 
-    sortTable("preview");
     ajaxResponseMessage.css('visibility','hidden');
 
     // Login
@@ -93,7 +110,7 @@ $(function() {
             event.preventDefault();
             return;
         }
-        var unfriendbefriend = $(row.node()).hasClass("highlight-friend") ? "unfriend" : "befriend";
+        var unfriendBefriend = $(row.node()).hasClass("highlight-friend") ? "unfriend" : "befriend";
         var userData = row.data();
         if (userData) {
             var daysSince = currentTimeOnLoad.diff(userData[3], 'days');
@@ -104,7 +121,7 @@ $(function() {
             ajaxResponseMessage.css('visibility','visible');
         } else {
             ajaxResponseMessage.attr('class', 'alert alert-info');
-            ajaxResponseMessage.html(`Updating "${name_or_id}". This may take some time depending on the ammount of runs to analyse. Please Wait...`);
+            ajaxResponseMessage.html(`Updating "${name_or_id}". This may take some time depending on the amount of runs to analyse. Please Wait...`);
             ajaxResponseMessage.css('visibility','visible');
             $("#update-runner-button").prop('disabled', true);
             $("#name-or-id").prop('readonly', true);
@@ -112,41 +129,41 @@ $(function() {
             $.post('/', $(this).serialize(), function() {}, "json")
             .done(function(data) {
                 if (data.state == "success"){
-                    var tableData = scoreboard.DataTable().row(`#${data.user_id}`).data();
-                    console.log(tableData);
-                    if (tableData) {
+                    var rowData = scoreboard.DataTable().row(`#${data.user_id}`).data();
+                    console.log(rowData);
+                    if (rowData) {
                         // Update the row
-                        tableData[0] = data.rank;
-                        tableData[1] = `<a href="https://www.speedrun.com/user/${data.name}" target="_blank">${data.name}</a>
+                        rowData['rank'] = data.rank;
+                        rowData['name'] = `<a href="https://www.speedrun.com/user/${data.name}" target="_blank">${data.name}</a>
                                         <span
                                             class="pull-right friend-icon"
-                                            onClick="javascript:${unfriendbefriend}('${data.user_id}');"
+                                            onClick="javascript:${unfriendBefriend}('${data.user_id}');"
                                         ></span>`;
-                        tableData[2] = data.score;
-                        tableData[3] = serverToUserTime(data.last_updated);
-                        // Redraw the entire table (TODO: will be required to recalculate the rank)
-                        scoreboard.DataTable().row(`#${data.user_id}`).data(tableData).draw(); //TODO: might be able to do better here
+                        rowData['score'] = data.score;
+                        rowData['last_update'] = serverToUserTime(data.last_updated);
+                        // Update the data, clear the search bar, redraw the entire table and jump to user
+                        scoreboard.DataTable().row(`#${data.user_id}`).data(rowData).order( [ 2, 'desc' ] ).search('').draw();
+                        scoreboard.DataTable().page.jumpToData( data.user_id, 4 );
 
-                        // Update the preview table
-                        previewRow = $(`#preview-${tableData[4]}`);
-                        $('td:eq(0)', previewRow).html(tableData[0])
-                        $('td:eq(1)', previewRow).html(tableData[1])
-                        $('td:eq(2)', previewRow).html(tableData[2])
-                        sortTable("preview");
+                        // Update the friends preview table
+                        previewRow = $(`#preview-${rowData['rank']}`);
+                        console.log(rowData['name']);
+                        if (previewRow) {
+                            $('td:eq(0)', previewRow).html(rowData['name']);
+                            $('td:eq(1)', previewRow).html(rowData['score']);
+                            $('td:eq(2)', previewRow).html(rowData['last_update']);
+                            sortTable("preview");
+                        }
                     } else {
                         // Add a new row
-                        scoreboard.DataTable().row.add( [
-                            data.rank,
-                            `<a href="https://www.speedrun.com/user/${data.name}" target="_blank">${data.name}</a>
-                            <span
-                                class="pull-right friend-icon"
-                                onClick="javascript:befriend('${data.user_id}');"
-                            ></span>`,
-                            data.score,
-                            data.last_updated,
-                            data.user_id
+                        scoreboard.DataTable().row.add( {
+                            'rank': data.rank,
+                            'name': data.name,
+                            'score': data.score,
+                            'last_update': data.last_updated,
+                            'user_id': data.user_id,
                         // Redraw the table
-                        ] ).draw();
+                        } ).draw();
                     }
                 }
                 ajaxResponseMessage.attr('class', `alert alert-${data.state}`);
@@ -226,14 +243,14 @@ function befriend(friendID) {
             $( rowNode ).find("span.friend-icon").attr('onClick', `javascript:unfriend('${friendID}');`);
 
             // Add on the preview
-            var friendRank = rowData[0];
-            var nameLink = rowData[1];
-            var friendScore = rowData[2];
             $('tbody', $("#preview")).append(
                 `<tr class="highlight-friend" id="preview-${friendID}">
-                    <td>${friendRank}</td>
-                    <td>${nameLink.replace("befriend","unfriend")}</td>
-                    <td>${friendScore}</td>
+                    <td>${rowData["rank"]}</td>
+                    <td>
+                        <a href="https://www.speedrun.com/user/${rowData['name']}" target="_blank">${rowData['name']}</a>
+                        <span class="pull-right friend-icon" onClick="javascript:unfriend('${rowData['user_id']}');"></span>
+                    </td>
+                    <td>${rowData["score"]}</td>
                     <td><a href="javascript:jumpToPlayer('${friendID}');"><span class="pull-right glyphicon glyphicon-circle-arrow-right"></span></a></td>
                 </tr>`
             );
@@ -279,17 +296,17 @@ function unfriend(friendID) {
 }
 
 // https://stackoverflow.com/a/7558600
-// Sort a table by first column
+// Sort a table by third (score) column
 function sortTable(tableID){
     var tbl = document.getElementById(tableID).tBodies[0];
     var store = [];
     for(var i=0, len=tbl.rows.length; i<len; i++){
         var row = tbl.rows[i];
-        var sortnr = parseFloat(row.cells[0].textContent || row.cells[0].innerText);
+        var sortnr = parseFloat(row.cells[2].textContent || row.cells[2].innerText);
         if(!isNaN(sortnr)) store.push([sortnr, row]);
     }
     store.sort(function(x,y){
-        return x[0] - y[0];
+        return y[0] - x[0];
     });
     for(var i=0, len=store.length; i<len; i++){
         tbl.appendChild(store[i][1]);
