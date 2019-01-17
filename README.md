@@ -24,8 +24,8 @@ If there's any balance issue in the formulas, that's an easy fix. (but that's li
 ## Dev environment setup
 Get yourself a [MySQL server](https://dev.mysql.com/downloads/mysql/) (PythonAnywhere uses version 5.6.40)  
 Install [Python](https://www.python.org/downloads/) 3.6+  
-Install PIP  
-Run `pip install flask flask_login flask_sqlalchemy sqlalchemy httplib2 simplejson mysql-connector`  
+Install PIP (this should come bundled with python 3.4+  
+Run this command through the python interpreter (or prepend with `py -m ` in a terminal): `pip install flask flask_login flask_sqlalchemy sqlalchemy httplib2 simplejson mysql-connector requests`  
 Copy `configs.py.template` as `configs.py` and update the file as needed.
 
 I'm probably missing steps 🤷 (and setting up a virtual environment, but if you care about that, you'll know how to set it up yourself). In any case you can let me know if you have issues setting up your dev environment.
