@@ -21,15 +21,16 @@
 # Contact:
 # samuel.06@hotmail.com
 ##########################################################################
+from datetime import date
 from flask import Flask, render_template, Response, request, redirect, url_for
 from flask_login import LoginManager, logout_user, login_user, UserMixin, current_user
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text, exc
 from typing import List, Union
 from user_updater import get_updated_user, UserUpdaterError, SpeedrunComError, get_file
+import configs
 import json
 import traceback
-import configs
 
 # Setup Flask app
 app = Flask(__name__, static_folder="assets")
@@ -130,7 +131,9 @@ def index():
             return render_template(
                 'index.html',
                 friends=friends,
-                bypass_update_restrictions=str(not configs.bypass_update_restrictions).lower())
+                bypass_update_restrictions=str(not configs.bypass_update_restrictions).lower(),
+                current_year=str(date.today().year)
+            )
 
     elif request.method == "POST" and form_action:
         friend_id: str = request.form.get("friend-id")

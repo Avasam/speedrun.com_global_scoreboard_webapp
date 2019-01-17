@@ -32,7 +32,7 @@ $(function() {
             $(nRow).attr("id",aData['user_id']);
             // User link and friend button
             var friendFunction = "befriend";
-            if (window.friends[aData['user_id']]) {
+            if (window.friends && window.friends[aData['user_id']]) {
                 $(nRow).attr("class","highlight-friend");
                 friendFunction = "unfriend";
             }
@@ -302,7 +302,7 @@ function sortTable(tableID){
     var store = [];
     for(var i=0, len=tbl.rows.length; i<len; i++){
         var row = tbl.rows[i];
-        var sortnr = parseFloat(row.cells[2].textContent || row.cells[2].innerText);
+        var sortnr = parseFloat(row.cells[2] ? (row.cells[2].textContent || row.cells[2].innerText) : 0);
         if(!isNaN(sortnr)) store.push([sortnr, row]);
     }
     store.sort(function(x,y){
