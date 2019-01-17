@@ -76,7 +76,9 @@
                             {% endif %}
                         </tr>
                         {% if current_user.is_authenticated %}
+                            <script>window.friends = {};</script>
                             {% for friend_id in friends %}
+                            <script>window.friends["{{ friend_id }}"] = true;</script>
                             <tr class="highlight-friend" id="preview-{{ friend_id }}">
                                 <td>[???]</td>
                                 <td>[{{ friend_id }}]<span class="pull-right friend-icon" onClick="javascript:unfriend('{{ friend_id }}');"></span></td>

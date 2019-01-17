@@ -433,7 +433,7 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
                 text_output = (f"User \"{user._id}\" not found. "
                                "\nMake sure the name or ID is typed properly. "
                                "It's possible the user you're looking for changed their name. "
-                               "In case of doubt, use its ID.")
+                               "In case of doubt, use their ID.")
                 result_state = "warning"
         else:
             # Setup a few checks
@@ -450,7 +450,7 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
 
                     # If user exists, update the database entry
                     if player:
-                        text_output = f"{user} found. Updated its entry."
+                        text_output = f"{user} found. Updated their entry."
                         result_state = "success"
                         flask_app \
                             .Player \
