@@ -135,24 +135,27 @@ $(function() {
                     if (rowData) {
                         // Update the row
                         rowData['rank'] = data.rank;
-                        rowData['name'] = data.name; /*`<a href="https://www.speedrun.com/user/${data.name}" target="_blank">${data.name}</a>
-                                        <span
-                                            class="pull-right friend-icon"
-                                            onClick="javascript:${unfriendBefriend}('${data.user_id}');"
-                                        ></span>`;*/
+                        rowData['name'] = data.name;
                         rowData['score'] = data.score;
                         rowData['last_update'] = serverToUserTime(data.last_updated);
                         // Update the data, clear the search bar, redraw the entire table and jump to user
                         scoreboard.DataTable().row(`#${data.user_id}`).data(rowData).order( [ 2, 'desc' ] ).search('').draw();
                         scoreboard.DataTable().page.jumpToData( data.user_id, 4 );
 
+                        var nameLink = `<a href="https://www.speedrun.com/user/${data.name}" target="_blank">${data.name}</a>
+                                        <span
+                                            class="pull-right friend-icon"
+                                            onClick="javascript:${unfriendBefriend}('${data.user_id}');"
+                                        ></span>`;
+                        $('td:eq(1)', `#${rowData['user_id']}`).html(nameLink);
+
                         // Update the friends preview table
-                        previewRow = $(`#preview-${rowData['rank']}`);
+                        previewRow = $(`#preview-${rowData['user_id']}`);
                         console.log(rowData['name']);
                         if (previewRow) {
-                            $('td:eq(0)', previewRow).html(rowData['name']);
-                            $('td:eq(1)', previewRow).html(rowData['score']);
-                            $('td:eq(2)', previewRow).html(rowData['last_update']);
+                            $('td:eq(0)', previewRow).html(rowData['rank']);
+                            $('td:eq(1)', previewRow).html(nameLink);
+                            $('td:eq(2)', previewRow).html(rowData['score']);
                             sortTable("preview");
                         }
                     } else {

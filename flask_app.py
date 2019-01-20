@@ -131,7 +131,7 @@ def index():
             return render_template(
                 'index.html',
                 friends=friends,
-                bypass_update_restrictions=str(not configs.bypass_update_restrictions).lower(),
+                bypass_update_restrictions=str(configs.bypass_update_restrictions).lower(),
                 current_year=str(date.today().year)
             )
 
