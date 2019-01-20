@@ -448,7 +448,7 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
                     print(f"\nLooking for {user._id}")  # debug_str
                     timestamp = strftime("%Y-%m-%d %H:%M")
 
-                    # If user exists, update the database entry
+                    # If user already exists, update the database entry
                     if player:
                         text_output = f"{user} found. Updated their entry."
                         result_state = "success"
@@ -458,7 +458,7 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
                             .filter(flask_app.Player.user_id == user._id) \
                             .update({"user_id": user._id,
                                      "name": user._name,
-                                     "score": user._points,
+                                     "score": floor(user._points),
                                      "last_update": timestamp})
                         flask_app.db.session.commit()
 
