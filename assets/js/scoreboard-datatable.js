@@ -28,8 +28,9 @@ $(function() {
         fnCreatedRow: function( nRow, aData, iDataIndex ) {
             // Adapt the times to user's timezone
             $('td:eq(3)', nRow).html( serverToUserTime(aData['last_update']) );
-            // ID for quick find and update
+            // ID and name for quick find and update
             $(nRow).attr("id",aData['user_id']);
+            $(nRow).attr("name",aData['name']);
             // User link and friend button
             var friendFunction = "befriend";
             if (window.friends && window.friends[aData['user_id']]) {
@@ -113,11 +114,11 @@ $(function() {
         var unfriendBefriend = $(row.node()).hasClass("highlight-friend") ? "unfriend" : "befriend";
         var userData = row.data();
         if (userData) {
-            var daysSince = currentTimeOnLoad.diff(userData[3], 'days');
+            var daysSince = currentTimeOnLoad.diff(userData["last_update"], 'days');
         }
         if (!window.bypass_update_restrictions && userData && daysSince < 1 ) {
             ajaxResponseMessage.attr('class', 'alert alert-warning');
-            ajaxResponseMessage.html(`Runner ${userData[1]} has already been updated in the last 24h.`);
+            ajaxResponseMessage.html(`Runner ${userData["name"]} has already been updated in the last 24h.`);
             ajaxResponseMessage.css('visibility','visible');
         } else {
             ajaxResponseMessage.attr('class', 'alert alert-info');
@@ -134,11 +135,11 @@ $(function() {
                     if (rowData) {
                         // Update the row
                         rowData['rank'] = data.rank;
-                        rowData['name'] = `<a href="https://www.speedrun.com/user/${data.name}" target="_blank">${data.name}</a>
+                        rowData['name'] = data.name; /*`<a href="https://www.speedrun.com/user/${data.name}" target="_blank">${data.name}</a>
                                         <span
                                             class="pull-right friend-icon"
                                             onClick="javascript:${unfriendBefriend}('${data.user_id}');"
-                                        ></span>`;
+                                        ></span>`;*/
                         rowData['score'] = data.score;
                         rowData['last_update'] = serverToUserTime(data.last_updated);
                         // Update the data, clear the search bar, redraw the entire table and jump to user
@@ -200,10 +201,10 @@ $(function() {
             var tableData = scoreboard.DataTable().row('#'+data.user_id).data()
             if (data.state == "success"){
                 // Update the row
-                tableData[0] = data.rank;
-                tableData[1] = '<a href="https://www.speedrun.com/user/"'+data.name+' target="_blank">'+data.name+'</a>';
-                tableData[2] = data.score;
-                tableData[3] = serverToUserTime(data.last_updated);
+                tableData["rank"] = data.rank;
+                tableData["name"] = '<a href="https://www.speedrun.com/user/"'+data.name+' target="_blank">'+data.name+'</a>';
+                tableData["score"] = data.score;
+                tableData["last_updated"] = serverToUserTime(data.last_updated);
                 // Redraw the table
                 scoreboard.DataTable().draw(); //TODO: might be able to do better here using invalidate --> row.invalidate().draw()
             }
@@ -251,7 +252,11 @@ function befriend(friendID) {
                         <span class="pull-right friend-icon" onClick="javascript:unfriend('${rowData['user_id']}');"></span>
                     </td>
                     <td>${rowData["score"]}</td>
-                    <td><a href="javascript:jumpToPlayer('${friendID}');"><span class="pull-right glyphicon glyphicon-circle-arrow-right"></span></a></td>
+                    <td>
+                        <a href="javascript:jumpToPlayer('${friendID}');">
+                            <span class="pull-right glyphicon glyphicon-circle-arrow-right"></span>
+                        </a>
+                    </td>
                 </tr>`
             );
             sortTable("preview");
