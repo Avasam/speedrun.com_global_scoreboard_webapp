@@ -24,7 +24,6 @@
     <link rel="stylesheet" href="/assets/css/custom.css">
     <script type="text/javascript" src="/assets/js/scoreboard-datatable.js"></script>
 
-
     <link rel="icon" href="/assets/images/favicon.ico">
     <title>Ava's speedrun.com global scoreboard</title>
 </head>
@@ -42,7 +41,17 @@
                         <input type="hidden" id="action" name="action" value="update-user">
                         <label for="name-or-id"> Update runner:</label>
                         <div class="input-group">
-                            <input type="text" class="form-control" id="name-or-id" name="name-or-id" required placeholder={% if not current_user.is_authenticated %}"Please log in first" disabled {% else %}"Name or ID"{% endif %}>
+                            <input type="text"
+                                   class="form-control"
+                                   id="name-or-id"
+                                   name="name-or-id"
+                                   required
+                                   {% if not current_user.is_authenticated %}
+                                   placeholder="Please log in first"
+                                   disabled
+                                   {% else %}
+                                   placeholder="Name or ID"
+                                   {% endif %}>
                             <span class="input-group-btn">
                                 <button id="update-runner-button"
                                         type="button"

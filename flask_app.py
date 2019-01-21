@@ -28,9 +28,9 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text, exc
 from typing import List, Union
 from user_updater import get_updated_user, UserUpdaterError, SpeedrunComError, get_file
+import configs
 import json
 import traceback
-import configs
 
 # Setup Flask app
 app = Flask(__name__, static_folder="assets")
@@ -131,7 +131,7 @@ def index():
             return render_template(
                 'index.html',
                 friends=friends,
-                bypass_update_restrictions=str(not configs.bypass_update_restrictions).lower(),
+                bypass_update_restrictions=str(configs.bypass_update_restrictions).lower(),
                 current_year=str(date.today().year)
             )
 
