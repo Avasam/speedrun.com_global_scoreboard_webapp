@@ -1,0 +1,56 @@
+{
+  "name": "react-app",
+  "version": "0.1.0",
+  "description": "The React version of an unofficial speedrun.com global leaderboard for competitive speedrunning",
+  "private": true,
+  "dependencies": {
+    "@types/jest": "24.0.17",
+    "@types/node": "12.7.1",
+    "@types/react": "16.9.1",
+    "@types/react-dom": "16.8.5",
+    "react": "^16.9.0",
+    "react-dom": "^16.9.0",
+    "react-scripts": "3.1.0",
+    "typescript": "3.5.3"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Avasam/speedrun.com_global_leaderboard_webapp.git"
+  },
+  "keywords": [
+    "speedrunning",
+    "speedruncom",
+    "speedrun",
+    "leaderboard",
+    "scoreboard",
+    "unofficial",
+    "webapp"
+  ],
+  "author": "Avasam (Samuel Therrien)",
+  "license": "AGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/Avasam/speedrun.com_global_leaderboard_webapp/issues"
+  },
+  "homepage": "https://github.com/Avasam/speedrun.com_global_leaderboard_webapp#readme"
+}
