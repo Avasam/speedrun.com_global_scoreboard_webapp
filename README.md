@@ -27,6 +27,6 @@ Get yourself a [MySQL server](https://dev.mysql.com/downloads/mysql/) (PythonAny
 Install [Python](https://www.python.org/downloads/) 3.6+  
 Install PIP (this should come bundled with python 3.4+)  
 Run this command through the python interpreter (or prepend with `py -m ` in a terminal): `pip install flask flask_login flask_sqlalchemy sqlalchemy httplib2 simplejson mysql-connector requests`  
-Copy `configs.py.template` as `configs.py` and update the file as needed.
+Copy `configs.template.py` as `configs.py` and update the file as needed.
 
 These steps are missing setting up a virtual environment, but if you care about that, you'll know how to set it up yourself. In any case you can let me know if you have issues setting up your dev environment.

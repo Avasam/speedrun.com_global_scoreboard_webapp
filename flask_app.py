@@ -22,7 +22,7 @@
 # samuel.06@hotmail.com
 ##########################################################################
 from datetime import date
-from flask import Flask, render_template, Response, request, redirect, url_for
+from flask import Flask, send_from_directory, render_template, Response, request, redirect, url_for
 from flask_login import LoginManager, logout_user, login_user, UserMixin, current_user
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text, exc
@@ -34,6 +34,7 @@ import traceback
 
 # Setup Flask app
 app = Flask(__name__, static_folder="assets")
+app.config["ENV"] = configs.flask_environment
 app.config['DEBUG'] = configs.debug
 app.config["PREFERRED_URL_SCHEME"] = "https"
 app.config["TEMPLATE_AUTO_RELOAD"] = configs.auto_reload_templates
@@ -113,6 +114,10 @@ login_manager.init_app(app)
 def load_user(user_id):
     return Player.query.get(user_id)
 
+@app.route('/react-app', defaults={'asset': 'index.html'})
+@app.route('/react-app/<path:asset>', methods=["GET"])
+def react_app(asset: str):
+    return send_from_directory('react-app/build/', asset)
 
 @app.route('/', methods=["GET", "POST"])
 def index():
