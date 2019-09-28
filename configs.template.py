@@ -2,6 +2,7 @@ import os
 secret_key = os.urandom(16)
 
 debug: bool = True
+flask_environment: str = "development"
 bypass_update_restrictions: bool = True
 # Timezone: https://momentjs.com/timezone/#format-dates-in-any-timezone
 server_timezone: str = "America/New_York"
