@@ -51,10 +51,17 @@ app.config["SQLALCHEMY_POOL_RECYCLE"] = 299
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = configs.sql_track_modifications
 db = SQLAlchemy(app)
 
-friend = db.Table('friend',
-                  db.Column('user_id', db.String(8), db.ForeignKey('player.user_id')),
-                  db.Column('friend_id', db.String(8), db.ForeignKey('player.user_id'))
-                  )
+friend = db.Table(
+    'friend',
+    db.Column(
+        'user_id',
+        db.String(8),
+        db.ForeignKey('player.user_id')),
+    db.Column(
+        'friend_id',
+        db.String(8),
+        db.ForeignKey('player.user_id'))
+)
 
 
 class Player(db.Model, UserMixin):
@@ -80,7 +87,7 @@ class Player(db.Model, UserMixin):
     def get_friends(self):
         sql = text("SELECT DISTINCT friend_id FROM friend "
                    "WHERE friend.user_id = '{user_id}';".format(
-                    user_id=self.user_id))
+                       user_id=self.user_id))
         return [friend_id[0] for friend_id in db.engine.execute(sql).fetchall()]
 
     def befriend(self, friend_id: str) -> bool:
@@ -88,15 +95,15 @@ class Player(db.Model, UserMixin):
             return False
         sql = text("INSERT INTO friend (user_id, friend_id) "
                    "VALUES ('{user_id}', '{friend_id}');".format(
-                    user_id=self.user_id,
-                    friend_id=friend_id))
+                       user_id=self.user_id,
+                       friend_id=friend_id))
         return db.engine.execute(sql)
 
     def unfriend(self, friend_id: str) -> Union[bool]:
         sql = text("DELETE FROM friend "
                    "WHERE user_id = '{user_id}' AND friend_id = '{friend_id}';".format(
-                    user_id=self.user_id,
-                    friend_id=friend_id))
+                       user_id=self.user_id,
+                       friend_id=friend_id))
         return db.engine.execute(sql)
 
     # Override from UserMixin for Flask-Login
@@ -114,10 +121,18 @@ login_manager.init_app(app)
 def load_user(user_id):
     return Player.query.get(user_id)
 
+
 @app.route('/react-app', defaults={'asset': 'index.html'})
 @app.route('/react-app/<path:asset>', methods=["GET"])
 def react_app(asset: str):
     return send_from_directory('react-app/build/', asset)
+
+
+@app.route('/tournament-scheduler', defaults={'asset': 'index.html'})
+@app.route('/tournament-scheduler/<path:asset>', methods=["GET"])
+def tournament_scheduler(asset: str):
+    return send_from_directory('tournament-scheduler/build/', asset)
+
 
 @app.route('/', methods=["GET", "POST"])
 def index():
@@ -128,15 +143,18 @@ def index():
         if arg_action == "ajaxDataTable":
             players = Player.get_all()
             return Response(
-                    response=json.dumps({'data': [(dict(player.items())) for player in players]}, default=str),
-                    status=200,
-                    mimetype="application/json")
+                response=json.dumps(
+                    {'data': [(dict(player.items())) for player in players]}, default=str),
+                status=200,
+                mimetype="application/json")
         else:
-            friends: List[Player] = [] if not current_user.is_authenticated else current_user.get_friends()
+            friends: List[Player] = [
+            ] if not current_user.is_authenticated else current_user.get_friends()
             return render_template(
                 'index.html',
                 friends=friends,
-                bypass_update_restrictions=str(configs.bypass_update_restrictions).lower(),
+                bypass_update_restrictions=str(
+                    configs.bypass_update_restrictions).lower(),
                 current_year=str(date.today().year)
             )
 
@@ -147,11 +165,14 @@ def index():
                 try:
                     result = get_updated_user(request.form.get("name-or-id"))
                 except UserUpdaterError as exception:
-                    print("\n{}\n{}".format(exception.args[0]["error"], exception.args[0]["details"]))
-                    result = {"state": "danger", "message": exception.args[0]["details"]}
+                    print("\n{}\n{}".format(
+                        exception.args[0]["error"], exception.args[0]["details"]))
+                    result = {"state": "danger",
+                              "message": exception.args[0]["details"]}
                 except Exception:
                     print("\nError: Unknown\n{}".format(traceback.format_exc()))
-                    result = {"state": "danger", "message": traceback.format_exc()}
+                    result = {"state": "danger",
+                              "message": traceback.format_exc()}
                 finally:
                     return json.dumps(result)
             else:
@@ -202,7 +223,8 @@ def index():
             if api_key:
                 try:  # Get user from speedrun.com using the API key
                     print("in try")
-                    user_id = get_file("https://www.speedrun.com/api/v1/profile", {"X-API-Key": api_key})["data"]["id"]
+                    user_id = get_file(
+                        "https://www.speedrun.com/api/v1/profile", {"X-API-Key": api_key})["data"]["id"]
                     print("user_id = ", user_id)
                 except SpeedrunComError:
                     print("\nError: Unknown\n{}".format(traceback.format_exc()))
