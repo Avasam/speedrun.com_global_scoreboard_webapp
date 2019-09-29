@@ -1,0 +1,16 @@
+{
+  "files": {
+    "main.css": "/tournament-scheduler/static/css/main.dfca195d.chunk.css",
+    "main.js": "/tournament-scheduler/static/js/main.f5f3d67b.chunk.js",
+    "main.js.map": "/tournament-scheduler/static/js/main.f5f3d67b.chunk.js.map",
+    "runtime-main.js": "/tournament-scheduler/static/js/runtime-main.603df310.js",
+    "runtime-main.js.map": "/tournament-scheduler/static/js/runtime-main.603df310.js.map",
+    "static/js/2.4d839ae6.chunk.js": "/tournament-scheduler/static/js/2.4d839ae6.chunk.js",
+    "static/js/2.4d839ae6.chunk.js.map": "/tournament-scheduler/static/js/2.4d839ae6.chunk.js.map",
+    "index.html": "/tournament-scheduler/index.html",
+    "precache-manifest.4ff50fe5fe11b348e1414235b4507c48.js": "/tournament-scheduler/precache-manifest.4ff50fe5fe11b348e1414235b4507c48.js",
+    "service-worker.js": "/tournament-scheduler/service-worker.js",
+    "static/css/main.dfca195d.chunk.css.map": "/tournament-scheduler/static/css/main.dfca195d.chunk.css.map",
+    "static/media/logo.svg": "/tournament-scheduler/static/media/logo.25bf045c.svg"
+  }
+}

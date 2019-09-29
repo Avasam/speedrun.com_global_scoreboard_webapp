@@ -9,7 +9,8 @@
 /coverage
 
 # production
-/build
+# we want the build folder for ease of use on pythonanywhere (no ftp on free accounts)
+!/build
 
 # misc
 .DS_Store
