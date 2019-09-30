@@ -22,104 +22,16 @@
 # samuel.06@hotmail.com
 ##########################################################################
 from datetime import date
-from flask import Flask, send_from_directory, render_template, Response, request, redirect, url_for
-from flask_login import LoginManager, logout_user, login_user, UserMixin, current_user
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import text, exc
-from typing import List, Union
+from flask import send_from_directory, render_template, Response, request, redirect, url_for
+from flask_login import logout_user, login_user, current_user
+from models import app, Player, load_user
+from sqlalchemy import exc
+from typing import List
 from user_updater import get_updated_user, UserUpdaterError, SpeedrunComError, get_file
 import configs
 import json
+import jwt
 import traceback
-
-# Setup Flask app
-app = Flask(__name__, static_folder="assets")
-app.config["ENV"] = configs.flask_environment
-app.config['DEBUG'] = configs.debug
-app.config["PREFERRED_URL_SCHEME"] = "https"
-app.config["TEMPLATE_AUTO_RELOAD"] = configs.auto_reload_templates
-
-# Setup the dal (SQLAlchemy)
-SQLALCHEMY_DATABASE_URI = "mysql+{connector}://{username}:{password}@{hostname}/{database_name}".format(
-    connector=configs.sql_connector,
-    username=configs.sql_username,
-    password=configs.sql_password,
-    hostname=configs.sql_hostname,
-    database_name=configs.sql_database_name)
-app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
-app.config["SQLALCHEMY_POOL_RECYCLE"] = 299
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = configs.sql_track_modifications
-db = SQLAlchemy(app)
-
-friend = db.Table(
-    'friend',
-    db.Column(
-        'user_id',
-        db.String(8),
-        db.ForeignKey('player.user_id')),
-    db.Column(
-        'friend_id',
-        db.String(8),
-        db.ForeignKey('player.user_id'))
-)
-
-
-class Player(db.Model, UserMixin):
-    __tablename__ = "player"
-
-    user_id = db.Column(db.String(8), primary_key=True)
-    name = db.Column(db.String(32), nullable=False)
-    score = db.Column(db.Integer, nullable=False)
-    last_update = db.Column(db.DateTime())
-
-    @staticmethod
-    def get_all():
-        sql = text("SELECT *, rank FROM ( "
-                   "    SELECT *, "
-                   "        IF(score = @_last_score, @cur_rank := @cur_rank, @cur_rank := @_sequence) AS rank, "
-                   "        @_sequence := @_sequence + 1, "
-                   "        @_last_score := score "
-                   "    FROM player, (SELECT @cur_rank := 1, @_sequence := 1, @_last_score := NULL) r "
-                   "    ORDER BY score DESC "
-                   ") ranked;")
-        return db.engine.execute(sql).fetchall()
-
-    def get_friends(self):
-        sql = text("SELECT DISTINCT friend_id FROM friend "
-                   "WHERE friend.user_id = '{user_id}';".format(
-                       user_id=self.user_id))
-        return [friend_id[0] for friend_id in db.engine.execute(sql).fetchall()]
-
-    def befriend(self, friend_id: str) -> bool:
-        if self.user_id == friend_id:
-            return False
-        sql = text("INSERT INTO friend (user_id, friend_id) "
-                   "VALUES ('{user_id}', '{friend_id}');".format(
-                       user_id=self.user_id,
-                       friend_id=friend_id))
-        return db.engine.execute(sql)
-
-    def unfriend(self, friend_id: str) -> Union[bool]:
-        sql = text("DELETE FROM friend "
-                   "WHERE user_id = '{user_id}' AND friend_id = '{friend_id}';".format(
-                       user_id=self.user_id,
-                       friend_id=friend_id))
-        return db.engine.execute(sql)
-
-    # Override from UserMixin for Flask-Login
-    def get_id(self):
-        return self.user_id
-
-
-# Setup Flask-Login
-app.config["SECRET_KEY"] = configs.secret_key
-login_manager = LoginManager()
-login_manager.init_app(app)
-
-
-@login_manager.user_loader
-def load_user(user_id):
-    return Player.query.get(user_id)
 
 
 @app.route('/react-app', defaults={'asset': 'index.html'})
