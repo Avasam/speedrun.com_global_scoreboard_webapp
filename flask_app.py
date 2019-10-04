@@ -24,7 +24,6 @@
 from api import api
 from datetime import date
 from flask import Flask, send_from_directory, render_template, Response, request, redirect, url_for
-from flask_cors import CORS
 from flask_login import LoginManager, logout_user, login_user, current_user
 from models import db, Player
 from sqlalchemy import exc
@@ -46,6 +45,7 @@ app.config["TEMPLATE_AUTO_RELOAD"] = configs.auto_reload_templates
 # Setup access to the API
 app.register_blueprint(api, url_prefix="/api")
 if (configs.allow_cors):
+    from flask_cors import CORS
     CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 # Setup the dal (SQLAlchemy)
