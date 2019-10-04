@@ -18,5 +18,9 @@
   "python.linting.flake8Args": [
     "--max-line-length=120"
   ],
-  "python.linting.flake8CategorySeverity.F": "Information",
+  "python.linting.flake8CategorySeverity.F": "Warning",
+  "python.formatting.autopep8Args": [
+    "--max-line-length=120"
+  ],
+  "python.pythonPath": "",
 }

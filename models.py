@@ -21,31 +21,16 @@
 # Contact:
 # samuel.06@hotmail.com
 ##########################################################################
-from flask import Flask
-from flask_login import LoginManager, UserMixin
+from __future__ import annotations
+from flask_login import login_user
+from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
 from typing import Union
-import configs
+from utils import get_file, SpeedrunComError
+import traceback
 
-# Setup Flask app
-app = Flask(__name__, static_folder="assets")
-app.config["ENV"] = configs.flask_environment
-app.config['DEBUG'] = configs.debug
-app.config["PREFERRED_URL_SCHEME"] = "https"
-app.config["TEMPLATE_AUTO_RELOAD"] = configs.auto_reload_templates
-
-# Setup the dal (SQLAlchemy)
-SQLALCHEMY_DATABASE_URI = "mysql+{connector}://{username}:{password}@{hostname}/{database_name}".format(
-    connector=configs.sql_connector,
-    username=configs.sql_username,
-    password=configs.sql_password,
-    hostname=configs.sql_hostname,
-    database_name=configs.sql_database_name)
-app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
-app.config["SQLALCHEMY_POOL_RECYCLE"] = 299
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = configs.sql_track_modifications
-db = SQLAlchemy(app)
+db = SQLAlchemy()
 
 friend = db.Table(
     'friend',
@@ -63,10 +48,45 @@ friend = db.Table(
 class Player(db.Model, UserMixin):
     __tablename__ = "player"
 
-    user_id = db.Column(db.String(8), primary_key=True)
-    name = db.Column(db.String(32), nullable=False)
-    score = db.Column(db.Integer, nullable=False)
+    user_id: str = db.Column(db.String(8), primary_key=True)
+    name: str = db.Column(db.String(32), nullable=False)
+    score: int = db.Column(db.Integer, nullable=False)
     last_update = db.Column(db.DateTime())
+
+    @staticmethod
+    def authenticate(api_key: str):
+        print(api_key)
+        try:  # Get user from speedrun.com using the API key
+            user_id: Union[str, None] = get_file(
+                "https://www.speedrun.com/api/v1/profile", {"X-API-Key": api_key})["data"]["id"]
+            print("user_id = ", user_id)
+        except SpeedrunComError:
+            print("\nError: Unknown\n{}".format(traceback.format_exc()))
+            return None
+            # TODO: return json.dumps({'state': 'warning', 'message': 'Invalid API key.'})
+        except Exception:
+            print("\nError: Unknown\n{}".format(traceback.format_exc()))
+            return None
+            # TODO: return json.dumps({"state": "danger", "message": traceback.format_exc()})
+
+        if not user_id:  # Confirms wether the API key is valid
+            return None
+            # TODO: return json.dumps({'state': 'warning', 'message': 'Invalid API key.'})
+
+        # TODO: optionally update that user
+        player: Player = Player.get(user_id)
+
+        if not player:
+            return None
+            # TODO: Add user to DB and load them in
+
+        login_user(player)  # Login for non SPA
+
+        return player
+
+    @staticmethod
+    def get(id: str) -> Player:
+        return Player.query.get(id)
 
     @staticmethod
     def get_all():
@@ -105,14 +125,3 @@ class Player(db.Model, UserMixin):
     # Override from UserMixin for Flask-Login
     def get_id(self):
         return self.user_id
-
-
-# Setup Flask-Login
-app.config["SECRET_KEY"] = configs.secret_key
-login_manager = LoginManager()
-login_manager.init_app(app)
-
-
-@login_manager.user_loader
-def load_user(user_id):
-    return Player.query.get(user_id)

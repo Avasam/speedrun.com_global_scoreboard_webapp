@@ -21,17 +21,54 @@
 # Contact:
 # samuel.06@hotmail.com
 ##########################################################################
+from api import api
 from datetime import date
-from flask import send_from_directory, render_template, Response, request, redirect, url_for
-from flask_login import logout_user, login_user, current_user
-from models import app, Player, load_user
+from flask import Flask, send_from_directory, render_template, Response, request, redirect, url_for
+from flask_cors import CORS
+from flask_login import LoginManager, logout_user, login_user, current_user
+from models import db, Player
 from sqlalchemy import exc
-from typing import List
-from user_updater import get_updated_user, UserUpdaterError, SpeedrunComError, get_file
+from typing import List, Union
+from user_updater import get_updated_user
+from utils import get_file, UserUpdaterError, SpeedrunComError
 import configs
 import json
-import jwt
 import traceback
+
+# Setup Flask app
+app = Flask(__name__, static_folder="assets")
+app.config["ENV"] = configs.flask_environment
+app.config["DEBUG"] = configs.debug
+app.config["PREFERRED_URL_SCHEME"] = "https"
+app.config["SECRET_KEY"] = configs.secret_key
+app.config["TEMPLATE_AUTO_RELOAD"] = configs.auto_reload_templates
+
+# Setup access to the API
+app.register_blueprint(api, url_prefix="/api")
+if (configs.allow_cors):
+    CORS(app, resources={r"/api/*": {"origins": "*"}})
+
+# Setup the dal (SQLAlchemy)
+SQLALCHEMY_DATABASE_URI = "mysql+{connector}://{username}:{password}@{hostname}/{database_name}".format(
+    connector=configs.sql_connector,
+    username=configs.sql_username,
+    password=configs.sql_password,
+    hostname=configs.sql_hostname,
+    database_name=configs.sql_database_name)
+app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
+app.config["SQLALCHEMY_POOL_RECYCLE"] = 299
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = configs.sql_track_modifications
+db.init_app(app)
+
+# Setup Flask-Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+
+@login_manager.user_loader
+def load_user(user_id: str) -> Union[Player, None]:
+    # type: (str) -> Union[Player, None]
+    return Player.get(user_id)
 
 
 @app.route('/react-app', defaults={'asset': 'index.html'})
@@ -60,8 +97,7 @@ def index():
                 status=200,
                 mimetype="application/json")
         else:
-            friends: List[Player] = [
-            ] if not current_user.is_authenticated else current_user.get_friends()
+            friends: List[Player] = [] if not current_user.is_authenticated else current_user.get_friends()
             return render_template(
                 'index.html',
                 friends=friends,
@@ -77,8 +113,7 @@ def index():
                 try:
                     result = get_updated_user(request.form.get("name-or-id"))
                 except UserUpdaterError as exception:
-                    print("\n{}\n{}".format(
-                        exception.args[0]["error"], exception.args[0]["details"]))
+                    print("\n{}\n{}".format(exception.args[0]["error"], exception.args[0]["details"]))
                     result = {"state": "danger",
                               "message": exception.args[0]["details"]}
                 except Exception:
@@ -88,7 +123,8 @@ def index():
                 finally:
                     return json.dumps(result)
             else:
-                return json.dumps({'state': 'warning', 'message': 'You must be logged in to update a user!'})
+                return json.dumps({'state': 'warning',
+                                   'message': 'You must be logged in to update a user!'})
 
         elif form_action == "unfriend":
             if current_user.is_authenticated:
@@ -135,8 +171,7 @@ def index():
             if api_key:
                 try:  # Get user from speedrun.com using the API key
                     print("in try")
-                    user_id = get_file(
-                        "https://www.speedrun.com/api/v1/profile", {"X-API-Key": api_key})["data"]["id"]
+                    user_id = get_file("https://www.speedrun.com/api/v1/profile", {"X-API-Key": api_key})["data"]["id"]
                     print("user_id = ", user_id)
                 except SpeedrunComError:
                     print("\nError: Unknown\n{}".format(traceback.format_exc()))
