@@ -55,7 +55,7 @@ def hello_world():
 @api.route('/login', methods=('POST',))
 def login():
     data: Dict[str, str] = request.get_json()
-    player = Player.authenticate(data['srcApiKeyInput'])
+    player = Player.authenticate(data['srcApiKey'])
 
     if not player:
         return jsonify({'message': 'Invalid credentials', 'authenticated': False}), 401

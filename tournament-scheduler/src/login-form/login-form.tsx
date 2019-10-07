@@ -12,7 +12,7 @@ type loginFormProps = {
 const LoginForm: React.FC<loginFormProps> = (props: loginFormProps) => {
   const [srcApiKeyInput, setSrcApiKeyInput] = useState('');
 
-  const login = () =>
+  const login = (srcApiKey: string) =>
     fetch(`${process.env.REACT_APP_BASE_URL}/api/login`, {
       method: 'POST',
       headers: {
@@ -20,7 +20,7 @@ const LoginForm: React.FC<loginFormProps> = (props: loginFormProps) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        srcApiKeyInput,
+        srcApiKey,
       })
     }).then(res => res.json())
       .then((res: { token: string, user: User }) => {
@@ -46,7 +46,7 @@ const LoginForm: React.FC<loginFormProps> = (props: loginFormProps) => {
         rel='noreferrer'
       >What's my key?</Link>
     </div>
-    <Button variant='contained' color='primary' onClick={() => login()}>Access my schedules</Button>
+    <Button variant='contained' color='primary' onClick={() => login(srcApiKeyInput)}>Access my schedules</Button>
     <p>
       Don't trust the above link because SRC's api portal looks janky?
       <br />Fair enough, you can also access your api key through

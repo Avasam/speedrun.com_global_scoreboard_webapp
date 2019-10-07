@@ -22,7 +22,8 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "build:dev-server": "set REACT_APP_BASE_URL=https://AvasamDev.pythonanywhere.com&& react-scripts build",
+    "build:dev-server": "set REACT_APP_BASE_URL=https://AvasamDev.pythonanywhere.com&& react-scripts build && npm run compress-build-folder",
+    "compress-build-folder": "powershell Compress-Archive -Update -Path .\\build\\ -CompressionLevel Optimal -DestinationPath ..\\build.zip",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
