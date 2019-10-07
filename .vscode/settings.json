@@ -11,4 +11,16 @@
   "javascript.preferences.quoteStyle": "single",
   "typescript.preferences.quoteStyle": "single",
   "html.format.wrapAttributes": "force-expand-multiline",
+  "python.linting.pylintEnabled": false,
+  "python.linting.flake8Enabled": true,
+  "python.linting.enabled": true,
+  "python.linting.pep8Enabled": false,
+  "python.linting.flake8Args": [
+    "--max-line-length=120"
+  ],
+  "python.linting.flake8CategorySeverity.F": "Warning",
+  "python.formatting.autopep8Args": [
+    "--max-line-length=120"
+  ],
+  "python.pythonPath": "",
 }

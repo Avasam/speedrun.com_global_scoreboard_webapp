@@ -1,0 +1,18 @@
+.flex {
+  display: flex;
+  align-items: baseline;
+}
+
+.src-api-key-link {
+  display: inline-flex;
+  align-items: baseline;
+}
+
+.App .src-api-key-link .MuiTextField-root {
+  min-width: 0;
+}
+
+a.disabled {
+  color: gray;
+  pointer-events: none;
+}

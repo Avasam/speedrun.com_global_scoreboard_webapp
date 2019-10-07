@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "ms-vscode.vscode-typescript-tslint-plugin",
+    "sonarsource.sonarlint-vscode",
+    "dbaeumer.vscode-eslint",
+    "ms-python.python"
+  ]
+}
