@@ -4,6 +4,7 @@
   "description": "A web app tool to help scheduling tournaments",
   "private": true,
   "dependencies": {
+    "@material-ui/core": "^4.5.0",
     "react": "^16.10.1",
     "react-dom": "^16.10.1",
     "react-scripts": "3.1.2",
@@ -21,7 +22,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "build:dev-server": "set REACT_APP_BASE_URL='https://AvasaDev.pythonanywhere.com' && react-scripts build",
+    "build:dev-server": "set REACT_APP_BASE_URL=https://AvasamDev.pythonanywhere.com&& react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

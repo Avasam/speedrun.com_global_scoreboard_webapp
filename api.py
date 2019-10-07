@@ -73,6 +73,16 @@ def login():
         }})
 
 
+@api.route('/users/current', methods=('GET',))
+@authenthication_required
+def get_user_current(current_user: Player):
+    return jsonify({
+        'user': {
+            'userId': current_user.user_id,
+            'name': current_user.name,
+        }})
+
+
 @api.route('/someroute', methods=('POST',))
 @authenthication_required
 def some_method(current_user: Player):
