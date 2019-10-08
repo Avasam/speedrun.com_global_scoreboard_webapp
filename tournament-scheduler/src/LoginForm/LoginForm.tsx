@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Button, TextField, Link } from '@material-ui/core';
 
-import SrcApiKeyLink from './src-api-key-link'
+import SrcApiKeyLink from './SrcApiKeyLink'
 import User from '../models/User';
-import './login-form.css';
+import './LoginForm.css';
 
 type loginFormProps = {
   setCurrentUser: (currentUser: User) => void
@@ -31,6 +31,7 @@ const LoginForm: React.FC<loginFormProps> = (props: loginFormProps) => {
       })
 
   return <>
+    <img src={`${process.env.REACT_APP_BASE_URL}/assets/images/favicon.ico`} alt='logo' />
     <div className='flex'>
       <TextField
         id='src-api-key'
@@ -48,7 +49,7 @@ const LoginForm: React.FC<loginFormProps> = (props: loginFormProps) => {
     </div>
     <Button variant='contained' color='primary' onClick={() => login(srcApiKeyInput)}>Access my schedules</Button>
     <p>
-      Don't trust the above link because SRC's api portal looks janky?
+      Don't trust the above link because SRC's api portal looks sketchy?
       <br />Fair enough, you can also access your api key through
       <br /> <SrcApiKeyLink></SrcApiKeyLink>
     </p>

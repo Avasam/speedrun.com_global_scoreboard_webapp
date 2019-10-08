@@ -2,12 +2,18 @@
   text-align: center;
   background-color: #282c34;
   min-height: 100vh;
+  font-size: 16px;
+  color: white;
+}
+.App, .main {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
-  color: white;
+  width: 100%;
+}
+.main {
+  flex-grow: 1;
 }
 
 .App .MuiTextField-root {
@@ -20,4 +26,17 @@ label {
 
 a {
   color: #09d3ac;
+}
+
+.MuiToolbar-root {
+  display: flex;
+  justify-content: space-between;
+}
+
+.MuiToolbar-root h2 {
+  margin: auto;
+}
+
+.logo {
+  height: 40px;
 }

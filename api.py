@@ -6,7 +6,7 @@ from models import Player
 from datetime import datetime, timedelta
 from flask import Blueprint, current_app, jsonify, request
 from functools import wraps
-from typing import Dict, List
+from typing import Dict, List, Union
 import jwt
 
 
@@ -41,6 +41,12 @@ def authenthication_required(f):
             return jsonify(invalid_msg), 401
 
     return _verify
+
+
+def map_to_dto(dto_mappable_object_list) -> List[Dict[str, Union[str, bool, int]]]:
+    return list(map(
+        lambda dto_mappable_object: dto_mappable_object.to_dto(),
+        dto_mappable_object_list))
 
 
 api = Blueprint('api', __name__)
@@ -81,6 +87,12 @@ def get_user_current(current_user: Player):
             'userId': current_user.user_id,
             'name': current_user.name,
         }})
+
+
+@api.route('/schedules', methods=('GET',))
+@authenthication_required
+def get_all_schedules(current_user: Player):
+    return jsonify(map_to_dto(current_user.get_schedules()))
 
 
 @api.route('/someroute', methods=('POST',))

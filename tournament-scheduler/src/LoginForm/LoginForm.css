@@ -1,6 +1,7 @@
 .flex {
   display: flex;
   align-items: baseline;
+  justify-content: center;
 }
 
 .src-api-key-link {

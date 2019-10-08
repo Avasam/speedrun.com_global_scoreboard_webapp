@@ -26,7 +26,7 @@ from flask_login import login_user
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
-from typing import Union
+from typing import List, Union
 from utils import get_file, SpeedrunComError
 import traceback
 
@@ -53,13 +53,14 @@ class Player(db.Model, UserMixin):
     score: int = db.Column(db.Integer, nullable=False)
     last_update = db.Column(db.DateTime())
 
+    schedules = db.relationship("Schedule", back_populates="owner")
+
     @staticmethod
     def authenticate(api_key: str):
-        print(api_key)
         try:  # Get user from speedrun.com using the API key
             user_id: Union[str, None] = get_file(
                 "https://www.speedrun.com/api/v1/profile", {"X-API-Key": api_key})["data"]["id"]
-            print("user_id = ", user_id)
+            print("logging in user_id =", user_id)
         except SpeedrunComError:
             print("\nError: Unknown\n{}".format(traceback.format_exc()))
             return None
@@ -115,13 +116,35 @@ class Player(db.Model, UserMixin):
                        friend_id=friend_id))
         return db.engine.execute(sql)
 
-    def unfriend(self, friend_id: str) -> Union[bool]:
+    def unfriend(self, friend_id: str) -> bool:
         sql = text("DELETE FROM friend "
                    "WHERE user_id = '{user_id}' AND friend_id = '{friend_id}';".format(
                        user_id=self.user_id,
                        friend_id=friend_id))
         return db.engine.execute(sql)
 
+    def get_schedules(self) -> List[Schedule]:
+        return Schedule.query.filter(Schedule.owner_id == self.user_id).all()
+
     # Override from UserMixin for Flask-Login
     def get_id(self):
         return self.user_id
+
+
+class Schedule(db.Model):
+    __tablename__ = "schedule"
+
+    schedule_id: int = db.Column(db.Integer, primary_key=True)
+    name: str = db.Column(db.String(128), nullable=False, default='')
+    owner_id: int = db.Column(db.String(8), db.ForeignKey('player.user_id'), nullable=False)
+    registration_key: str = db.Column(db.String(36), nullable=False)
+    is_active: bool = db.Column(db.Boolean, nullable=False, default=True)
+
+    owner = db.relationship("Player", back_populates="schedules")
+
+    def to_dto(self) -> dict[str, Union[str, int, bool]]:
+        return {
+            'id': self.schedule_id,
+            'name': self.name,
+            'active': self.is_active,
+        }
