@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, TextField, Link } from '@material-ui/core';
+import { Button, TextField, Link, Container } from '@material-ui/core';
 
 import SrcApiKeyLink from './SrcApiKeyLink'
 import User from '../models/User';
@@ -30,7 +30,7 @@ const LoginForm: React.FC<loginFormProps> = (props: loginFormProps) => {
         props.setCurrentUser(res.user);
       })
 
-  return <>
+  return <Container className='login-form-container'>
     <img src={`${process.env.REACT_APP_BASE_URL}/assets/images/favicon.ico`} alt='logo' />
     <div className='flex'>
       <TextField
@@ -48,18 +48,18 @@ const LoginForm: React.FC<loginFormProps> = (props: loginFormProps) => {
       >What's my key?</Link>
     </div>
     <Button variant='contained' color='primary' onClick={() => login(srcApiKeyInput)}>Access my schedules</Button>
-    <p>
+    <span className="paragraph">
       Don't trust the above link because SRC's api portal looks sketchy?
       <br />Fair enough, you can also access your api key through
       <br /> <SrcApiKeyLink></SrcApiKeyLink>
-    </p>
+    </span>
     <label>Why do we need your API key?</label>
     <p>
       By using your key, it's possible to authenticate you to speedrun.com without ever asking for a password!
       <br />If something ever goes wrong or you believe someone is abusing your key, you can change it easily at any time.
       <br /> Once logged in, you can manage your schedules, which includes creating, modifying and sharing them!
     </p>
-  </>
+  </Container>
 }
 
 export default LoginForm;

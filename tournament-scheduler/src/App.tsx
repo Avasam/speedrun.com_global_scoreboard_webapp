@@ -7,7 +7,7 @@ import './App.css';
 import { Button, AppBar, Toolbar, Typography, IconButton } from '@material-ui/core';
 
 const getCurrentUser = () =>
-  fetch(`${process.env.REACT_APP_BASE_URL}/api/users/current`, {
+  fetch(`${window.process.env.REACT_APP_BASE_URL}/api/users/current`, {
     method: 'GET',
     headers: {
       'Accept': 'application/json',
@@ -40,7 +40,7 @@ const App: React.FC = () => {
         {currentUser
           ? <>
             <IconButton>
-              <img className='logo' src={`${process.env.REACT_APP_BASE_URL}/assets/images/favicon.ico`} alt='logo' />
+              <img className='logo' src={`${window.process.env.REACT_APP_BASE_URL}/assets/images/favicon.ico`} alt='logo' />
             </IconButton>
             <Typography variant="h4">Tournament Scheduler</Typography>
             <Button variant='contained' color='secondary' onClick={() => logout(setCurrentUser)}>Logout</Button>

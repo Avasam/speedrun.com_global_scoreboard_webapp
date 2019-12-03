@@ -147,4 +147,5 @@ class Schedule(db.Model):
             'id': self.schedule_id,
             'name': self.name,
             'active': self.is_active,
+            'registrationKey': self.registration_key
         }

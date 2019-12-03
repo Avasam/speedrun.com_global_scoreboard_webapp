@@ -1,19 +1,16 @@
 .App {
+  display: flex;
+  flex-direction: column;
   text-align: center;
   background-color: #282c34;
-  min-height: 100vh;
+  height: 100vh;
   font-size: 16px;
   color: white;
 }
-.App, .main {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-}
+
 .main {
-  flex-grow: 1;
+  flex: 1;
+  overflow: auto;
 }
 
 .App .MuiTextField-root {
@@ -26,6 +23,14 @@ label {
 
 a {
   color: #09d3ac;
+}
+
+p, .paragraph {
+  display: block;
+  margin-block-start: 1em;
+  margin-block-end: 1em;
+  margin-inline-start: 0px;
+  margin-inline-end: 0px;
 }
 
 .MuiToolbar-root {
