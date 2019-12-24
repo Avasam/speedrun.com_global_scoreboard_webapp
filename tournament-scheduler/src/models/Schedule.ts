@@ -21,3 +21,11 @@ export class Schedule {
     this.registrationKey = dto.registrationKey
   }
 }
+
+export const createDefaultSchedule = () =>
+  new Schedule({
+    id: -1,
+    name: 'New Schedule',
+    active: false,
+    registrationKey: '',
+  })

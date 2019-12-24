@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 
-import { Schedule, ScheduleDto } from '../models/Schedule';
+import { createDefaultSchedule, Schedule, ScheduleDto } from '../models/Schedule';
 import User from '../models/User';
 import { Card, CardContent, CardActions, Button, makeStyles, Theme, Container } from '@material-ui/core';
 import { Styles } from '@material-ui/core/styles/withStyles';
+import { ScheduleWizard } from './ScheduleWizard'
 
 const getSchedules = () =>
   fetch(`${window.process.env.REACT_APP_BASE_URL}/api/schedules`, {
@@ -22,7 +23,12 @@ type ScheduleManagementProps = {
 }
 
 const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleManagementProps) => {
-  const [schedules, setSchedules] = useState<Schedule[] | undefined>(undefined);
+  const [schedules, setSchedules] = useState<Schedule[] | undefined>(undefined)
+  const [currentSchedule, setCurrentSchedule] = useState<Schedule | undefined>(undefined)
+
+  const editSchedule = (schedule?: Schedule) => {
+    setCurrentSchedule(schedule)
+  }
 
   useEffect(() => {
     getSchedules()
@@ -52,20 +58,46 @@ const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleMa
     )
   }
 
-  return <Container>
-    <div style={{ marginTop: styles.card.marginTop }}>This is where the user '{props.currentUser.name}' can see and edit their schedule forms</div>
-    {schedules && schedules.map(schedule =>
-      <Card className={classes.card} key={schedule.id}>
-        <CardContent>
-          {schedule.name}
-        </CardContent>
-        <CardActions className={classes.cardActions}>
-          <Button size="small">Edit</Button>
-          <Button size="small" onClick={() => copyToClipboard(`${schedule.registrationLink}`)}>Copy registration link</Button>
-        </CardActions>
-      </Card>
-    )}
-  </Container>
+  return currentSchedule
+    ? <ScheduleWizard
+      schedule={currentSchedule}
+      onSave={() => { }}
+      onCancel={() => setCurrentSchedule(undefined)}
+    />
+    : <Container>
+      <div style={{ marginTop: styles.card.marginTop }}>
+        This is where the user '{props.currentUser.name}' can see and edit their schedule forms
+      </div>
+
+      <Button
+        style={{ marginTop: styles.card.marginTop, width: styles.card.width }}
+        variant="contained"
+        color="primary"
+        onClick={() => editSchedule(createDefaultSchedule())}
+      >
+        Create new Schedule
+        </Button>
+      {schedules && schedules.map(schedule =>
+        <Card className={classes.card} key={schedule.id}>
+          <CardContent>
+            {schedule.name}
+          </CardContent>
+          <CardActions className={classes.cardActions}>
+            <Button
+              size="small"
+              onClick={() => editSchedule(schedule)}>
+              Edit
+            </Button>
+            <Button
+              size="small"
+              onClick={() => copyToClipboard(`${schedule.registrationLink}`)}
+            >
+              Copy registration link
+            </Button>
+          </CardActions>
+        </Card>
+      )}
+    </Container>
 }
 
 export default ScheduleManagement;
