@@ -1,0 +1,15 @@
+.timeslot-row {
+  display: flex;
+  align-items: baseline;
+}
+
+.timeslot-row .MuiTextField-root {
+  flex: 1;
+  margin: 12px 0;
+}
+
+.timeslot-row .MuiIconButton-label {
+  height: 14px;
+  width: 14px;
+  color: red;
+}

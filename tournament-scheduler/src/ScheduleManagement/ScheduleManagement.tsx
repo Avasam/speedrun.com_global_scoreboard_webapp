@@ -30,6 +30,11 @@ const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleMa
     setCurrentSchedule(schedule)
   }
 
+  const handleSave = (schedule: Schedule) => {
+    console.log(schedule)
+    setCurrentSchedule(undefined)
+  }
+
   useEffect(() => {
     getSchedules()
       .then((res: Schedule[] | undefined) => {
@@ -61,7 +66,7 @@ const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleMa
   return currentSchedule
     ? <ScheduleWizard
       schedule={currentSchedule}
-      onSave={() => { }}
+      onSave={handleSave}
       onCancel={() => setCurrentSchedule(undefined)}
     />
     : <Container>
@@ -85,7 +90,8 @@ const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleMa
           <CardActions className={classes.cardActions}>
             <Button
               size="small"
-              onClick={() => editSchedule(schedule)}>
+              onClick={() => editSchedule(schedule)}
+            >
               Edit
             </Button>
             <Button

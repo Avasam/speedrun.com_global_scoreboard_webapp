@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { DateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/moment';
 
 import { Schedule } from '../models/Schedule';
-import { Card, CardContent, CardActions, Button, Checkbox, TextField, FormGroup, FormControlLabel } from '@material-ui/core';
+import './ScheduleWizard.css'
+import { Card, CardContent, CardActions, Button, Checkbox, TextField, FormGroup, FormControlLabel, IconButton } from '@material-ui/core';
+import { Moment } from 'moment';
 
 type ScheduleManagementProps = {
   schedule: Schedule
@@ -12,34 +14,91 @@ type ScheduleManagementProps = {
 }
 
 export const ScheduleWizard: React.FC<ScheduleManagementProps> = (props: ScheduleManagementProps) => {
+  const [schedule, setSchedule] = useState(props.schedule)
+
+  const editTimeSlot = (date: Moment | null, index: number) => {
+    if (!date) return
+    schedule.timeSlots[index].dateTime = date.toDate()
+    setSchedule({
+      ...schedule,
+      registrationLink: schedule.registrationLink,
+    })
+  }
+
+  const addNewTimeSlot = () => {
+    schedule.timeSlots.push({ dateTime: new Date() })
+    setSchedule({
+      ...schedule,
+      registrationLink: schedule.registrationLink,
+    })
+  }
+
+  const removeTimeSlot = (index: number) => {
+    schedule.timeSlots.splice(index, 1)
+    setSchedule({
+      ...schedule,
+      registrationLink: schedule.registrationLink,
+    })
+  }
+
   return <Card>
     <CardContent>
       <FormGroup>
-        <TextField label="Name" value={props.schedule.name} />
+        <TextField
+          label={`Name (${props.schedule.name})`}
+          value={schedule.name}
+          onChange={event => setSchedule({
+            ...schedule,
+            registrationLink: schedule.registrationLink,
+            name: event.target.value,
+          })}
+        />
         <FormControlLabel
+          label="Active"
           control={
             <Checkbox
-              checked={props.schedule.active}
-              value="active"
+              checked={schedule.active}
+              onChange={event => setSchedule({
+                ...schedule,
+                registrationLink: schedule.registrationLink,
+                active: event.target.checked,
+              })}
               color="primary" />
           }
-          label="Active"
-
         />
-        <MuiPickersUtilsProvider utils={DateFnsUtils}>
-          <DateTimePicker value={new Date()} onChange={() => { }} />
-        </MuiPickersUtilsProvider>
+
+        <Button style={{ width: 'fit-content' }} variant="contained" color='primary' onClick={addNewTimeSlot}>
+          Add a time slot
+        </Button>
+        {schedule.timeSlots.map((timeSlot, index) =>
+          <div className="timeslot-row">
+            <MuiPickersUtilsProvider utils={DateFnsUtils} key={`date-time-picker${index}`}>
+              <DateTimePicker value={timeSlot.dateTime} onChange={date => editTimeSlot(date, index)} />
+            </MuiPickersUtilsProvider>
+            {schedule.timeSlots.length > 1 &&
+              <IconButton
+                color="secondary"
+                aria-label="remove timeslot"
+                component="button"
+                onClick={() => removeTimeSlot(index)}
+              >
+                &times;
+              </IconButton>
+            }
+          </div>
+        )}
       </FormGroup>
     </CardContent>
     <CardActions>
       <Button
         size="small"
-        onClick={props.onCancel}>
+        onClick={props.onCancel}
+      >
         Cancel
     </Button>
       <Button
         size="small"
-        onClick={() => props.onSave(props.schedule)}
+        onClick={() => props.onSave(schedule)}
       >
         Save
     </Button>
