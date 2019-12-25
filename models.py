@@ -28,6 +28,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
 from typing import List, Union
 from utils import get_file, SpeedrunComError
+import uuid
 import traceback
 
 db = SQLAlchemy()
@@ -125,6 +126,26 @@ class Player(db.Model, UserMixin):
 
     def get_schedules(self) -> List[Schedule]:
         return Schedule.query.filter(Schedule.owner_id == self.user_id).all()
+
+    def create_schedule(self, name: str, is_active: bool) -> int:
+        new_schedule = Schedule(
+            name=name,
+            owner_id=self.user_id,
+            registration_key=str(uuid.uuid4()),
+            is_active=is_active)
+        db.session.add(new_schedule)
+        db.session.commit()
+        return new_schedule.schedule_id
+
+    def update_schedule(self, schedule_id: int, name: str, is_active: bool) -> int:
+        raise NotImplementedError
+        updated_schedule = Schedule(
+            schedule_id=schedule_id,
+            name=name,
+            owner_id=self.user_id,
+            registration_key=str(uuid.uuid4()),
+            is_active=is_active)
+        return updated_schedule.schedule_id
 
     # Override from UserMixin for Flask-Login
     def get_id(self):

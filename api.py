@@ -25,6 +25,7 @@ def authenthication_required(f):
         }
 
         if len(auth_headers) != 2:
+            print(auth_headers)
             return jsonify(invalid_msg), 401
 
         try:
@@ -34,9 +35,10 @@ def authenthication_required(f):
             if not player:
                 raise RuntimeError('User not found')
             return f(player, *args, **kwargs)
-        except jwt.ExpiredSignatureError:
+        except jwt.ExpiredSignatureError as e:
+            print(e)
             return jsonify(expired_msg), 401
-        except (jwt.InvalidTokenError, Exception) as e:
+        except jwt.InvalidTokenError as e:
             print(e)
             return jsonify(invalid_msg), 401
 
@@ -50,12 +52,6 @@ def map_to_dto(dto_mappable_object_list) -> List[Dict[str, Union[str, bool, int]
 
 
 api = Blueprint('api', __name__)
-
-
-@api.route('/hello-world', methods=('POST', 'GET'))
-def hello_world():
-    print('something')
-    return 'Hello World!'
 
 
 @api.route('/login', methods=('POST',))
@@ -95,7 +91,17 @@ def get_all_schedules(current_user: Player):
     return jsonify(map_to_dto(current_user.get_schedules()))
 
 
-@api.route('/someroute', methods=('POST',))
+@api.route('/schedules', methods=('POST',))
 @authenthication_required
-def some_method(current_user: Player):
-    print('This is the current user', current_user)
+def create_schedule(current_user: Player):
+    data: Dict[str, str] = request.get_json()
+    try:
+        name = data['name']
+    except KeyError:
+        return jsonify({'message': 'name has to be defined', 'authenticated': True}), 400
+    try:
+        is_active = data['active'] is True
+    except KeyError:
+        return jsonify({'message': 'isActive can\'t be null', 'authenticated': True}), 400
+
+    return str(current_user.create_schedule(name, is_active))

@@ -1,6 +1,7 @@
 from requests import Session
 from typing import Dict, Any
 from time import sleep
+from typing import Optional
 import json
 import simplejson
 import requests
@@ -73,3 +74,11 @@ def get_file(p_url: str, p_headers: Dict[str, Any] = None) -> dict:
 
             else:  # No error
                 return json_data
+
+
+def parse_str_to_bool(string_to_parse: Optional[str]) -> bool:
+    return string_to_parse is not None and string_to_parse.lower() == 'true'
+
+
+def parse_str_to_nullable_bool(string_to_parse: Optional[str]) -> Optional[bool]:
+    return None if string_to_parse is None else string_to_parse.lower() == 'true'

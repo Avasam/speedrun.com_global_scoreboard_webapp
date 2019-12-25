@@ -72,8 +72,8 @@ export const ScheduleWizard: React.FC<ScheduleManagementProps> = (props: Schedul
             Add a time slot
           </Button>
           {schedule.timeSlots.map((timeSlot, index) =>
-            <div className="timeslot-row">
-              <MuiPickersUtilsProvider utils={DateFnsUtils} key={`date-time-picker${index}`}>
+            <div className="timeslot-row" key={`date-time-picker${index}`}>
+              <MuiPickersUtilsProvider utils={DateFnsUtils}>
                 <DateTimePicker value={timeSlot.dateTime} onChange={date => editTimeSlot(date, index)} />
               </MuiPickersUtilsProvider>
               {schedule.timeSlots.length > 1 &&

@@ -14,9 +14,39 @@ const getSchedules = () =>
       'Content-Type': 'application/json',
       'Authorization': `Bearer: ${localStorage.getItem('jwtToken')}`,
     },
-  }).then(res =>
-    res.json().then((scheduleDtos: ScheduleDto[] | undefined) =>
-      scheduleDtos?.map(scheduleDto => new Schedule(scheduleDto))))
+  })
+    .then(res => res.status >= 400 && res.status < 600
+      ? Promise.reject(Error(res.status.toString()))
+      : res)
+    .then(res =>
+      res.json().then((scheduleDtos: ScheduleDto[] | undefined) =>
+        scheduleDtos?.map(scheduleDto => new Schedule(scheduleDto))))
+
+const postSchedules = (schedule: ScheduleDto) =>
+  fetch(`${window.process.env.REACT_APP_BASE_URL}/api/schedules`, {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer: ${localStorage.getItem('jwtToken')}`,
+    },
+    body: JSON.stringify(schedule),
+  })
+    .then(res => res.status >= 400 && res.status < 600
+      ? Promise.reject(Error(res.status.toString()))
+      : res)
+    .then(res => res.json().then((_newScheduleId: number) => { }))
+
+const putSchedule = (schedule: ScheduleDto) =>
+  fetch(`${window.process.env.REACT_APP_BASE_URL}/api/schedules/${schedule.id}`, {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer: ${localStorage.getItem('jwtToken')}`,
+    },
+    body: JSON.stringify(schedule),
+  }).then(res => res.json().then((_newScheduleId: number) => { }))
 
 type ScheduleManagementProps = {
   currentUser: User
@@ -30,9 +60,13 @@ const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleMa
     setCurrentSchedule(schedule)
   }
 
-  const handleSave = (schedule: Schedule) => {
-    console.log(schedule)
-    setCurrentSchedule(undefined)
+  const handleSave = (schedule: ScheduleDto) => {
+    const savePromise = schedule.id === -1
+      ? postSchedules(schedule)
+      : putSchedule(schedule)
+    savePromise
+      .then(() => { console.log('test'); setCurrentSchedule(undefined) })
+      .catch(console.error)
   }
 
   useEffect(() => {
@@ -71,7 +105,7 @@ const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleMa
     />
     : <Container>
       <div>
-        Welcome '{props.currentUser.name}' ! This is where you can manage schedule forms
+        Welcome '{props.currentUser.name}' ! This is where you can manage your schedule forms
       </div>
 
       <Button
