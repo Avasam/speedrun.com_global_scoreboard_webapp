@@ -4,7 +4,7 @@ import DateFnsUtils from '@date-io/moment';
 
 import { Schedule } from '../models/Schedule';
 import './ScheduleWizard.css'
-import { Card, CardContent, CardActions, Button, Checkbox, TextField, FormGroup, FormControlLabel, IconButton } from '@material-ui/core';
+import { Card, CardContent, CardActions, Button, Checkbox, TextField, FormGroup, FormControlLabel, IconButton, Container } from '@material-ui/core';
 import { Moment } from 'moment';
 
 type ScheduleManagementProps = {
@@ -41,67 +41,70 @@ export const ScheduleWizard: React.FC<ScheduleManagementProps> = (props: Schedul
     })
   }
 
-  return <Card>
-    <CardContent>
-      <FormGroup>
-        <TextField
-          label={`Name (${props.schedule.name})`}
-          value={schedule.name}
-          onChange={event => setSchedule({
-            ...schedule,
-            registrationLink: schedule.registrationLink,
-            name: event.target.value,
-          })}
-        />
-        <FormControlLabel
-          label="Active"
-          control={
-            <Checkbox
-              checked={schedule.active}
-              onChange={event => setSchedule({
-                ...schedule,
-                registrationLink: schedule.registrationLink,
-                active: event.target.checked,
-              })}
-              color="primary" />
-          }
-        />
-
-        <Button style={{ width: 'fit-content' }} variant="contained" color='primary' onClick={addNewTimeSlot}>
-          Add a time slot
-        </Button>
-        {schedule.timeSlots.map((timeSlot, index) =>
-          <div className="timeslot-row">
-            <MuiPickersUtilsProvider utils={DateFnsUtils} key={`date-time-picker${index}`}>
-              <DateTimePicker value={timeSlot.dateTime} onChange={date => editTimeSlot(date, index)} />
-            </MuiPickersUtilsProvider>
-            {schedule.timeSlots.length > 1 &&
-              <IconButton
-                color="secondary"
-                aria-label="remove timeslot"
-                component="button"
-                onClick={() => removeTimeSlot(index)}
-              >
-                &times;
-              </IconButton>
+  return <Container>
+    <Card>
+      <CardContent>
+        <FormGroup>
+          <TextField
+            label={`Name (${props.schedule.name})`}
+            value={schedule.name}
+            onChange={event => setSchedule({
+              ...schedule,
+              registrationLink: schedule.registrationLink,
+              name: event.target.value,
+            })}
+          />
+          <FormControlLabel
+            label="Active"
+            control={
+              <Checkbox
+                checked={schedule.active}
+                onChange={event => setSchedule({
+                  ...schedule,
+                  registrationLink: schedule.registrationLink,
+                  active: event.target.checked,
+                })}
+                color="primary" />
             }
-          </div>
-        )}
-      </FormGroup>
-    </CardContent>
-    <CardActions>
-      <Button
-        size="small"
-        onClick={props.onCancel}
-      >
-        Cancel
-    </Button>
-      <Button
-        size="small"
-        onClick={() => props.onSave(schedule)}
-      >
-        Save
-    </Button>
-    </CardActions>
-  </Card>
+          />
+
+          <Button style={{ width: 'fit-content' }} variant="contained" color='primary' onClick={addNewTimeSlot}>
+            Add a time slot
+          </Button>
+          {schedule.timeSlots.map((timeSlot, index) =>
+            <div className="timeslot-row">
+              <MuiPickersUtilsProvider utils={DateFnsUtils} key={`date-time-picker${index}`}>
+                <DateTimePicker value={timeSlot.dateTime} onChange={date => editTimeSlot(date, index)} />
+              </MuiPickersUtilsProvider>
+              {schedule.timeSlots.length > 1 &&
+                <IconButton
+                  color="secondary"
+                  aria-label="remove timeslot"
+                  component="button"
+                  onClick={() => removeTimeSlot(index)}
+                >
+                  &times;
+                </IconButton>
+              }
+            </div>
+          )}
+        </FormGroup>
+      </CardContent>
+      <CardActions>
+        <Button
+          size="small"
+          onClick={props.onCancel}
+        >
+          Cancel
+      </Button>
+        <Button
+          size="small"
+          onClick={() => props.onSave(schedule)}
+        >
+          Save
+      </Button>
+      </CardActions>
+    </Card>
+  </Container>
+
 }

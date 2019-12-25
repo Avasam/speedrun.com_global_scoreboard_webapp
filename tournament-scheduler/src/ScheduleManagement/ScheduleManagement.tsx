@@ -70,8 +70,8 @@ const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleMa
       onCancel={() => setCurrentSchedule(undefined)}
     />
     : <Container>
-      <div style={{ marginTop: styles.card.marginTop }}>
-        This is where the user '{props.currentUser.name}' can see and edit their schedule forms
+      <div>
+        Welcome '{props.currentUser.name}' ! This is where you can manage schedule forms
       </div>
 
       <Button
