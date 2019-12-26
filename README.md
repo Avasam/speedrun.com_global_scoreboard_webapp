@@ -28,7 +28,7 @@ Runs w/o video/image verifications are not considered AND not counted.
 Get yourself a [MySQL server](https://dev.mysql.com/downloads/mysql/) (PythonAnywhere uses version 5.6.40)  
 Install [Python](https://www.python.org/downloads/) 3.6+  
 Install PIP (this should come bundled with python 3.4+)  
-Run this command through the python interpreter (or prepend with `py -m` in a terminal): `pip install flask flask_cors flask_login flask_sqlalchemy sqlalchemy httplib2 simplejson mysql-connector requests`  
+Run this command through the python interpreter (or prepend with `py -m` in a terminal): `pip install flask flask_cors flask_login flask_sqlalchemy sqlalchemy httplib2 simplejson mysql-connector requests pyjwt`  
 Copy `configs.template.py` as `configs.py` and update the file as needed.  
 If needed, copy `.env.development` as `.env.development.local` and update the file.  
 
