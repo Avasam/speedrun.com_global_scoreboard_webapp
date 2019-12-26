@@ -26,7 +26,7 @@ export const ScheduleWizard: React.FC<ScheduleManagementProps> = (props: Schedul
   }
 
   const addNewTimeSlot = () => {
-    schedule.timeSlots.push({ dateTime: new Date() })
+    schedule.timeSlots.push({ id: -1, dateTime: new Date() })
     setSchedule({
       ...schedule,
       registrationLink: schedule.registrationLink,

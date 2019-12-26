@@ -1,6 +1,7 @@
 CREATE TABLE `speedrun_global_leaderboard`.`timeslot` (
   `timeslot_id` INT NOT NULL AUTO_INCREMENT,
   `schedule_id` INT NOT NULL,
+  `date_time` DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`timeslot_id`),
   INDEX `schedule_id_fk_idx` (`schedule_id` ASC),
   UNIQUE INDEX `timeslot_id_UNIQUE` (`timeslot_id` ASC),

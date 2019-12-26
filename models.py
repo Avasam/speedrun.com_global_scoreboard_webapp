@@ -22,6 +22,7 @@
 # samuel.06@hotmail.com
 ##########################################################################
 from __future__ import annotations
+from datetime import datetime
 from flask_login import login_user
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
@@ -127,13 +128,20 @@ class Player(db.Model, UserMixin):
     def get_schedules(self) -> List[Schedule]:
         return Schedule.query.filter(Schedule.owner_id == self.user_id).all()
 
-    def create_schedule(self, name: str, is_active: bool) -> int:
+    def create_schedule(self, name: str, is_active: bool, time_slots: List[dict[str, Union[str, int]]]) -> int:
         new_schedule = Schedule(
             name=name,
             owner_id=self.user_id,
             registration_key=str(uuid.uuid4()),
             is_active=is_active)
         db.session.add(new_schedule)
+        db.session.flush()
+
+        new_time_slots = [TimeSlot(
+            schedule_id=new_schedule.schedule_id,
+            date_time=time_slot['dateTime']) for time_slot in time_slots]
+        db.session.bulk_save_objects(new_time_slots)
+
         db.session.commit()
         return new_schedule.schedule_id
 
@@ -162,6 +170,7 @@ class Schedule(db.Model):
     is_active: bool = db.Column(db.Boolean, nullable=False, default=True)
 
     owner = db.relationship("Player", back_populates="schedules")
+    timeslots = db.relationship("TimeSlot", back_populates="schedule")
 
     def to_dto(self) -> dict[str, Union[str, int, bool]]:
         return {
@@ -169,4 +178,19 @@ class Schedule(db.Model):
             'name': self.name,
             'active': self.is_active,
             'registrationKey': self.registration_key
+        }
+
+class TimeSlot(db.Model):
+    __tablename__ = "timeslot"
+
+    timeslot_id: int = db.Column(db.Integer, primary_key=True)
+    schedule_id: int = db.Column(db.String(8), db.ForeignKey('schedule.schedule_id'), nullable=False)
+    date_time: datetime = db.Column(db.DateTime, nullable=False)
+
+    schedule = db.relationship("Schedule", back_populates="timeslots")
+
+    def to_dto(self) -> dict[str, Union[str, int, bool]]:
+        return {
+            'id': self.schedule_id,
+            'dateTime': self.date_time,
         }

@@ -1,9 +1,11 @@
+import { TimeSlot, TimeSlotDto } from './TimeSlot'
+
 export interface ScheduleDto {
   id: number
   name: string
   active: boolean
   registrationKey: string
-  timeSlots: TimeSlot[]
+  timeSlots: TimeSlotDto[]
 }
 
 export class Schedule {
@@ -31,9 +33,8 @@ export const createDefaultSchedule = () =>
     name: 'New Schedule',
     active: false,
     registrationKey: '',
-    timeSlots: [{ dateTime: new Date() }],
+    timeSlots: [{
+      id: -1,
+      dateTime: new Date(),
+    }],
   })
-
-export interface TimeSlot {
-  dateTime: Date
-}
