@@ -6,7 +6,14 @@
     80,
     120
   ],
+  "editor.detectIndentation": false,
   "editor.tabSize": 2,
+  "[python]": {
+    "editor.tabSize": 4,
+  },
+  "[py]": {
+    "editor.tabSize": 4,
+  },
   "editor.formatOnSave": true,
   "javascript.preferences.quoteStyle": "single",
   "typescript.preferences.quoteStyle": "single",
@@ -14,6 +21,7 @@
   "editor.codeActionsOnSave": {
     "source.fixAll": true,
     "source.fixAll.tslint": true,
+    "source.fixAll.markdownlint": true
   },
   "python.linting.pylintEnabled": false,
   "python.linting.flake8Enabled": true,

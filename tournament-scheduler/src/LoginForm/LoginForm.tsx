@@ -13,7 +13,7 @@ const LoginForm: React.FC<loginFormProps> = (props: loginFormProps) => {
   const [srcApiKeyInput, setSrcApiKeyInput] = useState('');
 
   const login = (srcApiKey: string) =>
-    fetch(`${process.env.REACT_APP_BASE_URL}/api/login`, {
+    fetch(`${window.process.env.REACT_APP_BASE_URL}/api/login`, {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -31,7 +31,7 @@ const LoginForm: React.FC<loginFormProps> = (props: loginFormProps) => {
       })
 
   return <Container className='login-form-container'>
-    <img src={`${process.env.REACT_APP_BASE_URL}/assets/images/favicon.ico`} alt='logo' />
+    <img src={`${window.process.env.REACT_APP_BASE_URL}/assets/images/favicon.ico`} alt='logo' />
     <div className='flex'>
       <TextField
         id='src-api-key'

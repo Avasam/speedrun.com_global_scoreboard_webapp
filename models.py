@@ -22,14 +22,18 @@
 # samuel.06@hotmail.com
 ##########################################################################
 from __future__ import annotations
+from datetime import datetime
 from flask_login import login_user
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
-from typing import List, Union
+from typing import Dict, List, Union
 from utils import get_file, SpeedrunComError
 import uuid
 import traceback
+
+def map_to_dto(dto_mappable_object_list) -> List[Dict[str, Union[str, bool, int]]]:
+    return [dto_mappable_object.to_dto() for dto_mappable_object in dto_mappable_object_list]
 
 db = SQLAlchemy()
 
@@ -127,13 +131,21 @@ class Player(db.Model, UserMixin):
     def get_schedules(self) -> List[Schedule]:
         return Schedule.query.filter(Schedule.owner_id == self.user_id).all()
 
-    def create_schedule(self, name: str, is_active: bool) -> int:
+    def create_schedule(self, name: str, is_active: bool, time_slots: List[dict[str, Union[str, int]]]) -> int:
         new_schedule = Schedule(
             name=name,
             owner_id=self.user_id,
             registration_key=str(uuid.uuid4()),
             is_active=is_active)
         db.session.add(new_schedule)
+        db.session.flush()
+
+        new_time_slots = [TimeSlot(
+            schedule_id=new_schedule.schedule_id,
+            date_time=time_slot['dateTime'])
+            for time_slot in time_slots]
+        db.session.bulk_save_objects(new_time_slots)
+
         db.session.commit()
         return new_schedule.schedule_id
 
@@ -171,11 +183,30 @@ class Schedule(db.Model):
     is_active: bool = db.Column(db.Boolean, nullable=False, default=True)
 
     owner = db.relationship("Player", back_populates="schedules")
+    time_slots: List[TimeSlot] = db.relationship("TimeSlot", back_populates="schedule")
 
     def to_dto(self) -> dict[str, Union[str, int, bool]]:
         return {
             'id': self.schedule_id,
             'name': self.name,
             'active': self.is_active,
-            'registrationKey': self.registration_key
+            'registrationKey': self.registration_key,
+            'timeSlots': map_to_dto(self.time_slots),
+        }
+
+class TimeSlot(db.Model):
+    __tablename__ = "timeslot"
+
+    timeslot_id: int = db.Column(db.Integer, primary_key=True)
+    schedule_id: int = db.Column(db.String(8), db.ForeignKey('schedule.schedule_id'), nullable=False)
+    date_time: datetime = db.Column(db.DateTime, nullable=False)
+    available_spots: int = db.Column(db.Integer, nullable=False)
+
+    schedule = db.relationship("Schedule", back_populates="time_slots")
+
+    def to_dto(self) -> dict[str, Union[str, int, bool]]:
+        return {
+            'id': self.schedule_id,
+            'dateTime': self.date_time,
+            'availableSpots': self.available_spots,
         }

@@ -2,11 +2,11 @@
 api.py
 - provides the API endpoints for consuming and producing REST requests and responses
 """
-from models import Player
+from models import Player, map_to_dto
 from datetime import datetime, timedelta
 from flask import Blueprint, current_app, jsonify, request
 from functools import wraps
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Tuple, Union
 import jwt
 
 
@@ -45,18 +45,12 @@ def authenthication_required(f):
     return _verify
 
 
-def map_to_dto(dto_mappable_object_list) -> List[Dict[str, Union[str, bool, int]]]:
-    return list(map(
-        lambda dto_mappable_object: dto_mappable_object.to_dto(),
-        dto_mappable_object_list))
-
-
 api = Blueprint('api', __name__)
 
 
 @api.route('/login', methods=('POST',))
 def login():
-    data: Dict[str, str] = request.get_json()
+    data: Dict[str, ] = request.get_json()
     player = Player.authenticate(data['srcApiKey'])
 
     if not player:
@@ -91,20 +85,44 @@ def get_all_schedules(current_user: Player):
     return jsonify(map_to_dto(current_user.get_schedules()))
 
 
-@api.route('/schedules', methods=('POST',))
-@authenthication_required
-def create_schedule(current_user: Player):
-    data: Dict[str, str] = request.get_json()
+def validate_create_schedule(data: Dict[str, ]) -> Tuple[Optional[str], str, bool, List[Dict]]:
+    name = ""
+    is_active = False
+    time_slot = []
     try:
         name = data['name']
     except KeyError:
-        return jsonify({'message': 'name has to be defined', 'authenticated': True}), 400
+        return 'name has to be defined', name, is_active, time_slot
     try:
         is_active = data['active'] is True
     except KeyError:
-        return jsonify({'message': 'active can\'t be null', 'authenticated': True}), 400
+        return 'active has to be defined', name, is_active, time_slot
+    try:
+        time_slots = data['timeSlots']
+    except KeyError:
+        return 'timeSlots has to be defined', name, is_active, time_slot
+    for time_slot in time_slots:
+        try:
+            time_slot['dateTime']
+        except KeyError:
+            return 'timeSlots.dateTime has to be defined', name, is_active, time_slot
+        try:
+            time_slot['availableSpots']
+        except KeyError:
+            return 'timeSlots.availableSpots has to be defined', name, is_active, time_slot
+    return None, name, is_active, time_slots
 
-    return str(current_user.create_schedule(name, is_active))
+
+@api.route('/schedules', methods=('POST',))
+@authenthication_required
+def create_schedule(current_user: Player):
+    data: Dict[str, ] = request.get_json()
+
+    error_message, name, is_active, time_slots = validate_create_schedule(data)
+    if error_message is not None:
+        return jsonify({'message': error_message, 'authenticated': True}), 400
+
+    return str(current_user.create_schedule(name, is_active, time_slots))
 
 
 @api.route('/schedules/<id>', methods=('DELETE',))
