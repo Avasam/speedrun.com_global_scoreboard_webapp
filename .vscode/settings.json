@@ -27,5 +27,6 @@
     "--max-line-length=120"
   ],
   "//": "python.pythonPath has to be disabled because of false positives with Requests",
-  "python.pythonPath": ""
+  "python.pythonPath": "",
+  "typescript.tsdk": "./tournament-scheduler/node_modules/typescript/lib"
 }

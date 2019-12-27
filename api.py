@@ -102,6 +102,16 @@ def create_schedule(current_user: Player):
     try:
         is_active = data['active'] is True
     except KeyError:
-        return jsonify({'message': 'isActive can\'t be null', 'authenticated': True}), 400
+        return jsonify({'message': 'active can\'t be null', 'authenticated': True}), 400
 
     return str(current_user.create_schedule(name, is_active))
+
+
+@api.route('/schedules/<id>', methods=('DELETE',))
+@authenthication_required
+def delete_schedule(current_user: Player, id: str):
+    try:
+        schedule_id = int(id)
+    except ValueError:
+        return jsonify({'message': 'id is not a valid number', 'authenticated': True}), 400
+    return str(current_user.delete_schedule(schedule_id))

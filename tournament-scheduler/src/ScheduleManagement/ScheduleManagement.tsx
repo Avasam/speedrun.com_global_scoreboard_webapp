@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 import { createDefaultSchedule, Schedule, ScheduleDto } from '../models/Schedule';
 import User from '../models/User';
-import { Card, CardContent, CardActions, Button, makeStyles, Theme, Container } from '@material-ui/core';
+import { Card, CardContent, CardActions, Button, makeStyles, Theme, Container, IconButton } from '@material-ui/core';
 import { Styles } from '@material-ui/core/styles/withStyles';
 import { ScheduleWizard } from './ScheduleWizard'
 
@@ -35,18 +35,36 @@ const postSchedules = (schedule: ScheduleDto) =>
     .then(res => res.status >= 400 && res.status < 600
       ? Promise.reject(Error(res.status.toString()))
       : res)
-    .then(res => res.json().then((_newScheduleId: number) => { }))
+    .then(res => res.json())
 
 const putSchedule = (schedule: ScheduleDto) =>
   fetch(`${window.process.env.REACT_APP_BASE_URL}/api/schedules/${schedule.id}`, {
-    method: 'POST',
+    method: 'PUT',
     headers: {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
       'Authorization': `Bearer: ${localStorage.getItem('jwtToken')}`,
     },
     body: JSON.stringify(schedule),
-  }).then(res => res.json().then((_newScheduleId: number) => { }))
+  })
+    .then(res => res.status >= 400 && res.status < 600
+      ? Promise.reject(Error(res.status.toString()))
+      : res)
+    .then(res => res.json())
+
+const deleteSchedule = (schedule_id: number) =>
+  fetch(`${window.process.env.REACT_APP_BASE_URL}/api/schedules/${schedule_id}`, {
+    method: 'DELETE',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer: ${localStorage.getItem('jwtToken')}`,
+    },
+  })
+    .then(res => res.status >= 400 && res.status < 600
+      ? Promise.reject(Error(res.status.toString()))
+      : res)
+    .then(res => res.json())
 
 type ScheduleManagementProps = {
   currentUser: User
@@ -56,16 +74,20 @@ const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleMa
   const [schedules, setSchedules] = useState<Schedule[] | undefined>(undefined)
   const [currentSchedule, setCurrentSchedule] = useState<Schedule | undefined>(undefined)
 
-  const editSchedule = (schedule?: Schedule) => {
+  const editSchedule = (schedule?: Schedule) =>
     setCurrentSchedule(schedule)
-  }
+
+  const handleDelete = (schedule_id: number) =>
+    deleteSchedule(schedule_id)
+      .then(() => setSchedules(schedules?.filter(schedule => schedule.id !== schedule_id)))
+      .catch(console.error)
 
   const handleSave = (schedule: ScheduleDto) => {
     const savePromise = schedule.id === -1
       ? postSchedules(schedule)
       : putSchedule(schedule)
     savePromise
-      .then(() => { console.log('test'); setCurrentSchedule(undefined) })
+      .then(() => setCurrentSchedule(undefined))
       .catch(console.error)
   }
 
@@ -75,6 +97,7 @@ const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleMa
         console.log(res)
         setSchedules(res)
       })
+      .catch(console.error)
   }, [])
 
   const styles = {
@@ -119,7 +142,15 @@ const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleMa
       {schedules && schedules.map(schedule =>
         <Card className={classes.card} key={schedule.id}>
           <CardContent>
-            {schedule.name}
+            <span>{schedule.name}</span>
+            <IconButton
+              color="secondary"
+              aria-label="delete schedule"
+              component="button"
+              onClick={() => handleDelete(schedule.id)}
+            >
+              &times;
+              </IconButton>
           </CardContent>
           <CardActions className={classes.cardActions}>
             <Button

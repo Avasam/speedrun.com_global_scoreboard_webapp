@@ -147,6 +147,15 @@ class Player(db.Model, UserMixin):
             is_active=is_active)
         return updated_schedule.schedule_id
 
+    def delete_schedule(self, schedule_id: int) -> int:
+        try:
+            items = Schedule.query.filter(False).one()  # Schedule.schedule_id ==
+            schedule_id and Schedule.owner_id == self.user_id and
+        except sqlalchemy.orm.exc.NoResultFound:
+            print(items)
+        # .delete()
+        return None  # db.session.commit()
+
     # Override from UserMixin for Flask-Login
     def get_id(self):
         return self.user_id
