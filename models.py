@@ -26,14 +26,16 @@ from datetime import datetime
 from flask_login import login_user
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import text
-from typing import Dict, List, Union
+from sqlalchemy import orm, text
+from typing import Dict, List, Optional, Union
 from utils import get_file, SpeedrunComError
 import uuid
 import traceback
 
+
 def map_to_dto(dto_mappable_object_list) -> List[Dict[str, Union[str, bool, int]]]:
     return [dto_mappable_object.to_dto() for dto_mappable_object in dto_mappable_object_list]
+
 
 db = SQLAlchemy()
 
@@ -149,24 +151,33 @@ class Player(db.Model, UserMixin):
         db.session.commit()
         return new_schedule.schedule_id
 
-    def update_schedule(self, schedule_id: int, name: str, is_active: bool) -> int:
-        raise NotImplementedError
-        updated_schedule = Schedule(
-            schedule_id=schedule_id,
-            name=name,
-            owner_id=self.user_id,
-            registration_key=str(uuid.uuid4()),
-            is_active=is_active)
-        return updated_schedule.schedule_id
-
-    def delete_schedule(self, schedule_id: int) -> int:
+    def update_schedule(self, schedule_id: int, name: str, is_active: bool, time_slots: List[dict[str, Union[str, int]]]) -> int:
         try:
-            items = Schedule.query.filter(False).one()  # Schedule.schedule_id ==
-            schedule_id and Schedule.owner_id == self.user_id and
-        except sqlalchemy.orm.exc.NoResultFound:
-            print(items)
-        # .delete()
-        return None  # db.session.commit()
+            Schedule \
+                .query \
+                .filter(Schedule.schedule_id == schedule_id and Schedule.owner_id == self.user_id) \
+                .one() \
+                .update({
+                    Schedule.name: name,
+                    Schedule.is_active: is_active
+                })
+            # TODO : Update time slots
+        except orm.exc.NoResultFound:
+            return False
+        db.session.commit()
+        return True
+
+    def delete_schedule(self, schedule_id: int) -> bool:
+        try:
+            Schedule \
+                .query \
+                .filter(Schedule.schedule_id == schedule_id and Schedule.owner_id == self.user_id) \
+                .one() \
+                .delete()
+        except orm.exc.NoResultFound:
+            return False
+        db.session.commit()
+        return True
 
     # Override from UserMixin for Flask-Login
     def get_id(self):
@@ -185,7 +196,7 @@ class Schedule(db.Model):
     owner = db.relationship("Player", back_populates="schedules")
     time_slots: List[TimeSlot] = db.relationship("TimeSlot", back_populates="schedule")
 
-    def to_dto(self) -> dict[str, Union[str, int, bool]]:
+    def to_dto(self) -> dict[str, Union[str, int, bool, List[Dict[str, Union[str, bool, int]]]]]:
         return {
             'id': self.schedule_id,
             'name': self.name,
@@ -193,6 +204,7 @@ class Schedule(db.Model):
             'registrationKey': self.registration_key,
             'timeSlots': map_to_dto(self.time_slots),
         }
+
 
 class TimeSlot(db.Model):
     __tablename__ = "timeslot"
@@ -204,7 +216,7 @@ class TimeSlot(db.Model):
 
     schedule = db.relationship("Schedule", back_populates="time_slots")
 
-    def to_dto(self) -> dict[str, Union[str, int, bool]]:
+    def to_dto(self) -> dict[str, Union[str, int, bool, datetime]]:
         return {
             'id': self.schedule_id,
             'dateTime': self.date_time,

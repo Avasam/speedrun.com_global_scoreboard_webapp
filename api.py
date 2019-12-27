@@ -6,8 +6,12 @@ from models import Player, map_to_dto
 from datetime import datetime, timedelta
 from flask import Blueprint, current_app, jsonify, request
 from functools import wraps
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Union, Tuple
 import jwt
+
+# TODO: use and typecheck / typeguard JSONType
+__JSONTypeBase = Union[str, int, float, bool, None, Dict[str, Any], List[Any]]
+JSONType = Union[str, int, float, bool, None, Dict[str, __JSONTypeBase], List[__JSONTypeBase]]
 
 
 def authenthication_required(f):
@@ -85,7 +89,45 @@ def get_all_schedules(current_user: Player):
     return jsonify(map_to_dto(current_user.get_schedules()))
 
 
-def validate_create_schedule(data: Dict[str, ]) -> Tuple[Optional[str], str, bool, List[Dict]]:
+@api.route('/schedules', methods=('POST',))
+@authenthication_required
+def post_schedule(current_user: Player):
+    data: Dict[str, ] = request.get_json()
+
+    error_message, name, is_active, time_slots = __validate_create_schedule(data)
+    if error_message is not None:
+        return jsonify({'message': error_message, 'authenticated': True}), 400
+
+    return str(current_user.create_schedule(name, is_active, time_slots)), 201
+
+
+@api.route('/schedules/<id>', methods=('PUT',))
+@authenthication_required
+def put_schedule(current_user: Player, id: str):
+    data: Dict[str, ] = request.get_json()
+    try:
+        schedule_id = int(id)
+    except ValueError:
+        return jsonify({'message': '/id is not a valid number', 'authenticated': True}), 400
+    error_message, name, is_active, time_slots = __validate_create_schedule(data)
+    if error_message is not None:
+        return jsonify({'message': error_message, 'authenticated': True}), 400
+
+    return str(current_user.update_schedule(schedule_id, name, is_active, time_slots)), 201
+
+
+@api.route('/schedules/<id>', methods=('DELETE',))
+@authenthication_required
+def delete_schedule(current_user: Player, id: str):
+    try:
+        schedule_id = int(id)
+    except ValueError:
+        return jsonify({'message': '/id is not a valid number', 'authenticated': True}), 400
+    delete_success = current_user.delete_schedule(schedule_id)
+    return None, 204 if delete_success else 404
+
+
+def __validate_create_schedule(data: Dict[str, Any]) -> Tuple[Optional[str], str, bool, List[Dict]]:
     name = ""
     is_active = False
     time_slot = []
@@ -111,25 +153,3 @@ def validate_create_schedule(data: Dict[str, ]) -> Tuple[Optional[str], str, boo
         except KeyError:
             return 'timeSlots.availableSpots has to be defined', name, is_active, time_slot
     return None, name, is_active, time_slots
-
-
-@api.route('/schedules', methods=('POST',))
-@authenthication_required
-def create_schedule(current_user: Player):
-    data: Dict[str, ] = request.get_json()
-
-    error_message, name, is_active, time_slots = validate_create_schedule(data)
-    if error_message is not None:
-        return jsonify({'message': error_message, 'authenticated': True}), 400
-
-    return str(current_user.create_schedule(name, is_active, time_slots))
-
-
-@api.route('/schedules/<id>', methods=('DELETE',))
-@authenthication_required
-def delete_schedule(current_user: Player, id: str):
-    try:
-        schedule_id = int(id)
-    except ValueError:
-        return jsonify({'message': 'id is not a valid number', 'authenticated': True}), 400
-    return str(current_user.delete_schedule(schedule_id))
