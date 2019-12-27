@@ -149,7 +149,7 @@ def __validate_create_schedule(data: Dict[str, Any]) -> Tuple[Optional[str], str
         except KeyError:
             return 'timeSlots.dateTime has to be defined', name, is_active, time_slot
         try:
-            time_slot['availableSpots']
+            time_slot['maximumEntries']
         except KeyError:
-            return 'timeSlots.availableSpots has to be defined', name, is_active, time_slot
+            return 'timeSlots.maximumEntries has to be defined', name, is_active, time_slot
     return None, name, is_active, time_slots

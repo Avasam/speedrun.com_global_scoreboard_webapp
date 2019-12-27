@@ -36,6 +36,6 @@ export const createDefaultSchedule = () =>
     timeSlots: [{
       id: -1,
       dateTime: new Date(),
-      availableSpots: 1,
+      maximumEntries: 1,
     }],
   })

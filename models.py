@@ -169,13 +169,13 @@ class Player(db.Model, UserMixin):
 
     def delete_schedule(self, schedule_id: int) -> bool:
         try:
-            Schedule \
+            schedule_to_delete = Schedule \
                 .query \
                 .filter(Schedule.schedule_id == schedule_id and Schedule.owner_id == self.user_id) \
-                .one() \
-                .delete()
+                .one()
         except orm.exc.NoResultFound:
             return False
+        db.session.delete(schedule_to_delete)
         db.session.commit()
         return True
 
@@ -207,12 +207,12 @@ class Schedule(db.Model):
 
 
 class TimeSlot(db.Model):
-    __tablename__ = "timeslot"
+    __tablename__ = "time_slot"
 
-    timeslot_id: int = db.Column(db.Integer, primary_key=True)
+    time_slot_id: int = db.Column(db.Integer, primary_key=True)
     schedule_id: int = db.Column(db.String(8), db.ForeignKey('schedule.schedule_id'), nullable=False)
     date_time: datetime = db.Column(db.DateTime, nullable=False)
-    available_spots: int = db.Column(db.Integer, nullable=False)
+    maximum_entries: int = db.Column(db.Integer, nullable=False)
 
     schedule = db.relationship("Schedule", back_populates="time_slots")
 
@@ -220,5 +220,5 @@ class TimeSlot(db.Model):
         return {
             'id': self.schedule_id,
             'dateTime': self.date_time,
-            'availableSpots': self.available_spots,
+            'maximumEntries': self.maximum_entries,
         }

@@ -25,8 +25,8 @@ export const ScheduleWizard: React.FC<ScheduleManagementProps> = (props: Schedul
     })
   }
 
-  const editTimeSlotAvailableSpots = (availableSpots: number, index: number) => {
-    schedule.timeSlots[index].availableSpots = availableSpots
+  const editTimeSlotAvailableSpots = (maximumEntries: number, index: number) => {
+    schedule.timeSlots[index].maximumEntries = maximumEntries
     setSchedule({
       ...schedule,
       registrationLink: schedule.registrationLink,
@@ -34,7 +34,7 @@ export const ScheduleWizard: React.FC<ScheduleManagementProps> = (props: Schedul
   }
 
   const addNewTimeSlot = () => {
-    schedule.timeSlots.push({ id: -1, dateTime: new Date(), availableSpots: 1 })
+    schedule.timeSlots.push({ id: -1, dateTime: new Date(), maximumEntries: 1 })
     setSchedule({
       ...schedule,
       registrationLink: schedule.registrationLink,
