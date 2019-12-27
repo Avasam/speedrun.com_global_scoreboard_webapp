@@ -2,7 +2,7 @@
 api.py
 - provides the API endpoints for consuming and producing REST requests and responses
 """
-from models import Player
+from models import Player, map_to_dto
 from datetime import datetime, timedelta
 from flask import Blueprint, current_app, jsonify, request
 from functools import wraps
@@ -43,12 +43,6 @@ def authenthication_required(f):
             return jsonify(invalid_msg), 401
 
     return _verify
-
-
-def map_to_dto(dto_mappable_object_list) -> List[Dict[str, Union[str, bool, int]]]:
-    return list(map(
-        lambda dto_mappable_object: dto_mappable_object.to_dto(),
-        dto_mappable_object_list))
 
 
 api = Blueprint('api', __name__)

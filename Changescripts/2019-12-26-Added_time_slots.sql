@@ -1,4 +1,4 @@
-CREATE TABLE `speedrun_global_leaderboard`.`timeslot` (
+CREATE TABLE `speedrun_global_leaderboard`.`time_slot` (
   `timeslot_id` INT NOT NULL AUTO_INCREMENT,
   `schedule_id` INT NOT NULL,
   `date_time` DATETIME NULL DEFAULT CURRENT_TIMESTAMP,

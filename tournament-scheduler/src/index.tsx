@@ -13,6 +13,7 @@ if ((process.env.REACT_APP_BASE_URL?.includes('127.0.0.1') || process.env.REACT_
   && window.location.hostname !== '127.0.0.1'
 ) {
   window.process.env.REACT_APP_BASE_URL = `${window.location.protocol}//${window.location.hostname}:5000`
+  console.info(`REACT_APP_BASE_URL was changed from ${process.env.REACT_APP_BASE_URL} to ${window.process.env.REACT_APP_BASE_URL}`)
 }
 
 
