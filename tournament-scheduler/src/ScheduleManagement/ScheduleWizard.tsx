@@ -16,7 +16,7 @@ type ScheduleManagementProps = {
 export const ScheduleWizard: React.FC<ScheduleManagementProps> = (props: ScheduleManagementProps) => {
   const [schedule, setSchedule] = useState(props.schedule)
 
-  const editTimeSlot = (date: Moment | null, index: number) => {
+  const editTimeSlotDateTime = (date: Moment | null, index: number) => {
     if (!date) return
     schedule.timeSlots[index].dateTime = date.toDate()
     setSchedule({
@@ -25,8 +25,16 @@ export const ScheduleWizard: React.FC<ScheduleManagementProps> = (props: Schedul
     })
   }
 
+  const editTimeSlotAvailableSpots = (availableSpots: number, index: number) => {
+    schedule.timeSlots[index].availableSpots = availableSpots
+    setSchedule({
+      ...schedule,
+      registrationLink: schedule.registrationLink,
+    })
+  }
+
   const addNewTimeSlot = () => {
-    schedule.timeSlots.push({ id: -1, dateTime: new Date() })
+    schedule.timeSlots.push({ id: -1, dateTime: new Date(), availableSpots: 1 })
     setSchedule({
       ...schedule,
       registrationLink: schedule.registrationLink,
@@ -72,14 +80,24 @@ export const ScheduleWizard: React.FC<ScheduleManagementProps> = (props: Schedul
             Add a time slot
           </Button>
           {schedule.timeSlots.map((timeSlot, index) =>
-            <div className="timeslot-row" key={`date-time-picker${index}`}>
+            <div className="time-slot-row" key={`time-slot-${index}`}>
               <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                <DateTimePicker value={timeSlot.dateTime} onChange={date => editTimeSlot(date, index)} />
+                <DateTimePicker
+                  label="Time Slot"
+                  value={timeSlot.dateTime}
+                  onChange={date => editTimeSlotDateTime(date, index)}
+                />
               </MuiPickersUtilsProvider>
+              <TextField
+                label="Available spots"
+                type="number"
+                inputProps={{ min: "1" }}
+                onChange={event => editTimeSlotAvailableSpots(parseInt(event.target.value, 10), index)}
+              />
               {schedule.timeSlots.length > 1 &&
                 <IconButton
                   color="secondary"
-                  aria-label="remove timeslot"
+                  aria-label="remove time slot"
                   component="button"
                   onClick={() => removeTimeSlot(index)}
                 >

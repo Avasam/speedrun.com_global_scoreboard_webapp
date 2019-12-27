@@ -6,7 +6,7 @@ from models import Player, map_to_dto
 from datetime import datetime, timedelta
 from flask import Blueprint, current_app, jsonify, request
 from functools import wraps
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Tuple, Union
 import jwt
 
 
@@ -85,21 +85,41 @@ def get_all_schedules(current_user: Player):
     return jsonify(map_to_dto(current_user.get_schedules()))
 
 
+def validate_create_schedule(data: Dict[str, str]) -> Tuple[Optional[str], str, bool, List[Dict]]:
+    name = ""
+    is_active = False
+    time_slot = []
+    try:
+        name = data['name']
+    except KeyError:
+        return 'name has to be defined'
+    try:
+        is_active = data['active'] is True
+    except KeyError:
+        return 'active has to be defined'
+    try:
+        time_slots = data['timeSlots']
+    except:
+        return 'timeSlots has to be defined'
+    for time_slot in time_slots:
+        try:
+            time_slot['dateTime']
+        except KeyError:
+            return 'timeSlots.dateTime has to be defined'
+        try:
+            time_slot['availableSpots']
+        except KeyError:
+            return 'timeSlots.availableSpots has to be defined'
+    return None, name, is_active, time_slots
+
+
 @api.route('/schedules', methods=('POST',))
 @authenthication_required
 def create_schedule(current_user: Player):
     data: Dict[str, str] = request.get_json()
-    try:
-        name = data['name']
-    except KeyError:
-        return jsonify({'message': 'name has to be defined', 'authenticated': True}), 400
-    try:
-        is_active = data['active'] is True
-    except KeyError:
-        return jsonify({'message': 'active has to be defined', 'authenticated': True}), 400
-    try:
-      time_slots = data['timeSlots']
-    except:
-      return jsonify({'message': 'timeSlots has to be defined', 'authenticated': True}), 400
+
+    error_message, name, is_active, time_slots = validate_create_schedule(data)
+    if error_message is not None:
+      return jsonify({'message': error_message, 'authenticated': True}), 400
 
     return str(current_user.create_schedule(name, is_active, time_slots))

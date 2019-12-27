@@ -142,7 +142,8 @@ class Player(db.Model, UserMixin):
 
         new_time_slots = [TimeSlot(
             schedule_id=new_schedule.schedule_id,
-            date_time=time_slot['dateTime']) for time_slot in time_slots]
+            date_time=time_slot['dateTime'])
+            for time_slot in time_slots]
         db.session.bulk_save_objects(new_time_slots)
 
         db.session.commit()
@@ -190,6 +191,7 @@ class TimeSlot(db.Model):
     timeslot_id: int = db.Column(db.Integer, primary_key=True)
     schedule_id: int = db.Column(db.String(8), db.ForeignKey('schedule.schedule_id'), nullable=False)
     date_time: datetime = db.Column(db.DateTime, nullable=False)
+    available_spots: int = db.Column(db.Integer, nullable=False)
 
     schedule = db.relationship("Schedule", back_populates="time_slots")
 
@@ -197,4 +199,5 @@ class TimeSlot(db.Model):
         return {
             'id': self.schedule_id,
             'dateTime': self.date_time,
+            'availableSpots': self.available_spots,
         }
