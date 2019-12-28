@@ -1,4 +1,4 @@
-CREATE TABLE `speedrun_global_leaderboard`.`schedule` (
+CREATE TABLE `schedule` (
   `schedule_id` INT NOT NULL AUTO_INCREMENT,
   `name` NVARCHAR(128) NOT NULL DEFAULT '',
   `owner_id` VARCHAR(8) NOT NULL,
@@ -9,7 +9,7 @@ CREATE TABLE `speedrun_global_leaderboard`.`schedule` (
   UNIQUE INDEX `schedule_id_UNIQUE` (`schedule_id` ASC),
   CONSTRAINT `owner_id_fk`
     FOREIGN KEY (`owner_id`)
-    REFERENCES `speedrun_global_leaderboard`.`player` (`user_id`)
+    REFERENCES `player` (`user_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 DEFAULT CHARACTER SET = utf8;
