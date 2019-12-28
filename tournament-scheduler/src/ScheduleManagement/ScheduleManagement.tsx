@@ -85,7 +85,15 @@ const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleMa
       ? postSchedules(schedule)
       : putSchedule(schedule)
     savePromise
-      .then(() => setCurrentSchedule(undefined))
+      .then(() => {
+        getSchedules()
+          .then((res: Schedule[] | undefined) => {
+            console.log(res)
+            setSchedules(res)
+          })
+          .catch(console.error)
+        setCurrentSchedule(undefined)
+      })
       .catch(console.error)
   }
 

@@ -153,19 +153,42 @@ class Player(db.Model, UserMixin):
         db.session.commit()
         return new_schedule.schedule_id
 
-    def update_schedule(self, schedule_id: int, name: str, is_active: bool, time_slots: List[dict[str, Union[str, int]]]) -> int:
+    def update_schedule(self, schedule_id: int, name: str, is_active: bool, time_slots: List[Dict[str, Any]]) -> int:
         try:
-            Schedule \
+            schedule_to_update = Schedule \
                 .query \
                 .filter(Schedule.schedule_id == schedule_id and Schedule.owner_id == self.user_id) \
-                .one() \
-                .update({
-                    Schedule.name: name,
-                    Schedule.is_active: is_active
-                })
-            # TODO : Update time slots
+                .one()
         except orm.exc.NoResultFound:
             return False
+
+        schedule_to_update.name = name
+        schedule_to_update.is_active = is_active
+
+        # Manually take care of merging the time slots
+        # since I can't figure out how to do it automatically within SQLAlchemy
+        new_time_slots = []
+        for time_slot_to_edit in time_slots:
+            new_time_slot = None
+            # If it already exists in session, use that one ...
+            for existing_time_slot in schedule_to_update.time_slots:
+                if time_slot_to_edit['id'] == existing_time_slot.time_slot_id:
+                    new_time_slot = existing_time_slot
+                    break
+            # ... otherwise, create a brand new TimeSlot
+            else:
+                new_time_slot = TimeSlot()
+            # Do the necessary modifications
+            new_time_slot.schedule_id = schedule_id
+            new_time_slot.date_time = datetime.strptime(time_slot_to_edit['dateTime'], "%Y-%m-%dT%H:%M:%S.%fZ")
+            new_time_slot.maximum_entries = time_slot_to_edit['maximumEntries']
+            new_time_slot.participants_per_entry = time_slot_to_edit['participantsPerEntry']
+
+            new_time_slots.append(new_time_slot)
+
+        # cascade="all,delete,delete-orphan" will remove time slots we haven't added back
+        schedule_to_update.time_slots = new_time_slots
+
         db.session.commit()
         return True
 
@@ -196,7 +219,10 @@ class Schedule(db.Model):
     is_active: bool = db.Column(db.Boolean, nullable=False, default=True)
 
     owner = db.relationship("Player", back_populates="schedules")
-    time_slots: List[TimeSlot] = db.relationship("TimeSlot", cascade="all,delete", back_populates="schedule")
+    time_slots: List[TimeSlot] = db.relationship(
+        "TimeSlot",
+        cascade="all,delete,delete-orphan",
+        back_populates="schedule")
 
     def to_dto(self) -> dict[str, Union[str, int, bool, List[Dict[str, Union[str, bool, int]]]]]:
         return {
@@ -221,7 +247,7 @@ class TimeSlot(db.Model):
 
     def to_dto(self) -> dict[str, Union[str, int, bool, datetime]]:
         return {
-            'id': self.schedule_id,
+            'id': self.time_slot_id,
             'dateTime': self.date_time,
             'maximumEntries': self.maximum_entries,
             'participantsPerEntry': self.participants_per_entry

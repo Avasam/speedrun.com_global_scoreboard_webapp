@@ -63,7 +63,7 @@ def login():
     token = jwt.encode({
         'sub': player.user_id,
         'iat': datetime.utcnow(),
-        'exp': datetime.utcnow() + timedelta(minutes=30)},
+        'exp': datetime.utcnow() + timedelta(days=1)},
         current_app.config['SECRET_KEY'])
     return jsonify({
         'token': token.decode('UTF-8'),
@@ -113,7 +113,8 @@ def put_schedule(current_user: Player, id: str):
     if error_message is not None:
         return jsonify({'message': error_message, 'authenticated': True}), 400
 
-    return str(current_user.update_schedule(schedule_id, name, is_active, time_slots)), 201
+    update_success = current_user.update_schedule(schedule_id, name, is_active, time_slots)
+    return "", 201 if update_success else 404
 
 
 @api.route('/schedules/<id>', methods=('DELETE',))

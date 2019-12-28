@@ -95,7 +95,7 @@ export const ScheduleWizard: React.FC<ScheduleManagementProps> = (props: Schedul
             <div className="time-slot-row" key={`time-slot-${index}`}>
               <MuiPickersUtilsProvider utils={DateFnsUtils}>
                 <DateTimePicker
-                  label="Time Slot"
+                  label="Date and time"
                   value={timeSlot.dateTime}
                   onChange={date => editTimeSlotDateTime(date, index)}
                 />

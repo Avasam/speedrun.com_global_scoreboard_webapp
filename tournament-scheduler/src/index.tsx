@@ -4,7 +4,7 @@ import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 
-// Hack for same-network testing
+// Hack for local network testing
 window.process = {
   env: process.env
 } as NodeJS.Process

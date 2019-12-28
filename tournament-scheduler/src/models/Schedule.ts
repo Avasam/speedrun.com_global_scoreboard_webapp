@@ -23,7 +23,7 @@ export class Schedule {
     this.name = dto.name
     this.active = dto.active
     this.registrationKey = dto.registrationKey
-    this.timeSlots = dto.timeSlots || []
+    this.timeSlots = (dto.timeSlots || []).map(timeSlotDto => new TimeSlot(timeSlotDto))
   }
 }
 
