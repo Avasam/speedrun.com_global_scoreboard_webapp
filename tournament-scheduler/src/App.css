@@ -1,0 +1,51 @@
+.App {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  background-color: #282c34;
+  height: 100vh;
+  font-size: 16px;
+  color: white;
+}
+
+.main {
+  flex: 1;
+  overflow: auto;
+}
+
+.MuiContainer-root {
+  padding-top: 16px; 
+}
+
+.App .MuiTextField-root {
+  min-width: 210px;
+}
+
+label {
+  font-size: calc(10px + 2vmin);
+}
+
+a {
+  color: #09d3ac;
+}
+
+p, .paragraph {
+  display: block;
+  margin-block-start: 1em;
+  margin-block-end: 1em;
+  margin-inline-start: 0px;
+  margin-inline-end: 0px;
+}
+
+.MuiToolbar-root {
+  display: flex;
+  justify-content: space-between;
+}
+
+.MuiToolbar-root h2 {
+  margin: auto;
+}
+
+.logo {
+  height: 40px;
+}

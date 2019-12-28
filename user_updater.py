@@ -24,15 +24,13 @@
 from collections import Counter
 from datetime import datetime
 from math import ceil, exp, floor
-from requests import Session
+from models import Player, db
 from threading import Thread, active_count
 from time import strftime, sleep
-
-from typing import Any, Dict, List, Tuple, Union
+from typing import Dict, List, Tuple, Union
+from utils import get_file, UserUpdaterError, SpeedrunComError
 import configs
 import httplib2
-import json
-import simplejson
 import re
 import requests
 import traceback
@@ -41,20 +39,6 @@ import traceback
 SEPARATOR = "-" * 64
 MIN_LEADERBOARD_SIZE = 3  # This is just to optimize as the formula gives 0 points to leaderboards size < 3
 TIME_BONUS_DIVISOR = 21600  # 6h (1/4 day) for +100%
-
-HTTP_ERROR_RETRY_DELAY = 5
-HTTP_RETRYABLE_ERRORS = [401, 420, 500, 502]
-session: Session = Session()
-
-
-class UserUpdaterError(Exception):
-    """ raise UserUpdaterError({"error":"On Status Label", "details":"Details of error"}) """
-    pass
-
-
-class SpeedrunComError(UserUpdaterError):
-    """ raise NotFoundError({"error":"404 Not Found", "details":"Details of error"}) """
-    pass
 
 
 class Run:
@@ -70,7 +54,7 @@ class Run:
     level_count: int = 0
     _points: int = 0
 
-    def __init__(self, id_: str, primary_t: str, game: str, category: str, variables={}, level: str=""):
+    def __init__(self, id_: str, primary_t: str, game: str, category: str, variables={}, level: str = ""):
         self.id_ = id_
         self.primary_t = primary_t
         self.game = game
@@ -108,9 +92,9 @@ class Run:
         lvl_cat_str = "level/{level}/".format(level=self.level) if self.level else "category/"
         url = "https://www.speedrun.com/api/v1/leaderboards/{game}/" \
               "{lvl_cat_str}{category}?video-only=true&embed=players".format(
-               game=self.game,
-               lvl_cat_str=lvl_cat_str,
-               category=self.category)
+                  game=self.game,
+                  lvl_cat_str=lvl_cat_str,
+                  category=self.category)
         for var_id, var_value in self.variables.items():
             url += "&var-{id}={value}".format(id=var_id, value=var_value)
         leaderboard = get_file(url)
@@ -355,60 +339,8 @@ class User:
             self._points = 0
 
 
-def get_file(p_url: str, p_headers: Dict[str, Any] = None) -> dict:
-    """
-    Returns the content of "url" parsed as JSON dict.
-
-    Parameters
-    ----------
-    :param p_url:  # The url to query
-    :param p_headers:
-    """
-    global session
-    print(p_url)  # debug_str
-    while True:
-        try:
-            raw_data = session.get(p_url, headers=p_headers)
-        except requests.exceptions.ConnectionError as exception:  # Connexion error
-            raise UserUpdaterError({"error": "Can't establish connexion to speedrun.com", "details": exception})
-
-        try:
-            json_data = raw_data.json()
-        # Didn't receive a JSON file ...
-        except (json.decoder.JSONDecodeError, simplejson.scanner.JSONDecodeError) as exception:
-            try:
-                raw_data.raise_for_status()
-            except requests.exceptions.HTTPError as exception:  # ... because it's an HTTP error
-                if raw_data.status_code in HTTP_RETRYABLE_ERRORS:
-                    print(f"WARNING: {exception.args[0]}. Retrying in {HTTP_ERROR_RETRY_DELAY} seconds.")  # debug_str
-                    sleep(HTTP_ERROR_RETRY_DELAY)
-                    # No break or raise as we want to retry
-                else:
-                    raise UserUpdaterError({"error": f"HTTPError {raw_data.status_code}", "details": exception.args[0]})
-            else:  # ... we don't know why (elevate the exception)
-                print(f"ERROR/WARNING: raw_data=({type(raw_data)})\'{raw_data}\'\n")  # debug_str
-                raise UserUpdaterError({"error": "JSONDecodeError", "details": f"{exception.args[0]} in:\n{raw_data}"})
-
-        else:
-            if "status" in json_data:  # Speedrun.com custom error
-                if json_data["status"] in HTTP_RETRYABLE_ERRORS:
-                    print("WARNING: {status}. {message}. Retrying in {delay} seconds.".format(
-                        status=json_data["status"],
-                        message=json_data["message"],
-                        delay=HTTP_ERROR_RETRY_DELAY))  # debug_str
-                    sleep(HTTP_ERROR_RETRY_DELAY)
-                    # No break or raise as we want to retry
-                else:
-                    raise SpeedrunComError(
-                        {"error": f"{json_data['status']} (speedrun.com)", "details": json_data["message"]})
-
-            else:  # No error
-                return json_data
-
-
 def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
     """Called from flask_app and AutoUpdateUsers.run()"""
-    global session
     global threadsException
     threadsException = []
     text_output: str = p_user_id
@@ -422,13 +354,13 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
             user.set_code_and_name()
         except SpeedrunComError:
             # ID doesn't exists on speedrun.com but it does in the database, remove it
-            player = flask_app.Player.query.get(user._name)
+            player = Player.get(user._name)
             if player:
                 text_output = (f"User ID \"{user._id}\" not found on speedrun.com. "
                                "\nRemoved it from the database.")
                 result_state = "warning"
-                flask_app.db.session.delete(player)
-                flask_app.db.session.commit()
+                db.session.delete(player)
+                db.session.commit()
             else:
                 text_output = (f"User \"{user._id}\" not found. "
                                "\nMake sure the name or ID is typed properly. "
@@ -437,7 +369,7 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
                 result_state = "warning"
         else:
             # Setup a few checks
-            player = flask_app.Player.query.get(user._id)
+            player = Player.get(user._id)
 
             # If user doesn't exists or enough time passed since last update
             if not player or (datetime.now() - player.last_update).days >= 1 or configs.bypass_update_restrictions:
@@ -452,26 +384,25 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
                     if player:
                         text_output = f"{user} found. Updated their entry."
                         result_state = "success"
-                        flask_app \
-                            .Player \
+                        Player \
                             .query \
-                            .filter(flask_app.Player.user_id == user._id) \
+                            .filter(Player.user_id == user._id) \
                             .update({"user_id": user._id,
                                      "name": user._name,
                                      "score": floor(user._points),
                                      "last_update": timestamp})
-                        flask_app.db.session.commit()
+                        db.session.commit()
 
                     # If user not found and has points, add it to the database
                     elif user._points >= 1:
                         text_output = "{} not found. Added a new row.".format(user)
                         result_state = "success"
-                        player = flask_app.Player(user_id=user._id,
-                                                  name=user._name,
-                                                  score=user._points,
-                                                  last_update=timestamp)
-                        flask_app.db.session.add(player)
-                        flask_app.db.session.commit()
+                        player = Player(user_id=user._id,
+                                        name=user._name,
+                                        score=user._points,
+                                        last_update=timestamp)
+                        db.session.add(player)
+                        db.session.commit()
                     else:
                         text_output = f"Not inserting new data as {user} " \
                                       f"{'is banned' if user._banned else 'has a score lower than 1.'}."
@@ -509,6 +440,3 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
                                 "details": f"{exception}\nPlease make sure you have an active internet connection"})
     except (requests.exceptions.ChunkedEncodingError, ConnectionAbortedError) as exception:
         raise UserUpdaterError({"error": "Connexion interrupted", "details": exception})
-
-
-import flask_app

@@ -6,4 +6,35 @@
     80,
     120
   ],
+  "editor.detectIndentation": false,
+  "editor.tabSize": 2,
+  "[python]": {
+    "editor.tabSize": 4,
+  },
+  "[py]": {
+    "editor.tabSize": 4,
+  },
+  "editor.formatOnSave": true,
+  "javascript.preferences.quoteStyle": "single",
+  "typescript.preferences.quoteStyle": "single",
+  "html.format.wrapAttributes": "force-expand-multiline",
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true,
+    "source.fixAll.tslint": true,
+    "source.fixAll.markdownlint": true
+  },
+  "python.linting.pylintEnabled": false,
+  "python.linting.flake8Enabled": true,
+  "python.linting.enabled": true,
+  "python.linting.pycodestyleEnabled": false,
+  "python.linting.flake8Args": [
+    "--max-line-length=120"
+  ],
+  "python.linting.flake8CategorySeverity.F": "Warning",
+  "python.formatting.autopep8Args": [
+    "--max-line-length=120"
+  ],
+  "//": "python.pythonPath has to be disabled because of false positives with Requests",
+  "python.pythonPath": "",
+  "typescript.tsdk": "./tournament-scheduler/node_modules/typescript/lib"
 }
