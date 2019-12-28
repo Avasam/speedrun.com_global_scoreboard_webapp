@@ -50,7 +50,6 @@ const putSchedule = (schedule: ScheduleDto) =>
     .then(res => res.status >= 400 && res.status < 600
       ? Promise.reject(Error(res.status.toString()))
       : res)
-    .then(res => res.json())
 
 const deleteSchedule = (schedule_id: number) =>
   fetch(`${window.process.env.REACT_APP_BASE_URL}/api/schedules/${schedule_id}`, {
@@ -64,7 +63,6 @@ const deleteSchedule = (schedule_id: number) =>
     .then(res => res.status >= 400 && res.status < 600
       ? Promise.reject(Error(res.status.toString()))
       : res)
-    .then(res => res.json())
 
 type ScheduleManagementProps = {
   currentUser: User

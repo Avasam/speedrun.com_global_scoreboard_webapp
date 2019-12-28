@@ -3,6 +3,7 @@ CREATE TABLE `speedrun_global_leaderboard`.`time_slot` (
   `schedule_id` INT NOT NULL,
   `date_time` DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
   `maximum_entries` INT UNSIGNED NOT NULL,
+  `participants_per_entry` INT UNSIGNED NOT NULL,
   PRIMARY KEY (`time_slot_id`),
   INDEX `schedule_id_fk_idx` (`schedule_id` ASC),
   UNIQUE INDEX `time_slot_id_UNIQUE` (`time_slot_id` ASC),

@@ -27,7 +27,7 @@ from flask_login import login_user
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import orm, text
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Union
 from utils import get_file, SpeedrunComError
 import uuid
 import traceback
@@ -133,7 +133,7 @@ class Player(db.Model, UserMixin):
     def get_schedules(self) -> List[Schedule]:
         return Schedule.query.filter(Schedule.owner_id == self.user_id).all()
 
-    def create_schedule(self, name: str, is_active: bool, time_slots: List[dict[str, Union[str, int]]]) -> int:
+    def create_schedule(self, name: str, is_active: bool, time_slots: List[Dict[str, Any]]) -> int:
         new_schedule = Schedule(
             name=name,
             owner_id=self.user_id,
@@ -144,7 +144,9 @@ class Player(db.Model, UserMixin):
 
         new_time_slots = [TimeSlot(
             schedule_id=new_schedule.schedule_id,
-            date_time=time_slot['dateTime'])
+            date_time=datetime.strptime(time_slot['dateTime'], "%Y-%m-%dT%H:%M:%S.%fZ"),
+            maximum_entries=time_slot['maximumEntries'],
+            participants_per_entry=time_slot['participantsPerEntry'])
             for time_slot in time_slots]
         db.session.bulk_save_objects(new_time_slots)
 
@@ -194,7 +196,7 @@ class Schedule(db.Model):
     is_active: bool = db.Column(db.Boolean, nullable=False, default=True)
 
     owner = db.relationship("Player", back_populates="schedules")
-    time_slots: List[TimeSlot] = db.relationship("TimeSlot", back_populates="schedule")
+    time_slots: List[TimeSlot] = db.relationship("TimeSlot", cascade="all,delete", back_populates="schedule")
 
     def to_dto(self) -> dict[str, Union[str, int, bool, List[Dict[str, Union[str, bool, int]]]]]:
         return {
@@ -213,6 +215,7 @@ class TimeSlot(db.Model):
     schedule_id: int = db.Column(db.String(8), db.ForeignKey('schedule.schedule_id'), nullable=False)
     date_time: datetime = db.Column(db.DateTime, nullable=False)
     maximum_entries: int = db.Column(db.Integer, nullable=False)
+    participants_per_entry: int = db.Column(db.Integer, nullable=False)
 
     schedule = db.relationship("Schedule", back_populates="time_slots")
 
@@ -221,4 +224,5 @@ class TimeSlot(db.Model):
             'id': self.schedule_id,
             'dateTime': self.date_time,
             'maximumEntries': self.maximum_entries,
+            'participantsPerEntry': self.participants_per_entry
         }

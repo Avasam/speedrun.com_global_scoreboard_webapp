@@ -25,7 +25,7 @@ export const ScheduleWizard: React.FC<ScheduleManagementProps> = (props: Schedul
     })
   }
 
-  const editTimeSlotAvailableSpots = (maximumEntries: number, index: number) => {
+  const editTimeSlotMaximumEntries = (maximumEntries: number, index: number) => {
     schedule.timeSlots[index].maximumEntries = maximumEntries
     setSchedule({
       ...schedule,
@@ -33,8 +33,20 @@ export const ScheduleWizard: React.FC<ScheduleManagementProps> = (props: Schedul
     })
   }
 
+  const editTimeSlotparticipantsPerEntry = (participantsPerEntry: number, index: number) => {
+    schedule.timeSlots[index].participantsPerEntry = participantsPerEntry
+    setSchedule({
+      ...schedule,
+      registrationLink: schedule.registrationLink,
+    })
+  }
   const addNewTimeSlot = () => {
-    schedule.timeSlots.push({ id: -1, dateTime: new Date(), maximumEntries: 1 })
+    schedule.timeSlots.push({
+      id: -1,
+      dateTime: new Date(),
+      maximumEntries: 1,
+      participantsPerEntry: 1,
+    })
     setSchedule({
       ...schedule,
       registrationLink: schedule.registrationLink,
@@ -89,10 +101,18 @@ export const ScheduleWizard: React.FC<ScheduleManagementProps> = (props: Schedul
                 />
               </MuiPickersUtilsProvider>
               <TextField
-                label="Available spots"
+                label="Maximum entries"
                 type="number"
+                value={timeSlot.maximumEntries}
                 inputProps={{ min: "1" }}
-                onChange={event => editTimeSlotAvailableSpots(parseInt(event.target.value, 10), index)}
+                onChange={event => editTimeSlotMaximumEntries(parseInt(event.target.value, 10), index)}
+              />
+              <TextField
+                label="Participants per entry"
+                type="number"
+                value={timeSlot.participantsPerEntry}
+                inputProps={{ min: "1" }}
+                onChange={event => editTimeSlotparticipantsPerEntry(parseInt(event.target.value, 10), index)}
               />
               {schedule.timeSlots.length > 1 &&
                 <IconButton

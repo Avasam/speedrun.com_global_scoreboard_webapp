@@ -124,7 +124,7 @@ def delete_schedule(current_user: Player, id: str):
     except ValueError:
         return jsonify({'message': '/id is not a valid number', 'authenticated': True}), 400
     delete_success = current_user.delete_schedule(schedule_id)
-    return None, 204 if delete_success else 404
+    return "", 204 if delete_success else 404
 
 
 def __validate_create_schedule(data: Dict[str, Any]) -> Tuple[Optional[str], str, bool, List[Dict]]:
@@ -152,4 +152,9 @@ def __validate_create_schedule(data: Dict[str, Any]) -> Tuple[Optional[str], str
             time_slot['maximumEntries']
         except KeyError:
             return 'timeSlots.maximumEntries has to be defined', name, is_active, time_slot
+        try:
+            time_slot['participantsPerEntry']
+        except KeyError:
+            return 'timeSlots.participantsPerEntry has to be defined', name, is_active, time_slot
+
     return None, name, is_active, time_slots

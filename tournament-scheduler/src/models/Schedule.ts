@@ -37,5 +37,6 @@ export const createDefaultSchedule = () =>
       id: -1,
       dateTime: new Date(),
       maximumEntries: 1,
+      participantsPerEntry: 1,
     }],
   })
