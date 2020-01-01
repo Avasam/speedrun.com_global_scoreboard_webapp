@@ -25,14 +25,13 @@ const logout = (setCurrentUser: (user: User | undefined) => void) => {
 
 const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | undefined>(undefined);
-  const scheduleRegistrationLink = new URLSearchParams(window.location.search).get('register')
+  const [scheduleRegistrationLink] = useState<string | null>(new URLSearchParams(window.location.search).get('register'))
+  window.history.pushState(null, document.title, window.location.href.replace(window.location.search, ""));
 
   useEffect(() => {
     getCurrentUser()
-      .then((res: { user: User | undefined }) => {
-        console.log(res)
-        setCurrentUser(res.user);
-      })
+      .then((res: { user: User | undefined }) => res.user)
+      .then(setCurrentUser)
   }, [])
 
   return <div className='App'>

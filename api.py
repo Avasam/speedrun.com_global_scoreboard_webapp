@@ -2,7 +2,7 @@
 api.py
 - provides the API endpoints for consuming and producing REST requests and responses
 """
-from models import Player, map_to_dto
+from models import Player, Schedule, map_to_dto
 from datetime import datetime, timedelta
 from flask import Blueprint, current_app, jsonify, request
 from functools import wraps
@@ -87,6 +87,21 @@ def get_user_current(current_user: Player):
 @authenthication_required
 def get_all_schedules(current_user: Player):
     return jsonify(map_to_dto(current_user.get_schedules()))
+
+
+@api.route('/schedules/<id>', methods=('GET',))
+@authenthication_required
+def get_schedule(current_user: Player, id: str):
+    registration_key: Optional[str] = request.args.get('registrationKey')
+    if registration_key is None:
+        return jsonify({'message': 'Query parameter registrationKey has to be defined', 'authenticated': True}), 400
+
+    schedule = Schedule.get_with_key(id, registration_key)
+
+    if schedule is None:
+        return '', 404
+
+    return jsonify(schedule.to_dto())
 
 
 @api.route('/schedules', methods=('POST',))

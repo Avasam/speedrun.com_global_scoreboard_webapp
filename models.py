@@ -23,11 +23,10 @@
 ##########################################################################
 from __future__ import annotations
 from datetime import datetime
-from flask_login import login_user
-from flask_login import UserMixin
+from flask_login import login_user, UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import orm, text
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 from utils import get_file, SpeedrunComError
 import uuid
 import traceback
@@ -223,6 +222,16 @@ class Schedule(db.Model):
         "TimeSlot",
         cascade="all,delete,delete-orphan",
         back_populates="schedule")
+
+    @staticmethod
+    def get_with_key(schedule_id: str, registration_key: str) -> Optional[Schedule]:
+        try:
+            return Schedule \
+                .query \
+                .filter(Schedule.schedule_id == schedule_id and registration_key == Schedule.registration_key) \
+                .one()
+        except orm.exc.NoResultFound:
+            return None
 
     def to_dto(self) -> dict[str, Union[str, int, bool, List[Dict[str, Union[str, bool, int]]]]]:
         return {
