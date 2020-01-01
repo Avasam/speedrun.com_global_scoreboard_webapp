@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import LoginForm from './LoginForm/LoginForm';
-import ScheduleManagement from './ScheduleManagement/ScheduleManagement';
-import User from './models/User';
+import React, { useState, useEffect } from 'react'
+import LoginForm from './LoginForm/LoginForm'
+import ScheduleManagement from './ScheduleManagement/ScheduleManagement'
+import ScheduleRegistration from './ScheduleRegistration/ScheduleRegistration'
+import User from './models/User'
 
-import './App.css';
-import { Button, AppBar, Toolbar, Typography, IconButton } from '@material-ui/core';
+import './App.css'
+import { Button, AppBar, Toolbar, Typography, IconButton } from '@material-ui/core'
 
 const getCurrentUser = () =>
   fetch(`${window.process.env.REACT_APP_BASE_URL}/api/users/current`, {
@@ -59,4 +60,4 @@ const App: React.FC = () => {
   </div>
 }
 
-export default App;
+export default App

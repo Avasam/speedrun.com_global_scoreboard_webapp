@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { DateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';
-import DateFnsUtils from '@date-io/moment';
+import React, { useState } from 'react'
+import { DateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
+import DateFnsUtils from '@date-io/moment'
 
-import { Schedule } from '../models/Schedule';
+import { Schedule } from '../models/Schedule'
 import './ScheduleWizard.css'
-import { Card, CardContent, CardActions, Button, Checkbox, TextField, FormGroup, FormControlLabel, IconButton, Container } from '@material-ui/core';
-import { Moment } from 'moment';
+import { Card, CardContent, CardActions, Button, Checkbox, TextField, FormGroup, FormControlLabel, IconButton, Container } from '@material-ui/core'
+import { Moment } from 'moment'
 
 type ScheduleManagementProps = {
   schedule: Schedule

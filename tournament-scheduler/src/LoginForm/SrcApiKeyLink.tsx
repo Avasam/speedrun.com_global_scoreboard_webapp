@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { TextField, Link } from '@material-ui/core';
+import React, { useState } from 'react'
+import { TextField, Link } from '@material-ui/core'
 
 const SrcApiKeyLink: React.FC = () => {
-  const [srcNameInput, setSrcNameInput] = useState('');
+  const [srcNameInput, setSrcNameInput] = useState('')
 
   return <span className='src-api-key-link'>
     <Link

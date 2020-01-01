@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
-import { Button, TextField, Link, Container } from '@material-ui/core';
+import React, { useState } from 'react'
+import { Button, TextField, Link, Container } from '@material-ui/core'
 
 import SrcApiKeyLink from './SrcApiKeyLink'
-import User from '../models/User';
-import './LoginForm.css';
+import User from '../models/User'
+import './LoginForm.css'
 
 type loginFormProps = {
   setCurrentUser: (currentUser: User) => void
 }
 
 const LoginForm: React.FC<loginFormProps> = (props: loginFormProps) => {
-  const [srcApiKeyInput, setSrcApiKeyInput] = useState('');
+  const [srcApiKeyInput, setSrcApiKeyInput] = useState('')
 
   const login = (srcApiKey: string) =>
     fetch(`${window.process.env.REACT_APP_BASE_URL}/api/login`, {
@@ -26,8 +26,8 @@ const LoginForm: React.FC<loginFormProps> = (props: loginFormProps) => {
       .then((res: { token: string, user: User }) => {
         console.log(res)
         if (!res.token) return
-        localStorage.setItem('jwtToken', res.token);
-        props.setCurrentUser(res.user);
+        localStorage.setItem('jwtToken', res.token)
+        props.setCurrentUser(res.user)
       })
 
   return <Container className='login-form-container'>
@@ -62,4 +62,4 @@ const LoginForm: React.FC<loginFormProps> = (props: loginFormProps) => {
   </Container>
 }
 
-export default LoginForm;
+export default LoginForm

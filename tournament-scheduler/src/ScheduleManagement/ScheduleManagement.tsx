@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'
 
-import { createDefaultSchedule, Schedule, ScheduleDto } from '../models/Schedule';
+import { createDefaultSchedule, Schedule, ScheduleDto } from '../models/Schedule'
 import User from '../models/User';
-import { Card, CardContent, CardActions, Button, makeStyles, Theme, Container, IconButton } from '@material-ui/core';
-import { Styles } from '@material-ui/core/styles/withStyles';
+import { Card, CardContent, CardActions, Button, makeStyles, Theme, Container, IconButton } from '@material-ui/core'
+import { Styles } from '@material-ui/core/styles/withStyles'
 import { ScheduleWizard } from './ScheduleWizard'
 
 const getSchedules = () =>
