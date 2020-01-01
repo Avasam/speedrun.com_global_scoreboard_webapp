@@ -23,9 +23,9 @@ const logout = (setCurrentUser: (user: User | undefined) => void) => {
   localStorage.removeItem('jwtToken');
 }
 
-
 const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | undefined>(undefined);
+  const scheduleRegistrationLink = new URLSearchParams(window.location.search).get('register')
 
   useEffect(() => {
     getCurrentUser()
@@ -41,7 +41,11 @@ const App: React.FC = () => {
         {currentUser
           ? <>
             <IconButton>
-              <img className='logo' src={`${window.process.env.REACT_APP_BASE_URL}/assets/images/favicon.ico`} alt='logo' />
+              <img
+                className='logo'
+                src={`${window.process.env.REACT_APP_BASE_URL}/assets/images/favicon.ico`}
+                alt='logo'
+              />
             </IconButton>
             <Typography variant="h4">Tournament Scheduler</Typography>
             <Button variant='contained' color='secondary' onClick={() => logout(setCurrentUser)}>Logout</Button>
@@ -51,9 +55,11 @@ const App: React.FC = () => {
     </AppBar>
 
     <div className='main'>
-      {currentUser
-        ? <ScheduleManagement currentUser={currentUser}></ScheduleManagement>
-        : <LoginForm setCurrentUser={(currentUser: User) => setCurrentUser(currentUser)}></LoginForm>
+      {scheduleRegistrationLink
+        ? <ScheduleRegistration registrationLink={scheduleRegistrationLink} />
+        : currentUser
+          ? <ScheduleManagement currentUser={currentUser}></ScheduleManagement>
+          : <LoginForm setCurrentUser={(currentUser: User) => setCurrentUser(currentUser)}></LoginForm>
       }
     </div>
 
