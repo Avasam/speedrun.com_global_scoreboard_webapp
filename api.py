@@ -90,8 +90,7 @@ def get_all_schedules(current_user: Player):
 
 
 @api.route('/schedules/<id>', methods=('GET',))
-@authenthication_required
-def get_schedule(current_user: Player, id: str):
+def get_schedule(id: str):
     registration_key: Optional[str] = request.args.get('registrationKey')
     if registration_key is None:
         return jsonify({'message': 'Query parameter registrationKey has to be defined', 'authenticated': True}), 400

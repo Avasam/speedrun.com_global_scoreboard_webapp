@@ -37,19 +37,23 @@ const App: React.FC = () => {
   return <div className='App'>
     <AppBar position="static">
       <Toolbar>
-        {currentUser
+        {currentUser || scheduleRegistrationLink
           ? <>
             <IconButton>
               <img
                 className='logo'
-                src={`${window.process.env.REACT_APP_BASE_URL}/assets/images/favicon.ico`}
                 alt='logo'
+                src={`${window.process.env.REACT_APP_BASE_URL}/assets/images/favicon.ico`}
+                onClick={() => window.location.href = window.location.pathname}
               />
             </IconButton>
             <Typography variant="h4">Tournament Scheduler</Typography>
-            <Button variant='contained' color='secondary' onClick={() => logout(setCurrentUser)}>Logout</Button>
+            {currentUser &&
+              <Button variant='contained' color='secondary' onClick={() => logout(setCurrentUser)}>Logout</Button>
+            }
           </>
-          : <Typography variant="h2">Tournament Scheduler</Typography>}
+          : <Typography variant="h2">Tournament Scheduler</Typography>
+        }
       </Toolbar>
     </AppBar>
 
