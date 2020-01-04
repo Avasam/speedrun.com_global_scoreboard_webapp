@@ -17,6 +17,10 @@
   padding-top: 16px; 
 }
 
+.MuiFormLabel-root:not([class^="MuiInputLabel-"]):not([class*=" MuiInputLabel-"]) {
+  color: rgba(0, 0, 0, 0.87); /* Same as .MuiPaper-root */
+}
+
 .App .MuiTextField-root {
   min-width: 210px;
 }
