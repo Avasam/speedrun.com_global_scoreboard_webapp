@@ -135,7 +135,7 @@ const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleMa
     />
     : <Container>
       <div>
-        Welcome '{props.currentUser.name}' ! This is where you can manage your schedule forms
+        Welcome {props.currentUser.name} ! You can manage your schedules below
       </div>
 
       <Button
@@ -151,13 +151,14 @@ const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleMa
           <CardContent>
             <span>{schedule.name}</span>
             <IconButton
+              style={{ color: 'red' }}
               color="secondary"
               aria-label="delete schedule"
               component="button"
               onClick={() => handleDelete(schedule.id)}
             >
               &times;
-              </IconButton>
+            </IconButton>
           </CardContent>
           <CardActions className={classes.cardActions}>
             <Button

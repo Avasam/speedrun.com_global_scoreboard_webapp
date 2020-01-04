@@ -4,16 +4,37 @@ import DateFnsUtils from '@date-io/moment'
 
 import { Schedule } from '../models/Schedule'
 import './ScheduleWizard.css'
-import { Card, CardContent, CardActions, Button, Checkbox, TextField, FormGroup, FormControlLabel, IconButton, Container } from '@material-ui/core'
+import { Card, CardContent, CardActions, Button, Checkbox, TextField, FormGroup, FormControlLabel, IconButton, Container, FormControl, InputLabel, Input } from '@material-ui/core'
 import { Moment } from 'moment'
+import MaskedInput from 'react-text-mask'
 
-type ScheduleManagementProps = {
+type ScheduleWizardProps = {
   schedule: Schedule
   onSave: (schedule: Schedule) => void
   onCancel: () => void
 }
 
-export const ScheduleWizard: React.FC<ScheduleManagementProps> = (props: ScheduleManagementProps) => {
+type NonZeroNumberInputProps = {
+  value: number | string
+  inputRef: (ref: HTMLInputElement | null) => void;
+}
+
+const NonZeroNumberInput = (props: NonZeroNumberInputProps) => {
+  const { inputRef, ...other } = props;
+
+  return (
+    <MaskedInput
+      {...other}
+      ref={(ref: any) => {
+        inputRef(ref ? ref.inputElement : null);
+      }}
+      mask={[/[1-9]/, /\d/,]}
+      guide={false}
+    />
+  );
+}
+
+export const ScheduleWizard: React.FC<ScheduleWizardProps> = (props: ScheduleWizardProps) => {
   const [schedule, setSchedule] = useState(props.schedule)
 
   const editTimeSlotDateTime = (date: Moment | null, index: number) => {
@@ -100,30 +121,43 @@ export const ScheduleWizard: React.FC<ScheduleManagementProps> = (props: Schedul
                   onChange={date => editTimeSlotDateTime(date, index)}
                 />
               </MuiPickersUtilsProvider>
-              <TextField
-                label="Maximum entries"
-                type="number"
-                value={timeSlot.maximumEntries}
-                inputProps={{ min: "1" }}
-                onChange={event => editTimeSlotMaximumEntries(parseInt(event.target.value, 10), index)}
-              />
-              <TextField
-                label="Participants per entry"
-                type="number"
-                value={timeSlot.participantsPerEntry}
-                inputProps={{ min: "1" }}
-                onChange={event => editTimeSlotparticipantsPerEntry(parseInt(event.target.value, 10), index)}
-              />
-              {schedule.timeSlots.length > 1 &&
-                <IconButton
-                  color="secondary"
-                  aria-label="remove time slot"
-                  component="button"
-                  onClick={() => removeTimeSlot(index)}
-                >
-                  &times;
-                </IconButton>
-              }
+              <div>
+                <FormControl>
+                  <InputLabel htmlFor={`maximum-entries-${index}`}>Maximum entries</InputLabel>
+                  <Input
+                    id={`maximum-entries-${index}`}
+                    type='tel'
+                    inputProps={{ min: "1" }}
+                    onFocus={event => event.target.select()}
+                    value={timeSlot.maximumEntries}
+                    onChange={event => editTimeSlotMaximumEntries(parseInt(event.target.value, 10) || 1, index)}
+                    inputComponent={NonZeroNumberInput as any}
+                  />
+                </FormControl>
+                <FormControl>
+                  <InputLabel htmlFor={`participants-per-entry-${index}`}>Participants per entry</InputLabel>
+                  <Input
+                    id={`participants-per-entry-${index}`}
+                    type='tel'
+                    inputProps={{ min: "1" }}
+                    onFocus={event => event.target.select()}
+                    value={timeSlot.participantsPerEntry}
+                    onChange={event => editTimeSlotparticipantsPerEntry(parseInt(event.target.value, 10) || 1, index)}
+                    inputComponent={NonZeroNumberInput as any}
+                  />
+                </FormControl>
+                {schedule.timeSlots.length > 1 &&
+                  <IconButton
+                    style={{ color: 'red' }}
+                    color="secondary"
+                    aria-label="remove time slot"
+                    component="button"
+                    onClick={() => removeTimeSlot(index)}
+                  >
+                    &times;
+                  </IconButton>
+                }
+              </div>
             </div>
           )}
         </FormGroup>
@@ -134,7 +168,7 @@ export const ScheduleWizard: React.FC<ScheduleManagementProps> = (props: Schedul
           onClick={props.onCancel}
         >
           Cancel
-      </Button>
+        </Button>
         <Button
           size="small"
           onClick={() => props.onSave(schedule)}

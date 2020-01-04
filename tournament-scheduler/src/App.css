@@ -13,6 +13,10 @@
   overflow: auto;
 }
 
+.MuiInputLabel-root {
+  text-align: start;
+}
+
 .MuiContainer-root {
   padding-top: 16px; 
 }
@@ -23,6 +27,11 @@
 
 .App .MuiTextField-root {
   min-width: 210px;
+}
+
+.MuiIconButton-root > .MuiIconButton-label {
+  height: 16px;
+  width: 16px;
 }
 
 label {

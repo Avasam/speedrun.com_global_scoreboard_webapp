@@ -1,16 +1,33 @@
-.time-slot-row {
+.time-slot-row,
+.time-slot-row div {
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
 }
 
-.time-slot-row .MuiTextField-root {
-  flex: 1;
-  margin: 12px 0;
+.time-slot-row {
+  margin-bottom: 12px;
 }
 
-.time-slot-row .MuiIconButton-label {
-  height: 14px;
-  width: 14px;
-  color: red;
+.time-slot-row div .MuiFormControl-root .MuiInputLabel-root {
+  margin-top: -6px;
+}
+
+.time-slot-row.time-slot-row .MuiFormControl-root {
+  min-width: 1px;
+  margin: 12px 0 0;
+}
+
+.time-slot-row .MuiFormControl-root:first-child {
+  margin-right: 12px;
+}
+
+.MuiFormControlLabel-root.MuiFormControlLabel-root {
+  width: fit-content;
+  margin: 12px -8px;
+  padding-right: 6px;
+}
+
+.time-slot-row div .MuiFormControl-root {
+  width: 64px;
 }
