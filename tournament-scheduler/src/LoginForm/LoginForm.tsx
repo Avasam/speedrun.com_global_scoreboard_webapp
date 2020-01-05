@@ -1,12 +1,12 @@
 import React, { useState } from 'react'
-import { Button, TextField, Link, Container } from '@material-ui/core'
+import { Button, Container, Link, TextField } from '@material-ui/core'
 
 import SrcApiKeyLink from './SrcApiKeyLink'
 import User from '../models/User'
 import './LoginForm.css'
 
 type loginFormProps = {
-  setCurrentUser: (currentUser: User) => void
+  setCurrentUser: (currentUser: User) => void;
 }
 
 const LoginForm: React.FC<loginFormProps> = (props: loginFormProps) => {
@@ -23,7 +23,7 @@ const LoginForm: React.FC<loginFormProps> = (props: loginFormProps) => {
         srcApiKey,
       })
     }).then(res => res.json())
-      .then((res: { token: string, user: User }) => {
+      .then((res: { token: string; user: User }) => {
         console.log(res)
         if (!res.token) return
         localStorage.setItem('jwtToken', res.token)

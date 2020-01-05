@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 
-import { createDefaultSchedule, Schedule, ScheduleDto } from '../models/Schedule'
-import User from '../models/User';
-import { Card, CardContent, CardActions, Button, makeStyles, Theme, Container, IconButton } from '@material-ui/core'
+import { Schedule, ScheduleDto, createDefaultSchedule } from '../models/Schedule'
+import User from '../models/User'
+import { Button, Card, CardActions, CardContent, Container, IconButton, Theme, makeStyles } from '@material-ui/core'
 import { Styles } from '@material-ui/core/styles/withStyles'
 import { ScheduleWizard } from './ScheduleWizard'
 
@@ -51,8 +51,8 @@ const putSchedule = (schedule: ScheduleDto) =>
       ? Promise.reject(Error(res.status.toString()))
       : res)
 
-const deleteSchedule = (schedule_id: number) =>
-  fetch(`${window.process.env.REACT_APP_BASE_URL}/api/schedules/${schedule_id}`, {
+const deleteSchedule = (scheduleId: number) =>
+  fetch(`${window.process.env.REACT_APP_BASE_URL}/api/schedules/${scheduleId}`, {
     method: 'DELETE',
     headers: {
       'Accept': 'application/json',
@@ -75,9 +75,9 @@ const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleMa
   const editSchedule = (schedule?: Schedule) =>
     setCurrentSchedule(schedule)
 
-  const handleDelete = (schedule_id: number) =>
-    deleteSchedule(schedule_id)
-      .then(() => setSchedules(schedules?.filter(schedule => schedule.id !== schedule_id)))
+  const handleDelete = (scheduleId: number) =>
+    deleteSchedule(scheduleId)
+      .then(() => setSchedules(schedules?.filter(schedule => schedule.id !== scheduleId)))
       .catch(console.error)
 
   const handleSave = (schedule: ScheduleDto) => {
@@ -118,7 +118,7 @@ const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleMa
       display: 'flex',
     },
   }
-  const classes = makeStyles((styles as Styles<Theme, {}, "card" | "cardActions">))()
+  const classes = makeStyles((styles as Styles<Theme, {}, 'card' | 'cardActions'>))()
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(
@@ -179,4 +179,4 @@ const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleMa
     </Container>
 }
 
-export default ScheduleManagement;
+export default ScheduleManagement

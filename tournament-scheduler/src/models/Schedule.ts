@@ -1,11 +1,11 @@
 import { TimeSlot, TimeSlotDto } from './TimeSlot'
 
 export interface ScheduleDto {
-  id: number
-  name: string
-  active: boolean
-  registrationKey: string
-  timeSlots: TimeSlotDto[]
+  id: number;
+  name: string;
+  active: boolean;
+  registrationKey: string;
+  timeSlots: TimeSlotDto[];
 }
 
 export class Schedule {

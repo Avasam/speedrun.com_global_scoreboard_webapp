@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { TextField, Link } from '@material-ui/core'
+import { Link, TextField } from '@material-ui/core'
 
 const SrcApiKeyLink: React.FC = () => {
   const [srcNameInput, setSrcNameInput] = useState('')
@@ -26,4 +26,4 @@ const SrcApiKeyLink: React.FC = () => {
   </span>
 }
 
-export default SrcApiKeyLink;
+export default SrcApiKeyLink

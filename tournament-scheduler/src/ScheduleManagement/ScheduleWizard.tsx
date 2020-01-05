@@ -3,11 +3,11 @@ import { DateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
 import DateFnsUtils from '@date-io/moment'
 import Event from '@material-ui/icons/Event'
 import { Button, Card, CardActions, CardContent, Checkbox, Container, FormControl, FormControlLabel, FormGroup, IconButton, Input, InputAdornment, InputLabel, TextField } from '@material-ui/core'
+import { Moment } from 'moment'
+import MaskedInput from 'react-text-mask'
 
 import { Schedule } from '../models/Schedule'
 import './ScheduleWizard.css'
-import { Moment } from 'moment'
-import MaskedInput from 'react-text-mask'
 
 type ScheduleWizardProps = {
   schedule: Schedule
@@ -17,22 +17,22 @@ type ScheduleWizardProps = {
 
 type NonZeroNumberInputProps = {
   value: number | string
-  inputRef: (ref: HTMLInputElement | null) => void;
+  inputRef: (ref: HTMLInputElement | null) => void
 }
 
 const NonZeroNumberInput = (props: NonZeroNumberInputProps) => {
-  const { inputRef, ...other } = props;
+  const { inputRef, ...other } = props
 
   return (
     <MaskedInput
       {...other}
       ref={(ref: any) => {
-        inputRef(ref ? ref.inputElement : null);
+        inputRef(ref ? ref.inputElement : null)
       }}
       mask={[/[1-9]/, /\d/,]}
       guide={false}
     />
-  );
+  )
 }
 
 export const ScheduleWizard: React.FC<ScheduleWizardProps> = (props: ScheduleWizardProps) => {
@@ -139,7 +139,7 @@ export const ScheduleWizard: React.FC<ScheduleWizardProps> = (props: ScheduleWiz
                   <Input
                     id={`maximum-entries-${index}`}
                     type='tel'
-                    inputProps={{ min: "1" }}
+                    inputProps={{ min: '1' }}
                     onFocus={event => event.target.select()}
                     value={timeSlot.maximumEntries}
                     onChange={event => editTimeSlotMaximumEntries(parseInt(event.target.value, 10) || 1, index)}
@@ -151,7 +151,7 @@ export const ScheduleWizard: React.FC<ScheduleWizardProps> = (props: ScheduleWiz
                   <Input
                     id={`participants-per-entry-${index}`}
                     type='tel'
-                    inputProps={{ min: "1" }}
+                    inputProps={{ min: '1' }}
                     onFocus={event => event.target.select()}
                     value={timeSlot.participantsPerEntry}
                     onChange={event => editTimeSlotparticipantsPerEntry(parseInt(event.target.value, 10) || 1, index)}

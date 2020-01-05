@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { Container, Card, CardContent, FormGroup, TextField, CardActions, Button, FormControl, InputLabel, Select, MenuItem, FormLabel } from '@material-ui/core'
+import React, { useEffect, useRef, useState } from 'react'
+import { Button, Card, CardActions, CardContent, Container, FormControl, FormGroup, FormLabel, InputLabel, MenuItem, Select, TextField } from '@material-ui/core'
 import { Schedule } from '../models/Schedule'
 import { TimeSlot } from '../models/TimeSlot'
 
@@ -39,7 +39,7 @@ const ScheduleRegistration: React.FC<ScheduleRegistrationProps> = (props: Schedu
   const [participants, setParticipants] = useState<string[]>([])
   const [formValidity, setFormValidity] = useState(false)
 
-  const timeSlotInputLabel = useRef<HTMLLabelElement>(null);
+  const timeSlotInputLabel = useRef<HTMLLabelElement>(null)
 
   useEffect(() => {
     const splitIndex = props.registrationLink.indexOf('-')
@@ -60,12 +60,12 @@ const ScheduleRegistration: React.FC<ScheduleRegistrationProps> = (props: Schedu
         )) as string[]
       )
     })
-  }, [])
+  }, [props.registrationLink])
 
   // ChangeEvent<HTMLInputElement>
-  const selectTimeSlot = (event: React.ChangeEvent<{ value: unknown; }>) => {
+  const selectTimeSlot = (event: React.ChangeEvent<{ value: unknown }>) => {
     setSelectedTimeSlot(schedule?.timeSlots.find(timeSlot => timeSlot.id === parseInt(event.target.value as string)))
-  };
+  }
 
   const handleParticipantChange = (index: number, name: string) => {
     participants[index] = name
@@ -89,7 +89,7 @@ const ScheduleRegistration: React.FC<ScheduleRegistrationProps> = (props: Schedu
 
   return <Container>
     {!schedule
-      ? <div>Sorry. '<code>{props.registrationLink}</code>' does not lead to an existing registration form.</div>
+      ? <div>Sorry. `<code>{props.registrationLink}</code>` does not lead to an existing registration form.</div>
       : <Card>
         <CardContent style={{ textAlign: 'left' }}>
           <label>Schedule for: {schedule.name}</label>
@@ -152,4 +152,4 @@ const ScheduleRegistration: React.FC<ScheduleRegistrationProps> = (props: Schedu
   </Container>
 }
 
-export default ScheduleRegistration;
+export default ScheduleRegistration

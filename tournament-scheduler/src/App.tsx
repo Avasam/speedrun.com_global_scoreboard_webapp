@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import LoginForm from './LoginForm/LoginForm'
 import ScheduleManagement from './ScheduleManagement/ScheduleManagement'
 import ScheduleRegistration from './ScheduleRegistration/ScheduleRegistration'
 import User from './models/User'
 
 import './App.css'
-import { Button, AppBar, Toolbar, Typography, IconButton } from '@material-ui/core'
+import { AppBar, Button, IconButton, Toolbar, Typography } from '@material-ui/core'
 
 const getCurrentUser = () =>
   fetch(`${window.process.env.REACT_APP_BASE_URL}/api/users/current`, {
@@ -19,14 +19,14 @@ const getCurrentUser = () =>
 
 
 const logout = (setCurrentUser: (user: User | undefined) => void) => {
-  setCurrentUser(undefined);
-  localStorage.removeItem('jwtToken');
+  setCurrentUser(undefined)
+  localStorage.removeItem('jwtToken')
 }
 
 const App: React.FC = () => {
-  const [currentUser, setCurrentUser] = useState<User | undefined>(undefined);
+  const [currentUser, setCurrentUser] = useState<User | undefined>(undefined)
   const [scheduleRegistrationLink] = useState<string | null>(new URLSearchParams(window.location.search).get('register'))
-  window.history.pushState(null, document.title, window.location.href.replace(window.location.search, ""));
+  window.history.pushState(null, document.title, window.location.href.replace(window.location.search, ''))
 
   useEffect(() => {
     getCurrentUser()

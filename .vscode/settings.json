@@ -21,6 +21,7 @@
   "editor.codeActionsOnSave": {
     "source.fixAll": true,
     "source.fixAll.tslint": true,
+    "source.fixAll.eslint": true,
     "source.fixAll.markdownlint": true
   },
   "python.linting.pylintEnabled": false,
@@ -35,5 +36,15 @@
   "python.formatting.autopep8Args": [
     "--max-line-length=120"
   ],
-  "typescript.tsdk": "./tournament-scheduler/node_modules/typescript/lib"
+  "typescript.tsdk": "./tournament-scheduler/node_modules/typescript/lib",
+  "typescript.format.semicolons": "remove",
+  "eslint.validate": [
+    "typescript",
+    "typescriptreact"
+  ],
+  "eslint.workingDirectories": [
+    {
+      "mode": "auto"
+    }
+  ],
 }
