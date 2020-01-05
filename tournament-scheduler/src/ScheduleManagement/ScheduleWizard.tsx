@@ -1,10 +1,11 @@
 import React, { useState } from 'react'
 import { DateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
 import DateFnsUtils from '@date-io/moment'
+import Event from '@material-ui/icons/Event'
+import { Button, Card, CardActions, CardContent, Checkbox, Container, FormControl, FormControlLabel, FormGroup, IconButton, Input, InputAdornment, InputLabel, TextField } from '@material-ui/core'
 
 import { Schedule } from '../models/Schedule'
 import './ScheduleWizard.css'
-import { Card, CardContent, CardActions, Button, Checkbox, TextField, FormGroup, FormControlLabel, IconButton, Container, FormControl, InputLabel, Input } from '@material-ui/core'
 import { Moment } from 'moment'
 import MaskedInput from 'react-text-mask'
 
@@ -119,9 +120,20 @@ export const ScheduleWizard: React.FC<ScheduleWizardProps> = (props: ScheduleWiz
                   label="Date and time"
                   value={timeSlot.dateTime}
                   onChange={date => editTimeSlotDateTime(date, index)}
+                  ampm={false}
+                  minutesStep={5}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton>
+                          <Event />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
                 />
               </MuiPickersUtilsProvider>
-              <div>
+              <div className="number-input-container">
                 <FormControl>
                   <InputLabel htmlFor={`maximum-entries-${index}`}>Maximum entries</InputLabel>
                   <Input

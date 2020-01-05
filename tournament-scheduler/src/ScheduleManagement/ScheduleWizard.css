@@ -1,5 +1,5 @@
 .time-slot-row,
-.time-slot-row div {
+.time-slot-row .number-input-container {
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
@@ -9,7 +9,7 @@
   margin-bottom: 12px;
 }
 
-.time-slot-row div .MuiFormControl-root .MuiInputLabel-root {
+.time-slot-row .number-input-container .MuiFormControl-root .MuiInputLabel-root {
   margin-top: -6px;
 }
 
@@ -28,6 +28,6 @@
   padding-right: 6px;
 }
 
-.time-slot-row div .MuiFormControl-root {
+.time-slot-row .number-input-container .MuiFormControl-root {
   width: 64px;
 }

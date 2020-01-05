@@ -48,7 +48,7 @@ const ScheduleRegistration: React.FC<ScheduleRegistrationProps> = (props: Schedu
     getSchedule(id, registrationKey).then((schedule: Schedule) => {
       setSchedule(schedule)
       setSelectedTimeSlot(schedule.timeSlots[0])
-      setTimeSlotLabelWidth(timeSlotInputLabel.current!.offsetWidth)
+      setTimeSlotLabelWidth(timeSlotInputLabel.current?.offsetWidth || 0)
       setParticipants(
         Array.apply('', Array(
           Math.max(
