@@ -8,6 +8,7 @@ import MaskedInput from 'react-text-mask'
 
 import { Schedule } from '../models/Schedule'
 import './ScheduleWizard.css'
+import { TimeSlot } from '../models/TimeSlot'
 
 type ScheduleWizardProps = {
   schedule: Schedule
@@ -113,7 +114,7 @@ export const ScheduleWizard: React.FC<ScheduleWizardProps> = (props: ScheduleWiz
           <Button style={{ width: 'fit-content' }} variant="contained" color='primary' onClick={addNewTimeSlot}>
             Add a time slot
           </Button>
-          {schedule.timeSlots.map((timeSlot, index) =>
+          {schedule.timeSlots.map((timeSlot: TimeSlot, index) =>
             <div className="time-slot-row" key={`time-slot-${index}`}>
               <MuiPickersUtilsProvider utils={DateFnsUtils}>
                 <DateTimePicker

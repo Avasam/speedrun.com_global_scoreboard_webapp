@@ -1,8 +1,8 @@
 export interface TimeSlotDto {
-  id: number;
-  dateTime: Date;
-  maximumEntries: number;
-  participantsPerEntry: number;
+  id: number
+  dateTime: Date
+  maximumEntries: number
+  participantsPerEntry: number
 }
 
 export class TimeSlot {

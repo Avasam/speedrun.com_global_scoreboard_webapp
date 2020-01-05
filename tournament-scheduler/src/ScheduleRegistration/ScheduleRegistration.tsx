@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Button, Card, CardActions, CardContent, Container, FormControl, FormGroup, FormLabel, InputLabel, MenuItem, Select, TextField } from '@material-ui/core'
-import { Schedule } from '../models/Schedule'
+import { Schedule, ScheduleDto } from '../models/Schedule'
 import { TimeSlot } from '../models/TimeSlot'
 
 interface ScheduleRegistrationProps {
@@ -15,7 +15,12 @@ const getSchedule = (id: number, registrationKey: string) =>
       'Content-Type': 'application/json',
       'Authorization': `Bearer: ${localStorage.getItem('jwtToken')}`,
     },
-  }).then(res => res.json())
+  })
+    .then(res => res.status >= 400 && res.status < 600
+      ? Promise.reject(Error(res.status.toString()))
+      : res)
+    .then(res =>
+      res.json().then((scheduleDto: ScheduleDto) => new Schedule(scheduleDto)))
 
 const postRegistration = (timeSlotId: number, participants: string[]) =>
   fetch(`${window.process.env.REACT_APP_BASE_URL}/api/time-slots/${timeSlotId}/registrations`, {
@@ -121,7 +126,7 @@ const ScheduleRegistration: React.FC<ScheduleRegistrationProps> = (props: Schedu
                   labelWidth={timeSlotLabelWidth}
                 >
                   {schedule.timeSlots.map(timeSlot =>
-                    <MenuItem key={`timeslot-${timeSlot.id}`} value={timeSlot.id}>{`${timeSlot.dateTime} (??? / ${timeSlot.maximumEntries})`}</MenuItem>
+                    <MenuItem key={`timeslot-${timeSlot.id}`} value={timeSlot.id}>{`${timeSlot.dateTime.toLocaleString()} (??? / ${timeSlot.maximumEntries} entries left)`}</MenuItem>
                   )}
                 </Select>
               </FormControl>
