@@ -35,32 +35,30 @@ const ScheduleRegistration: React.FC<ScheduleRegistrationProps> = (props: Schedu
   return <Container>
     {!schedule
       ? <div>Sorry. `<code>{props.scheduleId}</code>` is not a valid schedule id.</div>
-      : <Card>
-        <CardContent style={{ textAlign: 'left' }}>
-          <label>Schedule for: {schedule.name}</label>
-          {!schedule.active && <div><br />This schedule is currently inactive and registration is closed.</div>}
-          {schedule.timeSlots.map(timeSlot =>
-            <div key={`timeslot-${timeSlot.id}`}>
-              {
-                moment(timeSlot.dateTime).format(new DateFnsUtils().dateTime24hFormat) +
-                ` (${timeSlot.registrations.length} / ${timeSlot.maximumEntries}` +
-                ` entr${timeSlot.registrations.length === 1 ? 'y' : 'ies'})`
-              }
-              <ol>
-                {timeSlot.registrations.map(registration =>
-                  <li key={`registration-${registration.id}`}>
-                    <ul style={{ listStyleType: 'none' }}>
-                      {registration.participants.map((participant, index) =>
-                        <li key={`participant-${index}`}>{participant}</li>
-                      )}
-                    </ul>
-                  </li>
-                )}
-              </ol>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      : <div style={{ textAlign: 'left' }}>
+        <label>Schedule for: {schedule.name}</label>
+        {!schedule.active && <div><br />This schedule is currently inactive and registration is closed.</div>}
+        {schedule.timeSlots.map(timeSlot =>
+          <div key={`timeslot-${timeSlot.id}`}>
+            {
+              moment(timeSlot.dateTime).format(new DateFnsUtils().dateTime24hFormat) +
+              ` (${timeSlot.registrations.length} / ${timeSlot.maximumEntries}` +
+              ` entr${timeSlot.registrations.length === 1 ? 'y' : 'ies'})`
+            }
+            <ol>
+              {timeSlot.registrations.map(registration =>
+                <li key={`registration-${registration.id}`}>
+                  <ul style={{ listStyleType: 'none' }}>
+                    {registration.participants.map((participant, index) =>
+                      <li key={`participant-${index}`}>{participant}</li>
+                    )}
+                  </ul>
+                </li>
+              )}
+            </ol>
+          </div>
+        )}
+      </div>
     }
 
   </Container>
