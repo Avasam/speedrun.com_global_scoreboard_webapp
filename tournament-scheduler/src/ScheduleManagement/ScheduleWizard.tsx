@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { DateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
 import DateFnsUtils from '@date-io/moment'
 import Event from '@material-ui/icons/Event'
+import FileCopy from '@material-ui/icons/FileCopy'
 import { Button, Card, CardActions, CardContent, Checkbox, Container, FormControl, FormControlLabel, FormGroup, IconButton, Input, InputAdornment, InputLabel, TextField } from '@material-ui/core'
 import { Moment } from 'moment'
 import MaskedInput from 'react-text-mask'
@@ -39,13 +40,21 @@ const NonZeroNumberInput = (props: NonZeroNumberInputProps) => {
 export const ScheduleWizard: React.FC<ScheduleWizardProps> = (props: ScheduleWizardProps) => {
   const [schedule, setSchedule] = useState(props.schedule)
 
-  const editTimeSlotDateTime = (date: Moment | null, index: number) => {
-    if (!date) return
-    schedule.timeSlots[index].dateTime = date.toDate()
+  const editTimeSlotDateTime = (moment: Moment | null, index: number) => {
+    if (!moment) return
+    const date = moment.toDate()
+    schedule.timeSlots[index].dateTime = date
+    schedule.timeSlots.sort((a, b) => a.dateTime.valueOf() - b.dateTime.valueOf())
     setSchedule({
       ...schedule,
       registrationLink: schedule.registrationLink,
     })
+    Array.prototype.forEach.call(
+      document.getElementsByClassName('Mui-focused'),
+      element => element.classList.remove('Mui-focused'),
+    )
+    // const indexToFocus = schedule.timeSlots.findIndex(timeSlot => timeSlot.dateTime.getTime() === date.getTime())
+    // document.getElementById(`time-slot-date-${indexToFocus}`)?.parentElement?.classList.add('Mui-focused')
   }
 
   const editTimeSlotMaximumEntries = (maximumEntries: number, index: number) => {
@@ -70,6 +79,7 @@ export const ScheduleWizard: React.FC<ScheduleWizardProps> = (props: ScheduleWiz
       maximumEntries: 1,
       participantsPerEntry: 1,
     })
+    schedule.timeSlots.sort((a, b) => a.dateTime.valueOf() - b.dateTime.valueOf())
     setSchedule({
       ...schedule,
       registrationLink: schedule.registrationLink,
@@ -78,6 +88,14 @@ export const ScheduleWizard: React.FC<ScheduleWizardProps> = (props: ScheduleWiz
 
   const removeTimeSlot = (index: number) => {
     schedule.timeSlots.splice(index, 1)
+    setSchedule({
+      ...schedule,
+      registrationLink: schedule.registrationLink,
+    })
+  }
+
+  const duplicateTimeSlot = (index: number) => {
+    schedule.timeSlots.splice(index, 0, { ...schedule.timeSlots[index], id: -1 })
     setSchedule({
       ...schedule,
       registrationLink: schedule.registrationLink,
@@ -118,9 +136,11 @@ export const ScheduleWizard: React.FC<ScheduleWizardProps> = (props: ScheduleWiz
             <div className="time-slot-row" key={`time-slot-${index}`}>
               <MuiPickersUtilsProvider utils={DateFnsUtils}>
                 <DateTimePicker
+                  id={`time-slot-date-${index}`}
                   label="Date and time"
                   value={timeSlot.dateTime}
                   onChange={date => editTimeSlotDateTime(date, index)}
+                  minDate={new Date(2020, 0)}
                   ampm={false}
                   minutesStep={5}
                   InputProps={{
@@ -159,6 +179,14 @@ export const ScheduleWizard: React.FC<ScheduleWizardProps> = (props: ScheduleWiz
                     inputComponent={NonZeroNumberInput as any}
                   />
                 </FormControl>
+                <IconButton
+                  color="primary"
+                  aria-label="duplicate time slot"
+                  component="button"
+                  onClick={() => duplicateTimeSlot(index)}
+                >
+                  <FileCopy />
+                </IconButton>
                 {schedule.timeSlots.length > 1 &&
                   <IconButton
                     style={{ color: 'red' }}
