@@ -47,13 +47,13 @@ coverage.xml
 *,cover
 *.cover
 .hypothesis/
+coverage/
 
 # Translations
 *.mo
 *.pot
 
 # Django stuff:
-*.log
 local_settings.py
 
 # Flask stuff:
@@ -102,6 +102,10 @@ ENV/
 .idea/gradle.xml
 .idea/dictionaries/*.xml
 .idea/libraries/*.xml
+
+# Logs
+*.log
+.log*
 
 # =========================
 # Operating System Files
@@ -165,3 +169,10 @@ $RECYCLE.BIN/
 
 # configs
 configs.py
+
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+*/node_modules
+*/.pnp
+.pnp.js
