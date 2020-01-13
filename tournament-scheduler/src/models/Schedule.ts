@@ -14,7 +14,7 @@ export class Schedule {
   active: boolean
   registrationKey: string
   get registrationLink(): string {
-    return `${window.location.origin}?register=${this.id}-${this.registrationKey}`
+    return `${window.location.origin}${window.location.pathname}?register=${this.id}-${this.registrationKey}`
   }
   timeSlots: TimeSlot[]
 

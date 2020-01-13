@@ -47,4 +47,5 @@
       "mode": "auto"
     }
   ],
+  "files.insertFinalNewline": true,
 }

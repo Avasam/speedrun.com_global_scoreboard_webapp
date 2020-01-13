@@ -31,8 +31,8 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
-    "build:dev-server": "set REACT_APP_BASE_URL=https://AvasamDev.pythonanywhere.com&& react-scripts build && npm run compress-build-folder",
+    "build": "react-scripts build && npm run compress-build-folder",
+    "build:dev-server": "set REACT_APP_BASE_URL=https://AvasamDev.pythonanywhere.com&& npm run build ",
     "compress-build-folder": "powershell Compress-Archive -Update -Path .\\build\\ -CompressionLevel Optimal -DestinationPath ..\\build.zip",
     "lint": "eslint src/**",
     "lint:fix": "npm run lint -- --fix",
