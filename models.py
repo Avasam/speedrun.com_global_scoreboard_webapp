@@ -1,33 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-##########################################################################
-# Ava's Global Speedrunning Scoreboard
-# Copyright (C) 2018 Samuel Therrien
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published
-# by the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-# Contact:
-# samuel.06@hotmail.com
-##########################################################################
 from __future__ import annotations
 from datetime import datetime
-from flask_login import login_user
-from flask_login import UserMixin
+from flask_login import login_user, UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import orm, text
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 from utils import get_file, SpeedrunComError
 import uuid
 import traceback
@@ -224,7 +203,21 @@ class Schedule(db.Model):
         cascade="all,delete,delete-orphan",
         back_populates="schedule")
 
-    def to_dto(self) -> dict[str, Union[str, int, bool, List[Dict[str, Union[str, bool, int]]]]]:
+    @staticmethod
+    def get(id: str) -> Optional[Schedule]:
+        return Schedule.query.get(id)
+
+    @staticmethod
+    def get_with_key(schedule_id: str, registration_key: str) -> Optional[Schedule]:
+        try:
+            return Schedule \
+                .query \
+                .filter(Schedule.schedule_id == schedule_id and registration_key == Schedule.registration_key) \
+                .one()
+        except orm.exc.NoResultFound:
+            return None
+
+    def to_dto(self) -> dict[str, Union[str, int, bool, List[Dict[str, Union[str, int, bool]]]]]:
         return {
             'id': self.schedule_id,
             'name': self.name,
@@ -244,11 +237,70 @@ class TimeSlot(db.Model):
     participants_per_entry: int = db.Column(db.Integer, nullable=False)
 
     schedule = db.relationship("Schedule", back_populates="time_slots")
+    registrations: List[Registration] = db.relationship(
+        "Registration",
+        cascade="all,delete,delete-orphan",
+        back_populates="timeslot")
 
-    def to_dto(self) -> dict[str, Union[str, int, bool, datetime]]:
+    @staticmethod
+    def get_with_key(time_slot_id: str, registration_key: str) -> Optional[Schedule]:
+        try:
+            parent_schedule: Schedule = Schedule \
+                .query \
+                .filter(Schedule.registration_key == registration_key) \
+                .one()
+            return TimeSlot \
+                .query \
+                .filter(TimeSlot.time_slot_id == time_slot_id and TimeSlot.schedule_id == parent_schedule.schedule_id) \
+                .one()
+        except orm.exc.NoResultFound:
+            return None
+
+    def register_participant(self, participant_names: List[str]) -> int:
+        new_registration = Registration(time_slot_id=self.time_slot_id)
+        db.session.add(new_registration)
+        db.session.flush()
+
+        new_participants = [Participant(
+            registration_id=new_registration.registration_id,
+            name=participant_name)
+            for participant_name in participant_names]
+
+        db.session.bulk_save_objects(new_participants)
+
+        db.session.commit()
+        return new_registration.registration_id
+
+    def to_dto(self) -> dict[str, Union[str, int, bool, datetime, List[Dict[str, Union[str, int, bool]]]]]:
         return {
             'id': self.time_slot_id,
             'dateTime': self.date_time,
             'maximumEntries': self.maximum_entries,
-            'participantsPerEntry': self.participants_per_entry
+            'participantsPerEntry': self.participants_per_entry,
+            'registrations': map_to_dto(self.registrations)
         }
+
+
+class Registration(db.Model):
+    __tablename__ = "registration"
+
+    registration_id: int = db.Column(db.Integer, primary_key=True)
+    time_slot_id: int = db.Column(db.Integer, db.ForeignKey('time_slot.time_slot_id'), nullable=False)
+
+    timeslot = db.relationship("TimeSlot", back_populates="registrations")
+    participants: List[Participant] = db.relationship("Participant", back_populates="registration")
+
+    def to_dto(self) -> dict[str, Union[int, List[str]]]:
+        return {
+            'id': self.time_slot_id,
+            'participants': [participant.name for participant in self.participants]
+        }
+
+
+class Participant(db.Model):
+    __tablename__ = "participant"
+
+    registration_id: int = db.Column(db.Integer, db.ForeignKey('registration.registration_id'), primary_key=True)
+    name: str = db.Column(db.String(128), primary_key=True)
+
+    registration = db.relationship("Registration", back_populates="participants")

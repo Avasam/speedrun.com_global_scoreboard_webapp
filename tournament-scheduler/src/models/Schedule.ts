@@ -1,4 +1,4 @@
-import { TimeSlot, TimeSlotDto } from './TimeSlot'
+import { TimeSlot, TimeSlotDto, createDefaultTimeSlot } from './TimeSlot'
 
 export interface ScheduleDto {
   id: number
@@ -33,10 +33,5 @@ export const createDefaultSchedule = () =>
     name: 'New Schedule',
     active: false,
     registrationKey: '',
-    timeSlots: [{
-      id: -1,
-      dateTime: new Date(),
-      maximumEntries: 1,
-      participantsPerEntry: 1,
-    }],
+    timeSlots: [createDefaultTimeSlot()],
   })
