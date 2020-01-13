@@ -3,7 +3,7 @@
 
 ##########################################################################
 # Ava's Global Speedrunning Scoreboard
-# Copyright (C) 2018 Samuel Therrien
+# Copyright (C) 2020 Samuel Therrien
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published

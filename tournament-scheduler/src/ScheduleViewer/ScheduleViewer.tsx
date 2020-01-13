@@ -35,7 +35,7 @@ const ScheduleRegistration: React.FC<ScheduleRegistrationProps> = (props: Schedu
   return <Container>
     {!schedule
       ? <div>Sorry. `<code>{props.scheduleId}</code>` is not a valid schedule id.</div>
-      : <div style={{ textAlign: 'left' }}>
+      : <div style={{ textAlign: 'left', width: 'fit-content', margin: 'auto' }}>
         <label>Schedule for: {schedule.name}</label>
         {!schedule.active && <div><br />This schedule is currently inactive and registration is closed.</div>}
         {schedule.timeSlots.map(timeSlot =>

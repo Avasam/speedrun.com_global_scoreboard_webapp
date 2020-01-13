@@ -1,7 +1,7 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
-import ScoreboardNavBar from './NavBar/ScoreboardNavBar';
+import React from 'react'
+import logo from './logo.svg'
+import './App.css'
+import ScoreboardNavBar from './NavBar/ScoreboardNavBar'
 import 'bootstrap/dist/css/bootstrap.css'
 
 const App: React.FC = () => {
@@ -13,7 +13,7 @@ const App: React.FC = () => {
         <img src={logo} className="App-logo" alt="logo" />
         <p>
           Edit <code>src/App.tsx</code> and save to reload.
-        </p>
+                </p>
         <a
           className="App-link"
           href="https://reactjs.org"
@@ -21,13 +21,14 @@ const App: React.FC = () => {
           rel="noopener noreferrer"
         >
           Learn React
-        </a>
+                </a>
       </header>
       <footer>
         &copy; <a href="https://github.com/Avasam/speedrun.com_global_leaderboard_webapp/blob/master/LICENSE" target="about">Copyright</a> {new Date().getFullYear()} by <a href="https://github.com/Avasam/" target="about">Samuel Therrien</a>.
-        Powered by <a href="https://www.speedrun.com/" target="src">speedrun.com</a> and <a href="https://www.pythonanywhere.com/" target="about">PythonAnywhere</a></footer>
+        Powered by <a href="https://www.speedrun.com/" target="src">speedrun.com</a> and <a href="https://www.pythonanywhere.com/" target="about">PythonAnywhere</a>
+      </footer>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
