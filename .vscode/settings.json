@@ -21,9 +21,11 @@
   "editor.codeActionsOnSave": {
     "source.fixAll": true,
     "source.fixAll.tslint": true,
+    "source.fixAll.eslint": true,
     "source.fixAll.markdownlint": true
   },
   "python.linting.pylintEnabled": false,
+  "//": "Using flake8 as other linters are incomplete or have false positives with Requests",
   "python.linting.flake8Enabled": true,
   "python.linting.enabled": true,
   "python.linting.pycodestyleEnabled": false,
@@ -34,7 +36,16 @@
   "python.formatting.autopep8Args": [
     "--max-line-length=120"
   ],
-  "//": "python.pythonPath has to be disabled because of false positives with Requests",
-  "python.pythonPath": "",
-  "typescript.tsdk": "./tournament-scheduler/node_modules/typescript/lib"
+  "typescript.tsdk": "./tournament-scheduler/node_modules/typescript/lib",
+  "typescript.format.semicolons": "remove",
+  "eslint.validate": [
+    "typescript",
+    "typescriptreact"
+  ],
+  "eslint.workingDirectories": [
+    {
+      "mode": "auto"
+    }
+  ],
+  "files.insertFinalNewline": true,
 }

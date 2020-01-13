@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react'
 
-import { createDefaultSchedule, Schedule, ScheduleDto } from '../models/Schedule';
-import User from '../models/User';
-import { Card, CardContent, CardActions, Button, makeStyles, Theme, Container, IconButton } from '@material-ui/core';
-import { Styles } from '@material-ui/core/styles/withStyles';
+import { Schedule, ScheduleDto, createDefaultSchedule } from '../models/Schedule'
+import User from '../models/User'
+import { Button, Card, CardActions, CardContent, Container, IconButton, Theme, makeStyles } from '@material-ui/core'
+import { Styles } from '@material-ui/core/styles/withStyles'
 import { ScheduleWizard } from './ScheduleWizard'
 
 const getSchedules = () =>
@@ -51,8 +51,8 @@ const putSchedule = (schedule: ScheduleDto) =>
       ? Promise.reject(Error(res.status.toString()))
       : res)
 
-const deleteSchedule = (schedule_id: number) =>
-  fetch(`${window.process.env.REACT_APP_BASE_URL}/api/schedules/${schedule_id}`, {
+const deleteSchedule = (scheduleId: number) =>
+  fetch(`${window.process.env.REACT_APP_BASE_URL}/api/schedules/${scheduleId}`, {
     method: 'DELETE',
     headers: {
       'Accept': 'application/json',
@@ -75,12 +75,13 @@ const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleMa
   const editSchedule = (schedule?: Schedule) =>
     setCurrentSchedule(schedule)
 
-  const handleDelete = (schedule_id: number) =>
-    deleteSchedule(schedule_id)
-      .then(() => setSchedules(schedules?.filter(schedule => schedule.id !== schedule_id)))
+  const handleDelete = (scheduleId: number) =>
+    deleteSchedule(scheduleId)
+      .then(() => setSchedules(schedules?.filter(schedule => schedule.id !== scheduleId)))
       .catch(console.error)
 
   const handleSave = (schedule: ScheduleDto) => {
+    console.log(schedule.id)
     const savePromise = schedule.id === -1
       ? postSchedules(schedule)
       : putSchedule(schedule)
@@ -117,7 +118,7 @@ const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleMa
       display: 'flex',
     },
   }
-  const classes = makeStyles((styles as Styles<Theme, {}, "card" | "cardActions">))()
+  const classes = makeStyles((styles as Styles<Theme, {}, 'card' | 'cardActions'>))()
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(
@@ -134,7 +135,7 @@ const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleMa
     />
     : <Container>
       <div>
-        Welcome '{props.currentUser.name}' ! This is where you can manage your schedule forms
+        Welcome {props.currentUser.name} ! You can manage your schedules below
       </div>
 
       <Button
@@ -150,13 +151,14 @@ const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleMa
           <CardContent>
             <span>{schedule.name}</span>
             <IconButton
+              style={{ color: 'red' }}
               color="secondary"
               aria-label="delete schedule"
               component="button"
               onClick={() => handleDelete(schedule.id)}
             >
               &times;
-              </IconButton>
+            </IconButton>
           </CardContent>
           <CardActions className={classes.cardActions}>
             <Button
@@ -164,6 +166,12 @@ const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleMa
               onClick={() => editSchedule(schedule)}
             >
               Edit
+            </Button>
+            <Button
+              size="small"
+              onClick={() => window.location.href = `${window.location.pathname}?view=${schedule.id}`}
+            >
+              Open public page
             </Button>
             <Button
               size="small"
@@ -177,4 +185,4 @@ const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleMa
     </Container>
 }
 
-export default ScheduleManagement;
+export default ScheduleManagement

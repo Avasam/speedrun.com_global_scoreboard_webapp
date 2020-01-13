@@ -3,7 +3,7 @@
 
 ##########################################################################
 # Ava's Global Speedrunning Scoreboard
-# Copyright (C) 2018 Samuel Therrien
+# Copyright (C) 2020 Samuel Therrien
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
@@ -203,6 +203,6 @@ def index():
 
 if __name__ == '__main__':
     if configs.flask_environment == "development":
-      app.run(host='0.0.0.0')
+        app.run(host='0.0.0.0')
     else:
-      app.run()
+        app.run()

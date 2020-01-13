@@ -1,4 +1,4 @@
-CREATE TABLE `speedrun_global_leaderboard`.`time_slot` (
+CREATE TABLE `time_slot` (
   `time_slot_id` INT NOT NULL AUTO_INCREMENT,
   `schedule_id` INT NOT NULL,
   `date_time` DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
@@ -9,7 +9,7 @@ CREATE TABLE `speedrun_global_leaderboard`.`time_slot` (
   UNIQUE INDEX `time_slot_id_UNIQUE` (`time_slot_id` ASC),
   CONSTRAINT `schedule_id_fk`
     FOREIGN KEY (`schedule_id`)
-    REFERENCES `speedrun_global_leaderboard`.`schedule` (`schedule_id`)
+    REFERENCES `schedule` (`schedule_id`)
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 DEFAULT CHARACTER SET = utf8;
