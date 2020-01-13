@@ -22,7 +22,7 @@ const getSchedule = (id: number, registrationKey: string) =>
     .then(res =>
       res.json().then((scheduleDto: ScheduleDto) => new Schedule(scheduleDto)))
 
-const postRegistration = (timeSlotId: number, participants: string[]) =>
+const postRegistration = (timeSlotId: number, participants: string[], registrationKey: string) =>
   fetch(`${window.process.env.REACT_APP_BASE_URL}/api/time-slots/${timeSlotId}/registrations`, {
     method: 'POST',
     headers: {
@@ -30,7 +30,7 @@ const postRegistration = (timeSlotId: number, participants: string[]) =>
       'Content-Type': 'application/json',
       'Authorization': `Bearer: ${localStorage.getItem('jwtToken')}`,
     },
-    body: JSON.stringify(participants),
+    body: JSON.stringify({ participants, registrationKey }),
   })
     .then(res => res.status >= 400 && res.status < 600
       ? Promise.reject(Error(res.status.toString()))
@@ -39,6 +39,7 @@ const postRegistration = (timeSlotId: number, participants: string[]) =>
 
 const ScheduleRegistration: React.FC<ScheduleRegistrationProps> = (props: ScheduleRegistrationProps) => {
   const [schedule, setSchedule] = useState<Schedule | undefined>(undefined)
+  const [registrationKey, setRegistrationKey] = useState<string>('')
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<TimeSlot | undefined>()
   const [timeSlotLabelWidth, setTimeSlotLabelWidth] = useState(0)
   const [participants, setParticipants] = useState<string[]>([])
@@ -50,6 +51,7 @@ const ScheduleRegistration: React.FC<ScheduleRegistrationProps> = (props: Schedu
     const splitIndex = props.registrationLink.indexOf('-')
     const id = parseInt(props.registrationLink.substr(0, splitIndex))
     const registrationKey = props.registrationLink.substr(splitIndex + 1)
+    setRegistrationKey(registrationKey)
     getSchedule(id, registrationKey).then((schedule: Schedule) => {
       setSchedule(schedule)
       setSelectedTimeSlot(schedule.timeSlots[0])
@@ -87,7 +89,7 @@ const ScheduleRegistration: React.FC<ScheduleRegistrationProps> = (props: Schedu
 
   const sendRegistrationForm = () => {
     if (!selectedTimeSlot) return
-    postRegistration(selectedTimeSlot.id, participants.slice(0, selectedTimeSlot.participantsPerEntry))
+    postRegistration(selectedTimeSlot.id, participants.slice(0, selectedTimeSlot.participantsPerEntry), registrationKey)
       .then(() => window.location.href = window.location.pathname)
       .catch(console.error)
   }
@@ -131,7 +133,7 @@ const ScheduleRegistration: React.FC<ScheduleRegistrationProps> = (props: Schedu
                 </Select>
               </FormControl>
               <FormLabel>Please write down your name as well as all other participants playing with or against you in the same match</FormLabel>
-              {(Array.apply(null, Array(selectedTimeSlot.participantsPerEntry))).map((_, index) =>
+              {(Array(...Array(selectedTimeSlot.participantsPerEntry))).map((_, index) =>
                 <TextField
                   key={`participant-${index}`}
                   label={`Participant ${index + 1}'s name`}

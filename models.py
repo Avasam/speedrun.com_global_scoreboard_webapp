@@ -253,6 +253,39 @@ class TimeSlot(db.Model):
     participants_per_entry: int = db.Column(db.Integer, nullable=False)
 
     schedule = db.relationship("Schedule", back_populates="time_slots")
+    registrations: List[TimeSlot] = db.relationship(
+        "Registration",
+        cascade="all,delete,delete-orphan",
+        back_populates="timeslot")
+
+    @staticmethod
+    def get_with_key(time_slot_id: str, registration_key: str) -> Optional[Schedule]:
+        try:
+            parent_schedule: Schedule = Schedule \
+                .query \
+                .filter(Schedule.registration_key == registration_key) \
+                .one()
+            return TimeSlot \
+                .query \
+                .filter(TimeSlot.time_slot_id == time_slot_id and TimeSlot.schedule_id == parent_schedule.schedule_id) \
+                .one()
+        except orm.exc.NoResultFound:
+            return None
+
+    def register_participant(self, participant_names: List[str]) -> int:
+        new_registration = Registration(time_slot_id=self.time_slot_id)
+        db.session.add(new_registration)
+        db.session.flush()
+
+        new_participants = [Participant(
+            registration_id=new_registration.registration_id,
+            name=participant_name)
+            for participant_name in participant_names]
+
+        db.session.bulk_save_objects(new_participants)
+
+        db.session.commit()
+        return new_registration.registration_id
 
     def to_dto(self) -> dict[str, Union[str, int, bool, datetime]]:
         return {
@@ -261,3 +294,19 @@ class TimeSlot(db.Model):
             'maximumEntries': self.maximum_entries,
             'participantsPerEntry': self.participants_per_entry
         }
+
+
+class Registration(db.Model):
+    __tablename__ = "registration"
+
+    registration_id: int = db.Column(db.Integer, primary_key=True)
+    time_slot_id: int = db.Column(db.Integer, db.ForeignKey('time_slot.time_slot_id'), nullable=False)
+
+    timeslot = db.relationship("TimeSlot", back_populates="registrations")
+
+
+class Participant(db.Model):
+    __tablename__ = "participant"
+
+    registration_id: int = db.Column(db.Integer, db.ForeignKey('registration.registration_id'), primary_key=True)
+    name: int = db.Column(db.String(128), primary_key=True)

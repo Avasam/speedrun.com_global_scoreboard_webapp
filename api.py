@@ -2,7 +2,7 @@
 api.py
 - provides the API endpoints for consuming and producing REST requests and responses
 """
-from models import Player, Schedule, map_to_dto
+from models import map_to_dto, Player, Schedule, TimeSlot
 from datetime import datetime, timedelta
 from flask import Blueprint, current_app, jsonify, request
 from functools import wraps
@@ -140,6 +140,35 @@ def delete_schedule(current_user: Player, id: str):
         return jsonify({'message': '/id is not a valid number', 'authenticated': True}), 400
     delete_success = current_user.delete_schedule(schedule_id)
     return "", 204 if delete_success else 404
+
+
+@api.route('/time-slots/<id>/registrations', methods=('POST',))
+def post_registration(id: str):
+    data: Dict[str, ] = request.get_json()
+
+    error_message, registration_key, participants = __validate_create_registration(data)
+    if error_message is not None:
+        return jsonify({'message': error_message, 'authenticated': True}), 400
+
+    time_slot = TimeSlot.get_with_key(id, registration_key)
+    if time_slot is None:
+        return '', 404
+
+    return str(time_slot.register_participant(participants)), 201
+
+
+def __validate_create_registration(data: Dict[str, Any]) -> Tuple[Optional[str], str, List[str]]:
+    registration_key = ""
+    participants = []
+    try:
+        registration_key = data['registrationKey']
+    except KeyError:
+        return 'registrationKey has to be defined', registration_key, participants
+    try:
+        participants = data['participants']
+    except KeyError:
+        return 'registrationKey has to be defined', registration_key, participants
+    return None, registration_key, participants
 
 
 def __validate_create_schedule(data: Dict[str, Any]) -> Tuple[Optional[str], str, bool, List[Dict]]:
