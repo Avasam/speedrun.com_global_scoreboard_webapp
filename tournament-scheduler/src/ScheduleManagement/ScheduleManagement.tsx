@@ -169,6 +169,12 @@ const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleMa
             </Button>
             <Button
               size="small"
+              onClick={() => window.location.href = `${window.location.pathname}?view=${schedule.id}`}
+            >
+              Open public page
+            </Button>
+            <Button
+              size="small"
               onClick={() => copyToClipboard(`${schedule.registrationLink}`)}
             >
               Copy registration link

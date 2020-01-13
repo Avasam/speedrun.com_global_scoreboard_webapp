@@ -9,7 +9,7 @@ import MaskedInput from 'react-text-mask'
 
 import { Schedule } from '../models/Schedule'
 import './ScheduleWizard.css'
-import { TimeSlot } from '../models/TimeSlot'
+import { TimeSlot, createDefaultTimeSlot } from '../models/TimeSlot'
 
 type ScheduleWizardProps = {
   schedule: Schedule
@@ -73,13 +73,7 @@ export const ScheduleWizard: React.FC<ScheduleWizardProps> = (props: ScheduleWiz
     })
   }
   const addNewTimeSlot = () => {
-    schedule.timeSlots.push({
-      id: -1,
-      dateTime: new Date(),
-      maximumEntries: 1,
-      participantsPerEntry: 1,
-    })
-    schedule.timeSlots.sort((a, b) => a.dateTime.valueOf() - b.dateTime.valueOf())
+    schedule.timeSlots.unshift(createDefaultTimeSlot())
     setSchedule({
       ...schedule,
       registrationLink: schedule.registrationLink,

@@ -1,11 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react'
+import DateFnsUtils from '@date-io/moment'
 import { Button, Card, CardActions, CardContent, Container, FormControl, FormGroup, FormLabel, InputLabel, MenuItem, Select, TextField } from '@material-ui/core'
 import { Schedule, ScheduleDto } from '../models/Schedule'
 import { TimeSlot } from '../models/TimeSlot'
+import moment from 'moment'
 
 interface ScheduleRegistrationProps {
   registrationLink: string
 }
+
+const entriesLeft = (timeSlot: TimeSlot) => timeSlot.maximumEntries - timeSlot.registrations.length
 
 const getSchedule = (id: number, registrationKey: string) =>
   fetch(`${window.process.env.REACT_APP_BASE_URL}/api/schedules/${id}?registrationKey=${registrationKey}`, {
@@ -62,14 +66,13 @@ const ScheduleRegistration: React.FC<ScheduleRegistrationProps> = (props: Schedu
             schedule
               .timeSlots
               .map(timeSlot => timeSlot.maximumEntries)
-              .reduce((a, b) => Math.max(a, b))
+              .reduce((a, b) => Math.max(a, b), 0)
           )
         )) as string[]
       )
     })
   }, [props.registrationLink])
 
-  // ChangeEvent<HTMLInputElement>
   const selectTimeSlot = (event: React.ChangeEvent<{ value: unknown }>) => {
     setSelectedTimeSlot(schedule?.timeSlots.find(timeSlot => timeSlot.id === parseInt(event.target.value as string)))
   }
@@ -90,7 +93,7 @@ const ScheduleRegistration: React.FC<ScheduleRegistrationProps> = (props: Schedu
   const sendRegistrationForm = () => {
     if (!selectedTimeSlot) return
     postRegistration(selectedTimeSlot.id, participants.slice(0, selectedTimeSlot.participantsPerEntry), registrationKey)
-      .then(() => window.location.href = window.location.pathname)
+      .then(() => window.location.href = `${window.location.pathname}?view=${schedule?.id}`)
       .catch(console.error)
   }
 
@@ -103,19 +106,6 @@ const ScheduleRegistration: React.FC<ScheduleRegistrationProps> = (props: Schedu
           {!schedule.active || !selectedTimeSlot
             ? <div><br />Sorry. This schedule is currently inactive and registration is closed.</div>
             : <FormGroup>
-              {/*
-              <FormLabel>Choose your time slot amongst the following {schedule.timeSlots.length}</FormLabel>
-              <RadioGroup aria-label="time slot" name="time-slot" value={selectedTimeSlot.id} onChange={selectTimeSlot}>
-                {schedule.timeSlots.map(timeSlot =>
-                  <FormControlLabel
-                    key={`timeslot-${timeSlot.id}`}
-                    value={timeSlot.id}
-                    control={<Radio />}
-                    label={`${timeSlot.dateTime} (??? / ${timeSlot.maximumEntries})`}
-                  />
-                )}
-              </RadioGroup>
-              */}
               <FormControl variant="outlined" style={{ margin: '16px 0' }}>
                 <InputLabel ref={timeSlotInputLabel} id="time-slot-select-label">
                   Choose your time slot amongst the following {schedule.timeSlots.length}
@@ -128,11 +118,23 @@ const ScheduleRegistration: React.FC<ScheduleRegistrationProps> = (props: Schedu
                   labelWidth={timeSlotLabelWidth}
                 >
                   {schedule.timeSlots.map(timeSlot =>
-                    <MenuItem key={`timeslot-${timeSlot.id}`} value={timeSlot.id}>{`${timeSlot.dateTime.toLocaleString()} (??? / ${timeSlot.maximumEntries} entries left)`}</MenuItem>
+                    <MenuItem
+                      key={`timeslot-${timeSlot.id}`}
+                      value={timeSlot.id}
+                      disabled={entriesLeft(timeSlot) <= 0}
+                    >{
+                        moment(timeSlot.dateTime).format(new DateFnsUtils().dateTime24hFormat) +
+                        (entriesLeft(timeSlot) <= 0
+                          ? ' (full)'
+                          : ` (${entriesLeft(timeSlot)} / ${timeSlot.maximumEntries}` +
+                          ` entr${entriesLeft(timeSlot) === 1 ? 'y' : 'ies'} left)`)
+                      }</MenuItem>
                   )}
                 </Select>
               </FormControl>
-              <FormLabel>Please write down your name as well as all other participants playing with or against you in the same match</FormLabel>
+              <FormLabel>
+                Please write down your name as well as all other participants playing with or against you in the same match
+              </FormLabel>
               {(Array(...Array(selectedTimeSlot.participantsPerEntry))).map((_, index) =>
                 <TextField
                   key={`participant-${index}`}

@@ -224,6 +224,10 @@ class Schedule(db.Model):
         back_populates="schedule")
 
     @staticmethod
+    def get(id: str) -> Optional[Schedule]:
+        return Schedule.query.get(id)
+
+    @staticmethod
     def get_with_key(schedule_id: str, registration_key: str) -> Optional[Schedule]:
         try:
             return Schedule \
@@ -233,7 +237,7 @@ class Schedule(db.Model):
         except orm.exc.NoResultFound:
             return None
 
-    def to_dto(self) -> dict[str, Union[str, int, bool, List[Dict[str, Union[str, bool, int]]]]]:
+    def to_dto(self) -> dict[str, Union[str, int, bool, List[Dict[str, Union[str, int, bool]]]]]:
         return {
             'id': self.schedule_id,
             'name': self.name,
@@ -253,7 +257,7 @@ class TimeSlot(db.Model):
     participants_per_entry: int = db.Column(db.Integer, nullable=False)
 
     schedule = db.relationship("Schedule", back_populates="time_slots")
-    registrations: List[TimeSlot] = db.relationship(
+    registrations: List[Registration] = db.relationship(
         "Registration",
         cascade="all,delete,delete-orphan",
         back_populates="timeslot")
@@ -287,12 +291,13 @@ class TimeSlot(db.Model):
         db.session.commit()
         return new_registration.registration_id
 
-    def to_dto(self) -> dict[str, Union[str, int, bool, datetime]]:
+    def to_dto(self) -> dict[str, Union[str, int, bool, datetime, List[Dict[str, Union[str, int, bool]]]]]:
         return {
             'id': self.time_slot_id,
             'dateTime': self.date_time,
             'maximumEntries': self.maximum_entries,
-            'participantsPerEntry': self.participants_per_entry
+            'participantsPerEntry': self.participants_per_entry,
+            'registrations': map_to_dto(self.registrations)
         }
 
 
@@ -303,10 +308,19 @@ class Registration(db.Model):
     time_slot_id: int = db.Column(db.Integer, db.ForeignKey('time_slot.time_slot_id'), nullable=False)
 
     timeslot = db.relationship("TimeSlot", back_populates="registrations")
+    participants: List[Participant] = db.relationship("Participant", back_populates="registration")
+
+    def to_dto(self) -> dict[str, Union[int, List[str]]]:
+        return {
+            'id': self.time_slot_id,
+            'participants': [participant.name for participant in self.participants]
+        }
 
 
 class Participant(db.Model):
     __tablename__ = "participant"
 
     registration_id: int = db.Column(db.Integer, db.ForeignKey('registration.registration_id'), primary_key=True)
-    name: int = db.Column(db.String(128), primary_key=True)
+    name: str = db.Column(db.String(128), primary_key=True)
+
+    registration = db.relationship("Registration", back_populates="participants")
