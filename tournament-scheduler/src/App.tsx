@@ -45,12 +45,11 @@ const App: React.FC = () => {
       <Toolbar>
         {currentUser || scheduleRegistrationLink || viewScheduleId
           ? <>
-            <IconButton>
+            <IconButton onClick={() => window.location.href = window.location.pathname}>
               <img
                 className='logo'
                 alt='logo'
                 src={`${window.process.env.REACT_APP_BASE_URL}/assets/images/favicon.ico`}
-                onClick={() => window.location.href = window.location.pathname}
               />
             </IconButton>
             <Typography variant="h4">Tournament Scheduler</Typography>

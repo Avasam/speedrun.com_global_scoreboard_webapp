@@ -145,7 +145,7 @@ const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleMa
         onClick={() => editSchedule(createDefaultSchedule())}
       >
         Create new Schedule
-        </Button>
+      </Button>
       {schedules && schedules.map(schedule =>
         <Card className={classes.card} key={schedule.id}>
           <CardContent>
