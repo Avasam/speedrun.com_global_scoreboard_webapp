@@ -243,7 +243,7 @@ class TimeSlot(db.Model):
         back_populates="timeslot")
 
     @staticmethod
-    def get_with_key(time_slot_id: str, registration_key: str) -> Optional[Schedule]:
+    def get_with_key(time_slot_id: str, registration_key: str) -> Optional[TimeSlot]:
         try:
             parent_schedule: Schedule = Schedule \
                 .query \

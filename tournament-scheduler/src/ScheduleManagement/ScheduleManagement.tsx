@@ -16,7 +16,7 @@ const getSchedules = () =>
     },
   })
     .then(res => res.status >= 400 && res.status < 600
-      ? Promise.reject(Error(res.status.toString()))
+      ? Promise.reject(res)
       : res)
     .then(res =>
       res.json().then((scheduleDtos: ScheduleDto[] | undefined) =>
@@ -33,7 +33,7 @@ const postSchedules = (schedule: ScheduleDto) =>
     body: JSON.stringify(schedule),
   })
     .then(res => res.status >= 400 && res.status < 600
-      ? Promise.reject(Error(res.status.toString()))
+      ? Promise.reject(res)
       : res)
     .then(res => res.json())
 
@@ -48,7 +48,7 @@ const putSchedule = (schedule: ScheduleDto) =>
     body: JSON.stringify(schedule),
   })
     .then(res => res.status >= 400 && res.status < 600
-      ? Promise.reject(Error(res.status.toString()))
+      ? Promise.reject(res)
       : res)
 
 const deleteSchedule = (scheduleId: number) =>
@@ -61,7 +61,7 @@ const deleteSchedule = (scheduleId: number) =>
     },
   })
     .then(res => res.status >= 400 && res.status < 600
-      ? Promise.reject(Error(res.status.toString()))
+      ? Promise.reject(res)
       : res)
 
 type ScheduleManagementProps = {

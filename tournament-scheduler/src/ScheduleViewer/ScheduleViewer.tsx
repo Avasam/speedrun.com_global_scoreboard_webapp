@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Card, CardContent, Container } from '@material-ui/core'
+import { Container } from '@material-ui/core'
 import DateFnsUtils from '@date-io/moment'
 import { Schedule, ScheduleDto } from '../models/Schedule'
 import moment from 'moment'
@@ -18,7 +18,7 @@ const getSchedule = (id: number) =>
     },
   })
     .then(res => res.status >= 400 && res.status < 600
-      ? Promise.reject(Error(res.status.toString()))
+      ? Promise.reject(res)
       : res)
     .then(res =>
       res.json().then((scheduleDto: ScheduleDto) => new Schedule(scheduleDto)))

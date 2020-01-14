@@ -157,6 +157,9 @@ def post_registration(id: str):
     if time_slot is None:
         return '', 404
 
+    if (len(time_slot.registrations) >= time_slot.maximum_entries):
+        return jsonify({'message': 'Registrations are full for this timeslot', 'authenticated': True}), 507
+
     return str(time_slot.register_participant(participants)), 201
 
 
