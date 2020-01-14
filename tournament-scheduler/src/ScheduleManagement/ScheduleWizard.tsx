@@ -9,7 +9,7 @@ import MaskedInput from 'react-text-mask'
 
 import { Schedule } from '../models/Schedule'
 import './ScheduleWizard.css'
-import { TimeSlot, createDefaultTimeSlot } from '../models/TimeSlot'
+import { minutesStep, createDefaultTimeSlot, TimeSlot } from '../models/TimeSlot'
 
 type ScheduleWizardProps = {
   schedule: Schedule
@@ -136,7 +136,7 @@ export const ScheduleWizard: React.FC<ScheduleWizardProps> = (props: ScheduleWiz
                   onChange={date => editTimeSlotDateTime(date, index)}
                   minDate={new Date(2020, 0)}
                   ampm={false}
-                  minutesStep={5}
+                  minutesStep={minutesStep}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
