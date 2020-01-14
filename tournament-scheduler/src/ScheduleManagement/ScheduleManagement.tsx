@@ -168,7 +168,10 @@ const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleMa
             </Button>
             <Button
               size="small"
-              onClick={() => window.location.href = `${window.location.pathname}?view=${schedule.id}`}
+              onClick={() => {
+                localStorage.removeItem('register')
+                window.location.href = `${window.location.pathname}?view=${schedule.id}`
+              }}
             >
               Open public page
             </Button>

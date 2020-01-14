@@ -136,7 +136,8 @@ class Player(db.Model, UserMixin):
         try:
             schedule_to_update = Schedule \
                 .query \
-                .filter(Schedule.schedule_id == schedule_id and Schedule.owner_id == self.user_id) \
+                .filter(Schedule.schedule_id == schedule_id) \
+                .filter(Schedule.owner_id == self.user_id) \
                 .one()
         except orm.exc.NoResultFound:
             return False
@@ -175,7 +176,8 @@ class Player(db.Model, UserMixin):
         try:
             schedule_to_delete = Schedule \
                 .query \
-                .filter(Schedule.schedule_id == schedule_id and Schedule.owner_id == self.user_id) \
+                .filter(Schedule.schedule_id == schedule_id) \
+                .filter(Schedule.owner_id == self.user_id) \
                 .one()
         except orm.exc.NoResultFound:
             return False
@@ -212,7 +214,8 @@ class Schedule(db.Model):
         try:
             return Schedule \
                 .query \
-                .filter(Schedule.schedule_id == schedule_id and registration_key == Schedule.registration_key) \
+                .filter(Schedule.schedule_id == schedule_id) \
+                .filter(Schedule.registration_key == registration_key) \
                 .one()
         except orm.exc.NoResultFound:
             return None
@@ -251,7 +254,8 @@ class TimeSlot(db.Model):
                 .one()
             return TimeSlot \
                 .query \
-                .filter(TimeSlot.time_slot_id == time_slot_id and TimeSlot.schedule_id == parent_schedule.schedule_id) \
+                .filter(TimeSlot.time_slot_id == time_slot_id) \
+                .filter(TimeSlot.schedule_id == parent_schedule.schedule_id) \
                 .one()
         except orm.exc.NoResultFound:
             return None

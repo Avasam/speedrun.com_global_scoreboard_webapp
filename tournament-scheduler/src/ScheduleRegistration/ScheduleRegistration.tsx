@@ -25,8 +25,7 @@ const getSchedule = (id: number, registrationKey: string) =>
     .then(res => res.status >= 400 && res.status < 600
       ? Promise.reject(res)
       : res)
-    .then(res =>
-      res.json().then((scheduleDto: ScheduleDto) => new Schedule(scheduleDto)))
+    .then(res => res.json().then((scheduleDto: ScheduleDto) => new Schedule(scheduleDto)))
 
 const postRegistration = (timeSlotId: number, participants: string[], registrationKey: string) =>
   fetch(`${window.process.env.REACT_APP_BASE_URL}/api/time-slots/${timeSlotId}/registrations`, {
@@ -44,7 +43,7 @@ const postRegistration = (timeSlotId: number, participants: string[], registrati
     .then(res => res.json())
 
 const ScheduleRegistration: React.FC<ScheduleRegistrationProps> = (props: ScheduleRegistrationProps) => {
-  const [schedule, setSchedule] = useState<Schedule | undefined>(undefined)
+  const [schedule, setSchedule] = useState<Schedule | undefined | null>(undefined)
   const [registrationKey, setRegistrationKey] = useState<string>('')
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<TimeSlot | undefined>()
   const [timeSlotLabelWidth, setTimeSlotLabelWidth] = useState(0)
@@ -59,20 +58,28 @@ const ScheduleRegistration: React.FC<ScheduleRegistrationProps> = (props: Schedu
     const id = parseInt(props.registrationLink.substr(0, splitIndex))
     const registrationKey = props.registrationLink.substr(splitIndex + 1)
     setRegistrationKey(registrationKey)
-    getSchedule(id, registrationKey).then((schedule: Schedule) => {
-      setSchedule(schedule)
-      setTimeSlotLabelWidth((timeSlotInputLabel.current?.offsetWidth || 0) - timeSlotLabelPaddingRight)
-      setParticipants(
-        Array.apply('', Array(
-          Math.max(
-            schedule
-              .timeSlots
-              .map(timeSlot => timeSlot.maximumEntries)
-              .reduce((a, b) => Math.max(a, b), 0)
-          )
-        )) as string[]
-      )
-    })
+    getSchedule(id, registrationKey)
+      .then((schedule: Schedule) => {
+        setSchedule(schedule)
+        setTimeSlotLabelWidth((timeSlotInputLabel.current?.offsetWidth || 0) - timeSlotLabelPaddingRight)
+        setParticipants(
+          Array.apply('', Array(
+            Math.max(
+              schedule
+                .timeSlots
+                .map(timeSlot => timeSlot.maximumEntries)
+                .reduce((a, b) => Math.max(a, b), 0)
+            )
+          )) as string[]
+        )
+      })
+      .catch(err => {
+        if (err.status === 404) {
+          setSchedule(null)
+        } else {
+          console.error(err)
+        }
+      })
   }, [props.registrationLink])
 
   const selectTimeSlot = (event: React.ChangeEvent<{ value: unknown }>) => {
@@ -96,7 +103,10 @@ const ScheduleRegistration: React.FC<ScheduleRegistrationProps> = (props: Schedu
   const sendRegistrationForm = () => {
     if (!selectedTimeSlot) return
     postRegistration(selectedTimeSlot.id, participants.slice(0, selectedTimeSlot.participantsPerEntry), registrationKey)
-      .then(() => window.location.href = `${window.location.pathname}?view=${schedule?.id}`)
+      .then(() => {
+        localStorage.removeItem('register')
+        window.location.href = `${window.location.pathname}?view=${schedule?.id}`
+      })
       .catch(err => {
         if (err.status === 507) {
           if (!schedule) { return }
@@ -115,7 +125,7 @@ const ScheduleRegistration: React.FC<ScheduleRegistrationProps> = (props: Schedu
   }
 
   return <Container>
-    {!schedule
+    {schedule !== undefined && (!schedule
       ? <div>Sorry. `<code>{props.registrationLink}</code>` does not lead to an existing registration form.</div>
       : <Card>
         <CardContent style={{ textAlign: 'left' }}>
@@ -191,7 +201,7 @@ const ScheduleRegistration: React.FC<ScheduleRegistrationProps> = (props: Schedu
           <span style={{ color: 'red' }}>{errorMessage}</span>
         </CardActions>
       </Card>
-    }
+    )}
 
   </Container>
 }

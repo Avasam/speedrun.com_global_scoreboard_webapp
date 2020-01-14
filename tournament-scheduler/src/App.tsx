@@ -15,20 +15,35 @@ const getCurrentUser = () =>
       'Content-Type': 'application/json',
       'Authorization': `Bearer: ${localStorage.getItem('jwtToken')}`,
     },
-  }).then(res => res.json())
+  })
+    .then(res => res.status >= 400 && res.status < 600
+      ? Promise.reject(res)
+      : res)
+    .then(res => res.json())
 
 
-const logout = (setCurrentUser: (user: User | undefined) => void) => {
-  setCurrentUser(undefined)
+const logout = (setCurrentUser: (user: User | undefined | null) => void) => {
+  setCurrentUser(null)
   localStorage.removeItem('jwtToken')
 }
 
 const App: React.FC = () => {
-  const [currentUser, setCurrentUser] = useState<User | undefined>(undefined)
+  const [currentUser, setCurrentUser] = useState<User | undefined | null>(undefined)
   const viewScheduleIdFromUrl = new URLSearchParams(window.location.search).get('view')
   const [viewScheduleId] = useState<number | null>((viewScheduleIdFromUrl && parseInt(viewScheduleIdFromUrl)) || null)
-  const [scheduleRegistrationLink] = useState<string | null>(new URLSearchParams(window.location.search).get('register'))
+
+  // If a registrationLink wasn't in the URL, take the one from localStorage
+  const [scheduleRegistrationLink] = useState<string | null>(
+    new URLSearchParams(window.location.search).get('register') ||
+    localStorage.getItem('register'))
+  // Otherwise, clear up the localStorage
+  if (window.location.search) {
+    localStorage.removeItem('register')
+  }
+  // Keep the registrationLink in localStorage to simulate staying on the same page when reloading the registration page
+  // despite clearing up the URL
   if (scheduleRegistrationLink) {
+    localStorage.setItem('register', scheduleRegistrationLink)
     window.history.pushState(null, document.title, window.location.href.replace(window.location.search, ''))
   }
 
@@ -36,6 +51,13 @@ const App: React.FC = () => {
     getCurrentUser()
       .then((res: { user: User | undefined }) => res.user)
       .then(setCurrentUser)
+      .catch(err => {
+        if (err.status === 401) {
+          setCurrentUser(null)
+        } else {
+          console.error(err)
+        }
+      })
   }, [])
 
   return <div className='App'>
@@ -43,7 +65,10 @@ const App: React.FC = () => {
       <Toolbar>
         {currentUser || scheduleRegistrationLink || viewScheduleId
           ? <>
-            <IconButton onClick={() => window.location.href = window.location.pathname}>
+            <IconButton onClick={() => {
+              localStorage.removeItem('register')
+              window.location.href = window.location.pathname
+            }}>
               <img
                 className='logo'
                 alt='logo'
@@ -65,9 +90,9 @@ const App: React.FC = () => {
         ? <ScheduleRegistration registrationLink={scheduleRegistrationLink} />
         : viewScheduleId
           ? <ScheduleViewer scheduleId={viewScheduleId} />
-          : currentUser
+          : currentUser !== undefined && (currentUser
             ? <ScheduleManagement currentUser={currentUser} />
-            : <LoginForm setCurrentUser={(currentUser: User) => setCurrentUser(currentUser)} />
+            : <LoginForm setCurrentUser={(currentUser: User) => setCurrentUser(currentUser)} />)
       }
     </div>
 
