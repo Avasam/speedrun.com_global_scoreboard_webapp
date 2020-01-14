@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react'
-
-import { Schedule, ScheduleDto, createDefaultSchedule } from '../models/Schedule'
-import User from '../models/User'
 import { Button, Card, CardActions, CardContent, Container, IconButton, Theme, makeStyles } from '@material-ui/core'
-import { Styles } from '@material-ui/core/styles/withStyles'
+import React, { useEffect, useState } from 'react'
+import { Schedule, ScheduleDto, createDefaultSchedule } from '../models/Schedule'
 import { ScheduleWizard } from './ScheduleWizard'
+import { Styles } from '@material-ui/core/styles/withStyles'
+import User from '../models/User'
 
 const getSchedules = () =>
   fetch(`${window.process.env.REACT_APP_BASE_URL}/api/schedules`, {

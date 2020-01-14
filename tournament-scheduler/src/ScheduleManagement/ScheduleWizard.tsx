@@ -1,15 +1,14 @@
-import React, { useState } from 'react'
+import './ScheduleWizard.css'
+import { Button, Card, CardActions, CardContent, Checkbox, Container, FormControl, FormControlLabel, FormGroup, IconButton, Input, InputAdornment, InputBaseComponentProps, InputLabel, TextField } from '@material-ui/core'
 import { DateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
+import React, { FunctionComponent, useState } from 'react'
+import { TimeSlot, createDefaultTimeSlot, minutesStep } from '../models/TimeSlot'
 import DateFnsUtils from '@date-io/moment'
 import Event from '@material-ui/icons/Event'
 import FileCopy from '@material-ui/icons/FileCopy'
-import { Button, Card, CardActions, CardContent, Checkbox, Container, FormControl, FormControlLabel, FormGroup, IconButton, Input, InputAdornment, InputLabel, TextField } from '@material-ui/core'
-import { Moment } from 'moment'
 import MaskedInput from 'react-text-mask'
-
+import { Moment } from 'moment'
 import { Schedule } from '../models/Schedule'
-import './ScheduleWizard.css'
-import { minutesStep, createDefaultTimeSlot, TimeSlot } from '../models/TimeSlot'
 
 type ScheduleWizardProps = {
   schedule: Schedule
@@ -19,7 +18,7 @@ type ScheduleWizardProps = {
 
 type NonZeroNumberInputProps = {
   value: number | string
-  inputRef: (ref: HTMLInputElement | null) => void
+  inputRef: (ref: HTMLElement | null) => void
 }
 
 const NonZeroNumberInput = (props: NonZeroNumberInputProps) => {
@@ -28,7 +27,7 @@ const NonZeroNumberInput = (props: NonZeroNumberInputProps) => {
   return (
     <MaskedInput
       {...other}
-      ref={(ref: any) => {
+      ref={ref => {
         inputRef(ref ? ref.inputElement : null)
       }}
       mask={[/[1-9]/, /\d/,]}
@@ -158,7 +157,7 @@ export const ScheduleWizard: React.FC<ScheduleWizardProps> = (props: ScheduleWiz
                     onFocus={event => event.target.select()}
                     value={timeSlot.maximumEntries}
                     onChange={event => editTimeSlotMaximumEntries(parseInt(event.target.value, 10) || 1, index)}
-                    inputComponent={NonZeroNumberInput as any}
+                    inputComponent={NonZeroNumberInput as FunctionComponent<InputBaseComponentProps>}
                   />
                 </FormControl>
                 <FormControl>
@@ -170,7 +169,7 @@ export const ScheduleWizard: React.FC<ScheduleWizardProps> = (props: ScheduleWiz
                     onFocus={event => event.target.select()}
                     value={timeSlot.participantsPerEntry}
                     onChange={event => editTimeSlotparticipantsPerEntry(parseInt(event.target.value, 10) || 1, index)}
-                    inputComponent={NonZeroNumberInput as any}
+                    inputComponent={NonZeroNumberInput as FunctionComponent<InputBaseComponentProps>}
                   />
                 </FormControl>
                 <IconButton

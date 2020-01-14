@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
+import { Schedule, ScheduleDto } from '../models/Schedule'
 import { Container } from '@material-ui/core'
 import DateFnsUtils from '@date-io/moment'
-import { Schedule, ScheduleDto } from '../models/Schedule'
 import moment from 'moment'
 
 interface ScheduleRegistrationProps {

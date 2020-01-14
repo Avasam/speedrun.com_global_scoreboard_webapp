@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react'
-import DateFnsUtils from '@date-io/moment'
 import { Button, Card, CardActions, CardContent, Container, FormControl, FormGroup, FormLabel, InputLabel, MenuItem, Select, TextField } from '@material-ui/core'
+import React, { useEffect, useRef, useState } from 'react'
 import { Schedule, ScheduleDto } from '../models/Schedule'
+import DateFnsUtils from '@date-io/moment'
 import { TimeSlot } from '../models/TimeSlot'
 import moment from 'moment'
 
@@ -107,7 +107,7 @@ const ScheduleRegistration: React.FC<ScheduleRegistrationProps> = (props: Schedu
             registrationLink: schedule.registrationLink,
           })
           setSelectedTimeSlot(schedule.timeSlots[index])
-          err.json().then((response: any) => setErrorMessage(response.message))
+          err.json().then((response: { message: string, authenticated: boolean }) => setErrorMessage(response.message))
         } else {
           console.error(err)
         }

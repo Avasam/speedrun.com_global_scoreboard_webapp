@@ -1,13 +1,11 @@
-import React, { useEffect, useState } from 'react'
-import { AppBar, Button, IconButton, Toolbar, Typography } from '@material-ui/core'
-
 import './App.css'
+import { AppBar, Button, IconButton, Toolbar, Typography } from '@material-ui/core'
+import React, { useEffect, useState } from 'react'
 import LoginForm from './LoginForm/LoginForm'
 import ScheduleManagement from './ScheduleManagement/ScheduleManagement'
 import ScheduleRegistration from './ScheduleRegistration/ScheduleRegistration'
 import ScheduleViewer from './ScheduleViewer/ScheduleViewer'
 import User from './models/User'
-
 
 const getCurrentUser = () =>
   fetch(`${window.process.env.REACT_APP_BASE_URL}/api/users/current`, {

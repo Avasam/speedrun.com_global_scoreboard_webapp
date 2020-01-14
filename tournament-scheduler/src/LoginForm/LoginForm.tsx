@@ -1,9 +1,8 @@
-import React, { useState } from 'react'
+import './LoginForm.css'
 import { Button, Container, Link, TextField } from '@material-ui/core'
-
+import React, { useState } from 'react'
 import SrcApiKeyLink from './SrcApiKeyLink'
 import User from '../models/User'
-import './LoginForm.css'
 
 type loginFormProps = {
   setCurrentUser: (currentUser: User) => void
