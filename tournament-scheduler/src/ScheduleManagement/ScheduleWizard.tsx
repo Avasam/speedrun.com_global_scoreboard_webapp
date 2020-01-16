@@ -1,12 +1,15 @@
 import './ScheduleWizard.css'
-import { Button, Card, CardActions, CardContent, Checkbox, Container, FormControl, FormControlLabel, FormGroup, IconButton, Input, InputAdornment, InputBaseComponentProps, InputLabel, TextField } from '@material-ui/core'
+import { Button, Card, CardActions, CardContent, Checkbox, Collapse, Container, FormControl, FormControlLabel, FormGroup, IconButton, Input, InputAdornment, InputBaseComponentProps, InputLabel, List, ListItem, ListItemText, TextField } from '@material-ui/core'
 import { DateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
 import React, { FC, useState } from 'react'
 import { TimeSlot, createDefaultTimeSlot, minutesStep } from '../models/TimeSlot'
 import DateFnsUtils from '@date-io/moment'
 import Event from '@material-ui/icons/Event'
+import ExpandLess from '@material-ui/icons/ExpandLess'
+import ExpandMore from '@material-ui/icons/ExpandMore'
 import FileCopy from '@material-ui/icons/FileCopy'
 import MaskedInput from 'react-text-mask'
+import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date'
 import { Moment } from 'moment'
 import { Schedule } from '../models/Schedule'
 
@@ -14,6 +17,17 @@ type ScheduleWizardProps = {
   schedule: Schedule
   onSave: (schedule: Schedule) => void
   onCancel: () => void
+}
+
+type TimeSlotRowProps = {
+  schedule: Schedule
+  timeSlot: TimeSlot
+  id: number
+  onEditTimeSlotDateTime: (date: MaterialUiPickersDate) => void
+  onDuplicateTimeSlot: () => void
+  onRemoveTimeSlot: () => void
+  onEditTimeSlotMaximumEntries: (maximumEntries: number) => void
+  onEditTimeSlotparticipantsPerEntry: (participantsPerEntry: number) => void
 }
 
 type NonZeroNumberInputProps = {
@@ -52,8 +66,6 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
       document.getElementsByClassName('Mui-focused'),
       element => element.classList.remove('Mui-focused'),
     )
-    // const indexToFocus = schedule.timeSlots.findIndex(timeSlot => timeSlot.dateTime.getTime() === date.getTime())
-    // document.getElementById(`time-slot-date-${indexToFocus}`)?.parentElement?.classList.add('Mui-focused')
   }
 
   const editTimeSlotMaximumEntries = (maximumEntries: number, index: number) => {
@@ -126,73 +138,17 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
             Add a time slot
           </Button>
           {schedule.timeSlots.map((timeSlot: TimeSlot, index) =>
-            <div className="time-slot-row" key={`time-slot-${index}`}>
-              <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                <DateTimePicker
-                  id={`time-slot-date-${index}`}
-                  label="Date and time"
-                  value={timeSlot.dateTime}
-                  onChange={date => editTimeSlotDateTime(date, index)}
-                  minDate={new Date(2020, 0)}
-                  ampm={false}
-                  minutesStep={minutesStep}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton>
-                          <Event />
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </MuiPickersUtilsProvider>
-              <div className="number-input-container">
-                <FormControl>
-                  <InputLabel htmlFor={`maximum-entries-${index}`}>Maximum entries</InputLabel>
-                  <Input
-                    id={`maximum-entries-${index}`}
-                    type='tel'
-                    inputProps={{ min: '1' }}
-                    onFocus={event => event.target.select()}
-                    value={timeSlot.maximumEntries}
-                    onChange={event => editTimeSlotMaximumEntries(parseInt(event.target.value, 10) || 1, index)}
-                    inputComponent={NonZeroNumberInput as FC<InputBaseComponentProps>}
-                  />
-                </FormControl>
-                <FormControl>
-                  <InputLabel htmlFor={`participants-per-entry-${index}`}>Participants per entry</InputLabel>
-                  <Input
-                    id={`participants-per-entry-${index}`}
-                    type='tel'
-                    inputProps={{ min: '1' }}
-                    onFocus={event => event.target.select()}
-                    value={timeSlot.participantsPerEntry}
-                    onChange={event => editTimeSlotparticipantsPerEntry(parseInt(event.target.value, 10) || 1, index)}
-                    inputComponent={NonZeroNumberInput as FC<InputBaseComponentProps>}
-                  />
-                </FormControl>
-                <IconButton
-                  color="primary"
-                  aria-label="duplicate time slot"
-                  component="button"
-                  onClick={() => duplicateTimeSlot(index)}
-                >
-                  <FileCopy />
-                </IconButton>
-                {schedule.timeSlots.length > 1 &&
-                  <IconButton
-                    style={{ color: 'red' }}
-                    color="secondary"
-                    aria-label="remove time slot"
-                    component="button"
-                    onClick={() => removeTimeSlot(index)}
-                  >
-                    &times;
-                  </IconButton>
-                }
-              </div>
-            </div>
+            <TimeSlotRow
+              key={`time-slot-${index}`}
+              id={index}
+              schedule={schedule}
+              timeSlot={timeSlot}
+              onEditTimeSlotDateTime={date => editTimeSlotDateTime(date, index)}
+              onDuplicateTimeSlot={() => duplicateTimeSlot(index)}
+              onRemoveTimeSlot={() => removeTimeSlot(index)}
+              onEditTimeSlotMaximumEntries={(maximumEntries) => editTimeSlotMaximumEntries(maximumEntries, index)}
+              onEditTimeSlotparticipantsPerEntry={participantsPerEntry => editTimeSlotparticipantsPerEntry(participantsPerEntry, index)}
+            />
           )}
         </FormGroup>
       </CardContent>
@@ -213,4 +169,114 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
     </Card>
   </Container>
 
+}
+
+const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
+  const [open, setOpen] = useState(false)
+  return <div className="time-slot-row">
+    <MuiPickersUtilsProvider utils={DateFnsUtils}>
+      <DateTimePicker
+        id={`time-slot-date-${props.id}`}
+        label="Date and time"
+        value={props.timeSlot.dateTime}
+        onChange={date => props.onEditTimeSlotDateTime(date)}
+        minDate={new Date(2020, 0)}
+        ampm={false}
+        minutesStep={minutesStep}
+        InputProps={{
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton>
+                <Event />
+              </IconButton>
+            </InputAdornment>
+          ),
+        }}
+      />
+    </MuiPickersUtilsProvider>
+    <div className="number-input-container">
+      <FormControl>
+        <InputLabel htmlFor={`maximum-entries-${props.id}`}>Maximum entries</InputLabel>
+        <Input
+          id={`maximum-entries-${props.id}`}
+          type='tel'
+          inputProps={{ min: '1' }}
+          onFocus={event => event.target.select()}
+          value={props.timeSlot.maximumEntries}
+          onChange={event => props.onEditTimeSlotMaximumEntries(parseInt(event.target.value, 10) || 1)}
+          inputComponent={NonZeroNumberInput as FC<InputBaseComponentProps>}
+        />
+      </FormControl>
+      <FormControl>
+        <InputLabel htmlFor={`participants-per-entry-${props.id}`}>Participants per entry</InputLabel>
+        <Input
+          id={`participants-per-entry-${props.id}`}
+          type='tel'
+          inputProps={{ min: '1' }}
+          onFocus={event => event.target.select()}
+          value={props.timeSlot.participantsPerEntry}
+          onChange={event => props.onEditTimeSlotparticipantsPerEntry(parseInt(event.target.value, 10) || 1)}
+          inputComponent={NonZeroNumberInput as FC<InputBaseComponentProps>}
+        />
+      </FormControl>
+      <IconButton
+        color="primary"
+        aria-label="duplicate time slot"
+        component="button"
+        onClick={() => props.onDuplicateTimeSlot()}
+      >
+        <FileCopy />
+      </IconButton>
+      {props.schedule.timeSlots.length > 1 &&
+        <IconButton
+          style={{ color: 'red' }}
+          color="secondary"
+          aria-label="remove time slot"
+          component="button"
+          onClick={() => props.onRemoveTimeSlot()}
+        >
+          &times;
+      </IconButton>
+      }
+    </div>
+    <div style={{ width: '100%' }}>
+      <ListItem button onClick={() => setOpen(!open)}>
+        <ListItemText
+          primary={
+            `(${props.timeSlot.registrations.length} / ${props.timeSlot.maximumEntries}` +
+            ` entr${props.timeSlot.registrations.length === 1 ? 'y' : 'ies'})`
+          }
+        />
+        {open ? <ExpandLess /> : <ExpandMore />}
+      </ListItem>
+      <Collapse in={open} timeout="auto" unmountOnExit style={{ paddingLeft: '16px' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+          {props.timeSlot.registrations.length === 0
+            ? <div>No one registered for this time slot yet.</div>
+            : props.timeSlot.registrations.map((registration, index) =>
+              <List
+                key={`registration-${registration.id}`}
+                component="div"
+                dense={true}
+                disablePadding
+                subheader={
+                  <ListItemText style={{ marginTop: 0, textAlign: 'left' }} secondary={`Entry #${index + 1}`} />
+                }
+              >
+                {registration.participants.map((participant, index) =>
+                  <ListItem key={`participant-${index}`} style={{ alignItems: 'baseline', padding: 0 }}>
+                    <span>{index + 1}.&nbsp;</span>
+                    <TextField
+                      style={{ marginTop: 0 }}
+                      value={participant}
+                      onChange={event => { console.log(event) }}
+                    />
+                  </ListItem>
+                )}
+              </List>
+            )}
+        </div>
+      </Collapse>
+    </div>
+  </div>
 }

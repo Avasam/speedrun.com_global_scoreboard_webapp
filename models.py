@@ -296,7 +296,7 @@ class Registration(db.Model):
 
     def to_dto(self) -> dict[str, Union[int, List[str]]]:
         return {
-            'id': self.time_slot_id,
+            'id': self.registration_id,
             'participants': [participant.name for participant in self.participants]
         }
 
