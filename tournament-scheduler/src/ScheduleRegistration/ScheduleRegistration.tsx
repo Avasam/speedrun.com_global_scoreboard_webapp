@@ -1,5 +1,5 @@
 import { Button, Card, CardActions, CardContent, Container, FormControl, FormGroup, FormLabel, InputLabel, MenuItem, Select, TextField } from '@material-ui/core'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { ChangeEvent, FC, useEffect, useRef, useState } from 'react'
 import { Schedule, ScheduleDto } from '../models/Schedule'
 import DateFnsUtils from '@date-io/moment'
 import { TimeSlot } from '../models/TimeSlot'
@@ -42,7 +42,7 @@ const postRegistration = (timeSlotId: number, participants: string[], registrati
       : res)
     .then(res => res.json())
 
-const ScheduleRegistration: React.FC<ScheduleRegistrationProps> = (props: ScheduleRegistrationProps) => {
+const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegistrationProps) => {
   const [schedule, setSchedule] = useState<Schedule | undefined | null>(undefined)
   const [registrationKey, setRegistrationKey] = useState<string>('')
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<TimeSlot | undefined>()
@@ -60,6 +60,7 @@ const ScheduleRegistration: React.FC<ScheduleRegistrationProps> = (props: Schedu
     setRegistrationKey(registrationKey)
     getSchedule(id, registrationKey)
       .then((schedule: Schedule) => {
+        schedule.timeSlots.sort(TimeSlot.compareFn)
         setSchedule(schedule)
         setTimeSlotLabelWidth((timeSlotInputLabel.current?.offsetWidth || 0) - timeSlotLabelPaddingRight)
         setParticipants(
@@ -82,7 +83,7 @@ const ScheduleRegistration: React.FC<ScheduleRegistrationProps> = (props: Schedu
       })
   }, [props.registrationLink])
 
-  const selectTimeSlot = (event: React.ChangeEvent<{ value: unknown }>) => {
+  const selectTimeSlot = (event: ChangeEvent<{ value: unknown }>) => {
     setSelectedTimeSlot(schedule?.timeSlots.find(timeSlot => timeSlot.id === parseInt(event.target.value as string)))
     setErrorMessage('')
   }

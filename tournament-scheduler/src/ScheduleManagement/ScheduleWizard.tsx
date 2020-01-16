@@ -1,7 +1,7 @@
 import './ScheduleWizard.css'
 import { Button, Card, CardActions, CardContent, Checkbox, Container, FormControl, FormControlLabel, FormGroup, IconButton, Input, InputAdornment, InputBaseComponentProps, InputLabel, TextField } from '@material-ui/core'
 import { DateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
-import React, { FunctionComponent, useState } from 'react'
+import React, { FC, useState } from 'react'
 import { TimeSlot, createDefaultTimeSlot, minutesStep } from '../models/TimeSlot'
 import DateFnsUtils from '@date-io/moment'
 import Event from '@material-ui/icons/Event'
@@ -36,14 +36,14 @@ const NonZeroNumberInput = (props: NonZeroNumberInputProps) => {
   )
 }
 
-export const ScheduleWizard: React.FC<ScheduleWizardProps> = (props: ScheduleWizardProps) => {
+export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardProps) => {
   const [schedule, setSchedule] = useState(props.schedule)
 
   const editTimeSlotDateTime = (moment: Moment | null, index: number) => {
     if (!moment) return
     const date = moment.toDate()
     schedule.timeSlots[index].dateTime = date
-    schedule.timeSlots.sort((a, b) => a.dateTime.valueOf() - b.dateTime.valueOf())
+    schedule.timeSlots.sort(TimeSlot.compareFn)
     setSchedule({
       ...schedule,
       registrationLink: schedule.registrationLink,
@@ -157,7 +157,7 @@ export const ScheduleWizard: React.FC<ScheduleWizardProps> = (props: ScheduleWiz
                     onFocus={event => event.target.select()}
                     value={timeSlot.maximumEntries}
                     onChange={event => editTimeSlotMaximumEntries(parseInt(event.target.value, 10) || 1, index)}
-                    inputComponent={NonZeroNumberInput as FunctionComponent<InputBaseComponentProps>}
+                    inputComponent={NonZeroNumberInput as FC<InputBaseComponentProps>}
                   />
                 </FormControl>
                 <FormControl>
@@ -169,7 +169,7 @@ export const ScheduleWizard: React.FC<ScheduleWizardProps> = (props: ScheduleWiz
                     onFocus={event => event.target.select()}
                     value={timeSlot.participantsPerEntry}
                     onChange={event => editTimeSlotparticipantsPerEntry(parseInt(event.target.value, 10) || 1, index)}
-                    inputComponent={NonZeroNumberInput as FunctionComponent<InputBaseComponentProps>}
+                    inputComponent={NonZeroNumberInput as FC<InputBaseComponentProps>}
                   />
                 </FormControl>
                 <IconButton

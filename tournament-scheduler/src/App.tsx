@@ -1,11 +1,17 @@
 import './App.css'
-import { AppBar, Button, IconButton, Toolbar, Typography } from '@material-ui/core'
-import React, { useEffect, useState } from 'react'
+import { AppBar, Button, IconButton, ThemeProvider, Toolbar, Typography, createMuiTheme } from '@material-ui/core'
+import React, { FC, useEffect, useState } from 'react'
 import LoginForm from './LoginForm/LoginForm'
 import ScheduleManagement from './ScheduleManagement/ScheduleManagement'
 import ScheduleRegistration from './ScheduleRegistration/ScheduleRegistration'
 import ScheduleViewer from './ScheduleViewer/ScheduleViewer'
 import User from './models/User'
+
+const darkTheme = createMuiTheme({
+  palette: {
+    type: 'dark',
+  },
+})
 
 const getCurrentUser = () =>
   fetch(`${window.process.env.REACT_APP_BASE_URL}/api/users/current`, {
@@ -27,7 +33,7 @@ const logout = (setCurrentUser: (user: User | undefined | null) => void) => {
   localStorage.removeItem('jwtToken')
 }
 
-const App: React.FC = () => {
+const App: FC = () => {
   const [currentUser, setCurrentUser] = useState<User | undefined | null>(undefined)
   const viewScheduleIdFromUrl = new URLSearchParams(window.location.search).get('view')
   const [viewScheduleId] = useState<number | null>((viewScheduleIdFromUrl && parseInt(viewScheduleIdFromUrl)) || null)
@@ -61,45 +67,47 @@ const App: React.FC = () => {
   }, [])
 
   return <div className='App'>
-    <AppBar position="static">
-      <Toolbar>
-        {currentUser || scheduleRegistrationLink || viewScheduleId
-          ? <>
-            <IconButton onClick={() => {
-              localStorage.removeItem('register')
-              window.location.href = window.location.pathname
-            }}>
-              <img
-                className='logo'
-                alt='logo'
-                src={`${window.process.env.REACT_APP_BASE_URL}/assets/images/favicon.ico`}
-              />
-            </IconButton>
-            <Typography variant="h4">Tournament Scheduler</Typography>
-            {currentUser &&
-              <Button variant='contained' color='secondary' onClick={() => logout(setCurrentUser)}>Logout</Button>
-            }
-          </>
-          : <Typography variant="h2">Tournament Scheduler</Typography>
+    <ThemeProvider theme={darkTheme}>
+      <AppBar position="static">
+        <Toolbar>
+          {currentUser || scheduleRegistrationLink || viewScheduleId
+            ? <>
+              <IconButton onClick={() => {
+                localStorage.removeItem('register')
+                window.location.href = window.location.pathname
+              }}>
+                <img
+                  className='logo'
+                  alt='logo'
+                  src={`${window.process.env.REACT_APP_BASE_URL}/assets/images/favicon.ico`}
+                />
+              </IconButton>
+              <Typography variant="h4">Tournament Scheduler</Typography>
+              {currentUser &&
+                <Button variant='contained' color='secondary' onClick={() => logout(setCurrentUser)}>Logout</Button>
+              }
+            </>
+            : <Typography variant="h2">Tournament Scheduler</Typography>
+          }
+        </Toolbar>
+      </AppBar>
+
+      <div className='main'>
+        {scheduleRegistrationLink
+          ? <ScheduleRegistration registrationLink={scheduleRegistrationLink} />
+          : viewScheduleId
+            ? <ScheduleViewer scheduleId={viewScheduleId} />
+            : currentUser !== undefined && (currentUser
+              ? <ScheduleManagement currentUser={currentUser} />
+              : <LoginForm setCurrentUser={(currentUser: User) => setCurrentUser(currentUser)} />)
         }
-      </Toolbar>
-    </AppBar>
+      </div>
 
-    <div className='main'>
-      {scheduleRegistrationLink
-        ? <ScheduleRegistration registrationLink={scheduleRegistrationLink} />
-        : viewScheduleId
-          ? <ScheduleViewer scheduleId={viewScheduleId} />
-          : currentUser !== undefined && (currentUser
-            ? <ScheduleManagement currentUser={currentUser} />
-            : <LoginForm setCurrentUser={(currentUser: User) => setCurrentUser(currentUser)} />)
-      }
-    </div>
-
-    <footer>
-      &copy; <a href="https://github.com/Avasam/speedrun.com_global_leaderboard_webapp/blob/master/LICENSE" target="about">Copyright</a> {new Date().getFullYear()} by <a href="https://github.com/Avasam/" target="about">Samuel Therrien</a>.
-      Powered by <a href="https://www.speedrun.com/" target="src">speedrun.com</a> and <a href="https://www.pythonanywhere.com/" target="about">PythonAnywhere</a>
-    </footer>
+      <footer>
+        &copy; <a href="https://github.com/Avasam/speedrun.com_global_leaderboard_webapp/blob/master/LICENSE" target="about">Copyright</a> {new Date().getFullYear()} by <a href="https://github.com/Avasam/" target="about">Samuel Therrien</a>.
+        Powered by <a href="https://www.speedrun.com/" target="src">speedrun.com</a> and <a href="https://www.pythonanywhere.com/" target="about">PythonAnywhere</a>
+      </footer>
+    </ThemeProvider>
   </div>
 }
 

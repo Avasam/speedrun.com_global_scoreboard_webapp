@@ -14,6 +14,7 @@ export class TimeSlot {
   maximumEntries: number
   participantsPerEntry: number
   registrations: Registration[]
+  static compareFn = (a: TimeSlot, b: TimeSlot) => a.dateTime.valueOf() - b.dateTime.valueOf()
 
   constructor(dto: TimeSlotDto) {
     this.id = dto.id

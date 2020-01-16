@@ -1,5 +1,5 @@
 import { Button, Card, CardActions, CardContent, Container, IconButton, Theme, makeStyles } from '@material-ui/core'
-import React, { useEffect, useState } from 'react'
+import React, { FC, useEffect, useState } from 'react'
 import { Schedule, ScheduleDto, createDefaultSchedule } from '../models/Schedule'
 import { ScheduleWizard } from './ScheduleWizard'
 import { Styles } from '@material-ui/core/styles/withStyles'
@@ -67,7 +67,7 @@ type ScheduleManagementProps = {
   currentUser: User
 }
 
-const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleManagementProps) => {
+const ScheduleManagement: FC<ScheduleManagementProps> = (props: ScheduleManagementProps) => {
   const [schedules, setSchedules] = useState<Schedule[] | undefined>(undefined)
   const [currentSchedule, setCurrentSchedule] = useState<Schedule | undefined>(undefined)
 
