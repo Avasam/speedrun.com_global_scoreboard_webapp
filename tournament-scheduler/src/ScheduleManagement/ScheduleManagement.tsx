@@ -121,7 +121,7 @@ const ScheduleManagement: FC<ScheduleManagementProps> = (props: ScheduleManageme
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(
-      () => console.log('text copied to clipboard successfully'),
+      () => console.info('text copied to clipboard successfully'),
       (err) => console.error(err),
     )
   }
