@@ -11,6 +11,7 @@ import FileCopy from '@material-ui/icons/FileCopy'
 import MaskedInput from 'react-text-mask'
 import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date'
 import { Moment } from 'moment'
+import Registration from '../models/Registration'
 import { Schedule } from '../models/Schedule'
 
 type ScheduleWizardProps = {
@@ -139,7 +140,7 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
           </Button>
           {schedule.timeSlots.map((timeSlot: TimeSlot, index) =>
             <TimeSlotRow
-              key={`time-slot-${index}`}
+              key={`time-slot-${index}-${timeSlot.id}`}
               id={index}
               schedule={schedule}
               timeSlot={timeSlot}
@@ -171,8 +172,54 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
 
 }
 
+const putRegistration = (registration: Registration) =>
+  fetch(`${window.process.env.REACT_APP_BASE_URL}/api/registrations/${registration.id}`, {
+    method: 'PUT',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer: ${localStorage.getItem('jwtToken')}`,
+    },
+    body: JSON.stringify(registration),
+  })
+    .then(res => res.status >= 400 && res.status < 600
+      ? Promise.reject(res)
+      : res)
+
+interface RegistrationProxy extends Registration {
+  hasChanged?: boolean
+}
+
 const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
   const [open, setOpen] = useState(false)
+  const [registrationsProxy, setRegistrationsProxy] = useState<RegistrationProxy[]>(JSON.parse(JSON.stringify(props.timeSlot.registrations)))
+
+  const handleParticipantNameChange = (registration: RegistrationProxy, participantIndex: number, name: string) => {
+    registration.hasChanged = true
+    registration.participants[participantIndex] = name
+    setRegistrationsProxy([...registrationsProxy])
+  }
+
+  const saveRegistrations = (registrationProxy: RegistrationProxy) => {
+    putRegistration(registrationProxy)
+      .then(() => {
+        const updatedRegistration = props.timeSlot.registrations.find(registration =>
+          registration.id === registrationProxy.id)
+        if (updatedRegistration) {
+          updatedRegistration.participants = [...registrationProxy.participants]
+        }
+        registrationProxy.hasChanged = false
+
+        setRegistrationsProxy(JSON.parse(JSON.stringify(registrationsProxy)))
+      })
+      .catch(() => console.error)
+  }
+
+  const resetRegistrations = (registrationIndex: number) => {
+    registrationsProxy[registrationIndex] = { ...props.timeSlot.registrations[registrationIndex], hasChanged: false }
+    setRegistrationsProxy(JSON.parse(JSON.stringify(registrationsProxy)))
+  }
+
   return <Card raised={true} className="time-slot-row">
     <CardContent>
       <MuiPickersUtilsProvider utils={DateFnsUtils}>
@@ -244,8 +291,14 @@ const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
         <ListItem button onClick={() => setOpen(!open)}>
           <ListItemText
             primary={
-              `(${props.timeSlot.registrations.length} / ${props.timeSlot.maximumEntries}` +
-              ` entr${props.timeSlot.registrations.length === 1 ? 'y' : 'ies'})`
+              <span style={{
+                color: props.timeSlot.registrations.length > props.timeSlot.maximumEntries
+                  ? 'red'
+                  : undefined
+              }}>
+                ({props.timeSlot.registrations.length} / {props.timeSlot.maximumEntries}
+                &nbsp;entr{props.timeSlot.registrations.length === 1 ? 'y' : 'ies'})
+              </span>
             }
           />
           {open ? <ExpandLess /> : <ExpandMore />}
@@ -254,39 +307,45 @@ const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
           <div style={{ display: 'flex', flexWrap: 'wrap' }}>
             {props.timeSlot.registrations.length === 0
               ? <div>No one registered for this time slot yet.</div>
-              : props.timeSlot.registrations.map((registration, index) =>
+              : registrationsProxy.map((registrationProxy, index) =>
                 <List
-                  key={`registration-${registration.id}`}
+                  key={`registration-${registrationProxy.id}`}
                   component="div"
                   dense={true}
                   disablePadding
                   subheader={
-                    <ListItemText
-                      style={{ marginTop: 0, textAlign: 'left' }}
-                      secondary={
-                        <span>
-                          Entry #{index + 1}
-                          <ButtonGroup
-                            style={{ marginLeft: '16px' }}
-                            color="primary"
-                            size="small"
-                            disabled={index !== 0}
-                          >
-                            <Button color="primary">Save</Button>
-                            <Button color="secondary">Reset</Button>
-                          </ButtonGroup>
-                        </span>
-                      }
-                    />
+                    <div>
+                      <ListItemText
+                        style={{ marginTop: 0, textAlign: 'left', display: 'inline-block' }}
+                        secondary={
+                          <span>
+                            Entry #{index + 1}
+                          </span>
+                        }
+                      />
+                      <ButtonGroup
+                        style={{ marginLeft: '16px' }}
+                        color="primary"
+                        size="small"
+                        disabled={!registrationProxy.hasChanged}
+                      >
+                        <Button color="primary" onClick={() => saveRegistrations(registrationProxy)}>Save</Button>
+                        <Button color="secondary" onClick={() => resetRegistrations(index)}>Reset</Button>
+                      </ButtonGroup>
+                    </div>
                   }
                 >
-                  {registration.participants.map((participant, index) =>
+                  {registrationProxy.participants.map((participant: string, index) =>
                     <ListItem key={`participant-${index}`} style={{ alignItems: 'baseline', padding: '0 16px' }}>
                       <span>{index + 1}.&nbsp;</span>
                       <TextField
                         style={{ marginTop: 0 }}
                         value={participant}
-                        onChange={event => { console.log(event) }}
+                        onChange={event => handleParticipantNameChange(
+                          registrationProxy,
+                          index,
+                          event.target.value,
+                        )}
                       />
                     </ListItem>
                   )}

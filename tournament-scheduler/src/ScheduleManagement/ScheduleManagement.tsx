@@ -80,7 +80,6 @@ const ScheduleManagement: FC<ScheduleManagementProps> = (props: ScheduleManageme
       .catch(console.error)
 
   const handleSave = (schedule: ScheduleDto) => {
-    console.log(schedule.id)
     const savePromise = schedule.id === -1
       ? postSchedules(schedule)
       : putSchedule(schedule)

@@ -32,6 +32,7 @@ code {
 ::-webkit-scrollbar-thumb,
 ::-webkit-scrollbar-corner, 
 ::-webkit-scrollbar-track {
+  /* Opera can't take transparent here, any color will do */
   background-color: #303030;
   border-color: #424242;
 }
