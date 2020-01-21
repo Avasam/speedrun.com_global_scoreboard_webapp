@@ -6,10 +6,12 @@ import ScheduleManagement from './ScheduleManagement/ScheduleManagement'
 import ScheduleRegistration from './ScheduleRegistration/ScheduleRegistration'
 import ScheduleViewer from './ScheduleViewer/ScheduleViewer'
 import User from './models/User'
+import { teal } from '@material-ui/core/colors'
 
 const darkTheme = createMuiTheme({
   palette: {
     type: 'dark',
+    primary: teal,
   },
 })
 

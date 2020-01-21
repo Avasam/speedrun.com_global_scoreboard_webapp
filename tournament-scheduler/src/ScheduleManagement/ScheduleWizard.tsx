@@ -148,7 +148,8 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
               onDuplicateTimeSlot={() => duplicateTimeSlot(index)}
               onRemoveTimeSlot={() => removeTimeSlot(index)}
               onEditTimeSlotMaximumEntries={(maximumEntries) => editTimeSlotMaximumEntries(maximumEntries, index)}
-              onEditTimeSlotparticipantsPerEntry={participantsPerEntry => editTimeSlotparticipantsPerEntry(participantsPerEntry, index)}
+              onEditTimeSlotparticipantsPerEntry={participantsPerEntry =>
+                editTimeSlotparticipantsPerEntry(participantsPerEntry, index)}
             />
           )}
         </FormGroup>
@@ -186,13 +187,27 @@ const putRegistration = (registration: Registration) =>
       ? Promise.reject(res)
       : res)
 
+const deleteRegistration = (registrationId: number) =>
+  fetch(`${window.process.env.REACT_APP_BASE_URL}/api/registrations/${registrationId}`, {
+    method: 'DELETE',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer: ${localStorage.getItem('jwtToken')}`,
+    },
+  })
+    .then(res => res.status >= 400 && res.status < 600
+      ? Promise.reject(res)
+      : res)
+
 interface RegistrationProxy extends Registration {
   hasChanged?: boolean
 }
 
 const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
   const [open, setOpen] = useState(false)
-  const [registrationsProxy, setRegistrationsProxy] = useState<RegistrationProxy[]>(JSON.parse(JSON.stringify(props.timeSlot.registrations)))
+  const [registrationsProxy, setRegistrationsProxy] = useState<RegistrationProxy[]>(
+    JSON.parse(JSON.stringify(props.timeSlot.registrations)))
 
   const handleParticipantNameChange = (registration: RegistrationProxy, participantIndex: number, name: string) => {
     registration.hasChanged = true
@@ -200,7 +215,7 @@ const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
     setRegistrationsProxy([...registrationsProxy])
   }
 
-  const saveRegistrations = (registrationProxy: RegistrationProxy) => {
+  const handleSaveRegistrations = (registrationProxy: RegistrationProxy) =>
     putRegistration(registrationProxy)
       .then(() => {
         const updatedRegistration = props.timeSlot.registrations.find(registration =>
@@ -213,12 +228,23 @@ const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
         setRegistrationsProxy(JSON.parse(JSON.stringify(registrationsProxy)))
       })
       .catch(() => console.error)
-  }
 
-  const resetRegistrations = (registrationIndex: number) => {
-    registrationsProxy[registrationIndex] = { ...props.timeSlot.registrations[registrationIndex], hasChanged: false }
+  const handleResetRegistrations = (registrationIndex: number) => {
+    registrationsProxy[registrationIndex] = {
+      ...props.timeSlot.registrations[registrationIndex],
+      hasChanged: false,
+    }
     setRegistrationsProxy(JSON.parse(JSON.stringify(registrationsProxy)))
   }
+
+  const handleRemoveRegistrations = (registrationIndex: number) =>
+    deleteRegistration(props.timeSlot.registrations[registrationIndex].id)
+      .then(() => {
+        props.timeSlot.registrations.splice(registrationIndex, 1)
+        registrationsProxy.splice(registrationIndex, 1)
+        setRegistrationsProxy(JSON.parse(JSON.stringify(registrationsProxy)))
+      })
+      .catch(() => console.error)
 
   return <Card raised={true} className="time-slot-row">
     <CardContent>
@@ -282,9 +308,7 @@ const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
             aria-label="remove time slot"
             component="button"
             onClick={() => props.onRemoveTimeSlot()}
-          >
-            &times;
-      </IconButton>
+          >&times;</IconButton>
         }
       </div>
       <div style={{ width: '100%' }}>
@@ -329,9 +353,16 @@ const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
                         size="small"
                         disabled={!registrationProxy.hasChanged}
                       >
-                        <Button color="primary" onClick={() => saveRegistrations(registrationProxy)}>Save</Button>
-                        <Button color="secondary" onClick={() => resetRegistrations(index)}>Reset</Button>
+                        <Button color="primary" onClick={() => handleSaveRegistrations(registrationProxy)}>Save</Button>
+                        <Button color="secondary" onClick={() => handleResetRegistrations(index)}>Reset</Button>
                       </ButtonGroup>
+                      <IconButton
+                        style={{ color: 'red' }}
+                        color="secondary"
+                        aria-label="remove time slot"
+                        component="button"
+                        onClick={() => handleRemoveRegistrations(index)}
+                      >&times;</IconButton>
                     </div>
                   }
                 >

@@ -185,6 +185,27 @@ class Player(db.Model, UserMixin):
         db.session.commit()
         return True
 
+    def delete_registration(self, registration_id: int) -> bool:
+        try:
+            registration_to_delete: Registration = Registration \
+                .query \
+                .filter(Registration.registration_id == registration_id) \
+                .one()
+        except orm.exc.NoResultFound:
+            return False
+
+        try:
+            Schedule \
+                .query \
+                .filter(Schedule.schedule_id == registration_to_delete.timeslot.schedule.schedule_id) \
+                .filter(Schedule.owner_id == self.user_id) \
+                .one()
+        except orm.exc.NoResultFound:
+            return False
+        db.session.delete(registration_to_delete)
+        db.session.commit()
+        return True
+
     # Override from UserMixin for Flask-Login
     def get_id(self):
         return self.user_id
@@ -199,7 +220,7 @@ class Schedule(db.Model):
     registration_key: str = db.Column(db.String(36), nullable=False)
     is_active: bool = db.Column(db.Boolean, nullable=False, default=True)
 
-    owner = db.relationship("Player", back_populates="schedules")
+    owner: Player = db.relationship("Player", back_populates="schedules")
     time_slots: List[TimeSlot] = db.relationship(
         "TimeSlot",
         cascade="all,delete,delete-orphan",
@@ -239,7 +260,7 @@ class TimeSlot(db.Model):
     maximum_entries: int = db.Column(db.Integer, nullable=False)
     participants_per_entry: int = db.Column(db.Integer, nullable=False)
 
-    schedule = db.relationship("Schedule", back_populates="time_slots")
+    schedule: Schedule = db.relationship("Schedule", back_populates="time_slots")
     registrations: List[Registration] = db.relationship(
         "Registration",
         cascade="all,delete,delete-orphan",
@@ -291,8 +312,11 @@ class Registration(db.Model):
     registration_id: int = db.Column(db.Integer, primary_key=True)
     time_slot_id: int = db.Column(db.Integer, db.ForeignKey('time_slot.time_slot_id'), nullable=False)
 
-    timeslot = db.relationship("TimeSlot", back_populates="registrations")
-    participants: List[Participant] = db.relationship("Participant", back_populates="registration")
+    timeslot: TimeSlot = db.relationship("TimeSlot", back_populates="registrations")
+    participants: List[Participant] = db.relationship(
+        "Participant",
+        cascade="all,delete,delete-orphan",
+        back_populates="registration")
 
     def to_dto(self) -> dict[str, Union[int, List[str]]]:
         return {
@@ -307,4 +331,4 @@ class Participant(db.Model):
     registration_id: int = db.Column(db.Integer, db.ForeignKey('registration.registration_id'), primary_key=True)
     name: str = db.Column(db.String(128), primary_key=True)
 
-    registration = db.relationship("Registration", back_populates="participants")
+    registration: Registration = db.relationship("Registration", back_populates="participants")

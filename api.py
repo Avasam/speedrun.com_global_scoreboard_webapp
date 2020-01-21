@@ -139,6 +139,7 @@ def delete_schedule(current_user: Player, id: str):
         schedule_id = int(id)
     except ValueError:
         return jsonify({'message': '/id is not a valid number', 'authenticated': True}), 400
+
     delete_success = current_user.delete_schedule(schedule_id)
     return "", 204 if delete_success else 404
 
@@ -159,6 +160,18 @@ def post_registration(id: str):
         return jsonify({'message': 'Registrations are full for this timeslot', 'authenticated': True}), 507
 
     return str(time_slot.register_participant(participants)), 201
+
+
+@api.route('/registrations/<id>', methods=('DELETE',))
+@authenthication_required
+def delete_registration(current_user: Player, id: str):
+    try:
+        registration_id = int(id)
+    except ValueError:
+        return jsonify({'message': '/id is not a valid number', 'authenticated': True}), 400
+
+    delete_success = current_user.delete_registration(registration_id)
+    return "", 204 if delete_success else 404
 
 
 def __validate_create_registration(data: Dict[str, Any]) -> Tuple[Optional[str], str, List[str]]:
