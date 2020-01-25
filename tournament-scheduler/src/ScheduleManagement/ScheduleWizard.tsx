@@ -4,6 +4,7 @@ import { DateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
 import React, { FC, useState } from 'react'
 import { TimeSlot, createDefaultTimeSlot, minutesStep } from '../models/TimeSlot'
 import DateFnsUtils from '@date-io/moment'
+import DeleteForever from '@material-ui/icons/DeleteForever'
 import Event from '@material-ui/icons/Event'
 import ExpandLess from '@material-ui/icons/ExpandLess'
 import ExpandMore from '@material-ui/icons/ExpandMore'
@@ -362,24 +363,37 @@ const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
                         aria-label="remove time slot"
                         component="button"
                         onClick={() => handleRemoveRegistrations(index)}
-                      >&times;</IconButton>
+                      ><DeleteForever /></IconButton>
                     </div>
                   }
                 >
-                  {registrationProxy.participants.map((participant: string, index) =>
-                    <ListItem key={`participant-${index}`} style={{ alignItems: 'baseline', padding: '0 16px' }}>
-                      <span>{index + 1}.&nbsp;</span>
-                      <TextField
-                        style={{ marginTop: 0 }}
-                        value={participant}
-                        onChange={event => handleParticipantNameChange(
-                          registrationProxy,
-                          index,
-                          event.target.value,
-                        )}
-                      />
-                    </ListItem>
-                  )}
+                  {registrationProxy
+                    .participants
+                    .concat(
+                      Array(Math.max(0, props.timeSlot.participantsPerEntry - registrationProxy.participants.length))
+                        .fill('')
+                    )
+                    .map((participant: string, index) =>
+                      <ListItem
+                        key={`participant-${index}`}
+                        style={{
+                          alignItems: 'baseline',
+                          padding: '0 16px',
+                          color: index >= props.timeSlot.participantsPerEntry ? 'red' : undefined
+                        }}>
+                        <span>{index + 1}.&nbsp;</span>
+                        <TextField
+                          error={index >= props.timeSlot.participantsPerEntry}
+                          style={{ marginTop: 0 }}
+                          value={participant}
+                          onChange={event => handleParticipantNameChange(
+                            registrationProxy,
+                            index,
+                            event.target.value,
+                          )}
+                        />
+                      </ListItem>
+                    )}
                 </List>
               )}
           </div>

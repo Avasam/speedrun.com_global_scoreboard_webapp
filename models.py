@@ -185,16 +185,53 @@ class Player(db.Model, UserMixin):
         db.session.commit()
         return True
 
+    def update_registration(self, registration_id: int, participant_names: List[str]):
+        try:
+            registration_to_update = Registration \
+                .query \
+                .filter(Registration.registration_id == registration_id) \
+                .one()
+
+            Schedule \
+                .query \
+                .filter(Schedule.schedule_id == registration_to_update.timeslot.schedule.schedule_id) \
+                .filter(Schedule.owner_id == self.user_id) \
+                .one()
+        except orm.exc.NoResultFound:
+            return False
+
+        # Manually take care of merging the participants
+        # since I can't figure out how to do it automatically within SQLAlchemy
+        new_participants = []
+        for participant_name in participant_names:
+            new_participant = None
+            # If it already exists in session, use that one ...
+            for existing_participant in registration_to_update.participants:
+                if participant_name == existing_participant.name:
+                    new_participant = existing_participant
+                    break
+            # ... otherwise, create a brand new Participant
+            else:
+                new_participant = Participant()
+            # Do the necessary modifications
+            new_participant.registration_id = registration_id
+            new_participant.name = participant_name
+
+            new_participants.append(new_participant)
+
+        # cascade="all,delete,delete-orphan" will remove participants we haven't added back
+        registration_to_update.participants = new_participants
+
+        db.session.commit()
+        return True
+
     def delete_registration(self, registration_id: int) -> bool:
         try:
             registration_to_delete: Registration = Registration \
                 .query \
                 .filter(Registration.registration_id == registration_id) \
                 .one()
-        except orm.exc.NoResultFound:
-            return False
 
-        try:
             Schedule \
                 .query \
                 .filter(Schedule.schedule_id == registration_to_delete.timeslot.schedule.schedule_id) \
@@ -202,8 +239,10 @@ class Player(db.Model, UserMixin):
                 .one()
         except orm.exc.NoResultFound:
             return False
+
         db.session.delete(registration_to_delete)
         db.session.commit()
+
         return True
 
     # Override from UserMixin for Flask-Login

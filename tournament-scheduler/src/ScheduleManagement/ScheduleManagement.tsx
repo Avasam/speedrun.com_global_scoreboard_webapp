@@ -1,6 +1,7 @@
 import { Button, Card, CardActions, CardContent, Container, IconButton, Theme, makeStyles } from '@material-ui/core'
 import React, { FC, useEffect, useState } from 'react'
 import { Schedule, ScheduleDto, createDefaultSchedule } from '../models/Schedule'
+import DeleteForever from '@material-ui/icons/DeleteForever'
 import { ScheduleWizard } from './ScheduleWizard'
 import { Styles } from '@material-ui/core/styles/withStyles'
 import User from '../models/User'
@@ -154,9 +155,7 @@ const ScheduleManagement: FC<ScheduleManagementProps> = (props: ScheduleManageme
               aria-label="delete schedule"
               component="button"
               onClick={() => handleDelete(schedule.id)}
-            >
-              &times;
-            </IconButton>
+            ><DeleteForever /></IconButton>
           </CardContent>
           <CardActions className={classes.cardActions}>
             <Button
