@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react'
-
-import { Schedule, ScheduleDto, createDefaultSchedule } from '../models/Schedule'
-import User from '../models/User'
 import { Button, Card, CardActions, CardContent, Container, IconButton, Theme, makeStyles } from '@material-ui/core'
-import { Styles } from '@material-ui/core/styles/withStyles'
+import React, { FC, useEffect, useState } from 'react'
+import { Schedule, ScheduleDto, createDefaultSchedule } from '../models/Schedule'
+import DeleteForever from '@material-ui/icons/DeleteForever'
 import { ScheduleWizard } from './ScheduleWizard'
+import { Styles } from '@material-ui/core/styles/withStyles'
+import User from '../models/User'
 
 const getSchedules = () =>
   fetch(`${window.process.env.REACT_APP_BASE_URL}/api/schedules`, {
@@ -16,7 +16,7 @@ const getSchedules = () =>
     },
   })
     .then(res => res.status >= 400 && res.status < 600
-      ? Promise.reject(Error(res.status.toString()))
+      ? Promise.reject(res)
       : res)
     .then(res =>
       res.json().then((scheduleDtos: ScheduleDto[] | undefined) =>
@@ -33,7 +33,7 @@ const postSchedules = (schedule: ScheduleDto) =>
     body: JSON.stringify(schedule),
   })
     .then(res => res.status >= 400 && res.status < 600
-      ? Promise.reject(Error(res.status.toString()))
+      ? Promise.reject(res)
       : res)
     .then(res => res.json())
 
@@ -48,7 +48,7 @@ const putSchedule = (schedule: ScheduleDto) =>
     body: JSON.stringify(schedule),
   })
     .then(res => res.status >= 400 && res.status < 600
-      ? Promise.reject(Error(res.status.toString()))
+      ? Promise.reject(res)
       : res)
 
 const deleteSchedule = (scheduleId: number) =>
@@ -61,14 +61,14 @@ const deleteSchedule = (scheduleId: number) =>
     },
   })
     .then(res => res.status >= 400 && res.status < 600
-      ? Promise.reject(Error(res.status.toString()))
+      ? Promise.reject(res)
       : res)
 
 type ScheduleManagementProps = {
   currentUser: User
 }
 
-const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleManagementProps) => {
+const ScheduleManagement: FC<ScheduleManagementProps> = (props: ScheduleManagementProps) => {
   const [schedules, setSchedules] = useState<Schedule[] | undefined>(undefined)
   const [currentSchedule, setCurrentSchedule] = useState<Schedule | undefined>(undefined)
 
@@ -81,7 +81,6 @@ const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleMa
       .catch(console.error)
 
   const handleSave = (schedule: ScheduleDto) => {
-    console.log(schedule.id)
     const savePromise = schedule.id === -1
       ? postSchedules(schedule)
       : putSchedule(schedule)
@@ -122,7 +121,7 @@ const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleMa
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(
-      () => console.log('text copied to clipboard successfully'),
+      () => console.info('text copied to clipboard successfully'),
       (err) => console.error(err),
     )
   }
@@ -145,7 +144,7 @@ const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleMa
         onClick={() => editSchedule(createDefaultSchedule())}
       >
         Create new Schedule
-        </Button>
+      </Button>
       {schedules && schedules.map(schedule =>
         <Card className={classes.card} key={schedule.id}>
           <CardContent>
@@ -156,9 +155,7 @@ const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleMa
               aria-label="delete schedule"
               component="button"
               onClick={() => handleDelete(schedule.id)}
-            >
-              &times;
-            </IconButton>
+            ><DeleteForever /></IconButton>
           </CardContent>
           <CardActions className={classes.cardActions}>
             <Button
@@ -169,7 +166,10 @@ const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleMa
             </Button>
             <Button
               size="small"
-              onClick={() => window.location.href = `${window.location.pathname}?view=${schedule.id}`}
+              onClick={() => {
+                localStorage.removeItem('register')
+                window.location.href = `${window.location.pathname}?view=${schedule.id}`
+              }}
             >
               Open public page
             </Button>

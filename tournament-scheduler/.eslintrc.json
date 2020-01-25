@@ -26,6 +26,9 @@
         ".ts",
         ".tsx"
       ]
+    },
+    "import/resolver": {
+      "typescript": {}
     }
   },
   "rules": {
@@ -48,6 +51,7 @@
           "delimiter": "comma"
         }
       }
-    ]
+    ],
+    "sort-imports": "error"
   }
 }

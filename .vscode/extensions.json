@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "ms-vscode.vscode-typescript-next",
+    "ms-pyright.pyright",
+    "ms-python.python",
+    "sonarsource.sonarlint-vscode",
+    "ms-vscode.vscode-typescript-tslint-plugin",
+    "davidanson.vscode-markdownlint"
+  ]
+}

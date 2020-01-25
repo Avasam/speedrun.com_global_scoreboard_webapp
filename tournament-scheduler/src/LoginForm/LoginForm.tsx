@@ -1,15 +1,14 @@
-import React, { useState } from 'react'
+import './LoginForm.css'
 import { Button, Container, Link, TextField } from '@material-ui/core'
-
+import React, { FC, useState } from 'react'
 import SrcApiKeyLink from './SrcApiKeyLink'
 import User from '../models/User'
-import './LoginForm.css'
 
 type loginFormProps = {
   setCurrentUser: (currentUser: User) => void
 }
 
-const LoginForm: React.FC<loginFormProps> = (props: loginFormProps) => {
+const LoginForm: FC<loginFormProps> = (props: loginFormProps) => {
   const [srcApiKeyInput, setSrcApiKeyInput] = useState('')
 
   const login = (srcApiKey: string) =>

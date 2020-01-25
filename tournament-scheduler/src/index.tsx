@@ -1,8 +1,8 @@
+import './index.css'
+import * as serviceWorker from './serviceWorker'
+import App from './App'
 import React from 'react'
 import ReactDOM from 'react-dom'
-import './index.css'
-import App from './App'
-import * as serviceWorker from './serviceWorker'
 
 // Hack for local network testing
 window.process = {

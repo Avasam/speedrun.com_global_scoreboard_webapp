@@ -136,7 +136,8 @@ class Player(db.Model, UserMixin):
         try:
             schedule_to_update = Schedule \
                 .query \
-                .filter(Schedule.schedule_id == schedule_id and Schedule.owner_id == self.user_id) \
+                .filter(Schedule.schedule_id == schedule_id) \
+                .filter(Schedule.owner_id == self.user_id) \
                 .one()
         except orm.exc.NoResultFound:
             return False
@@ -175,12 +176,73 @@ class Player(db.Model, UserMixin):
         try:
             schedule_to_delete = Schedule \
                 .query \
-                .filter(Schedule.schedule_id == schedule_id and Schedule.owner_id == self.user_id) \
+                .filter(Schedule.schedule_id == schedule_id) \
+                .filter(Schedule.owner_id == self.user_id) \
                 .one()
         except orm.exc.NoResultFound:
             return False
         db.session.delete(schedule_to_delete)
         db.session.commit()
+        return True
+
+    def update_registration(self, registration_id: int, participant_names: List[str]):
+        try:
+            registration_to_update = Registration \
+                .query \
+                .filter(Registration.registration_id == registration_id) \
+                .one()
+
+            Schedule \
+                .query \
+                .filter(Schedule.schedule_id == registration_to_update.timeslot.schedule.schedule_id) \
+                .filter(Schedule.owner_id == self.user_id) \
+                .one()
+        except orm.exc.NoResultFound:
+            return False
+
+        # Manually take care of merging the participants
+        # since I can't figure out how to do it automatically within SQLAlchemy
+        new_participants = []
+        for participant_name in participant_names:
+            new_participant = None
+            # If it already exists in session, use that one ...
+            for existing_participant in registration_to_update.participants:
+                if participant_name == existing_participant.name:
+                    new_participant = existing_participant
+                    break
+            # ... otherwise, create a brand new Participant
+            else:
+                new_participant = Participant()
+            # Do the necessary modifications
+            new_participant.registration_id = registration_id
+            new_participant.name = participant_name
+
+            new_participants.append(new_participant)
+
+        # cascade="all,delete,delete-orphan" will remove participants we haven't added back
+        registration_to_update.participants = new_participants
+
+        db.session.commit()
+        return True
+
+    def delete_registration(self, registration_id: int) -> bool:
+        try:
+            registration_to_delete: Registration = Registration \
+                .query \
+                .filter(Registration.registration_id == registration_id) \
+                .one()
+
+            Schedule \
+                .query \
+                .filter(Schedule.schedule_id == registration_to_delete.timeslot.schedule.schedule_id) \
+                .filter(Schedule.owner_id == self.user_id) \
+                .one()
+        except orm.exc.NoResultFound:
+            return False
+
+        db.session.delete(registration_to_delete)
+        db.session.commit()
+
         return True
 
     # Override from UserMixin for Flask-Login
@@ -197,7 +259,7 @@ class Schedule(db.Model):
     registration_key: str = db.Column(db.String(36), nullable=False)
     is_active: bool = db.Column(db.Boolean, nullable=False, default=True)
 
-    owner = db.relationship("Player", back_populates="schedules")
+    owner: Player = db.relationship("Player", back_populates="schedules")
     time_slots: List[TimeSlot] = db.relationship(
         "TimeSlot",
         cascade="all,delete,delete-orphan",
@@ -212,7 +274,8 @@ class Schedule(db.Model):
         try:
             return Schedule \
                 .query \
-                .filter(Schedule.schedule_id == schedule_id and registration_key == Schedule.registration_key) \
+                .filter(Schedule.schedule_id == schedule_id) \
+                .filter(Schedule.registration_key == registration_key) \
                 .one()
         except orm.exc.NoResultFound:
             return None
@@ -236,14 +299,14 @@ class TimeSlot(db.Model):
     maximum_entries: int = db.Column(db.Integer, nullable=False)
     participants_per_entry: int = db.Column(db.Integer, nullable=False)
 
-    schedule = db.relationship("Schedule", back_populates="time_slots")
+    schedule: Schedule = db.relationship("Schedule", back_populates="time_slots")
     registrations: List[Registration] = db.relationship(
         "Registration",
         cascade="all,delete,delete-orphan",
         back_populates="timeslot")
 
     @staticmethod
-    def get_with_key(time_slot_id: str, registration_key: str) -> Optional[Schedule]:
+    def get_with_key(time_slot_id: str, registration_key: str) -> Optional[TimeSlot]:
         try:
             parent_schedule: Schedule = Schedule \
                 .query \
@@ -251,7 +314,8 @@ class TimeSlot(db.Model):
                 .one()
             return TimeSlot \
                 .query \
-                .filter(TimeSlot.time_slot_id == time_slot_id and TimeSlot.schedule_id == parent_schedule.schedule_id) \
+                .filter(TimeSlot.time_slot_id == time_slot_id) \
+                .filter(TimeSlot.schedule_id == parent_schedule.schedule_id) \
                 .one()
         except orm.exc.NoResultFound:
             return None
@@ -287,12 +351,15 @@ class Registration(db.Model):
     registration_id: int = db.Column(db.Integer, primary_key=True)
     time_slot_id: int = db.Column(db.Integer, db.ForeignKey('time_slot.time_slot_id'), nullable=False)
 
-    timeslot = db.relationship("TimeSlot", back_populates="registrations")
-    participants: List[Participant] = db.relationship("Participant", back_populates="registration")
+    timeslot: TimeSlot = db.relationship("TimeSlot", back_populates="registrations")
+    participants: List[Participant] = db.relationship(
+        "Participant",
+        cascade="all,delete,delete-orphan",
+        back_populates="registration")
 
     def to_dto(self) -> dict[str, Union[int, List[str]]]:
         return {
-            'id': self.time_slot_id,
+            'id': self.registration_id,
             'participants': [participant.name for participant in self.participants]
         }
 
@@ -303,4 +370,4 @@ class Participant(db.Model):
     registration_id: int = db.Column(db.Integer, db.ForeignKey('registration.registration_id'), primary_key=True)
     name: str = db.Column(db.String(128), primary_key=True)
 
-    registration = db.relationship("Registration", back_populates="participants")
+    registration: Registration = db.relationship("Registration", back_populates="participants")
