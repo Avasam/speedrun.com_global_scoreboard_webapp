@@ -1,4 +1,4 @@
-import { Button, Card, CardActions, CardContent, Container, IconButton, Theme, makeStyles } from '@material-ui/core'
+import { Button, Card, CardActions, CardContent, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Theme, makeStyles } from '@material-ui/core'
 import React, { FC, useEffect, useState } from 'react'
 import { Schedule, ScheduleDto, createDefaultSchedule } from '../models/Schedule'
 import DeleteForever from '@material-ui/icons/DeleteForever'
@@ -68,11 +68,23 @@ type ScheduleManagementProps = {
   currentUser: User
 }
 
+const styles = {
+  card: {
+    width: '100%',
+    textAlign: 'start',
+    marginTop: '16px',
+    marginBottom: '16px',
+  },
+  cardActions: {
+    display: 'flex',
+  },
+}
+
 const ScheduleManagement: FC<ScheduleManagementProps> = (props: ScheduleManagementProps) => {
   const [schedules, setSchedules] = useState<Schedule[] | undefined>(undefined)
   const [currentSchedule, setCurrentSchedule] = useState<Schedule | undefined>(undefined)
 
-  const editSchedule = (schedule?: Schedule) =>
+  const handleEdit = (schedule?: Schedule) =>
     setCurrentSchedule(schedule)
 
   const handleDelete = (scheduleId: number) =>
@@ -106,26 +118,6 @@ const ScheduleManagement: FC<ScheduleManagementProps> = (props: ScheduleManageme
       .catch(console.error)
   }, [])
 
-  const styles = {
-    card: {
-      width: '100%',
-      textAlign: 'start',
-      marginTop: '16px',
-      marginBottom: '16px',
-    },
-    cardActions: {
-      display: 'flex',
-    },
-  }
-  const classes = makeStyles((styles as Styles<Theme, {}, 'card' | 'cardActions'>))()
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text).then(
-      () => console.info('text copied to clipboard successfully'),
-      (err) => console.error(err),
-    )
-  }
-
   return currentSchedule
     ? <ScheduleWizard
       schedule={currentSchedule}
@@ -141,48 +133,108 @@ const ScheduleManagement: FC<ScheduleManagementProps> = (props: ScheduleManageme
         style={{ marginTop: styles.card.marginTop, width: styles.card.width }}
         variant="contained"
         color="primary"
-        onClick={() => editSchedule(createDefaultSchedule())}
+        onClick={() => handleEdit(createDefaultSchedule())}
       >
         Create new Schedule
       </Button>
       {schedules && schedules.map(schedule =>
-        <Card className={classes.card} key={schedule.id}>
-          <CardContent>
-            <span>{schedule.name}</span>
-            <IconButton
-              style={{ color: 'red' }}
-              color="secondary"
-              aria-label="delete schedule"
-              component="button"
-              onClick={() => handleDelete(schedule.id)}
-            ><DeleteForever /></IconButton>
-          </CardContent>
-          <CardActions className={classes.cardActions}>
-            <Button
-              size="small"
-              onClick={() => editSchedule(schedule)}
-            >
-              Edit
-            </Button>
-            <Button
-              size="small"
-              onClick={() => {
-                localStorage.removeItem('register')
-                window.location.href = `${window.location.pathname}?view=${schedule.id}`
-              }}
-            >
-              Open public page
-            </Button>
-            <Button
-              size="small"
-              onClick={() => copyToClipboard(`${schedule.registrationLink}`)}
-            >
-              Copy registration link
-            </Button>
-          </CardActions>
-        </Card>
+        <ScheduleCard
+          key={schedule.id}
+          onDelete={handleDelete}
+          onEdit={handleEdit}
+          schedule={schedule}
+        />
       )}
     </Container>
+}
+
+type ScheduleCardProps = {
+  schedule: Schedule
+  onDelete: (scheduleId: number) => void
+  onEdit: (schedule: Schedule) => void
+}
+
+const ScheduleCard: FC<ScheduleCardProps> = (props: ScheduleCardProps) => {
+  const classes = makeStyles((styles as Styles<Theme, {}, 'card' | 'cardActions'>))()
+  const [open, setOpen] = React.useState(false)
+
+  const handleClose = (confirmed: boolean) => {
+    confirmed && props.onDelete(props.schedule.id)
+    setOpen(false)
+  }
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text).then(
+      () => console.info('text copied to clipboard successfully'),
+      (err) => console.error(err),
+    )
+  }
+
+  return <Card className={classes.card}>
+    <CardContent>
+      <span>{props.schedule.name}</span>
+      <IconButton
+        style={{ color: 'red' }}
+        color="secondary"
+        aria-label="delete schedule"
+        component="button"
+        onClick={() => setOpen(true)}
+      ><DeleteForever /></IconButton>
+
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">Permanently delete this schedule?</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you sure that you want to delete &quot;{props.schedule.name}&quot; forever?
+            This action will take effect immediatly and is irreversible.
+            <strong><i> You will not be able to retrieve this schedule after this point!</i></strong>
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => handleClose(false)} autoFocus>
+            Cancel
+          </Button>
+          <Button
+            onClick={() => handleClose(true)}
+            variant="outlined"
+            color="secondary"
+            style={{ color: 'red' }}
+          >
+            <strong>Yes, delete this schedule</strong>
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+    </CardContent>
+    <CardActions className={classes.cardActions}>
+      <Button
+        size="small"
+        onClick={() => props.onEdit(props.schedule)}
+      >
+        Edit
+      </Button>
+      <Button
+        size="small"
+        onClick={() => {
+          localStorage.removeItem('register')
+          window.location.href = `${window.location.pathname}?view=${props.schedule.id}`
+        }}
+      >
+        Open public page
+      </Button>
+      <Button
+        size="small"
+        onClick={() => copyToClipboard(`${props.schedule.registrationLink}`)}
+      >
+        Copy registration link
+      </Button>
+    </CardActions>
+  </Card>
 }
 
 export default ScheduleManagement

@@ -1,5 +1,5 @@
 import './ScheduleWizard.css'
-import { Button, ButtonGroup, Card, CardActions, CardContent, Checkbox, Collapse, Container, FormControl, FormControlLabel, FormGroup, IconButton, Input, InputAdornment, InputBaseComponentProps, InputLabel, List, ListItem, ListItemText, TextField } from '@material-ui/core'
+import { Button, ButtonGroup, Card, CardActions, CardContent, Checkbox, Collapse, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormControlLabel, FormGroup, IconButton, Input, InputAdornment, InputBaseComponentProps, InputLabel, List, ListItem, ListItemText, TextField } from '@material-ui/core'
 import { DateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
 import React, { FC, useState } from 'react'
 import { TimeSlot, createDefaultTimeSlot, minutesStep } from '../models/TimeSlot'
@@ -102,7 +102,7 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
   }
 
   const duplicateTimeSlot = (index: number) => {
-    schedule.timeSlots.splice(index, 0, { ...schedule.timeSlots[index], id: -1 })
+    schedule.timeSlots.splice(index, 0, { ...schedule.timeSlots[index], id: -1, registrations: [] })
     setSchedule({
       ...schedule,
       registrationLink: schedule.registrationLink,
@@ -333,72 +333,130 @@ const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
             {props.timeSlot.registrations.length === 0
               ? <div>No one registered for this time slot yet.</div>
               : registrationsProxy.map((registrationProxy, index) =>
-                <List
+                <RegistrationList
                   key={`registration-${registrationProxy.id}`}
-                  component="div"
-                  dense={true}
-                  disablePadding
-                  subheader={
-                    <div>
-                      <ListItemText
-                        style={{ marginTop: 0, textAlign: 'left', display: 'inline-block' }}
-                        secondary={
-                          <span>
-                            Entry #{index + 1}
-                          </span>
-                        }
-                      />
-                      <ButtonGroup
-                        style={{ marginLeft: '16px' }}
-                        color="primary"
-                        size="small"
-                        disabled={!registrationProxy.hasChanged}
-                      >
-                        <Button color="primary" onClick={() => handleSaveRegistrations(registrationProxy)}>Save</Button>
-                        <Button color="secondary" onClick={() => handleResetRegistrations(index)}>Reset</Button>
-                      </ButtonGroup>
-                      <IconButton
-                        style={{ color: 'red' }}
-                        color="secondary"
-                        aria-label="remove time slot"
-                        component="button"
-                        onClick={() => handleRemoveRegistrations(index)}
-                      ><DeleteForever /></IconButton>
-                    </div>
-                  }
-                >
-                  {registrationProxy
-                    .participants
-                    .concat(
-                      Array(Math.max(0, props.timeSlot.participantsPerEntry - registrationProxy.participants.length))
-                        .fill('')
-                    )
-                    .map((participant: string, index) =>
-                      <ListItem
-                        key={`participant-${index}`}
-                        style={{
-                          alignItems: 'baseline',
-                          padding: '0 16px',
-                          color: index >= props.timeSlot.participantsPerEntry ? 'red' : undefined
-                        }}>
-                        <span>{index + 1}.&nbsp;</span>
-                        <TextField
-                          error={index >= props.timeSlot.participantsPerEntry}
-                          style={{ marginTop: 0 }}
-                          value={participant}
-                          onChange={event => handleParticipantNameChange(
-                            registrationProxy,
-                            index,
-                            event.target.value,
-                          )}
-                        />
-                      </ListItem>
-                    )}
-                </List>
+                  registration={registrationProxy}
+                  index={index}
+                  participantsPerEntry={props.timeSlot.participantsPerEntry}
+                  onDelete={handleRemoveRegistrations}
+                  onSave={handleSaveRegistrations}
+                  onReset={handleResetRegistrations}
+                  onParticipantNameChange={handleParticipantNameChange}
+                />
               )}
           </div>
         </Collapse>
       </div>
     </CardContent>
   </Card>
+}
+
+type RegistrationListProps = {
+  registration: RegistrationProxy
+  index: number
+  participantsPerEntry: number
+  onDelete: (index: number) => void
+  onSave: (registration: Registration) => void
+  onReset: (index: number) => void
+  onParticipantNameChange: (registration: RegistrationProxy, participantIndex: number, name: string) => void
+}
+
+const RegistrationList: FC<RegistrationListProps> = (props: RegistrationListProps) => {
+  const [open, setOpen] = React.useState(false)
+
+  const handleClose = (confirmed: boolean) => {
+    confirmed && props.onDelete(props.index)
+    setOpen(false)
+  }
+
+  return <List
+    component="div"
+    dense={true}
+    disablePadding
+    subheader={
+      <div>
+        <ListItemText
+          style={{ marginTop: 0, textAlign: 'left', display: 'inline-block' }}
+          secondary={
+            <span>
+              Entry #{props.index + 1}
+            </span>
+          }
+        />
+        <ButtonGroup
+          style={{ marginLeft: '16px' }}
+          color="primary"
+          size="small"
+          disabled={!props.registration.hasChanged}
+        >
+          <Button color="primary" onClick={() => props.onSave(props.registration)}>Save</Button>
+          <Button color="secondary" onClick={() => props.onReset(props.index)}>Reset</Button>
+        </ButtonGroup>
+        <IconButton
+          style={{ color: 'red' }}
+          color="secondary"
+          aria-label="remove time slot"
+          component="button"
+          onClick={() => setOpen(true)}
+        ><DeleteForever /></IconButton>
+
+        <Dialog
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">Permanently delete this entry?</DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              Are you sure that you want to delete entry #{props.index + 1} of this time slot forever?
+              This action will take effect immediatly and is irreversible.
+              <strong><i> Make sure you have noticed the participants as you will not be able to retrieve this entry after this point!</i></strong>
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => handleClose(false)} autoFocus>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => handleClose(true)}
+              variant="outlined"
+              color="secondary"
+              style={{ color: 'red' }}
+            >
+              <strong>Yes, delete this entry</strong>
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </div>
+    }
+  >
+    {props.registration
+      .participants
+      .concat(
+        Array(Math.max(0, props.participantsPerEntry - props.registration.participants.length))
+          .fill('')
+      )
+      .map((participant: string, index) =>
+        <ListItem
+          key={`participant-${index}`}
+          style={{
+            alignItems: 'baseline',
+            padding: '0 16px',
+            color: index >= props.participantsPerEntry ? 'red' : undefined
+          }}>
+          <span>{index + 1}.&nbsp;</span>
+          <TextField
+            error={index >= props.participantsPerEntry}
+            style={{ marginTop: 0 }}
+            value={participant}
+            onChange={event => props.onParticipantNameChange(
+              props.registration,
+              index,
+              event.target.value,
+            )}
+          />
+        </ListItem>
+      )}
+  </List>
 }
