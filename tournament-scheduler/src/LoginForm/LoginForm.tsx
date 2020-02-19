@@ -48,8 +48,7 @@ const LoginForm: FC<loginFormProps> = (props: loginFormProps) => {
     </div>
     <Button variant='contained' color='primary' onClick={() => login(srcApiKeyInput)}>Access my schedules</Button>
     <span className="paragraph">
-      Don&apos; trust the above link because SRC&apos;s api portal looks sketchy?
-      <br />Fair enough, you can also access your api key through
+      If you don&apos;t trust the above link because SRC&apos;s api portal looks sketchy, you can also access your api key through
       <br /> <SrcApiKeyLink></SrcApiKeyLink>
     </span>
     <label>Why do we need your API key?</label>

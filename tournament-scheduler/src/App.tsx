@@ -1,6 +1,7 @@
 import './App.css'
 import { AppBar, Button, IconButton, ThemeProvider, Toolbar, Typography, createMuiTheme } from '@material-ui/core'
 import React, { FC, useEffect, useState } from 'react'
+import Div100vh from 'react-div-100vh'
 import LoginForm from './LoginForm/LoginForm'
 import ScheduleManagement from './ScheduleManagement/ScheduleManagement'
 import ScheduleRegistration from './ScheduleRegistration/ScheduleRegistration'
@@ -68,7 +69,7 @@ const App: FC = () => {
       })
   }, [])
 
-  return <div className='App'>
+  return <Div100vh className='App'>
     <ThemeProvider theme={darkTheme}>
       <AppBar position="static">
         <Toolbar>
@@ -110,7 +111,7 @@ const App: FC = () => {
         Powered by <a href="https://www.speedrun.com/" target="src">speedrun.com</a> and <a href="https://www.pythonanywhere.com/" target="about">PythonAnywhere</a>
       </footer>
     </ThemeProvider>
-  </div>
+  </Div100vh>
 }
 
 export default App
