@@ -58,6 +58,12 @@ p, .paragraph {
   margin: auto;
 }
 
+.logo-button > .MuiIconButton-label {
+    height: auto;
+    width: auto;
+}
+
 .logo {
   height: 40px;
+  max-width: 90px; /* Enough to fit title at minimum supported width */
 }

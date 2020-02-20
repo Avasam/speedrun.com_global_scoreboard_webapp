@@ -3,6 +3,7 @@ import { Button, Container, Link, TextField } from '@material-ui/core'
 import React, { FC, useState } from 'react'
 import SrcApiKeyLink from './SrcApiKeyLink'
 import User from '../models/User'
+import useMediaQuery from '@material-ui/core/useMediaQuery'
 
 type loginFormProps = {
   setCurrentUser: (currentUser: User) => void
@@ -29,8 +30,12 @@ const LoginForm: FC<loginFormProps> = (props: loginFormProps) => {
         props.setCurrentUser(res.user)
       })
 
+  const isMobileSize = useMediaQuery('(max-width:640px)')
+
   return <Container className='login-form-container'>
-    <img src={`${window.process.env.REACT_APP_BASE_URL}/assets/images/favicon.ico`} alt='logo' />
+    {!isMobileSize &&
+      <img src={`${window.process.env.REACT_APP_BASE_URL}/assets/images/favicon.ico`} alt='logo' />
+    }
     <div className='flex'>
       <TextField
         id='src-api-key'
@@ -56,6 +61,7 @@ const LoginForm: FC<loginFormProps> = (props: loginFormProps) => {
       By using your key, it&apos;s possible to authenticate you to speedrun.com without ever asking for a password!
       <br />If something ever goes wrong or you believe someone is abusing your key, you can change it easily at any time.
       <br /> Once logged in, you can manage your schedules, which includes creating, modifying and sharing them!
+      <br /><br />
     </p>
   </Container>
 }

@@ -9,6 +9,10 @@
   margin-top: auto;
 }
 
+.login-form-container > :last-child {
+  margin-bottom: auto;
+}
+
 /* Note: workaround for Chrome image shrinking in flex as Firefox supports this naturally */
 .login-form-container > img {
   min-height: 0;
