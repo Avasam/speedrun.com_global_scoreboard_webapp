@@ -14,6 +14,7 @@ export class TimeSlot {
   maximumEntries: number
   participantsPerEntry: number
   registrations: Registration[]
+  static compareFn = (a: TimeSlot, b: TimeSlot) => a.dateTime.valueOf() - b.dateTime.valueOf()
 
   constructor(dto: TimeSlotDto) {
     this.id = dto.id
@@ -24,10 +25,12 @@ export class TimeSlot {
   }
 }
 
+export const minutesStep = 5
+const coefficient = 1000 * 60 * minutesStep
 export const createDefaultTimeSlot = () =>
   new TimeSlot({
     id: -1,
-    dateTime: new Date(),
+    dateTime: new Date(Math.ceil(new Date().getTime() / coefficient) * coefficient),
     maximumEntries: 1,
     participantsPerEntry: 1,
     registrations: [],

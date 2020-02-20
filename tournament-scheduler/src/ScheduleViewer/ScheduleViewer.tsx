@@ -1,12 +1,39 @@
-import React, { useEffect, useState } from 'react'
-import { Card, CardContent, Container } from '@material-ui/core'
-import DateFnsUtils from '@date-io/moment'
+import { Container, List, ListItem, ListItemText, createStyles, makeStyles } from '@material-ui/core'
+import React, { FC, useEffect, useState } from 'react'
 import { Schedule, ScheduleDto } from '../models/Schedule'
+import DateFnsUtils from '@date-io/moment'
+import { TimeSlot } from '../models/TimeSlot'
 import moment from 'moment'
 
 interface ScheduleRegistrationProps {
   scheduleId: number
 }
+
+const useStyles = makeStyles(theme =>
+  createStyles({
+    root: {
+      backgroundColor: theme.palette.background.paper,
+      margin: theme.spacing(0.5),
+    },
+    rootHeader: {
+      color: theme.palette.text.primary,
+      fontWeight: theme.typography.fontWeightBold,
+      backgroundColor: theme.palette.background.default,
+      paddingTop: theme.spacing(0.5),
+      paddingBottom: theme.spacing(0.5),
+      paddingLeft: theme.spacing(2),
+      paddingRight: theme.spacing(2),
+    },
+    nested: {
+      paddingLeft: theme.spacing(2),
+      paddingRight: theme.spacing(2),
+    },
+    item: {
+      paddingTop: 0,
+      paddingBottom: 0,
+    },
+  }),
+)
 
 const getSchedule = (id: number) =>
   fetch(`${window.process.env.REACT_APP_BASE_URL}/api/schedules/${id}`, {
@@ -18,17 +45,21 @@ const getSchedule = (id: number) =>
     },
   })
     .then(res => res.status >= 400 && res.status < 600
-      ? Promise.reject(Error(res.status.toString()))
+      ? Promise.reject(res)
       : res)
     .then(res =>
       res.json().then((scheduleDto: ScheduleDto) => new Schedule(scheduleDto)))
 
-const ScheduleRegistration: React.FC<ScheduleRegistrationProps> = (props: ScheduleRegistrationProps) => {
+const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegistrationProps) => {
   const [schedule, setSchedule] = useState<Schedule | undefined>(undefined)
+  const classes = useStyles()
 
   useEffect(() => {
     getSchedule(props.scheduleId)
-      .then((schedule: Schedule) => setSchedule(schedule))
+      .then((schedule: Schedule) => {
+        schedule.timeSlots.sort(TimeSlot.compareFn)
+        setSchedule(schedule)
+      })
       .catch(console.error)
   }, [props.scheduleId])
 
@@ -39,24 +70,42 @@ const ScheduleRegistration: React.FC<ScheduleRegistrationProps> = (props: Schedu
         <label>Schedule for: {schedule.name}</label>
         {!schedule.active && <div><br />This schedule is currently inactive and registration is closed.</div>}
         {schedule.timeSlots.map(timeSlot =>
-          <div key={`timeslot-${timeSlot.id}`}>
-            {
-              moment(timeSlot.dateTime).format(new DateFnsUtils().dateTime24hFormat) +
-              ` (${timeSlot.registrations.length} / ${timeSlot.maximumEntries}` +
-              ` entr${timeSlot.registrations.length === 1 ? 'y' : 'ies'})`
+          <List
+            key={`timeslot-${timeSlot.id}`}
+            className={classes.root}
+            subheader={
+              <ListItemText
+                className={classes.rootHeader}
+                primary={moment(timeSlot.dateTime).format(new DateFnsUtils().dateTime24hFormat)}
+                secondary={
+                  `(${timeSlot.registrations.length} / ${timeSlot.maximumEntries}` +
+                  ` entr${timeSlot.registrations.length === 1 ? 'y' : 'ies'})`
+                }
+              />
             }
-            <ol>
-              {timeSlot.registrations.map(registration =>
-                <li key={`registration-${registration.id}`}>
-                  <ul style={{ listStyleType: 'none' }}>
+          >
+            <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+              {timeSlot.registrations.length === 0
+                ? <div className={classes.nested}>No one registered for this time slot yet.</div>
+                : timeSlot.registrations.map(registration =>
+                  <List
+                    key={`registration-${registration.id}`}
+                    component="div"
+                    disablePadding
+                    subheader={
+                      <ListItemText secondary="Participants" />
+                    }
+                    className={classes.nested}
+                  >
                     {registration.participants.map((participant, index) =>
-                      <li key={`participant-${index}`}>{participant}</li>
+                      <ListItem key={`participant-${index}`} className={classes.item}>
+                        <ListItemText primary={`${index + 1}. ${participant}`} />
+                      </ListItem>
                     )}
-                  </ul>
-                </li>
-              )}
-            </ol>
-          </div>
+                  </List>
+                )}
+            </div>
+          </List>
         )}
       </div>
     }

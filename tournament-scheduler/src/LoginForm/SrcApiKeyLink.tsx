@@ -1,7 +1,7 @@
-import React, { useState } from 'react'
 import { Link, TextField } from '@material-ui/core'
+import React, { FC, useState } from 'react'
 
-const SrcApiKeyLink: React.FC = () => {
+const SrcApiKeyLink: FC = () => {
   const [srcNameInput, setSrcNameInput] = useState('')
 
   return <span className='src-api-key-link'>
@@ -10,11 +10,11 @@ const SrcApiKeyLink: React.FC = () => {
       href={`https://www.speedrun.com/${srcNameInput}/settings/api`}
       target='src'
       rel='noopener'
-    >https://www.speedrun.com/</Link>
+    >www.speedrun.com/</Link>
     <TextField
       name='src-name'
       placeholder='SRC name'
-      style={{ width: `${srcNameInput.length ? srcNameInput.length + 1 : 9.3}ch` }}
+      style={{ width: `${srcNameInput.length ? srcNameInput.length + 1 : 9}ch` }}
       onChange={event => setSrcNameInput(event.currentTarget.value)}
     />
     <Link

@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react'
-
+import { Button, Card, CardActions, CardContent, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Theme, makeStyles } from '@material-ui/core'
+import React, { FC, useEffect, useState } from 'react'
 import { Schedule, ScheduleDto, createDefaultSchedule } from '../models/Schedule'
-import User from '../models/User'
-import { Button, Card, CardActions, CardContent, Container, IconButton, Theme, makeStyles } from '@material-ui/core'
-import { Styles } from '@material-ui/core/styles/withStyles'
+import DeleteForever from '@material-ui/icons/DeleteForever'
 import { ScheduleWizard } from './ScheduleWizard'
+import { Styles } from '@material-ui/core/styles/withStyles'
+import User from '../models/User'
 
 const getSchedules = () =>
   fetch(`${window.process.env.REACT_APP_BASE_URL}/api/schedules`, {
@@ -16,7 +16,7 @@ const getSchedules = () =>
     },
   })
     .then(res => res.status >= 400 && res.status < 600
-      ? Promise.reject(Error(res.status.toString()))
+      ? Promise.reject(res)
       : res)
     .then(res =>
       res.json().then((scheduleDtos: ScheduleDto[] | undefined) =>
@@ -33,7 +33,7 @@ const postSchedules = (schedule: ScheduleDto) =>
     body: JSON.stringify(schedule),
   })
     .then(res => res.status >= 400 && res.status < 600
-      ? Promise.reject(Error(res.status.toString()))
+      ? Promise.reject(res)
       : res)
     .then(res => res.json())
 
@@ -48,7 +48,7 @@ const putSchedule = (schedule: ScheduleDto) =>
     body: JSON.stringify(schedule),
   })
     .then(res => res.status >= 400 && res.status < 600
-      ? Promise.reject(Error(res.status.toString()))
+      ? Promise.reject(res)
       : res)
 
 const deleteSchedule = (scheduleId: number) =>
@@ -61,18 +61,30 @@ const deleteSchedule = (scheduleId: number) =>
     },
   })
     .then(res => res.status >= 400 && res.status < 600
-      ? Promise.reject(Error(res.status.toString()))
+      ? Promise.reject(res)
       : res)
 
 type ScheduleManagementProps = {
   currentUser: User
 }
 
-const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleManagementProps) => {
+const styles = {
+  card: {
+    width: '100%',
+    textAlign: 'start',
+    marginTop: '16px',
+    marginBottom: '16px',
+  },
+  cardActions: {
+    display: 'flex',
+  },
+}
+
+const ScheduleManagement: FC<ScheduleManagementProps> = (props: ScheduleManagementProps) => {
   const [schedules, setSchedules] = useState<Schedule[] | undefined>(undefined)
   const [currentSchedule, setCurrentSchedule] = useState<Schedule | undefined>(undefined)
 
-  const editSchedule = (schedule?: Schedule) =>
+  const handleEdit = (schedule?: Schedule) =>
     setCurrentSchedule(schedule)
 
   const handleDelete = (scheduleId: number) =>
@@ -81,7 +93,6 @@ const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleMa
       .catch(console.error)
 
   const handleSave = (schedule: ScheduleDto) => {
-    console.log(schedule.id)
     const savePromise = schedule.id === -1
       ? postSchedules(schedule)
       : putSchedule(schedule)
@@ -107,26 +118,6 @@ const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleMa
       .catch(console.error)
   }, [])
 
-  const styles = {
-    card: {
-      width: '100%',
-      textAlign: 'start',
-      marginTop: '16px',
-      marginBottom: '16px',
-    },
-    cardActions: {
-      display: 'flex',
-    },
-  }
-  const classes = makeStyles((styles as Styles<Theme, {}, 'card' | 'cardActions'>))()
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text).then(
-      () => console.log('text copied to clipboard successfully'),
-      (err) => console.error(err),
-    )
-  }
-
   return currentSchedule
     ? <ScheduleWizard
       schedule={currentSchedule}
@@ -142,47 +133,137 @@ const ScheduleManagement: React.FC<ScheduleManagementProps> = (props: ScheduleMa
         style={{ marginTop: styles.card.marginTop, width: styles.card.width }}
         variant="contained"
         color="primary"
-        onClick={() => editSchedule(createDefaultSchedule())}
+        onClick={() => handleEdit(createDefaultSchedule())}
       >
         Create new Schedule
-        </Button>
+      </Button>
       {schedules && schedules.map(schedule =>
-        <Card className={classes.card} key={schedule.id}>
-          <CardContent>
-            <span>{schedule.name}</span>
-            <IconButton
-              style={{ color: 'red' }}
-              color="secondary"
-              aria-label="delete schedule"
-              component="button"
-              onClick={() => handleDelete(schedule.id)}
-            >
-              &times;
-            </IconButton>
-          </CardContent>
-          <CardActions className={classes.cardActions}>
-            <Button
-              size="small"
-              onClick={() => editSchedule(schedule)}
-            >
-              Edit
-            </Button>
-            <Button
-              size="small"
-              onClick={() => window.location.href = `${window.location.pathname}?view=${schedule.id}`}
-            >
-              Open public page
-            </Button>
-            <Button
-              size="small"
-              onClick={() => copyToClipboard(`${schedule.registrationLink}`)}
-            >
-              Copy registration link
-            </Button>
-          </CardActions>
-        </Card>
+        <ScheduleCard
+          key={schedule.id}
+          onDelete={handleDelete}
+          onEdit={handleEdit}
+          schedule={schedule}
+        />
       )}
     </Container>
+}
+
+type ScheduleCardProps = {
+  schedule: Schedule
+  onDelete: (scheduleId: number) => void
+  onEdit: (schedule: Schedule) => void
+}
+
+const ScheduleCard: FC<ScheduleCardProps> = (props: ScheduleCardProps) => {
+  const classes = makeStyles((styles as Styles<Theme, {}, 'card' | 'cardActions'>))()
+  const [open, setOpen] = React.useState(false)
+
+  const handleClose = (confirmed: boolean) => {
+    confirmed && props.onDelete(props.schedule.id)
+    setOpen(false)
+  }
+
+  const oldCopyToClipboard = (text: string) => {
+    const textArea = document.createElement('textarea')
+    textArea.value = text
+    textArea.style.position = 'fixed'  // Avoid scrolling to bottom
+    document.body.appendChild(textArea)
+    textArea.focus()
+    textArea.select()
+    textArea.setSelectionRange(0, 99999) // For mobile devices
+
+    try {
+      const successful = document.execCommand('copy')
+      if (!successful) throw new Error('execCommand failed')
+      console.info('text copied to clipboard successfully using textarea')
+    } catch (err) {
+      alert(`Could not copy text: ${err}`)
+      console.error('Could not copy text using textarea: ', err)
+    }
+
+    document.body.removeChild(textArea)
+  }
+
+  const copyToClipboard = (text: string) => {
+    if (!navigator.clipboard) {
+      oldCopyToClipboard(text)
+      return
+    }
+
+    navigator.clipboard.writeText(text).then(
+      () => console.info('text copied to clipboard successfully'),
+      (err) => {
+        alert(`Could not copy text: ${err}`)
+        console.error('Could not copy text: ', err)
+      },
+    )
+  }
+
+  return <Card className={classes.card}>
+    <CardContent>
+      <span>{props.schedule.name}</span>
+      <IconButton
+        style={{ color: 'red' }}
+        color="secondary"
+        aria-label="delete schedule"
+        component="button"
+        onClick={() => setOpen(true)}
+      ><DeleteForever /></IconButton>
+
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">Permanently delete this schedule?</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you sure that you want to delete &quot;{props.schedule.name}&quot; forever?
+            This action will take effect immediatly and is irreversible.
+            <strong><i> You will not be able to retrieve this schedule after this point!</i></strong>
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => handleClose(false)} autoFocus>
+            Cancel
+          </Button>
+          <Button
+            onClick={() => handleClose(true)}
+            variant="outlined"
+            color="secondary"
+            style={{ color: 'red' }}
+          >
+            <strong>Yes, delete this schedule</strong>
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+    </CardContent>
+    <CardActions className={classes.cardActions}>
+      <Button
+        size="small"
+        onClick={() => props.onEdit(props.schedule)}
+      >
+        Edit
+      </Button>
+      <Button
+        size="small"
+        onClick={() => {
+          localStorage.removeItem('register')
+          window.location.href = `${window.location.pathname}?view=${props.schedule.id}`
+        }}
+      >
+        Open public page
+      </Button>
+      <Button
+        size="small"
+        onClick={() => copyToClipboard(`${props.schedule.registrationLink}`)}
+      >
+        Copy registration link
+      </Button>
+    </CardActions>
+  </Card>
 }
 
 export default ScheduleManagement

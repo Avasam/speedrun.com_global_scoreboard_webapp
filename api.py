@@ -91,14 +91,12 @@ def get_all_schedules(current_user: Player):
 
 @api.route('/schedules/<id>', methods=('GET',))
 def get_schedule(id: str):
-    _ = None
-    """
     registration_key: Optional[str] = request.args.get('registrationKey')
-    if registration_key is None:
-        return jsonify({'message': 'Query parameter registrationKey has to be defined', 'authenticated': True}), 400
-    """
 
-    schedule = Schedule.get(id)
+    if registration_key is None:
+        schedule = Schedule.get(id)
+    else:
+        schedule = Schedule.get_with_key(id, registration_key)
 
     if schedule is None:
         return '', 404
@@ -141,6 +139,7 @@ def delete_schedule(current_user: Player, id: str):
         schedule_id = int(id)
     except ValueError:
         return jsonify({'message': '/id is not a valid number', 'authenticated': True}), 400
+
     delete_success = current_user.delete_schedule(schedule_id)
     return "", 204 if delete_success else 404
 
@@ -157,18 +156,55 @@ def post_registration(id: str):
     if time_slot is None:
         return '', 404
 
+    if (len(time_slot.registrations) >= time_slot.maximum_entries):
+        return jsonify({'message': 'Registrations are full for this timeslot', 'authenticated': True}), 507
+
     return str(time_slot.register_participant(participants)), 201
 
 
-def __validate_create_registration(data: Dict[str, Any]) -> Tuple[Optional[str], str, List[str]]:
+@api.route('/registrations/<id>', methods=('PUT',))
+@authenthication_required
+def put_registration(current_user: Player, id: str):
+    data: Dict[str, ] = request.get_json()
+
+    try:
+        registration_id = int(id)
+    except ValueError:
+        return jsonify({'message': '/id is not a valid number', 'authenticated': True}), 400
+
+    error_message, _, participants = __validate_create_registration(data, False)
+    if error_message is not None:
+        return jsonify({'message': error_message, 'authenticated': True}), 400
+
+    update_success = current_user.update_registration(registration_id, participants)
+    return "", 201 if update_success else 404
+
+
+@api.route('/registrations/<id>', methods=('DELETE',))
+@authenthication_required
+def delete_registration(current_user: Player, id: str):
+    try:
+        registration_id = int(id)
+    except ValueError:
+        return jsonify({'message': '/id is not a valid number', 'authenticated': True}), 400
+
+    delete_success = current_user.delete_registration(registration_id)
+    return "", 204 if delete_success else 404
+
+
+def __validate_create_registration(
+        data: Dict[str, Any],
+        with_registration_key=True) \
+        -> Tuple[Optional[str], str, List[str]]:
     registration_key = ""
     participants = []
     try:
         registration_key = data['registrationKey']
     except KeyError:
-        return 'registrationKey has to be defined', registration_key, participants
+        if with_registration_key:
+            return 'registrationKey has to be defined', registration_key, participants
     try:
-        participants = data['participants']
+        participants[:] = [x for x in data['participants'] if x]
     except KeyError:
         return 'registrationKey has to be defined', registration_key, participants
     return None, registration_key, participants
