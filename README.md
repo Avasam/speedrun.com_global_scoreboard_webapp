@@ -35,6 +35,6 @@ If needed, copy `.env.development` as `.env.development.local` and update the fi
 ### Running the app
 
 - From the root of the project: `py ./flask_app.py`, to launch the backend server
-- From the root of a React app: `npm run start`, to server the app  
+- From the root of a React app: `npm run start`, to serve the app  
 
 These steps are missing setting up a virtual environment, but if you care about that, you'll know how to set it up yourself. In any case you can let me know if you have issues setting up your dev environment.

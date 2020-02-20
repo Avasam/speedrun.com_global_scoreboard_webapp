@@ -1,12 +1,14 @@
 import './App.css'
 import { AppBar, Button, IconButton, ThemeProvider, Toolbar, Typography, createMuiTheme } from '@material-ui/core'
 import React, { FC, useEffect, useState } from 'react'
+import Div100vh from 'react-div-100vh'
 import LoginForm from './LoginForm/LoginForm'
 import ScheduleManagement from './ScheduleManagement/ScheduleManagement'
 import ScheduleRegistration from './ScheduleRegistration/ScheduleRegistration'
 import ScheduleViewer from './ScheduleViewer/ScheduleViewer'
 import User from './models/User'
 import { teal } from '@material-ui/core/colors'
+import useMediaQuery from '@material-ui/core/useMediaQuery'
 
 const darkTheme = createMuiTheme({
   palette: {
@@ -68,28 +70,31 @@ const App: FC = () => {
       })
   }, [])
 
-  return <div className='App'>
+  const isMobileSize = useMediaQuery('(max-width:640px)')
+
+  return <Div100vh className='App'>
     <ThemeProvider theme={darkTheme}>
       <AppBar position="static">
         <Toolbar>
-          {currentUser || scheduleRegistrationLink || viewScheduleId
-            ? <>
-              <IconButton onClick={() => {
+          {(currentUser || scheduleRegistrationLink || viewScheduleId || isMobileSize) &&
+            <IconButton
+              className='logo-button'
+              onClick={() => {
                 localStorage.removeItem('register')
                 window.location.href = window.location.pathname
-              }}>
-                <img
-                  className='logo'
-                  alt='logo'
-                  src={`${window.process.env.REACT_APP_BASE_URL}/assets/images/favicon.ico`}
-                />
-              </IconButton>
-              <Typography variant="h4">Tournament Scheduler</Typography>
-              {currentUser &&
-                <Button variant='contained' color='secondary' onClick={() => logout(setCurrentUser)}>Logout</Button>
-              }
-            </>
-            : <Typography variant="h2">Tournament Scheduler</Typography>
+              }}
+            >
+              <img
+                className='logo'
+                style={{ height: (!currentUser && isMobileSize) ? 'auto' : undefined }}
+                alt='logo'
+                src={`${window.process.env.REACT_APP_BASE_URL}/assets/images/favicon.ico`}
+              />
+            </IconButton>
+          }
+          <Typography variant={currentUser || isMobileSize ? 'h4' : 'h2'}>Tournament Scheduler</Typography>
+          {currentUser &&
+            <Button variant='contained' color='secondary' onClick={() => logout(setCurrentUser)}>Logout</Button>
           }
         </Toolbar>
       </AppBar>
@@ -110,7 +115,7 @@ const App: FC = () => {
         Powered by <a href="https://www.speedrun.com/" target="src">speedrun.com</a> and <a href="https://www.pythonanywhere.com/" target="about">PythonAnywhere</a>
       </footer>
     </ThemeProvider>
-  </div>
+  </Div100vh>
 }
 
 export default App
