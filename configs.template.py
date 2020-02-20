@@ -1,5 +1,7 @@
-import os
-secret_key: bytes = os.urandom(16)
+# import os
+# IMPORTANT : DO NOT DO THIS IN PROD /!\
+# We're only doing it here because it's annoying to invalidate JWT tokens on refresh during development
+secret_key: bytes = bytes([1])  # os.urandom(16)
 
 debug: bool = True
 flask_environment: str = "development"
