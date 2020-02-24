@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
-import { Button, Nav, Navbar } from 'react-bootstrap'
 import './ScoreboardNavBar.css'
+import { Button, Nav, Navbar } from 'react-bootstrap'
+import React, { useState } from 'react'
 import LoginModal from './LoginModal'
 
 type LoginInfoProps = {
@@ -29,7 +29,7 @@ const LoginInfo = (props: LoginInfoProps) => {
 
 const ScoreboardNavBar = (props: LoginInfoProps) =>
   <Navbar collapseOnSelect expand="md" bg="dark" variant="dark">
-    <Navbar.Brand href="#/">Ava's speedrunning global scoreboard</Navbar.Brand>
+    <Navbar.Brand href="#/">Ava&apos;s speedrunning global scoreboard</Navbar.Brand>
     <Navbar.Toggle aria-controls="basic-navbar-nav" />
     <Navbar.Collapse id="basic-navbar-nav">
       <Nav className="mr-auto">
