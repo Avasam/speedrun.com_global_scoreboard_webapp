@@ -1,6 +1,8 @@
 import { Button, Col, Form, InputGroup, Modal } from 'react-bootstrap'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import SrcApiKeyLink from './SrcApiKeyLink'
+import { faLink } from '@fortawesome/free-solid-svg-icons'
 
 type LoginModalProps = {
   show: boolean
@@ -19,7 +21,7 @@ const LoginModal = (props: LoginModalProps) =>
           <Form.Label>Enter your API key</Form.Label>
           <InputGroup>
             <InputGroup.Prepend>
-              <InputGroup.Text>@</InputGroup.Text>
+              <InputGroup.Text><FontAwesomeIcon icon={faLink} /></InputGroup.Text>
             </InputGroup.Prepend>
             <Form.Control
               type="text"

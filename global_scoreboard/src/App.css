@@ -1,15 +1,8 @@
-.App-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-}
-
-.App-link {
-  color: #61dafb;
-}
-
 footer {
   text-align: center;
+}
+
+/* Fix close button appearing squished by landing in-between pixels */
+.close.close {
+  font-size: 1.6rem;
 }

@@ -1,7 +1,7 @@
-import React from 'react'
 import './App.css'
-import ScoreboardNavBar from './NavBar/ScoreboardNavBar'
 import 'bootstrap/dist/css/bootstrap.css'
+import React from 'react'
+import ScoreboardNavBar from './NavBar/ScoreboardNavBar'
 
 const App: React.FC = () => {
   return (
