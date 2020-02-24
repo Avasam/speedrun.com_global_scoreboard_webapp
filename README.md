@@ -1,10 +1,10 @@
-# speedrun.com global leaderboard Webapp
+# speedrun.com global scoreboard Webapp
 
-The webapp version of an unofficial speedrun.com global leaderboard for competitive speedrunning
+The webapp version of an unofficial speedrun.com global scoreboard for competitive speedrunning
 
 Disclaimer: This is still in early testing and subject to drastic changes if needed.
 
-### **[See the leaderboard](https://avasam.pythonanywhere.com/)**
+### **[See the scoreboard](https://avasam.pythonanywhere.com/)**
 
 There you can also update any user you want.
 

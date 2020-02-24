@@ -1,14 +1,14 @@
 {
-  "name": "react-app",
+  "name": "global-scoreboard",
   "version": "0.1.0",
-  "description": "The React version of an unofficial speedrun.com global leaderboard for friendly competitive speedrunning",
+  "description": "The React version of an unofficial speedrun.com global scoreboard for friendly competitive speedrunning",
   "private": true,
   "dependencies": {
     "bootstrap": "^4.3.1",
     "react": "^16.10.1",
     "react-bootstrap": "^1.0.0-beta.12",
     "react-dom": "^16.10.1",
-    "react-scripts": "3.1.2",
+    "react-scripts": "^3.4.0",
     "typescript": "3.3.3"
   },
   "devDependencies": {
@@ -43,7 +43,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Avasam/speedrun.com_global_leaderboard_webapp.git"
+    "url": "git+https://github.com/Avasam/speedrun.com_global_scoreboard_webapp.git"
   },
   "keywords": [
     "speedrunning",
@@ -57,7 +57,7 @@
   "author": "Avasam (Samuel Therrien)",
   "license": "AGPL-3.0",
   "bugs": {
-    "url": "https://github.com/Avasam/speedrun.com_global_leaderboard_webapp/issues"
+    "url": "https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/issues"
   },
-  "homepage": "http://avasam.pythonanywhere.com/react-app"
+  "homepage": "http://avasam.pythonanywhere.com/global-scoreboard"
 }

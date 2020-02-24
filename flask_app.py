@@ -71,10 +71,10 @@ def load_user(user_id: str) -> Union[Player, None]:
     return Player.get(user_id)
 
 
-@app.route('/react-app', defaults={'asset': 'index.html'})
-@app.route('/react-app/<path:asset>', methods=["GET"])
+@app.route('/global-scoreboard', defaults={'asset': 'index.html'})
+@app.route('/global-scoreboard/<path:asset>', methods=["GET"])
 def react_app(asset: str):
-    return send_from_directory('react-app/build/', asset)
+    return send_from_directory('global-scoreboard/build/', asset)
 
 
 @app.route('/tournament-scheduler', defaults={'asset': 'index.html'})
