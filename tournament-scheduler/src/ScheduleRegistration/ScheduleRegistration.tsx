@@ -1,4 +1,4 @@
-import { Button, Card, CardActions, CardContent, Container, FormControl, FormGroup, FormLabel, InputLabel, MenuItem, Select, TextField } from '@material-ui/core'
+import { Button, Card, CardActions, CardContent, Container, FormControl, FormGroup, FormLabel, InputLabel, Link, MenuItem, Select, TextField } from '@material-ui/core'
 import React, { ChangeEvent, FC, useEffect, useRef, useState } from 'react'
 import { Schedule, ScheduleDto } from '../models/Schedule'
 import DateFnsUtils from '@date-io/moment'
@@ -131,6 +131,9 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
       : <Card>
         <CardContent style={{ textAlign: 'left' }}>
           <label>Schedule for: {schedule.name}</label>
+          <Link href={`${window.location.href}?view=${schedule.id}`} target="blank" style={{ display: 'block' }}>
+            Click here to view the current registrations in a new tab
+          </Link>
           {!schedule.active
             ? <div><br />Sorry. This schedule is currently inactive and registration is closed.</div>
             : <FormGroup>

@@ -42,19 +42,22 @@ const App: FC = () => {
   const viewScheduleIdFromUrl = new URLSearchParams(window.location.search).get('view')
   const [viewScheduleId] = useState<number | null>((viewScheduleIdFromUrl && parseInt(viewScheduleIdFromUrl)) || null)
 
-  // If a registrationLink wasn't in the URL, take the one from localStorage
+  // Take registrationLink from the URL if present,
+  // otherwise from the localStorage if there are no other searchParam
   const [scheduleRegistrationLink] = useState<string | null>(
     new URLSearchParams(window.location.search).get('register') ||
-    localStorage.getItem('register'))
-  // Otherwise, clear up the localStorage
-  if (window.location.search) {
-    localStorage.removeItem('register')
-  }
+    (window.location.search
+      ? null
+      : localStorage.getItem('register'))
+  )
+
   // Keep the registrationLink in localStorage to simulate staying on the same page when reloading the registration page
   // despite clearing up the URL
   if (scheduleRegistrationLink) {
     localStorage.setItem('register', scheduleRegistrationLink)
     window.history.pushState(null, document.title, window.location.href.replace(window.location.search, ''))
+  } else {
+    localStorage.removeItem('register')
   }
 
   useEffect(() => {
