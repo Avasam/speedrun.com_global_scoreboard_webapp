@@ -36,6 +36,11 @@ const LoginForm: FC<loginFormProps> = (props: loginFormProps) => {
     {!isMobileSize &&
       <img src={`${window.process.env.REACT_APP_BASE_URL}/assets/images/favicon.ico`} alt='logo' />
     }
+    <span style={{ marginTop: '16px' }}>
+      You only need to login to create and manage schedules.
+      If you want to register to an existing schedule,
+      ask the tournament organiser for a link.
+    </span>
     <div className='flex'>
       <TextField
         id='src-api-key'
