@@ -58,6 +58,7 @@ SQLALCHEMY_DATABASE_URI = "mysql+{connector}://{username}:{password}@{hostname}/
 app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
 app.config["SQLALCHEMY_POOL_RECYCLE"] = 299
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = configs.sql_track_modifications
+db.app = app
 db.init_app(app)
 
 # Setup Flask-Login

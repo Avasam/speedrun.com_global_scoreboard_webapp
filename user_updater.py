@@ -4,11 +4,11 @@
 from collections import Counter
 from datetime import datetime
 from math import ceil, exp, floor
-from models import Player, db
+from models import db, CachedRequest, Player
 from threading import Thread, active_count
 from time import strftime, sleep
 from typing import Dict, List, Tuple, Union
-from utils import get_file, UserUpdaterError, SpeedrunComError
+from utils import UserUpdaterError, SpeedrunComError
 import configs
 import httplib2
 import re
@@ -77,7 +77,7 @@ class Run:
                   category=self.category)
         for var_id, var_value in self.variables.items():
             url += "&var-{id}={value}".format(id=var_id, value=var_value)
-        leaderboard = get_file(url)
+        leaderboard = CachedRequest.get_response_or_new(url)
 
         if len(leaderboard["data"]["runs"]) >= MIN_LEADERBOARD_SIZE:  # Check to avoid useless computation
             previous_time = leaderboard["data"]["runs"][0]["run"]["times"]["primary_t"]
@@ -196,7 +196,7 @@ class Run:
                         if self.level and self._points > 0:
                             self.level_name = game_category[1]  # Always 2nd of 3 items
                             url = "https://www.speedrun.com/api/v1/games/{game}/levels".format(game=self.game)
-                            levels = get_file(url)
+                            levels = CachedRequest.get_response_or_new(url)
                             self.level_count = len(levels["data"])
                             self._points /= self.level_count or 1
         print(self)
@@ -218,7 +218,7 @@ class User:
 
     def set_code_and_name(self) -> None:
         url = "https://www.speedrun.com/api/v1/users/{user}".format(user=self._id)
-        infos = get_file(url)
+        infos = CachedRequest.get_response_or_new(url)
 
         self._id = infos["data"]["id"]
         self._name = infos["data"]["names"].get("international")
@@ -238,7 +238,7 @@ class User:
                 if pb["run"]["category"] and pb["run"].get("videos"):
                     # Get a list of the game's subcategory variables
                     url = "https://www.speedrun.com/api/v1/games/{game}/variables".format(game=pb["run"]["game"])
-                    game_variables = get_file(url)
+                    game_variables = CachedRequest.get_response_or_new(url)
                     game_subcategory_ids: List[str] = []
                     for game_variable in game_variables["data"]:
                         if game_variable["is-subcategory"]:
@@ -276,7 +276,7 @@ class User:
 
         if not self._banned:
             url = "https://www.speedrun.com/api/v1/users/{user}/personal-bests".format(user=self._id)
-            pbs = get_file(url)
+            pbs = CachedRequest.get_response_or_new(url)
             self._points = 0
             threads: List[Thread] = []
             for pb in pbs["data"]:
