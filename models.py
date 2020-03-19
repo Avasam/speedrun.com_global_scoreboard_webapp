@@ -267,7 +267,7 @@ class CachedRequest(db.Model):
 
     @staticmethod
     def get_response_or_new(url: str) -> dict:
-        today = datetime.utcnow().date()
+        today = datetime.utcnow()
         yesterday = today - timedelta(days=1)
 
         try:

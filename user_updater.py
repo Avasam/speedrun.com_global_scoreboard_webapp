@@ -299,6 +299,7 @@ class User:
             counted_runs.sort(key=lambda r: r._points, reverse=True)
             run_str_lst: List[Tuple[str, float]] = []
             biggest_str_length: int = 0
+
             for run in counted_runs:
                 self._points += run._points
                 run_str = ("{game} - {category}{level}".format(game=run.game_name,
@@ -309,9 +310,10 @@ class User:
                 biggest_str_length = max(biggest_str_length, len(run_str))
 
             self._point_distribution_str = f"\n{'Game - Category (Level)':<{biggest_str_length}} | Points" \
-                                           f"\n{'-'*biggest_str_length} | -----"
+                                           f"\n{'-'*biggest_str_length} | ------"
             for run_infos in run_str_lst:
-                self._point_distribution_str += f"\n{run_infos[0]:<{biggest_str_length}} | {run_infos[1]:.2f}"
+                self._point_distribution_str += f"\n{run_infos[0]:<{biggest_str_length}} | " + \
+                    f"{run_infos[1]:.2f}".rjust(6, ' ')
 
             if self._banned:
                 self._points = 0  # In case the banned flag has been set mid-thread
