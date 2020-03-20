@@ -88,10 +88,11 @@ $(function () {
         loginResponseMessage.css('visibility', 'visible');
       })
       .fail(function (data) {
-        alert(`There was an unknown error with the AJAX request. Status code: ${data.status}`);
+        loginResponseMessage.attr('class', 'alert alert-danger');
+        loginResponseMessage.html(`There was an unknown error while trying to log you in. Status code: ${data.status}`);
+        loginResponseMessage.css('visibility', 'visible');
       })
       .always(function (data) {
-        console.log(data);
         $("#login-button").prop('disabled', false);
         $("#api-key").prop('readonly', false);
       })
