@@ -3,7 +3,7 @@
 
 from collections import Counter
 from datetime import datetime
-from math import ceil, exp, floor
+from math import ceil, exp, floor, pi
 from models import db, CachedRequest, Player
 from threading import Thread, active_count
 from time import strftime, sleep
@@ -18,7 +18,7 @@ import traceback
 
 SEPARATOR = "-" * 64
 MIN_LEADERBOARD_SIZE = 3  # This is just to optimize as the formula gives 0 points to leaderboards size < 3
-TIME_BONUS_DIVISOR = 21600  # 6h (1/4 day) for +100%
+TIME_BONUS_DIVISOR = 3600 * 12  # 12h (1/2 day) for +100%
 
 
 class Run:
@@ -140,7 +140,7 @@ class Run:
                     # We hit the median, there's no more to be analyzed
                     # If the most repeated time IS the median, still remove it (< not <=)
                     if value < cut_off_median_time:
-                        # Have the most repeated time be at least a certain number
+                        # Have the most repeated time repeat at least a certain amount
                         if most_repeated_time_count > MIN_LEADERBOARD_SIZE:
                             # Actually keep the last one (+1) as it'll be worth 0 points and used for other calculations
                             del valid_runs[most_repeated_time_pos+1:]
@@ -181,8 +181,10 @@ class Run:
                         # More people means more accurate relative time and more optimised/hard to reach low times
                         certainty_adjustment = 1 - 1 / (population + 1)
 
-                        # Give points
-                        self._points = exp(normalized_deviation * certainty_adjustment) * 10 * length_bonus
+                        # Cap the base to π
+                        e_base = min(normalized_deviation * certainty_adjustment, pi)
+                        # Give points, hard cap to 6 character
+                        self._points = min(exp(e_base) * 10 * length_bonus, 999.99)
                         # Set names
                         game_category = re.split(
                             "[/#]",
