@@ -39,18 +39,17 @@ class Player(db.Model, UserMixin):
     user_id: str = db.Column(db.String(8), primary_key=True)
     name: str = db.Column(db.String(32), nullable=False)
     score: int = db.Column(db.Integer, nullable=False)
-    last_update = db.Column(db.DateTime())
+    last_update: Optional[datetime] = db.Column(db.DateTime())
 
     schedules = db.relationship("Schedule", back_populates="owner")
 
     @staticmethod
     def authenticate(api_key: str):
         try:  # Get user from speedrun.com using the API key
-            user_id: Union[str, None] = get_file(
+            data = get_file(
                 "https://www.speedrun.com/api/v1/profile",
                 {"X-API-Key": api_key}
-            )["data"]["id"]
-            print("logging in user_id =", user_id)
+            )["data"]
         except SpeedrunComError:
             print("\nError: Unknown\n{}".format(traceback.format_exc()))
             return None
@@ -60,16 +59,17 @@ class Player(db.Model, UserMixin):
             return None
             # TODO: return json.dumps({"state": "danger", "message": traceback.format_exc()})
 
+        user_id: Optional[str] = data["id"]
         if not user_id:  # Confirms wether the API key is valid
             return None
             # TODO: return json.dumps({'state': 'warning', 'message': 'Invalid API key.'})
 
-        # TODO: optionally update that user
-        player: Player = Player.get(user_id)
+        user_name: str = data["names"]["international"]
+        print(f"Logging in '{user_id}' ({user_name})")
 
+        player: Player = Player.get(user_id)
         if not player:
-            return None
-            # TODO: Add user to DB and load them in
+            player = Player.create(user_id, user_name)
 
         login_user(player)  # Login for non SPA
 
@@ -91,6 +91,26 @@ class Player(db.Model, UserMixin):
                    "    ORDER BY score DESC "
                    ") ranked;")
         return db.engine.execute(sql).fetchall()
+
+    @staticmethod
+    def create(user_id: str, name: str, **kwargs) -> Player:
+        """
+        kwargs:
+        - score: int
+        - last_update: Union[datetime, str]
+        """
+        score = kwargs.get('score', 0)
+        last_update = kwargs.get('last_update', None)
+
+        player = Player(
+            user_id=user_id,
+            name=name,
+            score=score,
+            last_update=last_update)
+        db.session.add(player)
+        db.session.commit()
+
+        return player
 
     def get_friends(self):
         sql = text("SELECT DISTINCT friend_id FROM friend "
