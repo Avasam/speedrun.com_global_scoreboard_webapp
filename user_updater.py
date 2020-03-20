@@ -32,9 +32,9 @@ class Run:
     level: str = ""
     level_name: str = ""
     level_count: int = 0
-    _points: int = 0
+    _points: float = 0
 
-    def __init__(self, id_: str, primary_t: str, game: str, category: str, variables={}, level: str = ""):
+    def __init__(self, id_: str, primary_t: float, game: str, category: str, variables={}, level: str = ""):
         self.id_ = id_
         self.primary_t = primary_t
         self.game = game
@@ -203,7 +203,7 @@ class Run:
 
 
 class User:
-    _points: int = 0
+    _points: float = 0
     _name: str = ""
     _id: str = ""
     _banned: bool = False
