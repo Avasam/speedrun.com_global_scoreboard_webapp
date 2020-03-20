@@ -122,7 +122,7 @@ $(function () {
       ajaxResponseMessage.css('visibility', 'visible');
     } else {
       ajaxResponseMessage.attr('class', 'alert alert-info');
-      ajaxResponseMessage.html(`Updating "${name_or_id}". This may take some time depending on the amount of runs to analyse. Please Wait...`);
+      ajaxResponseMessage.html(`Updating "${name_or_id}". This may take up to 5 mintues, depending on the amount of runs to analyse. Please Wait...`);
       ajaxResponseMessage.css('visibility', 'visible');
       $("#update-runner-button").prop('disabled', true);
       $("#name-or-id").prop('readonly', true);
@@ -175,7 +175,17 @@ $(function () {
           ajaxResponseMessage.css('visibility', 'visible');
         })
         .fail(function (data) {
-          alert(`There was an unknown error with the AJAX request. Status code: ${data.status}`);
+          ajaxResponseMessage.attr('class', 'alert alert-danger');
+          ajaxResponseMessage.css('visibility', 'visible');
+          if (data.status === 504) {
+            ajaxResponseMessage.html('Error 504. The webworker probably timed out, ' +
+              'which can happen if updating takes more than 5 minutes. ' +
+              'Please try again as next attempt should take less time since ' +
+              'all calls to speedrun.com are cached for a day.');
+
+          } else {
+            ajaxResponseMessage.html(`There was an unknown while trying to update. Status code: ${data.status}`);
+          }
         })
         .always(function (data) {
           console.log(data);
