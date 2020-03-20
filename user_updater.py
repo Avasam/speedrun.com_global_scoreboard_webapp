@@ -354,7 +354,10 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
             player = Player.get(user._id)
 
             # If user doesn't exists or enough time passed since last update
-            if not player or (datetime.now() - player.last_update).days >= 1 or configs.bypass_update_restrictions:
+            if not player or \
+                not player.last_update or \
+                (datetime.now() - player.last_update).days >= 1 or \
+                    configs.bypass_update_restrictions:
 
                 user.set_points()
                 if not threadsException:
@@ -379,12 +382,10 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
                     elif user._points >= 1:
                         text_output = "{} not found. Added a new row.".format(user)
                         result_state = "success"
-                        player = Player(user_id=user._id,
-                                        name=user._name,
-                                        score=user._points,
-                                        last_update=timestamp)
-                        db.session.add(player)
-                        db.session.commit()
+                        Player.create(user._id,
+                                      user._name,
+                                      score=user._points,
+                                      last_update=timestamp)
                     else:
                         text_output = f"Not inserting new data as {user} " \
                                       f"{'is banned' if user._banned else 'has a score lower than 1.'}."
