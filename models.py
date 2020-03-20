@@ -2,9 +2,11 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import annotations
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask_login import login_user, UserMixin
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.dialects.mysql import insert
+from json import dumps, loads
 from sqlalchemy import orm, text
 from typing import Any, Dict, List, Optional, Union
 from utils import get_file, SpeedrunComError
@@ -45,7 +47,9 @@ class Player(db.Model, UserMixin):
     def authenticate(api_key: str):
         try:  # Get user from speedrun.com using the API key
             user_id: Union[str, None] = get_file(
-                "https://www.speedrun.com/api/v1/profile", {"X-API-Key": api_key})["data"]["id"]
+                "https://www.speedrun.com/api/v1/profile",
+                {"X-API-Key": api_key}
+            )["data"]["id"]
             print("logging in user_id =", user_id)
         except SpeedrunComError:
             print("\nError: Unknown\n{}".format(traceback.format_exc()))
@@ -248,6 +252,50 @@ class Player(db.Model, UserMixin):
     # Override from UserMixin for Flask-Login
     def get_id(self):
         return self.user_id
+
+
+class CachedRequest(db.Model):
+    __tablename__ = "cached_request"
+
+    url: str = db.Column(db.String(767), primary_key=True)
+    timestamp: datetime = db.Column(db.DateTime, nullable=False)
+    result: str = db.Column(db.Text(), nullable=False)
+
+    @staticmethod
+    def get(url: str) -> Optional[Schedule]:
+        return CachedRequest.query.get(url)
+
+    @staticmethod
+    def get_response_or_new(url: str) -> dict:
+        today = datetime.utcnow()
+        yesterday = today - timedelta(days=1)
+
+        try:
+            cached_request = CachedRequest \
+                .query \
+                .filter(CachedRequest.url == url) \
+                .filter(CachedRequest.timestamp >= yesterday) \
+                .one()
+            db.session.close()
+
+            result = loads(cached_request.result)
+            return result
+        except orm.exc.NoResultFound:
+            result = get_file(url)
+
+            insert_stmt = insert(CachedRequest).values(
+                url=url,
+                timestamp=today,
+                result=dumps(result)
+            )
+            on_duplicate_key_stmt = insert_stmt.on_duplicate_key_update(
+                timestamp=insert_stmt.inserted.timestamp,
+                result=insert_stmt.inserted.result,
+            )
+            db.engine.execute(on_duplicate_key_stmt)
+            db.session.close()
+
+            return result
 
 
 class Schedule(db.Model):
