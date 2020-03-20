@@ -21,6 +21,8 @@
 # Contact:
 # samuel.06@hotmail.com
 ##########################################################################
+import os
+import pathlib
 from api import api
 from datetime import date
 from flask import Flask, send_from_directory, render_template, Response, request, redirect, url_for
@@ -80,6 +82,16 @@ def react_app(asset: str):
 @app.route('/tournament-scheduler', defaults={'asset': 'index.html'})
 @app.route('/tournament-scheduler/<path:asset>', methods=["GET"])
 def tournament_scheduler(asset: str):
+    print('asset')
+    print(asset)
+    print(os.path.exists('tournament-scheduler/build'))
+    print(os.path.exists('./tournament-scheduler/build'))
+    print(os.path.exists('tournament-scheduler/build/' + asset))
+    print(os.path.exists('./tournament-scheduler/build/' + asset))
+    print(pathlib.Path().absolute())
+    print(pathlib.Path(__file__).parent.absolute())
+    print(os.path.dirname(os.path.abspath(__file__)))
+    print(os.path.abspath(os.getcwd()))
     return send_from_directory('tournament-scheduler/build/', asset)
 
 
