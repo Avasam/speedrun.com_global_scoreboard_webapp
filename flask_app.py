@@ -209,6 +209,7 @@ def index():
 
 if __name__ == '__main__':
     if configs.flask_environment == "development":
+        print(' * Running on http://localhost:5000/ (Press CTRL+C to quit)')
         app.run(host='0.0.0.0')
     else:
         app.run()

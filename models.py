@@ -87,6 +87,7 @@ class Player(db.Model, UserMixin):
                    "        @_sequence := @_sequence + 1, "
                    "        @_last_score := score "
                    "    FROM player, (SELECT @cur_rank := 1, @_sequence := 1, @_last_score := NULL) r "
+                   "    WHERE score > 0 "
                    "    ORDER BY score DESC "
                    ") ranked;")
         return db.engine.execute(sql).fetchall()
