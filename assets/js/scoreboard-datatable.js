@@ -182,8 +182,7 @@ $(function () {
             ajaxResponseMessage.html('Error 504. The webworker probably timed out, ' +
               'which can happen if updating takes more than 5 minutes. ' +
               'Please try again as next attempt should take less time since ' +
-              'all calls to speedrun.com are cached for a day.');
-
+              'all calls to speedrun.com are cached for a day or until server restart.');
           } else {
             ajaxResponseMessage.html(`There was an unknown while trying to update. Status code: ${data.status}`);
           }
