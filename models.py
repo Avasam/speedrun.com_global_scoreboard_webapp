@@ -275,16 +275,13 @@ class Player(db.Model, UserMixin):
         return self.user_id
 
 
-class CachedRequest(db.Model):
-    __tablename__ = "cached_request"
+class CachedRequest():
+    result: dict
+    timestamp: datetime
 
-    url: str = db.Column(db.String(767), primary_key=True)
-    timestamp: datetime = db.Column(db.DateTime, nullable=False)
-    result: str = db.Column(db.Text(), nullable=False)
-
-    @staticmethod
-    def get(url: str) -> Optional[Schedule]:
-        return CachedRequest.query.get(url)
+    def __init__(self, result: dict, timestamp: datetime):
+        self.result = result
+        self.timestamp = timestamp
 
     @staticmethod
     def get_response_or_new(url: str) -> dict:
@@ -292,31 +289,18 @@ class CachedRequest(db.Model):
         yesterday = today - timedelta(days=1)
 
         try:
-            cached_request = CachedRequest \
-                .query \
-                .filter(CachedRequest.url == url) \
-                .filter(CachedRequest.timestamp >= yesterday) \
-                .one()
-            db.session.close()
-
-            result = loads(cached_request.result)
-            return result
-        except orm.exc.NoResultFound:
+            cached_request = memoized_requests[url]
+        except KeyError:
+            cached_request = None
+        if (cached_request and cached_request.timestamp >= yesterday):
+            return cached_request.result
+        else:
             result = get_file(url)
-
-            insert_stmt = insert(CachedRequest).values(
-                url=url,
-                timestamp=today,
-                result=dumps(result)
-            )
-            on_duplicate_key_stmt = insert_stmt.on_duplicate_key_update(
-                timestamp=insert_stmt.inserted.timestamp,
-                result=insert_stmt.inserted.result,
-            )
-            db.engine.execute(on_duplicate_key_stmt)
-            db.session.close()
-
+            memoized_requests[url] = CachedRequest(result, today)
             return result
+
+
+memoized_requests: Dict[str, CachedRequest] = {}
 
 
 class Schedule(db.Model):
