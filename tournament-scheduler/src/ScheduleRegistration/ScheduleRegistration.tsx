@@ -170,12 +170,14 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
               {selectedTimeSlot && entriesLeft(selectedTimeSlot) > 0 &&
                 <>
                   <FormLabel>
-                    Please write down your name as well as all other participants playing with or against you in the same match
-                </FormLabel>
+                    Please write down your name
+                    {selectedTimeSlot.participantsPerEntry > 1 &&
+                      'as well as all other participants playing with or against you in the same match'}
+                  </FormLabel>
                   {(Array(...Array(selectedTimeSlot.participantsPerEntry))).map((_, index) =>
                     <TextField
                       key={`participant-${index}`}
-                      label={`Participant ${index + 1}'s name`}
+                      label={`Participant${selectedTimeSlot.participantsPerEntry > 1 ? `${index + 1}` : ''}'s name`}
                       onChange={event => handleParticipantChange(index, event.target.value)}
                     />
                   )}
