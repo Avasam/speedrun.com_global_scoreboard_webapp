@@ -37,6 +37,13 @@ code {
   border-color: #424242;
 }
 
+::-webkit-scrollbar-thumb:hover,
+::-webkit-scrollbar-corner:hover, 
+::-webkit-scrollbar-track:hover {
+  /* Opera can't take transparent here, any color will do */
+  background-color: #242424;
+}
+
 ::-webkit-scrollbar-track-piece {
   background-color: #424242;
   border-radius: 6px;
