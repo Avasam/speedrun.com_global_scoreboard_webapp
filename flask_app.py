@@ -27,7 +27,6 @@ from flask import Flask, send_from_directory, render_template, Response, request
 from flask_login import LoginManager, logout_user, login_user, current_user
 from models import db, Player
 from sqlalchemy import exc
-# from sqlalchemy.pool import NullPool
 from typing import List, Optional, Union
 from user_updater import get_updated_user
 from utils import get_file, UserUpdaterError, SpeedrunComError
@@ -58,11 +57,8 @@ SQLALCHEMY_DATABASE_URI = "mysql+{connector}://{username}:{password}@{hostname}/
     database_name=configs.sql_database_name)
 app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
 app.config["SQLALCHEMY_POOL_RECYCLE"] = 299
-app.config["SQLALCHEMY_POOL_SIZE"] = 20  # 24 Seems to be the max allowed by pythonanywhere
+app.config["SQLALCHEMY_POOL_SIZE"] = 3  # PythonAnywhere allows 3 connections per webworker
 app.config["SQLALCHEMY_MAX_OVERFLOW"] = 0
-# Heck with pooling, please actually close MySQL connection upon also closing SQLAlchemy ones
-# https://stackoverflow.com/a/21742461
-# app.config["SQLALCHEMY_POOL_CLASS"] = NullPool
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = configs.sql_track_modifications
 db.app = app
 db.init_app(app)
