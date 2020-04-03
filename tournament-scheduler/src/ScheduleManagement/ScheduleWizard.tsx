@@ -256,6 +256,7 @@ const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
           value={props.timeSlot.dateTime}
           onChange={date => props.onEditTimeSlotDateTime(date)}
           minDate={new Date(2020, 0)}
+          disablePast={props.timeSlot.id <= -1}
           ampm={false}
           minutesStep={minutesStep}
           InputProps={{

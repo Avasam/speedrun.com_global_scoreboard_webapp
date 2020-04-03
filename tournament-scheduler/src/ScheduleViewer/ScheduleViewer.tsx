@@ -80,7 +80,7 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
                 primary={moment(timeSlot.dateTime).format(`ddd ${new DateFnsUtils().dateTime24hFormat}`)}
                 secondary={
                   `(${timeSlot.registrations.length} / ${timeSlot.maximumEntries}` +
-                  ` entr${timeSlot.registrations.length === 1 ? 'y' : 'ies'})`
+                  ` entr${timeSlot.registrations.length === 1 ? 'y' : 'ies'}${timeSlot.dateTime <= new Date() ? ', past deadline' : ''})`
                 }
               />
             }
