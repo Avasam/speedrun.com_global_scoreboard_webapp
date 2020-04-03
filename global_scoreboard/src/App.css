@@ -1,0 +1,8 @@
+footer {
+  text-align: center;
+}
+
+/* Fix close button appearing squished by landing in-between pixels */
+.close.close {
+  font-size: 1.6rem;
+}

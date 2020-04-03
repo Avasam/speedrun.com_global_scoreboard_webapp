@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Navbar, Nav, Button } from 'react-bootstrap';
-import './ScoreboardNavBar.css';
+import './ScoreboardNavBar.css'
+import { Button, Nav, Navbar } from 'react-bootstrap'
+import React, { useState } from 'react'
 import LoginModal from './LoginModal'
 
 type LoginInfoProps = {
@@ -8,10 +8,10 @@ type LoginInfoProps = {
 }
 
 const LoginInfo = (props: LoginInfoProps) => {
-  const [show, setShow] = useState(false);
+  const [show, setShow] = useState(false)
 
-  const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
+  const handleClose = () => setShow(false)
+  const handleShow = () => setShow(true)
 
   return props.username
     ? <>
@@ -29,12 +29,12 @@ const LoginInfo = (props: LoginInfoProps) => {
 
 const ScoreboardNavBar = (props: LoginInfoProps) =>
   <Navbar collapseOnSelect expand="md" bg="dark" variant="dark">
-    <Navbar.Brand href="#/">Ava's speedrunning global scoreboard</Navbar.Brand>
+    <Navbar.Brand href="#/">Ava&apos;s speedrunning global scoreboard</Navbar.Brand>
     <Navbar.Toggle aria-controls="basic-navbar-nav" />
     <Navbar.Collapse id="basic-navbar-nav">
       <Nav className="mr-auto">
         <Nav.Link
-          href="https://github.com/Avasam/speedrun.com_global_leaderboard_webapp/blob/master/README.md"
+          href="https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/master/README.md"
           target="about"
         >About</Nav.Link>
       </Nav>

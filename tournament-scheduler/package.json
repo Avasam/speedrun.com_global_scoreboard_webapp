@@ -56,12 +56,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Avasam/speedrun.com_global_leaderboard_webapp.git"
+    "url": "git+https://github.com/Avasam/speedrun.com_global_scoreboard_webapp.git"
   },
   "author": "Avasam (Samuel Therrien)",
   "license": "AGPL-3.0",
   "bugs": {
-    "url": "https://github.com/Avasam/speedrun.com_global_leaderboard_webapp/issues"
+    "url": "https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/issues"
   },
   "homepage": "http://avasam.pythonanywhere.com/tournament-scheduler"
 }

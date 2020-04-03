@@ -1,8 +1,11 @@
 import { Link, TextField } from '@material-ui/core'
-import React, { FC, useState } from 'react'
+import React, { ChangeEvent, FC, useState } from 'react'
 
 const SrcApiKeyLink: FC = () => {
   const [srcNameInput, setSrcNameInput] = useState('')
+
+  const handleNameChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    setSrcNameInput(event.currentTarget.value)
 
   return <span className='src-api-key-link'>
     <Link
@@ -15,7 +18,7 @@ const SrcApiKeyLink: FC = () => {
       name='src-name'
       placeholder='SRC name'
       style={{ width: `${srcNameInput.length ? srcNameInput.length + 1 : 9}ch` }}
-      onChange={event => setSrcNameInput(event.currentTarget.value)}
+      onChange={handleNameChange}
     />
     <Link
       className={srcNameInput.length ? '' : 'disabled'}
