@@ -3,6 +3,11 @@ var ajaxResponseMessage;
 var loginResponseMessage;
 var timeFormat = "YYYY-MM-DD HH:mm";
 var userZone = moment.tz.guess();
+var loadingBar = '<div class="progress">' +
+  '<div class="progress-bar" style="width: 100%"></div>' +
+  '</div>'
+var progressBarTickInterval = 50;
+var minutes5 = 60 * 5_000
 
 function serverToUserTime(serverTime) {
   // Create a moment using server's timezone
@@ -122,10 +127,17 @@ $(function () {
       ajaxResponseMessage.css('visibility', 'visible');
     } else {
       ajaxResponseMessage.attr('class', 'alert alert-info');
-      ajaxResponseMessage.html(`Updating "${name_or_id}". This may take some time depending on the amount of runs to analyse. Please Wait...`);
+      ajaxResponseMessage.html(`Updating "${name_or_id}". This may take up to 5 mintues, depending on the amount of runs to analyse. Please Wait...${loadingBar}`);
       ajaxResponseMessage.css('visibility', 'visible');
+
       $("#update-runner-button").prop('disabled', true);
       $("#name-or-id").prop('readonly', true);
+
+      var tickPassed = 0;
+      var progressTimer = setInterval(() => {
+        $('.progress-bar').css('width', `${100 - ((tickPassed * progressBarTickInterval) / minutes5)}%`)
+        tickPassed++;
+      }, progressBarTickInterval);
 
       $.post('/', $(this).serialize(), function () { }, "json")
         .done(function (data) {
@@ -179,6 +191,7 @@ $(function () {
         })
         .always(function (data) {
           console.log(data);
+          clearInterval(progressTimer);
           $("#update-runner-button").prop('disabled', false);
           $("#name-or-id").prop('readonly', false);
         })

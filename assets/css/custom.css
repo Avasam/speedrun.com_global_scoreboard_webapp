@@ -92,6 +92,10 @@ tr.highlight-current-user span.friend-icon:before {
 /*-----------------------*\
 | Bootstrap redifinitions |
 \*-----------------------*/
+.progress {
+ margin: 20px 0 0;
+}
+
 @media (min-width: @screen-sm-min)
 div.container {
     width: 100px;
