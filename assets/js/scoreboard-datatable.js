@@ -93,10 +93,11 @@ $(function () {
         loginResponseMessage.css('visibility', 'visible');
       })
       .fail(function (data) {
-        alert(`There was an unknown error with the AJAX request. Status code: ${data.status}`);
+        loginResponseMessage.attr('class', 'alert alert-danger');
+        loginResponseMessage.html(`There was an unknown error while trying to log you in. Status code: ${data.status}`);
+        loginResponseMessage.css('visibility', 'visible');
       })
       .always(function (data) {
-        console.log(data);
         $("#login-button").prop('disabled', false);
         $("#api-key").prop('readonly', false);
       })
@@ -187,7 +188,16 @@ $(function () {
           ajaxResponseMessage.css('visibility', 'visible');
         })
         .fail(function (data) {
-          alert(`There was an unknown error with the AJAX request. Status code: ${data.status}`);
+          ajaxResponseMessage.attr('class', 'alert alert-danger');
+          ajaxResponseMessage.css('visibility', 'visible');
+          if (data.status === 504) {
+            ajaxResponseMessage.html('Error 504. The webworker probably timed out, ' +
+              'which can happen if updating takes more than 5 minutes. ' +
+              'Please try again as next attempt should take less time since ' +
+              'all calls to speedrun.com are cached for a day or until server restart.');
+          } else {
+            ajaxResponseMessage.html(`There was an unknown while trying to update. Status code: ${data.status}`);
+          }
         })
         .always(function (data) {
           console.log(data);

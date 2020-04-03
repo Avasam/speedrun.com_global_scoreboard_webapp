@@ -1,9 +1,9 @@
-import { Button, Modal } from 'react-bootstrap';
-import React from 'react';
+import { Button, Modal } from 'react-bootstrap'
+import React from 'react'
 
 type LoginModalProps = {
-  show: boolean;
-  handleClose: () => void;
+  show: boolean
+  handleClose: () => void
 }
 
 const LoginModal = (props: LoginModalProps) =>
@@ -19,7 +19,7 @@ const LoginModal = (props: LoginModalProps) =>
           <label htmlFor="api-key">Enter your API key</label>
           <div className="input-group">
             <span className="input-group-addon"><span className="glyphicon glyphicon-link"></span></span>
-            <input type="text" name="api-key" id="api-key" className="form-control" placeholder="API key" required />
+            <input type="password" name="api-key" id="api-key" className="form-control" placeholder="API key" required />
             <span className="input-group-btn">
               <a className="btn btn-default" href="https://www.speedrun.com/api/auth" target="src">What's my key?</a>
             </span>

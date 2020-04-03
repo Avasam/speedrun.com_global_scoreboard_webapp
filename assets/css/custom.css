@@ -118,3 +118,8 @@ div.container {
     margin: 0;
 }
 
+#ajaxResponseMessage.alert.alert-success {
+  font-family: monospace;
+  white-space: pre-wrap;
+}
+
