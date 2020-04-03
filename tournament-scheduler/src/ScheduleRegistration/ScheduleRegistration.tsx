@@ -158,13 +158,17 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
                       <MenuItem
                         key={`timeslot-${timeSlot.id}`}
                         value={timeSlot.id}
-                        disabled={entriesLeft(timeSlot) <= 0}
+                        disabled={entriesLeft(timeSlot) <= 0 || timeSlot.dateTime <= new Date()}
                       >{
                           moment(timeSlot.dateTime).format(`ddd ${new DateFnsUtils().dateTime24hFormat}`) +
-                          (entriesLeft(timeSlot) <= 0
-                            ? ' (full)'
-                            : ` (${entriesLeft(timeSlot)} / ${timeSlot.maximumEntries}` +
-                            ` entr${entriesLeft(timeSlot) === 1 ? 'y' : 'ies'} left)`)
+                          ' (' +
+                          (timeSlot.dateTime <= new Date()
+                            ? 'past deadline'
+                            : entriesLeft(timeSlot) <= 0
+                              ? 'full'
+                              : `${entriesLeft(timeSlot)} / ${timeSlot.maximumEntries}` +
+                              ` entr${entriesLeft(timeSlot) === 1 ? 'y' : 'ies'} left`) +
+                          ')'
                         }</MenuItem>
                     )}
                   </Select>
