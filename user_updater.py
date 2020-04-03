@@ -3,12 +3,12 @@
 
 from collections import Counter
 from datetime import datetime
-from math import ceil, exp, floor
-from models import Player, db
+from math import ceil, exp, floor, pi
+from models import db, CachedRequest, Player
 from threading import Thread, active_count
 from time import strftime, sleep
 from typing import Dict, List, Tuple, Union
-from utils import get_file, UserUpdaterError, SpeedrunComError
+from utils import UserUpdaterError, SpeedrunComError
 import configs
 import httplib2
 import re
@@ -18,7 +18,7 @@ import traceback
 
 SEPARATOR = "-" * 64
 MIN_LEADERBOARD_SIZE = 3  # This is just to optimize as the formula gives 0 points to leaderboards size < 3
-TIME_BONUS_DIVISOR = 21600  # 6h (1/4 day) for +100%
+TIME_BONUS_DIVISOR = 3600 * 12  # 12h (1/2 day) for +100%
 
 
 class Run:
@@ -32,9 +32,9 @@ class Run:
     level: str = ""
     level_name: str = ""
     level_count: int = 0
-    _points: int = 0
+    _points: float = 0
 
-    def __init__(self, id_: str, primary_t: str, game: str, category: str, variables={}, level: str = ""):
+    def __init__(self, id_: str, primary_t: float, game: str, category: str, variables={}, level: str = ""):
         self.id_ = id_
         self.primary_t = primary_t
         self.game = game
@@ -77,7 +77,7 @@ class Run:
                   category=self.category)
         for var_id, var_value in self.variables.items():
             url += "&var-{id}={value}".format(id=var_id, value=var_value)
-        leaderboard = get_file(url)
+        leaderboard = CachedRequest.get_response_or_new(url)
 
         if len(leaderboard["data"]["runs"]) >= MIN_LEADERBOARD_SIZE:  # Check to avoid useless computation
             previous_time = leaderboard["data"]["runs"][0]["run"]["times"]["primary_t"]
@@ -140,7 +140,7 @@ class Run:
                     # We hit the median, there's no more to be analyzed
                     # If the most repeated time IS the median, still remove it (< not <=)
                     if value < cut_off_median_time:
-                        # Have the most repeated time be at least a certain number
+                        # Have the most repeated time repeat at least a certain amount
                         if most_repeated_time_count > MIN_LEADERBOARD_SIZE:
                             # Actually keep the last one (+1) as it'll be worth 0 points and used for other calculations
                             del valid_runs[most_repeated_time_pos+1:]
@@ -181,8 +181,10 @@ class Run:
                         # More people means more accurate relative time and more optimised/hard to reach low times
                         certainty_adjustment = 1 - 1 / (population + 1)
 
-                        # Give points
-                        self._points = exp(normalized_deviation * certainty_adjustment) * 10 * length_bonus
+                        # Cap the base to π
+                        e_base = min(normalized_deviation * certainty_adjustment, pi)
+                        # Give points, hard cap to 6 character
+                        self._points = min(exp(e_base) * 10 * length_bonus, 999.99)
                         # Set names
                         game_category = re.split(
                             "[/#]",
@@ -196,14 +198,14 @@ class Run:
                         if self.level and self._points > 0:
                             self.level_name = game_category[1]  # Always 2nd of 3 items
                             url = "https://www.speedrun.com/api/v1/games/{game}/levels".format(game=self.game)
-                            levels = get_file(url)
+                            levels = CachedRequest.get_response_or_new(url)
                             self.level_count = len(levels["data"])
                             self._points /= self.level_count or 1
         print(self)
 
 
 class User:
-    _points: int = 0
+    _points: float = 0
     _name: str = ""
     _id: str = ""
     _banned: bool = False
@@ -218,7 +220,7 @@ class User:
 
     def set_code_and_name(self) -> None:
         url = "https://www.speedrun.com/api/v1/users/{user}".format(user=self._id)
-        infos = get_file(url)
+        infos = CachedRequest.get_response_or_new(url)
 
         self._id = infos["data"]["id"]
         self._name = infos["data"]["names"].get("international")
@@ -238,7 +240,7 @@ class User:
                 if pb["run"]["category"] and pb["run"].get("videos"):
                     # Get a list of the game's subcategory variables
                     url = "https://www.speedrun.com/api/v1/games/{game}/variables".format(game=pb["run"]["game"])
-                    game_variables = get_file(url)
+                    game_variables = CachedRequest.get_response_or_new(url)
                     game_subcategory_ids: List[str] = []
                     for game_variable in game_variables["data"]:
                         if game_variable["is-subcategory"]:
@@ -276,7 +278,7 @@ class User:
 
         if not self._banned:
             url = "https://www.speedrun.com/api/v1/users/{user}/personal-bests".format(user=self._id)
-            pbs = get_file(url)
+            pbs = CachedRequest.get_response_or_new(url)
             self._points = 0
             threads: List[Thread] = []
             for pb in pbs["data"]:
@@ -299,6 +301,7 @@ class User:
             counted_runs.sort(key=lambda r: r._points, reverse=True)
             run_str_lst: List[Tuple[str, float]] = []
             biggest_str_length: int = 0
+
             for run in counted_runs:
                 self._points += run._points
                 run_str = ("{game} - {category}{level}".format(game=run.game_name,
@@ -309,9 +312,10 @@ class User:
                 biggest_str_length = max(biggest_str_length, len(run_str))
 
             self._point_distribution_str = f"\n{'Game - Category (Level)':<{biggest_str_length}} | Points" \
-                                           f"\n{'-'*biggest_str_length} | -----"
+                                           f"\n{'-'*biggest_str_length} | ------"
             for run_infos in run_str_lst:
-                self._point_distribution_str += f"\n{run_infos[0]:<{biggest_str_length}} | {run_infos[1]:.2f}"
+                self._point_distribution_str += f"\n{run_infos[0]:<{biggest_str_length}} | " + \
+                    f"{run_infos[1]:.2f}".rjust(6, ' ')
 
             if self._banned:
                 self._points = 0  # In case the banned flag has been set mid-thread
@@ -352,7 +356,10 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
             player = Player.get(user._id)
 
             # If user doesn't exists or enough time passed since last update
-            if not player or (datetime.now() - player.last_update).days >= 1 or configs.bypass_update_restrictions:
+            if not player or \
+                not player.last_update or \
+                (datetime.now() - player.last_update).days >= 1 or \
+                    configs.bypass_update_restrictions:
 
                 user.set_points()
                 if not threadsException:
@@ -377,12 +384,10 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
                     elif user._points >= 1:
                         text_output = "{} not found. Added a new row.".format(user)
                         result_state = "success"
-                        player = Player(user_id=user._id,
-                                        name=user._name,
-                                        score=user._points,
-                                        last_update=timestamp)
-                        db.session.add(player)
-                        db.session.commit()
+                        Player.create(user._id,
+                                      user._name,
+                                      score=user._points,
+                                      last_update=timestamp)
                     else:
                         text_output = f"Not inserting new data as {user} " \
                                       f"{'is banned' if user._banned else 'has a score lower than 1.'}."

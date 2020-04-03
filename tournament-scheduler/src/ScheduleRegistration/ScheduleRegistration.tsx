@@ -1,4 +1,4 @@
-import { Button, Card, CardActions, CardContent, Container, FormControl, FormGroup, FormLabel, InputLabel, MenuItem, Select, TextField } from '@material-ui/core'
+import { Button, Card, CardActions, CardContent, Container, FormControl, FormGroup, FormLabel, InputLabel, Link, MenuItem, Select, TextField } from '@material-ui/core'
 import React, { ChangeEvent, FC, useEffect, useRef, useState } from 'react'
 import { Schedule, ScheduleDto } from '../models/Schedule'
 import DateFnsUtils from '@date-io/moment'
@@ -128,80 +128,92 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
   return <Container>
     {schedule !== undefined && (!schedule
       ? <div>Sorry. `<code>{props.registrationLink}</code>` does not lead to an existing registration form.</div>
-      : <Card>
-        <CardContent style={{ textAlign: 'left' }}>
-          <label>Schedule for: {schedule.name}</label>
-          {!schedule.active
-            ? <div><br />Sorry. This schedule is currently inactive and registration is closed.</div>
-            : <FormGroup>
-              <FormControl variant="outlined" style={{ margin: '16px 0' }}>
-                <InputLabel
-                  ref={timeSlotInputLabel}
-                  id="time-slot-select-label"
-                  style={{ paddingRight: `${timeSlotLabelPaddingRight}px` }}
-                >
-                  Choose your time slot amongst the following
-                </InputLabel>
-                <Select
-                  labelId="time-slot-select-label"
-                  id="time-slot-select"
-                  value={selectedTimeSlot?.id || ''}
-                  onChange={selectTimeSlot}
-                  labelWidth={timeSlotLabelWidth}
-                >
-                  {schedule.timeSlots.map(timeSlot =>
-                    <MenuItem
-                      key={`timeslot-${timeSlot.id}`}
-                      value={timeSlot.id}
-                      disabled={entriesLeft(timeSlot) <= 0}
-                    >{
-                        moment(timeSlot.dateTime).format(new DateFnsUtils().dateTime24hFormat) +
-                        (entriesLeft(timeSlot) <= 0
-                          ? ' (full)'
-                          : ` (${entriesLeft(timeSlot)} / ${timeSlot.maximumEntries}` +
-                          ` entr${entriesLeft(timeSlot) === 1 ? 'y' : 'ies'} left)`)
-                      }</MenuItem>
-                  )}
-                </Select>
-              </FormControl>
-              {selectedTimeSlot && entriesLeft(selectedTimeSlot) > 0 &&
-                <>
-                  <FormLabel>
-                    Please write down your name as well as all other participants playing with or against you in the same match
-                </FormLabel>
-                  {(Array(...Array(selectedTimeSlot.participantsPerEntry))).map((_, index) =>
-                    <TextField
-                      key={`participant-${index}`}
-                      label={`Participant ${index + 1}'s name`}
-                      onChange={event => handleParticipantChange(index, event.target.value)}
-                    />
-                  )}
-                </>}
-            </FormGroup>
-          }
-        </CardContent>
-        <CardActions>
-          <Button
-            size='small'
-            variant='contained'
-            color='primary'
-            disabled={
-              !formValidity ||
-              !selectedTimeSlot ||
-              entriesLeft(selectedTimeSlot) <= 0
+      : <>
+        <span style={{ display: 'block' }}>All dates and times are given in your local timezone.</span>
+        <Card>
+          <CardContent style={{ textAlign: 'left' }}>
+            <label>Schedule for: {schedule.name}</label>
+            <Link href={`${window.location.href}?view=${schedule.id}`} target="blank" style={{ display: 'block' }}>
+              Click here to view the current registrations in a new tab
+            </Link>
+            {!schedule.active
+              ? <div><br />Sorry. This schedule is currently inactive and registration is closed.</div>
+              : <FormGroup>
+                <FormControl variant="outlined" style={{ margin: '16px 0' }}>
+                  <InputLabel
+                    ref={timeSlotInputLabel}
+                    id="time-slot-select-label"
+                    style={{ paddingRight: `${timeSlotLabelPaddingRight}px` }}
+                  >
+                    Choose your time slot amongst the following
+                  </InputLabel>
+                  <Select
+                    labelId="time-slot-select-label"
+                    id="time-slot-select"
+                    value={selectedTimeSlot?.id || ''}
+                    onChange={selectTimeSlot}
+                    labelWidth={timeSlotLabelWidth}
+                  >
+                    {schedule.timeSlots.map(timeSlot =>
+                      <MenuItem
+                        key={`timeslot-${timeSlot.id}`}
+                        value={timeSlot.id}
+                        disabled={entriesLeft(timeSlot) <= 0 || timeSlot.dateTime <= new Date()}
+                      >{
+                          moment(timeSlot.dateTime).format(`ddd ${new DateFnsUtils().dateTime24hFormat}`) +
+                          ' (' +
+                          (timeSlot.dateTime <= new Date()
+                            ? 'past deadline'
+                            : entriesLeft(timeSlot) <= 0
+                              ? 'full'
+                              : `${entriesLeft(timeSlot)} / ${timeSlot.maximumEntries}` +
+                              ` entr${entriesLeft(timeSlot) === 1 ? 'y' : 'ies'} left`) +
+                          ')'
+                        }</MenuItem>
+                    )}
+                  </Select>
+                </FormControl>
+                {selectedTimeSlot && entriesLeft(selectedTimeSlot) > 0 &&
+                  <>
+                    <FormLabel>
+                      Please write down your name
+                      {selectedTimeSlot.participantsPerEntry > 1 &&
+                        ' as well as all other participants playing with or against you in the same match'}
+                    </FormLabel>
+                    {(Array(...Array(selectedTimeSlot.participantsPerEntry))).map((_, index) =>
+                      <TextField
+                        key={`participant-${index}`}
+                        label={`Participant${selectedTimeSlot.participantsPerEntry > 1 ? ` ${index + 1}` : ''}'s name`}
+                        onChange={event => handleParticipantChange(index, event.target.value)}
+                      />
+                    )}
+                  </>}
+              </FormGroup>
             }
-            onClick={() =>
-              formValidity &&
-              selectedTimeSlot &&
-              entriesLeft(selectedTimeSlot) > 0 &&
-              sendRegistrationForm()
-            }
-          >
-            Sign {selectedTimeSlot?.participantsPerEntry === 1 ? 'me' : 'us'} up!
-          </Button>
-          <span style={{ color: 'red' }}>{errorMessage}</span>
-        </CardActions>
-      </Card>
+          </CardContent>
+          <CardActions>
+            <Button
+              size='small'
+              variant='contained'
+              color='primary'
+              disabled={
+                !formValidity ||
+                !selectedTimeSlot ||
+                entriesLeft(selectedTimeSlot) <= 0
+              }
+              onClick={() =>
+                formValidity &&
+                selectedTimeSlot &&
+                entriesLeft(selectedTimeSlot) > 0 &&
+                sendRegistrationForm()
+              }
+            >
+              Sign {selectedTimeSlot?.participantsPerEntry === 1 ? 'me' : 'us'} up!
+            </Button>
+            <span style={{ color: 'red' }}>{errorMessage}</span>
+          </CardActions>
+        </Card>
+      </>
     )}
 
   </Container>

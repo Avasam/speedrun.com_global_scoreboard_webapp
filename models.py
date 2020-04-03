@@ -2,9 +2,11 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import annotations
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask_login import login_user, UserMixin
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.dialects.mysql import insert
+from json import dumps, loads
 from sqlalchemy import orm, text
 from typing import Any, Dict, List, Optional, Union
 from utils import get_file, SpeedrunComError
@@ -37,16 +39,17 @@ class Player(db.Model, UserMixin):
     user_id: str = db.Column(db.String(8), primary_key=True)
     name: str = db.Column(db.String(32), nullable=False)
     score: int = db.Column(db.Integer, nullable=False)
-    last_update = db.Column(db.DateTime())
+    last_update: Optional[datetime] = db.Column(db.DateTime())
 
     schedules = db.relationship("Schedule", back_populates="owner")
 
     @staticmethod
     def authenticate(api_key: str):
         try:  # Get user from speedrun.com using the API key
-            user_id: Union[str, None] = get_file(
-                "https://www.speedrun.com/api/v1/profile", {"X-API-Key": api_key})["data"]["id"]
-            print("logging in user_id =", user_id)
+            data = get_file(
+                "https://www.speedrun.com/api/v1/profile",
+                {"X-API-Key": api_key}
+            )["data"]
         except SpeedrunComError:
             print("\nError: Unknown\n{}".format(traceback.format_exc()))
             return None
@@ -56,16 +59,17 @@ class Player(db.Model, UserMixin):
             return None
             # TODO: return json.dumps({"state": "danger", "message": traceback.format_exc()})
 
+        user_id: Optional[str] = data["id"]
         if not user_id:  # Confirms wether the API key is valid
             return None
             # TODO: return json.dumps({'state': 'warning', 'message': 'Invalid API key.'})
 
-        # TODO: optionally update that user
-        player: Player = Player.get(user_id)
+        user_name: str = data["names"]["international"]
+        print(f"Logging in '{user_id}' ({user_name})")
 
+        player: Player = Player.get(user_id)
         if not player:
-            return None
-            # TODO: Add user to DB and load them in
+            player = Player.create(user_id, user_name)
 
         login_user(player)  # Login for non SPA
 
@@ -83,9 +87,30 @@ class Player(db.Model, UserMixin):
                    "        @_sequence := @_sequence + 1, "
                    "        @_last_score := score "
                    "    FROM player, (SELECT @cur_rank := 1, @_sequence := 1, @_last_score := NULL) r "
+                   "    WHERE score > 0 "
                    "    ORDER BY score DESC "
                    ") ranked;")
         return db.engine.execute(sql).fetchall()
+
+    @staticmethod
+    def create(user_id: str, name: str, **kwargs) -> Player:
+        """
+        kwargs:
+        - score: int
+        - last_update: Union[datetime, str]
+        """
+        score = kwargs.get('score', 0)
+        last_update = kwargs.get('last_update', None)
+
+        player = Player(
+            user_id=user_id,
+            name=name,
+            score=score,
+            last_update=last_update)
+        db.session.add(player)
+        db.session.commit()
+
+        return player
 
     def get_friends(self):
         sql = text("SELECT DISTINCT friend_id FROM friend "
@@ -248,6 +273,34 @@ class Player(db.Model, UserMixin):
     # Override from UserMixin for Flask-Login
     def get_id(self):
         return self.user_id
+
+
+class CachedRequest():
+    result: dict
+    timestamp: datetime
+
+    def __init__(self, result: dict, timestamp: datetime):
+        self.result = result
+        self.timestamp = timestamp
+
+    @staticmethod
+    def get_response_or_new(url: str) -> dict:
+        today = datetime.utcnow()
+        yesterday = today - timedelta(days=1)
+
+        try:
+            cached_request = memoized_requests[url]
+        except KeyError:
+            cached_request = None
+        if (cached_request and cached_request.timestamp >= yesterday):
+            return cached_request.result
+        else:
+            result = get_file(url)
+            memoized_requests[url] = CachedRequest(result, today)
+            return result
+
+
+memoized_requests: Dict[str, CachedRequest] = {}
 
 
 class Schedule(db.Model):

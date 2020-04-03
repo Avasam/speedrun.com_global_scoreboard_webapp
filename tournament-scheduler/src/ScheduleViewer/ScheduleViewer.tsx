@@ -68,6 +68,7 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
       ? <div>Sorry. `<code>{props.scheduleId}</code>` is not a valid schedule id.</div>
       : <div style={{ textAlign: 'left', width: 'fit-content', margin: 'auto' }}>
         <label>Schedule for: {schedule.name}</label>
+        <span style={{ display: 'block' }}>All dates and times are given in your local timezone.</span>
         {!schedule.active && <div><br />This schedule is currently inactive and registration is closed.</div>}
         {schedule.timeSlots.map(timeSlot =>
           <List
@@ -76,10 +77,10 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
             subheader={
               <ListItemText
                 className={classes.rootHeader}
-                primary={moment(timeSlot.dateTime).format(new DateFnsUtils().dateTime24hFormat)}
+                primary={moment(timeSlot.dateTime).format(`ddd ${new DateFnsUtils().dateTime24hFormat}`)}
                 secondary={
                   `(${timeSlot.registrations.length} / ${timeSlot.maximumEntries}` +
-                  ` entr${timeSlot.registrations.length === 1 ? 'y' : 'ies'})`
+                  ` entr${timeSlot.registrations.length === 1 ? 'y' : 'ies'}${timeSlot.dateTime <= new Date() ? ', past deadline' : ''})`
                 }
               />
             }

@@ -27,7 +27,7 @@ from flask import Flask, send_from_directory, render_template, Response, request
 from flask_login import LoginManager, logout_user, login_user, current_user
 from models import db, Player
 from sqlalchemy import exc
-from typing import List, Union
+from typing import List, Optional, Union
 from user_updater import get_updated_user
 from utils import get_file, UserUpdaterError, SpeedrunComError
 import configs
@@ -57,7 +57,10 @@ SQLALCHEMY_DATABASE_URI = "mysql+{connector}://{username}:{password}@{hostname}/
     database_name=configs.sql_database_name)
 app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
 app.config["SQLALCHEMY_POOL_RECYCLE"] = 299
+app.config["SQLALCHEMY_POOL_SIZE"] = 3  # PythonAnywhere allows 3 connections per webworker
+app.config["SQLALCHEMY_MAX_OVERFLOW"] = 0
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = configs.sql_track_modifications
+db.app = app
 db.init_app(app)
 
 # Setup Flask-Login
@@ -170,9 +173,7 @@ def index():
             print("api_key = ", api_key)
             if api_key:
                 try:  # Get user from speedrun.com using the API key
-                    print("in try")
-                    user_id = get_file("https://www.speedrun.com/api/v1/profile", {"X-API-Key": api_key})["data"]["id"]
-                    print("user_id = ", user_id)
+                    data = get_file("https://www.speedrun.com/api/v1/profile", {"X-API-Key": api_key})["data"]
                 except SpeedrunComError:
                     print("\nError: Unknown\n{}".format(traceback.format_exc()))
                     return json.dumps({'state': 'warning',
@@ -182,9 +183,15 @@ def index():
                     return json.dumps({"state": "danger",
                                        "message": traceback.format_exc()})
 
+                user_id: Optional[str] = data["id"]
                 if user_id:  # Confirms the API key is valid
-                    # TODO: optionally update that user
-                    login_user(load_user(user_id))
+                    user_name: str = data["names"]["international"]
+                    print(f"Logging in '{user_id}' ({user_name})")
+
+                    loaded_user = load_user(user_id)
+                    if not loaded_user:
+                        loaded_user = Player.create(user_id, user_name)
+                    login_user(loaded_user)
                     return json.dumps({'state': 'success',
                                        'message': "Successfully logged in. "
                                                   "Please refresh the page if it isn't done automatically."})
@@ -203,6 +210,7 @@ def index():
 
 if __name__ == '__main__':
     if configs.flask_environment == "development":
+        print(' * Running on http://localhost:5000/ (Press CTRL+C to quit)')
         app.run(host='0.0.0.0')
     else:
         app.run()

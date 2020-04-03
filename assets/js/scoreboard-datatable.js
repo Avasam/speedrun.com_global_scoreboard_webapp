@@ -3,6 +3,11 @@ var ajaxResponseMessage;
 var loginResponseMessage;
 var timeFormat = "YYYY-MM-DD HH:mm";
 var userZone = moment.tz.guess();
+var loadingBar = '<div class="progress">' +
+  '<div class="progress-bar" style="width: 100%"></div>' +
+  '</div>'
+var progressBarTickInterval = 50;
+var minutes5 = 60 * 5_000
 
 function serverToUserTime(serverTime) {
   // Create a moment using server's timezone
@@ -88,10 +93,11 @@ $(function () {
         loginResponseMessage.css('visibility', 'visible');
       })
       .fail(function (data) {
-        alert(`There was an unknown error with the AJAX request. Status code: ${data.status}`);
+        loginResponseMessage.attr('class', 'alert alert-danger');
+        loginResponseMessage.html(`There was an unknown error while trying to log you in. Status code: ${data.status}`);
+        loginResponseMessage.css('visibility', 'visible');
       })
       .always(function (data) {
-        console.log(data);
         $("#login-button").prop('disabled', false);
         $("#api-key").prop('readonly', false);
       })
@@ -122,10 +128,17 @@ $(function () {
       ajaxResponseMessage.css('visibility', 'visible');
     } else {
       ajaxResponseMessage.attr('class', 'alert alert-info');
-      ajaxResponseMessage.html(`Updating "${name_or_id}". This may take some time depending on the amount of runs to analyse. Please Wait...`);
+      ajaxResponseMessage.html(`Updating "${name_or_id}". This may take up to 5 mintues, depending on the amount of runs to analyse. Please Wait...${loadingBar}`);
       ajaxResponseMessage.css('visibility', 'visible');
+
       $("#update-runner-button").prop('disabled', true);
       $("#name-or-id").prop('readonly', true);
+
+      var tickPassed = 0;
+      var progressTimer = setInterval(() => {
+        $('.progress-bar').css('width', `${100 - ((tickPassed * progressBarTickInterval) / minutes5)}%`)
+        tickPassed++;
+      }, progressBarTickInterval);
 
       $.post('/', $(this).serialize(), function () { }, "json")
         .done(function (data) {
@@ -175,10 +188,20 @@ $(function () {
           ajaxResponseMessage.css('visibility', 'visible');
         })
         .fail(function (data) {
-          alert(`There was an unknown error with the AJAX request. Status code: ${data.status}`);
+          ajaxResponseMessage.attr('class', 'alert alert-danger');
+          ajaxResponseMessage.css('visibility', 'visible');
+          if (data.status === 504) {
+            ajaxResponseMessage.html('Error 504. The webworker probably timed out, ' +
+              'which can happen if updating takes more than 5 minutes. ' +
+              'Please try again as next attempt should take less time since ' +
+              'all calls to speedrun.com are cached for a day or until server restart.');
+          } else {
+            ajaxResponseMessage.html(`There was an unknown while trying to update. Status code: ${data.status}`);
+          }
         })
         .always(function (data) {
           console.log(data);
+          clearInterval(progressTimer);
           $("#update-runner-button").prop('disabled', false);
           $("#name-or-id").prop('readonly', false);
         })
