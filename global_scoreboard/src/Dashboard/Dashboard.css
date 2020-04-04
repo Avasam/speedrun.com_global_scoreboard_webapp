@@ -1,5 +1,5 @@
-.alert {
-  text-align:center;
+.dashboard-container {
+  padding-top: 15px;
 }
 
 /*--------*\
@@ -49,47 +49,16 @@ td:first-child{
   font-weight:bold;
 }
 
-/*---------------------------------------*\
-| Friend Icons ( + <3 X ) toggle on hover |
-\*---------------------------------------*/
-.friend-icon:hover{
-cursor: pointer;
-}
-
-tr span.friend-icon:before {
-  font-family: 'Glyphicons Halflings';
-  content: "\e143"; /* glyphicon-heart-empty */
-  color: green;
-}
-
-tr span.friend-icon:hover:before {
-  font-family: 'Glyphicons Halflings';
-  content: "\2b"; /* glyphicon-plus */
-  color: green;
-}
-
-tr.highlight-friend span.friend-icon:before {
-  font-family: 'Glyphicons Halflings';
-  content: "\e005"; /* glyphicon-heart */
-  color: crimson;
-}
-
-tr.highlight-friend span.friend-icon:hover:before {
-  font-family: 'Glyphicons Halflings';
-  content: "\e014"; /* glyphicon-remove */
-  color: crimson;
-}
-
-tr.highlight-current-user span.friend-icon:before {
-  content: "";
-  display: none;
-}
-
 /*-----------------------*\
 | Bootstrap redifinitions |
 \*-----------------------*/
-.container {
-  padding-top: 20px;
+.alert {
+  text-align:center;
+}
+
+.float-right.btn.btn-link {
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 @media (min-width: @screen-sm-min)

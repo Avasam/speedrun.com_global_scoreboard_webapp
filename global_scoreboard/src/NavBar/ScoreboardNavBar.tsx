@@ -1,5 +1,5 @@
 import './ScoreboardNavBar.css'
-import { Button, Nav, Navbar } from 'react-bootstrap'
+import { Button, Container, Nav, Navbar } from 'react-bootstrap'
 import React, { useState } from 'react'
 import LoginModal from './LoginModal'
 
@@ -29,17 +29,19 @@ const LoginInfo = (props: LoginInfoProps) => {
 
 const ScoreboardNavBar = (props: LoginInfoProps) =>
   <Navbar collapseOnSelect expand="md" bg="dark" variant="dark">
-    <Navbar.Brand href="#/">Ava&apos;s speedrunning global scoreboard</Navbar.Brand>
-    <Navbar.Toggle aria-controls="basic-navbar-nav" />
-    <Navbar.Collapse id="basic-navbar-nav">
-      <Nav className="mr-auto">
-        <Nav.Link
-          href="https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/master/README.md"
-          target="about"
-        >About</Nav.Link>
-      </Nav>
-      <LoginInfo username={props.username} />
-    </Navbar.Collapse>
+    <Container>
+      <Navbar.Brand href="#/">Ava&apos;s speedrunning global scoreboard</Navbar.Brand>
+      <Navbar.Toggle aria-controls="basic-navbar-nav" />
+      <Navbar.Collapse id="basic-navbar-nav">
+        <Nav className="mr-auto">
+          <Nav.Link
+            href="https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/master/README.md"
+            target="about"
+          >About</Nav.Link>
+        </Nav>
+        <LoginInfo username={props.username} />
+      </Navbar.Collapse>
+    </Container>
   </Navbar>
 
 export default ScoreboardNavBar
