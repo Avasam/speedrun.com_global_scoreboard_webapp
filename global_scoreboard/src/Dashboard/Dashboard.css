@@ -1,0 +1,102 @@
+.alert {
+  text-align:center;
+}
+
+/*--------*\
+| Coloring |
+\*--------*/
+.daysSince1 {
+  color: blue;
+}
+
+.daysSince7 {
+  color: green;
+}
+
+.daysSince30 {
+  color: darkorange;
+}
+
+.daysSince {
+  color: crimson;
+}
+
+.highlight-vip {
+  background-color: #fcf8e3;
+}
+
+tbody>tr.highlight-vip:nth-of-type(odd){
+  background-color: #f6f2dd;
+}
+
+.highlight-friend {
+  background-color: #dff0d8;
+}
+
+tbody>tr.highlight-friend:nth-of-type(odd){
+  background-color: #d9ead2;
+}
+
+.highlight-current-user {
+  background-color: #d9edf7;
+}
+
+tbody>tr.highlight-current-user:nth-of-type(odd){
+  background-color: #d3e7f1;
+}
+
+td:first-child{
+  font-weight:bold;
+}
+
+/*---------------------------------------*\
+| Friend Icons ( + <3 X ) toggle on hover |
+\*---------------------------------------*/
+.friend-icon:hover{
+cursor: pointer;
+}
+
+tr span.friend-icon:before {
+  font-family: 'Glyphicons Halflings';
+  content: "\e143"; /* glyphicon-heart-empty */
+  color: green;
+}
+
+tr span.friend-icon:hover:before {
+  font-family: 'Glyphicons Halflings';
+  content: "\2b"; /* glyphicon-plus */
+  color: green;
+}
+
+tr.highlight-friend span.friend-icon:before {
+  font-family: 'Glyphicons Halflings';
+  content: "\e005"; /* glyphicon-heart */
+  color: crimson;
+}
+
+tr.highlight-friend span.friend-icon:hover:before {
+  font-family: 'Glyphicons Halflings';
+  content: "\e014"; /* glyphicon-remove */
+  color: crimson;
+}
+
+tr.highlight-current-user span.friend-icon:before {
+  content: "";
+  display: none;
+}
+
+/*-----------------------*\
+| Bootstrap redifinitions |
+\*-----------------------*/
+.container {
+  padding-top: 20px;
+}
+
+@media (min-width: @screen-sm-min)
+div.container {
+  width: 100px;
+}
+
+.row {
+  margin: 0;
+}
