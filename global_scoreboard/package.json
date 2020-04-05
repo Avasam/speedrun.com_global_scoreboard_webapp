@@ -5,7 +5,8 @@
   "private": true,
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build:prod": "react-scripts build && npm run compress-build-folder",
+    "build:dev": "set REACT_APP_BASE_URL=https://AvasamDev.pythonanywhere.com&& npm run build:prod ",
     "lint": "eslint src/**",
     "lint:fix": "npm run lint -- --fix",
     "test": "react-scripts test",

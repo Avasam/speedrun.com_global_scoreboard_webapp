@@ -1,7 +1,7 @@
 import { Button, Card, CardActions, CardContent, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Theme, makeStyles } from '@material-ui/core'
 import React, { FC, useEffect, useState } from 'react'
 import { Schedule, ScheduleDto, createDefaultSchedule } from '../models/Schedule'
-import { apiGet, apiPost, apiPut } from '../fetchers/api'
+import { apiDelete, apiGet, apiPost, apiPut } from '../fetchers/api'
 import DeleteForever from '@material-ui/icons/DeleteForever'
 import { ScheduleWizard } from './ScheduleWizard'
 import { Styles } from '@material-ui/core/styles/withStyles'
@@ -21,17 +21,7 @@ const putSchedule = (schedule: ScheduleDto) =>
   apiPut(`schedules/${schedule.id}`, schedule)
 
 const deleteSchedule = (scheduleId: number) =>
-  fetch(`${window.process.env.REACT_APP_BASE_URL}/api/schedules/${scheduleId}`, {
-    method: 'DELETE',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer: ${localStorage.getItem('jwtToken')}`,
-    },
-  })
-    .then(res => res.status >= 400 && res.status < 600
-      ? Promise.reject(res)
-      : res)
+  apiDelete(`schedules/${scheduleId}`)
 
 type ScheduleManagementProps = {
   currentUser: User

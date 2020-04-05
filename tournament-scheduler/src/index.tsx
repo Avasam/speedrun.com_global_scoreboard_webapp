@@ -16,11 +16,9 @@ if ((process.env.REACT_APP_BASE_URL?.includes('127.0.0.1') || process.env.REACT_
   console.info(`REACT_APP_BASE_URL was changed from ${process.env.REACT_APP_BASE_URL} to ${window.process.env.REACT_APP_BASE_URL}`)
 }
 
-
 ReactDOM.render(<App />, document.getElementById('root'))
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
 // Learn more about service workers: https://bit.ly/CRA-PWA
 serviceWorker.unregister()
-

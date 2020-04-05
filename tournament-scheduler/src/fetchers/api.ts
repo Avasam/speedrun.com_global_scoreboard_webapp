@@ -1,9 +1,7 @@
 type QueryParams = { [param: string]: string | number | boolean | null }
 
-const basePath = `${window.process.env.REACT_APP_BASE_URL}/api/`
 const makeUrl = (location: string, queryParams?: QueryParams) =>
-  basePath +
-  location +
+  `${window.process.env.REACT_APP_BASE_URL}/api/${location}` +
   (queryParams
     ? `? ${new URLSearchParams(queryParams as Record<string, string>)}`
     : '')

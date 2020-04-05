@@ -1,4 +1,4 @@
-import { Button } from 'react-bootstrap'
+import { Button, Table } from 'react-bootstrap'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import FriendButton from './FriendButton'
 import Player from '../models/Player'
@@ -11,11 +11,10 @@ type QuickViewProps = {
   jumpToPlayer: (playerId: string) => void
 }
 
-const QuickView = (props: QuickViewProps) => {
-
-  return <>
-    <label htmlFor="preview">Quick view:</label>
-    <table className="table" id="preview">
+const QuickView = (props: QuickViewProps) =>
+  <>
+    <label>Quick view:</label>
+    <Table striped>
       <tbody>
         <tr>
           <th>Rank</th>
@@ -76,8 +75,7 @@ const QuickView = (props: QuickViewProps) => {
           </tr>
         }
       </tbody>
-    </table>
+    </Table>
   </>
-}
 
 export default QuickView

@@ -1,13 +1,32 @@
 import './App.css'
 import 'bootstrap/dist/css/bootstrap.css'
-import React, { FC } from 'react'
+import React, { FC, useEffect, useState } from 'react'
 import Dashboard from './Dashboard/Dashboard'
+import Player from './models/Player'
 import ScoreboardNavBar from './NavBar/ScoreboardNavBar'
+import { apiGet } from './fetchers/api'
+
+const getCurrentUser = () => apiGet('users/current').then(res => res.json())
 
 const App: FC = () => {
+  const [currentUser, setCurrentUser] = useState<Player | undefined | null>(undefined)
+
+  useEffect(() => {
+    getCurrentUser()
+      .then((res: { user: Player | undefined }) => res.user)
+      .then(setCurrentUser)
+      .catch(err => {
+        if (err.status === 401) {
+          setCurrentUser(null)
+        } else {
+          console.error(err)
+        }
+      })
+  }, [])
+
   return (
     <div>
-      <ScoreboardNavBar username={null} />
+      <ScoreboardNavBar username={currentUser === null ? null : currentUser?.name} onLogin={setCurrentUser} />
 
       <Dashboard />
       <footer>
