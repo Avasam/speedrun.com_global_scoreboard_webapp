@@ -3,6 +3,7 @@ import { Button, ButtonGroup, Card, CardActions, CardContent, Checkbox, Collapse
 import { DateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
 import React, { FC, useState } from 'react'
 import { TimeSlot, createDefaultTimeSlot, minutesStep } from '../models/TimeSlot'
+import { apiDelete, apiPut } from '../fetchers/api'
 import DateFnsUtils from '@date-io/moment'
 import DeleteForever from '@material-ui/icons/DeleteForever'
 import Event from '@material-ui/icons/Event'
@@ -14,6 +15,8 @@ import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date'
 import { Moment } from 'moment'
 import Registration from '../models/Registration'
 import { Schedule } from '../models/Schedule'
+
+// TODO: Extract TimeSlot / RegistrationList
 
 type ScheduleWizardProps = {
   schedule: Schedule
@@ -175,31 +178,10 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
 }
 
 const putRegistration = (registration: Registration) =>
-  fetch(`${window.process.env.REACT_APP_BASE_URL}/api/registrations/${registration.id}`, {
-    method: 'PUT',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer: ${localStorage.getItem('jwtToken')}`,
-    },
-    body: JSON.stringify(registration),
-  })
-    .then(res => res.status >= 400 && res.status < 600
-      ? Promise.reject(res)
-      : res)
+  apiPut(`registrations/${registration.id}`, registration)
 
 const deleteRegistration = (registrationId: number) =>
-  fetch(`${window.process.env.REACT_APP_BASE_URL}/api/registrations/${registrationId}`, {
-    method: 'DELETE',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer: ${localStorage.getItem('jwtToken')}`,
-    },
-  })
-    .then(res => res.status >= 400 && res.status < 600
-      ? Promise.reject(res)
-      : res)
+  apiDelete(`registrations/${registrationId}`)
 
 interface RegistrationProxy extends Registration {
   hasChanged?: boolean
