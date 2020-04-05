@@ -1,0 +1,71 @@
+.dashboard-container {
+  padding-top: 15px;
+}
+
+/*--------*\
+| Coloring |
+\*--------*/
+.daysSince1 {
+  color: blue;
+}
+
+.daysSince7 {
+  color: green;
+}
+
+.daysSince30 {
+  color: darkorange;
+}
+
+.daysSince {
+  color: crimson;
+}
+
+.highlight-vip {
+  background-color: #fcf8e3;
+}
+
+tbody>tr.highlight-vip:nth-of-type(odd){
+  background-color: #f6f2dd;
+}
+
+.highlight-friend {
+  background-color: #dff0d8;
+}
+
+tbody>tr.highlight-friend:nth-of-type(odd){
+  background-color: #d9ead2;
+}
+
+.highlight-current-user {
+  background-color: #d9edf7;
+}
+
+tbody>tr.highlight-current-user:nth-of-type(odd){
+  background-color: #d3e7f1;
+}
+
+td:first-child{
+  font-weight:bold;
+}
+
+/*-----------------------*\
+| Bootstrap redifinitions |
+\*-----------------------*/
+.alert {
+  text-align:center;
+}
+
+.float-right.btn.btn-link {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+@media (min-width: @screen-sm-min)
+div.container {
+  width: 100px;
+}
+
+.row {
+  margin: 0;
+}

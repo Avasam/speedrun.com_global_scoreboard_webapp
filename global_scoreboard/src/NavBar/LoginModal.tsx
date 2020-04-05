@@ -24,7 +24,7 @@ const LoginModal = (props: LoginModalProps) =>
               <InputGroup.Text><FontAwesomeIcon icon={faLink} /></InputGroup.Text>
             </InputGroup.Prepend>
             <Form.Control
-              type="text"
+              type="password"
               placeholder="API key"
               aria-describedby="api key"
               required
@@ -33,7 +33,12 @@ const LoginModal = (props: LoginModalProps) =>
             Error message goes here
           </Form.Control.Feedback> */}
             <InputGroup.Append>
-              <Button as="a" variant="outline-secondary" href="https://www.speedrun.com/api/auth" target="src">What&apos;s my key</Button>
+              <Button
+                as="a"
+                variant="outline-secondary"
+                href="https://www.speedrun.com/api/auth"
+                target="src"
+              >What&apos;s my key?</Button>
             </InputGroup.Append>
           </InputGroup>
         </Form.Group>
