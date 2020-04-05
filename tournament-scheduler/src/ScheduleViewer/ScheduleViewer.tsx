@@ -3,6 +3,7 @@ import React, { FC, useEffect, useState } from 'react'
 import { Schedule, ScheduleDto } from '../models/Schedule'
 import DateFnsUtils from '@date-io/moment'
 import { TimeSlot } from '../models/TimeSlot'
+import { apiGet } from '../fetchers/api'
 import moment from 'moment'
 
 interface ScheduleRegistrationProps {
@@ -36,17 +37,7 @@ const useStyles = makeStyles(theme =>
 )
 
 const getSchedule = (id: number) =>
-  fetch(`${window.process.env.REACT_APP_BASE_URL}/api/schedules/${id}`, {
-    method: 'GET',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer: ${localStorage.getItem('jwtToken')}`,
-    },
-  })
-    .then(res => res.status >= 400 && res.status < 600
-      ? Promise.reject(res)
-      : res)
+  apiGet(`schedules/${id}`)
     .then(res =>
       res.json().then((scheduleDto: ScheduleDto) => new Schedule(scheduleDto)))
 

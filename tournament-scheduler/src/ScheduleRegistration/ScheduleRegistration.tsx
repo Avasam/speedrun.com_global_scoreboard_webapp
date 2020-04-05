@@ -1,6 +1,7 @@
 import { Button, Card, CardActions, CardContent, Container, FormControl, FormGroup, FormLabel, InputLabel, Link, MenuItem, Select, TextField } from '@material-ui/core'
 import React, { ChangeEvent, FC, useEffect, useRef, useState } from 'react'
 import { Schedule, ScheduleDto } from '../models/Schedule'
+import { apiGet, apiPost } from '../fetchers/api'
 import DateFnsUtils from '@date-io/moment'
 import { TimeSlot } from '../models/TimeSlot'
 import moment from 'moment'
@@ -14,32 +15,11 @@ const entriesLeft = (timeSlot: TimeSlot) => timeSlot.maximumEntries - timeSlot.r
 const timeSlotLabelPaddingRight = 40
 
 const getSchedule = (id: number, registrationKey: string) =>
-  fetch(`${window.process.env.REACT_APP_BASE_URL}/api/schedules/${id}?registrationKey=${registrationKey}`, {
-    method: 'GET',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer: ${localStorage.getItem('jwtToken')}`,
-    },
-  })
-    .then(res => res.status >= 400 && res.status < 600
-      ? Promise.reject(res)
-      : res)
+  apiGet(`schedules/${id}`, { registrationKey })
     .then(res => res.json().then((scheduleDto: ScheduleDto) => new Schedule(scheduleDto)))
 
 const postRegistration = (timeSlotId: number, participants: string[], registrationKey: string) =>
-  fetch(`${window.process.env.REACT_APP_BASE_URL}/api/time-slots/${timeSlotId}/registrations`, {
-    method: 'POST',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer: ${localStorage.getItem('jwtToken')}`,
-    },
-    body: JSON.stringify({ participants, registrationKey }),
-  })
-    .then(res => res.status >= 400 && res.status < 600
-      ? Promise.reject(res)
-      : res)
+  apiPost(`time-slots/${timeSlotId}/registrations`, { participants, registrationKey })
     .then(res => res.json())
 
 const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegistrationProps) => {

@@ -1,55 +1,24 @@
 import { Button, Card, CardActions, CardContent, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Theme, makeStyles } from '@material-ui/core'
 import React, { FC, useEffect, useState } from 'react'
 import { Schedule, ScheduleDto, createDefaultSchedule } from '../models/Schedule'
+import { apiGet, apiPost, apiPut } from '../fetchers/api'
 import DeleteForever from '@material-ui/icons/DeleteForever'
 import { ScheduleWizard } from './ScheduleWizard'
 import { Styles } from '@material-ui/core/styles/withStyles'
 import User from '../models/User'
 
 const getSchedules = () =>
-  fetch(`${window.process.env.REACT_APP_BASE_URL}/api/schedules`, {
-    method: 'GET',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer: ${localStorage.getItem('jwtToken')}`,
-    },
-  })
-    .then(res => res.status >= 400 && res.status < 600
-      ? Promise.reject(res)
-      : res)
+  apiGet('schedules')
     .then(res =>
       res.json().then((scheduleDtos: ScheduleDto[] | undefined) =>
         scheduleDtos?.map(scheduleDto => new Schedule(scheduleDto))))
 
 const postSchedules = (schedule: ScheduleDto) =>
-  fetch(`${window.process.env.REACT_APP_BASE_URL}/api/schedules`, {
-    method: 'POST',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer: ${localStorage.getItem('jwtToken')}`,
-    },
-    body: JSON.stringify(schedule),
-  })
-    .then(res => res.status >= 400 && res.status < 600
-      ? Promise.reject(res)
-      : res)
+  apiPost('schedules', schedule)
     .then(res => res.json())
 
 const putSchedule = (schedule: ScheduleDto) =>
-  fetch(`${window.process.env.REACT_APP_BASE_URL}/api/schedules/${schedule.id}`, {
-    method: 'PUT',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer: ${localStorage.getItem('jwtToken')}`,
-    },
-    body: JSON.stringify(schedule),
-  })
-    .then(res => res.status >= 400 && res.status < 600
-      ? Promise.reject(res)
-      : res)
+  apiPut(`schedules/${schedule.id}`, schedule)
 
 const deleteSchedule = (scheduleId: number) =>
   fetch(`${window.process.env.REACT_APP_BASE_URL}/api/schedules/${scheduleId}`, {
@@ -99,10 +68,7 @@ const ScheduleManagement: FC<ScheduleManagementProps> = (props: ScheduleManageme
     savePromise
       .then(() => {
         getSchedules()
-          .then((res: Schedule[] | undefined) => {
-            console.log(res)
-            setSchedules(res)
-          })
+          .then(setSchedules)
           .catch(console.error)
         setCurrentSchedule(undefined)
       })
@@ -111,10 +77,7 @@ const ScheduleManagement: FC<ScheduleManagementProps> = (props: ScheduleManageme
 
   useEffect(() => {
     getSchedules()
-      .then((res: Schedule[] | undefined) => {
-        console.log(res)
-        setSchedules(res)
-      })
+      .then(setSchedules)
       .catch(console.error)
   }, [])
 
