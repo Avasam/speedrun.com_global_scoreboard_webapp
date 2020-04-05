@@ -7,6 +7,7 @@ import Player from '../models/Player'
 type LoginInfoProps = {
   username: string | null | undefined
   onLogin: (currentUser: Player) => void
+  onLogout: () => void
 }
 
 const LoginInfo = (props: LoginInfoProps) => {
@@ -20,7 +21,7 @@ const LoginInfo = (props: LoginInfoProps) => {
       <Navbar.Text>
         Logged in as {props.username}
       </Navbar.Text>
-      <Button type="submit" variant="danger">Log out</Button>
+      <Button type="submit" variant="danger" onClick={props.onLogout}>Log out</Button>
     </>
     : <>
       <Button variant="success" onClick={handleShow}>Log in</Button>

@@ -13,6 +13,10 @@ import jwt
 __JSONTypeBase = Union[str, int, float, bool, None, Dict[str, Any], List[Any]]
 JSONType = Union[str, int, float, bool, None, Dict[str, __JSONTypeBase], List[__JSONTypeBase]]
 
+"""
+General context
+"""
+
 
 def authenthication_required(f):
     @wraps(f)
@@ -81,6 +85,11 @@ def get_user_current(current_user: Player):
             'userId': current_user.user_id,
             'name': current_user.name,
         }})
+
+
+"""
+Tournament Scheduler context
+"""
 
 
 @api.route('/schedules', methods=('GET',))
@@ -241,3 +250,14 @@ def __validate_create_schedule(data: Dict[str, Any]) -> Tuple[Optional[str], str
             return 'timeSlots.participantsPerEntry has to be defined', name, is_active, time_slot
 
     return None, name, is_active, time_slots
+
+
+"""
+Global Scoreboard context
+"""
+
+
+@api.route('/players/current/friends', methods=('GET',))
+@authenthication_required
+def get_friends_current(current_user: Player):
+    return jsonify(map_to_dto(current_user.get_friends()))

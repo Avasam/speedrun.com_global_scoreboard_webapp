@@ -8,6 +8,11 @@ import { apiGet } from './fetchers/api'
 
 const getCurrentUser = () => apiGet('users/current').then(res => res.json())
 
+const logout = (setCurrentUser: (user: null) => void) => {
+  setCurrentUser(null)
+  localStorage.removeItem('jwtToken')
+}
+
 const App: FC = () => {
   const [currentUser, setCurrentUser] = useState<Player | undefined | null>(undefined)
 
@@ -26,12 +31,28 @@ const App: FC = () => {
 
   return (
     <div>
-      <ScoreboardNavBar username={currentUser === null ? null : currentUser?.name} onLogin={setCurrentUser} />
+      <ScoreboardNavBar
+        username={currentUser === null ? null : currentUser?.name}
+        onLogin={setCurrentUser}
+        onLogout={() => logout(setCurrentUser)}
+      />
 
-      <Dashboard />
+      <Dashboard currentUser={currentUser || null} />
       <footer>
-        &copy; <a href="https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/master/LICENSE" target="about">Copyright</a> {new Date().getFullYear()} by <a href="https://github.com/Avasam/" target="about">Samuel Therrien</a>.
-        Powered by <a href="https://www.speedrun.com/" target="src">speedrun.com</a> and <a href="https://www.pythonanywhere.com/" target="about">PythonAnywhere</a>
+        &copy; <a
+          href="https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/master/LICENSE"
+          target="about"
+        >Copyright</a> {new Date().getFullYear()} by <a
+          href="https://github.com/Avasam/"
+          target="about"
+        >Samuel Therrien</a>.
+        Powered by <a
+          href="https://www.speedrun.com/"
+          target="src"
+        >speedrun.com</a> and <a
+          href="https://www.pythonanywhere.com/"
+          target="about"
+        >PythonAnywhere</a>
       </footer>
     </div>
   )

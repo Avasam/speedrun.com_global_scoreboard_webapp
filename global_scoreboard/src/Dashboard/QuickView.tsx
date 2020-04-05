@@ -7,7 +7,7 @@ import { faArrowAltCircleRight } from '@fortawesome/free-solid-svg-icons'
 
 type QuickViewProps = {
   friends: Player[]
-  currentUser: Player
+  currentUser: Player | null
   jumpToPlayer: (playerId: string) => void
 }
 
@@ -21,7 +21,7 @@ const QuickView = (props: QuickViewProps) =>
           <th>Name</th>
           <th colSpan={2}>Score</th>
         </tr>
-        <tr className="highlight-current-user" id={`preview-${props.currentUser.userId}`}>
+        <tr className="highlight-current-user" id={`preview-${props.currentUser?.userId}`}>
           {props.currentUser
             ? <>
               <td>{props.currentUser.rank}</td>
@@ -37,7 +37,7 @@ const QuickView = (props: QuickViewProps) =>
                 <Button
                   className="float-right"
                   variant="link"
-                  onClick={() => props.jumpToPlayer(props.currentUser.userId)}
+                  onClick={() => props.currentUser && props.jumpToPlayer(props.currentUser.userId)}
                 >
                   <FontAwesomeIcon icon={faArrowAltCircleRight} />
                 </Button>

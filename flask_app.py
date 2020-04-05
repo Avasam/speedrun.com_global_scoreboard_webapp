@@ -100,7 +100,9 @@ def index():
                 status=200,
                 mimetype="application/json")
         else:
-            friends: List[Player] = [] if not current_user.is_authenticated else current_user.get_friends()
+            friends: List[Player] = []
+            if current_user.is_authenticated:
+                friends = [friend.user_id for friend in current_user.get_friends()]
             return render_template(
                 'index.html',
                 friends=friends,

@@ -1,12 +1,25 @@
 import './Dashboard.css'
 import { Alert, AlertProps, Col, Container, Row } from 'react-bootstrap'
-import React, { FC, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Player from '../models/Player'
 import QuickView from './QuickView'
 import Scoreboard from './Scoreboard'
 import UpdateRunnerForm from './UpdateRunnerForm'
+import { apiGet } from '../fetchers/api'
 
-const Dashboard: FC = () => {
+type DashboardProps = {
+  currentUser: Player | null
+}
+
+const getFriends = () => apiGet('players/current/friends').then(res => res.json())
+
+const Dashboard = (props: DashboardProps) => {
+
+  useEffect(() => {
+    if (!props.currentUser) return
+    getFriends().then(setFriends)
+  }, [props.currentUser])
+
   const players: Player[] = []
   for (let i = 0; i < 9; i++) {
     players.push(
@@ -19,11 +32,10 @@ const Dashboard: FC = () => {
       }
     )
   }
-  const currentUser = players[0]
-  const friends = [players[1], players[2], players[3]]
 
   const [alertVariant, setAlertVariant] = useState<AlertProps['variant']>('info')
   const [alertMessage, setAlertMessage] = useState('Building the DataTable. Please wait...')
+  const [friends, setFriends] = useState<Player[]>([])
 
   const handleJumpToPlayer = (playerId: string) => console.log('handleJumpToPlayer', playerId)
   const handleOnUpdateRunner = (player: Player) => console.log('handleOnUpdateRunner', player)
@@ -34,16 +46,16 @@ const Dashboard: FC = () => {
     <Row>
       <Col md={4}>
         <Row>
-          <UpdateRunnerForm onUpdate={handleOnUpdateRunner} currentUser={currentUser} />
+          <UpdateRunnerForm onUpdate={handleOnUpdateRunner} currentUser={props.currentUser} />
         </Row>
 
         <Row>
-          <QuickView friends={friends} currentUser={currentUser} jumpToPlayer={handleJumpToPlayer} />
+          <QuickView friends={friends} currentUser={props.currentUser} jumpToPlayer={handleJumpToPlayer} />
         </Row>
       </Col>
 
       <Col md={8}>
-        <Scoreboard currentUser={currentUser} players={players} friends={friends} />
+        <Scoreboard currentUser={props.currentUser} players={players} friends={friends} />
       </Col>
     </Row>
   </Container>

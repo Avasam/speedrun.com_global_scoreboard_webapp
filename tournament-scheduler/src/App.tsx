@@ -20,7 +20,7 @@ const darkTheme = createMuiTheme({
 
 const getCurrentUser = () => apiGet('users/current').then(res => res.json())
 
-const logout = (setCurrentUser: (user: User | undefined | null) => void) => {
+const logout = (setCurrentUser: (user: null) => void) => {
   setCurrentUser(null)
   localStorage.removeItem('jwtToken')
 }

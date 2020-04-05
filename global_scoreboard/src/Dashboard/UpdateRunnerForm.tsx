@@ -38,7 +38,7 @@ const UpdateRunnerForm = (props: UpdateRunnerFormProps) => {
           />
           <InputGroup.Append>
             <Button id="update-runner-button"
-              disabled={!props.currentUser}
+              disabled={!props.currentUser || !updateUserNameOrId}
               onClick={updateRunner}
             >Update</Button>
           </InputGroup.Append>

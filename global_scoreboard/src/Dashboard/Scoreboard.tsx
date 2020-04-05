@@ -4,7 +4,7 @@ import React from 'react'
 import { Table } from 'react-bootstrap'
 
 type ScoreboardProps = {
-  currentUser: Player
+  currentUser: Player | null
   players: Player[]
   friends: Player[]
 }
@@ -26,7 +26,7 @@ const Scoreboard = (props: ScoreboardProps) => {
         {
           props.players.map(player => {
             let colorClass = ''
-            if (player.userId === props.currentUser.userId) {
+            if (player.userId === props.currentUser?.userId) {
               colorClass += ' highlight-current-user'
             }
             if (props.friends.some(friend => player.userId === friend.userId)) {
