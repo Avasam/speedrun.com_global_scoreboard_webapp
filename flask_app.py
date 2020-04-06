@@ -90,26 +90,17 @@ def tournament_scheduler(asset: str):
 def index():
     global result
     form_action: str = request.form.get("action")
-    arg_action: str = request.args.get('action')
     if request.method == "GET":
-        if arg_action == "ajaxDataTable":
-            players = Player.get_all()
-            return Response(
-                response=json.dumps(
-                    {'data': [(dict(player.items())) for player in players]}, default=str),
-                status=200,
-                mimetype="application/json")
-        else:
-            friends: List[Player] = []
-            if current_user.is_authenticated:
-                friends = [friend.user_id for friend in current_user.get_friends()]
-            return render_template(
-                'index.html',
-                friends=friends,
-                bypass_update_restrictions=str(
-                    configs.bypass_update_restrictions).lower(),
-                current_year=str(date.today().year)
-            )
+        friends: List[Player] = []
+        if current_user.is_authenticated:
+            friends = [friend.user_id for friend in current_user.get_friends()]
+        return render_template(
+            'index.html',
+            friends=friends,
+            bypass_update_restrictions=str(
+                configs.bypass_update_restrictions).lower(),
+            current_year=str(date.today().year)
+        )
 
     elif request.method == "POST" and form_action:
         friend_id: str = request.form.get("friend-id")

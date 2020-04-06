@@ -12,30 +12,20 @@ type DashboardProps = {
 }
 
 const getFriends = () => apiGet('players/current/friends').then(res => res.json())
+const getAllPlayers = () => apiGet('players').then(res => res.json())
 
 const Dashboard = (props: DashboardProps) => {
 
   useEffect(() => {
     if (!props.currentUser) return
     getFriends().then(setFriends)
+    getAllPlayers().then(setPlayers)
   }, [props.currentUser])
-
-  const players: Player[] = []
-  for (let i = 0; i < 9; i++) {
-    players.push(
-      {
-        rank: i + 1,
-        name: `TestPlayer${i + 1}`,
-        score: 111 * (9 - i),
-        lastUpdate: new Date(),
-        userId: `${i + 1}abc`,
-      }
-    )
-  }
 
   const [alertVariant, setAlertVariant] = useState<AlertProps['variant']>('info')
   const [alertMessage, setAlertMessage] = useState('Building the DataTable. Please wait...')
   const [friends, setFriends] = useState<Player[]>([])
+  const [players, setPlayers] = useState<Player[]>([])
 
   const handleJumpToPlayer = (playerId: string) => console.log('handleJumpToPlayer', playerId)
   const handleOnUpdateRunner = (player: Player) => console.log('handleOnUpdateRunner', player)

@@ -416,8 +416,8 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
                 'rank': None,
                 'name': user._name,
                 'score': floor(user._points),
-                'last_updated': strftime("%Y-%m-%d %H:%M"),
-                'user_id': user._id,
+                'lastUpdate': strftime("%Y-%m-%d %H:%M"),
+                'userId': user._id,
                 'message': text_output}
 
     except httplib2.ServerNotFoundError as exception:

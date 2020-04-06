@@ -257,6 +257,11 @@ Global Scoreboard context
 """
 
 
+@api.route('/players', methods=('GET',))
+def get_all_players():
+    return jsonify(map_to_dto(Player.get_all()))
+
+
 @api.route('/players/current/friends', methods=('GET',))
 @authenthication_required
 def get_friends_current(current_user: Player):

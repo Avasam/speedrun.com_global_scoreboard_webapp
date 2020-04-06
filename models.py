@@ -38,6 +38,7 @@ class Player(db.Model, UserMixin):
     name: str = db.Column(db.String(32), nullable=False)
     score: int = db.Column(db.Integer, nullable=False)
     last_update: Optional[datetime] = db.Column(db.DateTime())
+    rank: Optional[int] = None
 
     schedules = db.relationship("Schedule", back_populates="owner")
 
@@ -79,7 +80,7 @@ class Player(db.Model, UserMixin):
 
     @staticmethod
     def get_all():
-        sql = text("SELECT *, rank FROM ( "
+        sql = text("SELECT user_id, name, score, last_update, rank FROM ( "
                    "    SELECT *, "
                    "        IF(score = @_last_score, @cur_rank := @cur_rank, @cur_rank := @_sequence) AS rank, "
                    "        @_sequence := @_sequence + 1, "
@@ -88,7 +89,12 @@ class Player(db.Model, UserMixin):
                    "    WHERE score > 0 "
                    "    ORDER BY score DESC "
                    ") ranked;")
-        return db.engine.execute(sql).fetchall()
+        return [Player(
+            user_id=player[0],
+            name=player[1],
+            score=player[2],
+            last_update=player[3],
+            rank=player[4]) for player in db.engine.execute(sql).fetchall()]
 
     @staticmethod
     def create(user_id: str, name: str, **kwargs) -> Player:
@@ -115,7 +121,6 @@ class Player(db.Model, UserMixin):
                    "JOIN player p ON p.user_id = f.friend_id "
                    "WHERE f.user_id = '{user_id}';"
                    .format(user_id=self.user_id))
-        print(db.engine.execute(sql).fetchall())
         return [Player(
             user_id=friend[0],
             name=friend[1],
@@ -125,14 +130,16 @@ class Player(db.Model, UserMixin):
         if self.user_id == friend_id:
             return False
         sql = text("INSERT INTO friend (user_id, friend_id) "
-                   "VALUES ('{user_id}', '{friend_id}');".format(
+                   "VALUES ('{user_id}', '{friend_id}');"
+                   .format(
                        user_id=self.user_id,
                        friend_id=friend_id))
         return db.engine.execute(sql)
 
     def unfriend(self, friend_id: str) -> bool:
         sql = text("DELETE FROM friend "
-                   "WHERE user_id = '{user_id}' AND friend_id = '{friend_id}';".format(
+                   "WHERE user_id = '{user_id}' AND friend_id = '{friend_id}';"
+                   .format(
                        user_id=self.user_id,
                        friend_id=friend_id))
         return db.engine.execute(sql)
@@ -283,6 +290,7 @@ class Player(db.Model, UserMixin):
             'name': self.name,
             'score': self.score,
             'lastUpdate': self.last_update,
+            'rank': self.rank,
         }
 
 
