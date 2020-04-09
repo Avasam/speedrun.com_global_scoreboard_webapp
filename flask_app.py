@@ -23,7 +23,7 @@
 ##########################################################################
 from api import api
 from datetime import date
-from flask import Flask, send_from_directory, render_template, Response, request, redirect, url_for
+from flask import Flask, send_from_directory, render_template, request, redirect, url_for
 from flask_login import LoginManager, logout_user, login_user, current_user
 from models import db, Player
 from sqlalchemy import exc

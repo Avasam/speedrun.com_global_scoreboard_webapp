@@ -53,17 +53,11 @@ td:first-child{
 | Bootstrap redifinitions |
 \*-----------------------*/
 .alert {
-  text-align:center;
+  text-align: center;
 }
 
 .float-right.btn.btn-link {
-  padding-top: 0;
-  padding-bottom: 0;
-}
-
-@media (min-width: @screen-sm-min)
-div.container {
-  width: 100px;
+  padding: 0;
 }
 
 .row {

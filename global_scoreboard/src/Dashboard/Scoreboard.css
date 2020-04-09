@@ -1,0 +1,12 @@
+.react-bs-table-sizePerPage-dropdown.dropdown .dropdown-menu {
+  min-width: unset;
+}
+
+.legend,
+.react-bootstrap-table-pagination-total {
+  white-space: nowrap;
+}
+
+.react-bs-table-no-data {
+  text-align: center;
+}

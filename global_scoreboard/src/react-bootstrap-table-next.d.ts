@@ -1,19 +1,29 @@
+/* eslint-disable sort-imports */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // Origin: https://gitlab.com/fluidattacks/integrates/-/blob/master/front/src/typings/react-bootstrap-table-2/index.d.ts
-// Modified: rowClasses, added function definition
+// Modified:
+// - rowClasses and classes: added function definition
+// - totalSize supports numbers
+// - sizePerPageList supports array of number
+// - export PaginationProvider, PaginationListStandalone, PaginationTotalStandalone and SizePerPageDropdownStandalone
+// - currSizePerPage is actually a string
+// - Column.searchable is a propriety that exists
+// - PaginationProps.custom is a property that exists
+// - onPageChange and onSizePerPageChange return type to void
 
 type RowFieldValue = string | number | Date | TODO
 type TODO = any
 type Pagination = TODO
 // TODO: check missings : https://react-bootstrap-table.github.io/react-bootstrap-table2/docs/pagination-props.html
 interface PaginationProps {
+  custom?: boolean
   page?: number
   sizePerPage?: number
-  totalSize?: string
+  totalSize?: string | number
   pageStartIndex?: number
   paginationSize?: number
   showTotal?: boolean
-  sizePerPageList?: { text: string, value: number }[]
+  sizePerPageList?: { text: string, value: number }[] | number[]
   withFirstAndLast?: boolean
   alwaysShowAllBtns?: boolean
   firstPageText?: string
@@ -26,28 +36,20 @@ interface PaginationProps {
   lastPageTitle?: string
   hideSizePerPage?: boolean
   hidePageListOnlyOnePage?: boolean
-  onPageChange?: (page: number, sizePerPage: number) => any
-  onSizePerPageChange?: (sizePerPage: number, page: number) => number
+  onPageChange?: (page: number, sizePerPage: number) => void
+  onSizePerPageChange?: (sizePerPage: number, page: number) => void
   paginationTotalRenderer?: (from: number, to: number, size: number) => TODO
   sizePerPageRenderer?: (options: SizePerPageRenderer) => TODO
   handleNextPage?: (event: { page: number, onPageChange: () => void }) => void
   handlePrevPage?: (event: { page: number, onPageChange: () => void }) => void
-  handleSizePerPage?: (event: { page: number, onSizePerPageChange: () => void },
-    newSizePerPage: number) => void
+  handleSizePerPage?: (event: { page: number, onSizePerPageChange: () => void }, newSizePerPage: number) => void
 }
 interface OptionPaginationProps {
   page: number
   text: string
 }
-type PaginationProvider = React.Component<{
-  pagination: Pagination
-  children: React.Component<{
-    paginationProps: PaginationProps
-    paginationTableProps: PaginationProps
-  }>
-}>
 type PaginationTableProps = TODO
-type SizePerPageRenderer = { options: OptionPaginationProps[], currSizePerPage: number, onSizePerPageChange: onSizePerPageChange }
+type SizePerPageRenderer = { options: OptionPaginationProps[], currSizePerPage: string, onSizePerPageChange: onSizePerPageChange }
 type onSizePerPageChange = (sizePerPage: number, page?: number) => number
 type onTableChange = (type: TableChangeType, event: TableChangeNewState) => TODO
 interface TableChangeNewState {
@@ -157,6 +159,35 @@ interface ExpandRowOptions { renderer: (row: any) => JSX.Element, showExpandColu
 declare module 'react-bootstrap-table-next' {
   import { Component, ReactElement } from 'react'
   export default class BootstrapTable extends Component<BootstrapTableProps, TODO> {
+    table: {
+      props: {
+        data: TableChangeNewState['data']
+      }
+    }
+    selectionContext: {
+      selected: number[] | TODO
+    }
+    rowExpandContext: {
+      state: {
+        expanded: TODO
+      }
+    }
+    paginationContext: {
+      currPage: TableChangeNewState['page']
+      currSizePerPage: TableChangeNewState['sizePerPage']
+    }
+    sortContext: {
+      state: {
+        sortColumn: Column
+        sortOrder: TableChangeNewState['sortOrder']
+      }
+      filterContext: {
+        currFilters: TableChangeNewState['filters']
+      }
+      cellEditContext: {
+        startEditing: (rowindex: number, columnindex: number) => void
+      }
+    }
   }
   export interface BootstrapTableProps extends PaginationProps {
     keyField: string
@@ -176,7 +207,7 @@ declare module 'react-bootstrap-table-next' {
     filter?: FilterProps<TODO>
     pagination?: Pagination
     onTableChange?: onTableChange
-    rowClasses?: string | ((row: any, rowIndex: number) => string)
+    rowClasses?: string | ((row: TODO, rowIndex: number) => string)
     rowEvents?: {}
     rowStyle?: {}
     selectRow?: SelectRowOptions
@@ -186,11 +217,12 @@ declare module 'react-bootstrap-table-next' {
     align?: string
     dataField: string
     text: string
-    classes?: string
+    classes?: string | ((cell: TODO, row: TODO, rowIndex: number, colIndex: number) => string)
     headerClasses?: string
     hidden?: boolean
     isDummyField?: boolean
     sort?: boolean
+    searchable?: boolean
     filter?: TODO
     formatExtraData?: TODO
     formatter?: (cell: TODO, row: TODO, rowIndex: number, formatExtraData: any) => string | ReactElement | undefined
@@ -216,8 +248,21 @@ declare module 'react-bootstrap-table2-filter' {
   const Comparator: PredefinedComparators
 }
 declare module 'react-bootstrap-table2-paginator' {
+  import { Component, FunctionComponent } from 'react'
   export default function paginationFactory(options?: PaginationProps): Pagination
+  export type PaginationProviderProps = {
+    paginationProps: PaginationProps
+    paginationTableProps: PaginationProps
+  }
+  export class PaginationProvider extends Component<{
+    pagination: Pagination
+    children: FunctionComponent<PaginationProviderProps>
+  }>{ }
+  export class PaginationListStandalone extends Component<PaginationProps, TODO>{ }
+  export class SizePerPageDropdownStandalone extends Component<PaginationProps, TODO>{ }
+  export class PaginationTotalStandalone extends Component<PaginationProps, TODO>{ }
 }
+
 declare module 'react-bootstrap-table2-overlay' {
   export default function overlayFactory(props?: OverlayOptions): Overlay
 }
