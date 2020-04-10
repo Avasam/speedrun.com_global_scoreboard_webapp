@@ -1,5 +1,5 @@
 import './Dashboard.css'
-import { /*Alert, AlertProps,*/ Col, Container, Row } from 'react-bootstrap'
+import { Col, Container, Row } from 'react-bootstrap'
 import React, { useEffect, useRef, useState } from 'react'
 import Scoreboard, { ScoreboardRef } from './Scoreboard'
 import Player from '../models/Player'
@@ -8,27 +8,60 @@ import UpdateRunnerForm from './UpdateRunnerForm'
 import { apiGet } from '../fetchers/api'
 
 type DashboardProps = {
-  currentUser: Player | null
+  currentUser: Player | null | undefined
 }
 
-const getFriends = () => apiGet('players/current/friends').then(res => res.json())
-const getAllPlayers = () => apiGet('players').then(res => res.json())
+const getFriends = () => apiGet('players/current/friends').then<Player[]>(res => res.json())
+const getAllPlayers = () => apiGet('players').then<Player[]>(res => res.json())
 
 const Dashboard = (props: DashboardProps) => {
 
-  useEffect(() => {
-    // TODO: start both simultaneously, don't setPlayers until got both responses
-    // TODO: Don't refetch players on login/logout
-    // TODO: get friends score after fetching all players
-    getAllPlayers().then(setPlayers)
-    if (!props.currentUser) return
-    getFriends().then(setFriends)
-  }, [props.currentUser])
-
-  // const [alertVariant, setAlertVariant] = useState<AlertProps['variant']>('info')
-  // const [alertMessage, setAlertMessage] = useState('Building the Scoreboard. Please wait...')
+  const [currentPlayer, setCurrentPlayer] = useState<Player | null>(props.currentUser || null)
   const [friends, setFriends] = useState<Player[]>([])
   const [players, setPlayers] = useState<Player[]>([])
+
+  useEffect(() => {
+    // Note: Waiting to obtain both friends and players if both calls are needed
+    // to set it all at once and avoid unneeded re-rerenders
+    if (props.currentUser && players.length === 0) {
+      Promise
+        .all([getAllPlayers(), getFriends()])
+        .then(([allPlayers, friends]) => {
+          setCurrentPlayer(allPlayers.find(player => player.userId === props.currentUser?.userId) || null)
+          setFriends(friends.map(friend => {
+            const existingPlayer = allPlayers.find(player => player.userId === friend.userId)
+            return {
+              ...friend,
+              rank: existingPlayer?.rank || 0,
+              score: existingPlayer?.score || 0,
+            }
+          }))
+          setPlayers(allPlayers)
+        })
+    } else if (props.currentUser && players.length > 0) {
+      setCurrentPlayer(players.find(player => player.userId === props.currentUser?.userId) || null)
+      getFriends().then(friends => setFriends(
+        friends.map(friend => {
+          const existingPlayer = players.find(player => player.userId === friend.userId)
+          return {
+            ...friend,
+            rank: existingPlayer?.rank || 0,
+            score: existingPlayer?.score || 0,
+          }
+        })
+      ))
+    } else {
+      setCurrentPlayer(null)
+      setFriends([])
+      // Note: Loading the page already logged in starts the currentUser at undefined then quickly changes again
+      // Also don't re-fetch players upon login out
+      if (props.currentUser !== undefined && players.length === 0) {
+        getAllPlayers().then(setPlayers)
+      }
+    }
+    // Note: I don't actually care about players dependency and don't want to rerun this code on players change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.currentUser])
 
   const scoreboardRef = useRef<ScoreboardRef>(null)
 
@@ -42,18 +75,16 @@ const Dashboard = (props: DashboardProps) => {
   }
 
   return <Container className="dashboard-container">
-    {/* <Alert variant={alertVariant}>{alertMessage}</Alert> */}
-
     <Row>
       <Col md={4}>
         <Row>
-          <UpdateRunnerForm onUpdate={handleOnUpdateRunner} currentUser={props.currentUser} />
+          <UpdateRunnerForm onUpdate={handleOnUpdateRunner} currentUser={currentPlayer} />
         </Row>
 
         <Row>
           <QuickView
             friends={friends}
-            currentUser={props.currentUser}
+            currentUser={currentPlayer}
             onJumpToPlayer={handleJumpToPlayer}
             onUnfriend={handleUnfriend}
             onBefriend={handleBefriend}
@@ -64,7 +95,7 @@ const Dashboard = (props: DashboardProps) => {
       <Col md={8}>
         <Scoreboard
           ref={scoreboardRef}
-          currentUser={props.currentUser}
+          currentUser={currentPlayer}
           players={players}
           friends={friends}
           onUnfriend={handleUnfriend}

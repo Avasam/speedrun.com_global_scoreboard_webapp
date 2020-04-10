@@ -37,7 +37,7 @@ const App: FC = () => {
         onLogout={() => logout(setCurrentUser)}
       />
 
-      <Dashboard currentUser={currentUser || null} />
+      <Dashboard currentUser={currentUser} />
       <footer>
         &copy; <a
           href="https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/master/LICENSE"

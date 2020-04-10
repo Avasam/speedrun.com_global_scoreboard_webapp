@@ -13,8 +13,6 @@ type QuickViewProps = {
   onBefriend: (playerId: string) => void
 }
 
-const sortByScore = <T extends { score: number }>(players: T[]) => [...players].sort((a, b) => b.score - a.score)
-
 const QuickView = (props: QuickViewProps) =>
   <>
     <label>Quick view:</label>
@@ -27,63 +25,48 @@ const QuickView = (props: QuickViewProps) =>
         </tr>
       </thead>
       <tbody>
-        <tr className="highlight-current-user" id={`preview-${props.currentUser?.userId}`}>
-          {props.currentUser
-            ? <>
-              <td>{props.currentUser.rank}</td>
-              <td>
-                <a
-                  href={`https://speedrun.com/user/${props.currentUser.name}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >{props.currentUser.name}</a>
-              </td>
-              <td>{props.currentUser.score}</td>
-              <td>
-                <Button
-                  className="float-right"
-                  variant="link"
-                  onClick={() => props.currentUser && props.onJumpToPlayer(props.currentUser.userId)}
+        {
+          props.currentUser
+            ? [...props.friends, props.currentUser]
+              .sort((a, b) => b.score - a.score)
+              .map(player =>
+                <tr
+                  className={player === props.currentUser ? 'highlight-current-user' : 'highlight-friend'}
+                  id={`preview-${player.userId}`}
+                  key={`preview-${player.userId}`}
                 >
-                  <FontAwesomeIcon icon={faArrowAltCircleRight} />
-                </Button>
-              </td>
+                  <td>{player.rank}</td>
+                  <td>
+                    <a
+                      href={`https://speedrun.com/user/${player.name}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >{player.name}</a>
+                    {player !== props.currentUser &&
+                      <FriendButton
+                        isFriend={true}
+                        playerId={player.userId}
+                        onUnfriend={props.onUnfriend}
+                        onBefriend={props.onBefriend}
+                      />
+                    }
+                  </td>
+                  <td>{player.score}</td>
+                  <td>
+                    <Button
+                      className="float-right"
+                      variant="link"
+                      onClick={() => props.currentUser && props.onJumpToPlayer(props.currentUser.userId)}
+                    >
+                      <FontAwesomeIcon icon={faArrowAltCircleRight} />
+                    </Button>
+                  </td>
+                </tr>
+              )
+            : <>
+              <tr className="highlight-current-user" id="preview-0"><td colSpan={4}></td></tr>
+              <tr className="highlight-friend" id="preview-1"><td colSpan={4}></td></tr>
             </>
-            : <td colSpan={4}></td>
-          }
-        </tr>
-        {props.currentUser
-          ? sortByScore(props.friends).map(friend =>
-            <tr className="highlight-friend" id={`preview-${friend.userId}`} key={`preview-${friend.userId}`}>
-              <td>{friend.rank}</td>
-              <td>
-                <a
-                  href={`https://speedrun.com/user/${friend.name}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >{friend.name}</a>
-                <FriendButton
-                  isFriend={true}
-                  playerId={friend.userId}
-                  onUnfriend={props.onUnfriend}
-                  onBefriend={props.onBefriend}
-                />
-              </td>
-              <td>{friend.score}</td>
-              <td>
-                <Button
-                  className="float-right"
-                  variant="link"
-                  onClick={() => props.onJumpToPlayer(friend.userId)}
-                >
-                  <FontAwesomeIcon icon={faArrowAltCircleRight} />
-                </Button>
-              </td>
-            </tr>
-          )
-          : <tr className="highlight-friend">
-            <td colSpan={4}></td>
-          </tr>
         }
       </tbody>
     </Table>
