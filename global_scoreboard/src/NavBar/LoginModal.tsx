@@ -13,14 +13,13 @@ type LoginModalProps = {
   onLogin: (currentUser: Player) => void
 }
 
-const login = (srcApiKey: string, onLoginCallback: (currentUser: Player) => void) =>
+const attemptLogin = (srcApiKey: string, loginSuccessCallback: (currentUser: Player) => void) =>
   apiPost('login', { srcApiKey })
     .then(res => res.json())
     .then((res: { token: string, user: Player }) => {
-      console.log(res)
       if (!res.token) return
       localStorage.setItem('jwtToken', res.token)
-      onLoginCallback(res.user)
+      loginSuccessCallback(res.user)
     })
     .catch(console.error)
 
@@ -67,7 +66,7 @@ const LoginModal = (props: LoginModalProps) => {
 
           <Form.Group>
             <Col xs={{ span: 6, offset: 3 }}>
-              <Button variant="success" block onClick={() => login(srcApiKeyInput, props.onLogin)}>Log in</Button>
+              <Button variant="success" block onClick={() => attemptLogin(srcApiKeyInput, props.onLogin)}>Log in</Button>
             </Col>
           </Form.Group>
 

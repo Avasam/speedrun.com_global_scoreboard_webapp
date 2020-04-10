@@ -124,9 +124,9 @@ const sizePerPageRenderer: PaginationProps['sizePerPageRenderer'] = ({
 const paginationOptions: PaginationProps = {
   custom: true,
   showTotal: true,
-  page: 2,
+  totalSize: -1,
   alwaysShowAllBtns: true,
-  sizePerPageList: [10, 25, 50, 100, 200],
+  sizePerPageList: [10, 25, 50, 100],
   sizePerPageRenderer,
 }
 
@@ -168,33 +168,33 @@ const Scoreboard = forwardRef((props: ScoreboardProps, ref) => {
 
   return <>
     <label>Scoreboard:</label>
-    {/* TODO: works without totalSize, but throws warning error in console. See if we could change library itself */}
-    <PaginationProvider
-      pagination={paginationFactory({
-        ...paginationOptions,
-        totalSize: props.players.length,
-        onPageChange: pageNumber => { console.log(`page changed to ${pageNumber}`); goToPage(pageNumber) },
-        page,
+    <ToolkitProvider
+      keyField='userId'
+      data={props.players}
+      columns={columns.map(column => {
+        const formatExtraData: FormatExtraDataProps = {
+          currentUser: props.currentUser,
+          friends: props.friends,
+          handleOnUnfriend: props.onUnfriend,
+          handleOnBefriend: props.onBefriend,
+        }
+        return { ...column, formatExtraData }
       })}
+      search
+      bootstrap4
     >
-      {(({ paginationProps, paginationTableProps }) =>
-        // TODO: https://github.com/react-bootstrap-table/react-bootstrap-table2/issues/1118
-        <ToolkitProvider
-          keyField='userId'
-          data={props.players}
-          columns={columns.map(column => {
-            const formatExtraData: FormatExtraDataProps = {
-              currentUser: props.currentUser,
-              friends: props.friends,
-              handleOnUnfriend: props.onUnfriend,
-              handleOnBefriend: props.onBefriend,
-            }
-            return { ...column, formatExtraData }
+      {(toolkitprops: ToolkitProviderProps) =>
+        <PaginationProvider
+          pagination={paginationFactory({
+            ...paginationOptions,
+            totalSize: props.players.length,
+            // HACK: Required to keep the state in sync. Will not cause rerenders
+            onPageChange: goToPage,
+            onSizePerPageChange: (_, page) => goToPage(page),
+            page,
           })}
-          search
-          bootstrap4
         >
-          {(toolkitprops: ToolkitProviderProps) =>
+          {(({ paginationProps, paginationTableProps }) =>
             <div>
               <SearchBar {...toolkitprops.searchProps} />
               <SizePerPageDropdownStandalone {...paginationProps} />
@@ -218,10 +218,10 @@ const Scoreboard = forwardRef((props: ScoreboardProps, ref) => {
                 <Legend />
               </div>
             </div>
-          }
-        </ToolkitProvider>
-      )}
-    </PaginationProvider>
+          )}
+        </PaginationProvider>
+      }
+    </ToolkitProvider>
   </>
 })
 

@@ -15,6 +15,10 @@ const LoginInfo = (props: LoginInfoProps) => {
 
   const handleClose = () => setShow(false)
   const handleShow = () => setShow(true)
+  const handleLogin = (loggedInUser: Player) => {
+    props.onLogin(loggedInUser)
+    handleClose()
+  }
 
   return props.username
     ? <>
@@ -26,7 +30,7 @@ const LoginInfo = (props: LoginInfoProps) => {
     : <>
       <Button variant="success" onClick={handleShow}>Log in</Button>
 
-      <LoginModal show={show} onClose={handleClose} onLogin={props.onLogin}></LoginModal>
+      <LoginModal show={show} onClose={handleClose} onLogin={handleLogin}></LoginModal>
     </>
 }
 

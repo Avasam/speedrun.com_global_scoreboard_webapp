@@ -3,7 +3,7 @@
 // Origin: https://gitlab.com/fluidattacks/integrates/-/blob/master/front/src/typings/react-bootstrap-table-2/index.d.ts
 // Modified:
 // - rowClasses and classes: added function definition
-// - totalSize supports numbers
+// - totalSize supports numbers and non-optional because of 'Warning: Failed prop type: The prop `dataSize` is marked as required in `PaginationTotal`, but its value is `undefined`.'
 // - sizePerPageList supports array of number
 // - export PaginationProvider, PaginationListStandalone, PaginationTotalStandalone and SizePerPageDropdownStandalone
 // - currSizePerPage is actually a string
@@ -19,7 +19,7 @@ interface PaginationProps {
   custom?: boolean
   page?: number
   sizePerPage?: number
-  totalSize?: string | number
+  totalSize: string | number
   pageStartIndex?: number
   paginationSize?: number
   showTotal?: boolean
