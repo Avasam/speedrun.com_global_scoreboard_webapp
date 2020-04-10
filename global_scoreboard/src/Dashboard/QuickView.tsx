@@ -56,7 +56,7 @@ const QuickView = (props: QuickViewProps) =>
                     <Button
                       className="float-right"
                       variant="link"
-                      onClick={() => props.currentUser && props.onJumpToPlayer(props.currentUser.userId)}
+                      onClick={() => props.currentUser && props.onJumpToPlayer(player.userId)}
                     >
                       <FontAwesomeIcon icon={faArrowAltCircleRight} />
                     </Button>

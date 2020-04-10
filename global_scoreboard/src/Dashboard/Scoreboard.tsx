@@ -4,7 +4,7 @@ import 'react-bootstrap-table2-paginator/dist/react-bootstrap-table2-paginator.m
 import './Scoreboard.css'
 import BootstrapTable, { Column } from 'react-bootstrap-table-next'
 import { Dropdown, DropdownButton, Spinner } from 'react-bootstrap'
-import React, { MutableRefObject, forwardRef, useRef } from 'react'
+import React, { MutableRefObject, forwardRef, useRef, useState } from 'react'
 import ToolkitProvider, { Search, ToolkitProviderProps } from 'react-bootstrap-table2-toolkit'
 import paginationFactory, { PaginationListStandalone, PaginationProvider, PaginationTotalStandalone, SizePerPageDropdownStandalone } from 'react-bootstrap-table2-paginator'
 import FriendButton from './FriendButton'
@@ -124,6 +124,7 @@ const sizePerPageRenderer: PaginationProps['sizePerPageRenderer'] = ({
 const paginationOptions: PaginationProps = {
   custom: true,
   showTotal: true,
+  page: 2,
   alwaysShowAllBtns: true,
   sizePerPageList: [10, 25, 50, 100, 200],
   sizePerPageRenderer,
@@ -158,16 +159,24 @@ const Scoreboard = forwardRef((props: ScoreboardProps, ref) => {
       const currSizePerPage = boostrapTableRef.current?.paginationContext.currSizePerPage
       const jumpToPage = Math.floor(playerIndex / Number(currSizePerPage)) + 1
 
-      // TODO: Make it work
-      alert(`WIP: Should now jump to page #${jumpToPage} to show player ID ${playerId}`)
+      goToPage(jumpToPage)
     }
   }
+
   const boostrapTableRef = useRef<BootstrapTable>(null)
+  const [page, goToPage] = useState<number | undefined>()
 
   return <>
     <label>Scoreboard:</label>
     {/* TODO: works without totalSize, but throws warning error in console. See if we could change library itself */}
-    <PaginationProvider pagination={paginationFactory({ ...paginationOptions, totalSize: props.players.length })}>
+    <PaginationProvider
+      pagination={paginationFactory({
+        ...paginationOptions,
+        totalSize: props.players.length,
+        onPageChange: pageNumber => { console.log(`page changed to ${pageNumber}`); goToPage(pageNumber) },
+        page,
+      })}
+    >
       {(({ paginationProps, paginationTableProps }) =>
         // TODO: https://github.com/react-bootstrap-table/react-bootstrap-table2/issues/1118
         <ToolkitProvider
