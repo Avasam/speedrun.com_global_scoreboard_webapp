@@ -1,9 +1,7 @@
 type QueryParams = { [param: string]: string | number | boolean | null }
 
-const basePath = `${window.process.env.REACT_APP_BASE_URL}/api/`
 const makeUrl = (location: string, queryParams?: QueryParams) =>
-  basePath +
-  location +
+  `${window.process.env.REACT_APP_BASE_URL}/api/${location}` +
   (queryParams
     ? `? ${new URLSearchParams(queryParams as Record<string, string>)}`
     : '')
@@ -25,10 +23,10 @@ const apiFetch = (method: RequestInit['method'], url: string, body?: RequestInit
 export const apiGet = (location: string, queryParams?: QueryParams) =>
   apiFetch('GET', makeUrl(location, queryParams))
 
-export const apiPost = (location: string, body: object) =>
+export const apiPost = (location: string, body?: object) =>
   apiFetch('POST', makeUrl(location), JSON.stringify(body))
 
-export const apiPut = (location: string, body: object) =>
+export const apiPut = (location: string, body?: object) =>
   apiFetch('PUT', makeUrl(location), JSON.stringify(body))
 
 export const apiDelete = (location: string) =>

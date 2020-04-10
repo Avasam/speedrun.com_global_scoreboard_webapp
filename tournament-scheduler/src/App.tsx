@@ -7,6 +7,7 @@ import ScheduleManagement from './ScheduleManagement/ScheduleManagement'
 import ScheduleRegistration from './ScheduleRegistration/ScheduleRegistration'
 import ScheduleViewer from './ScheduleViewer/ScheduleViewer'
 import User from './models/User'
+import { apiGet } from './fetchers/api'
 import { teal } from '@material-ui/core/colors'
 import useMediaQuery from '@material-ui/core/useMediaQuery'
 
@@ -17,22 +18,9 @@ const darkTheme = createMuiTheme({
   },
 })
 
-const getCurrentUser = () =>
-  fetch(`${window.process.env.REACT_APP_BASE_URL}/api/users/current`, {
-    method: 'GET',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer: ${localStorage.getItem('jwtToken')}`,
-    },
-  })
-    .then(res => res.status >= 400 && res.status < 600
-      ? Promise.reject(res)
-      : res)
-    .then(res => res.json())
+const getCurrentUser = () => apiGet('users/current').then(res => res.json())
 
-
-const logout = (setCurrentUser: (user: User | undefined | null) => void) => {
+const logout = (setCurrentUser: (user: null) => void) => {
   setCurrentUser(null)
   localStorage.removeItem('jwtToken')
 }
@@ -109,7 +97,7 @@ const App: FC = () => {
             ? <ScheduleViewer scheduleId={viewScheduleId} />
             : currentUser !== undefined && (currentUser
               ? <ScheduleManagement currentUser={currentUser} />
-              : <LoginForm setCurrentUser={(currentUser: User) => setCurrentUser(currentUser)} />)
+              : <LoginForm onLogin={setCurrentUser} />)
         }
       </div>
 

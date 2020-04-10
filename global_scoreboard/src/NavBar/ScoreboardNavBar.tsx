@@ -2,9 +2,12 @@ import './ScoreboardNavBar.css'
 import { Button, Container, Nav, Navbar } from 'react-bootstrap'
 import React, { useState } from 'react'
 import LoginModal from './LoginModal'
+import Player from '../models/Player'
 
 type LoginInfoProps = {
-  username: string | null
+  username: string | null | undefined
+  onLogin: (currentUser: Player) => void
+  onLogout: () => void
 }
 
 const LoginInfo = (props: LoginInfoProps) => {
@@ -12,18 +15,22 @@ const LoginInfo = (props: LoginInfoProps) => {
 
   const handleClose = () => setShow(false)
   const handleShow = () => setShow(true)
+  const handleLogin = (loggedInUser: Player) => {
+    props.onLogin(loggedInUser)
+    handleClose()
+  }
 
   return props.username
     ? <>
       <Navbar.Text>
         Logged in as {props.username}
       </Navbar.Text>
-      <Button type="submit" variant="danger">Log out</Button>
+      <Button type="submit" variant="danger" onClick={props.onLogout}>Log out</Button>
     </>
     : <>
       <Button variant="success" onClick={handleShow}>Log in</Button>
 
-      <LoginModal show={show} handleClose={handleClose}></LoginModal>
+      <LoginModal show={show} onClose={handleClose} onLogin={handleLogin}></LoginModal>
     </>
 }
 
@@ -39,7 +46,9 @@ const ScoreboardNavBar = (props: LoginInfoProps) =>
             target="about"
           >About</Nav.Link>
         </Nav>
-        <LoginInfo username={props.username} />
+        {props.username !== undefined &&
+          <LoginInfo {...props} />
+        }
       </Navbar.Collapse>
     </Container>
   </Navbar>

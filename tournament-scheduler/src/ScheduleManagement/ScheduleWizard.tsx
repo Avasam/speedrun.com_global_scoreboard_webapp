@@ -210,7 +210,7 @@ const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
 
         setRegistrationsProxy(JSON.parse(JSON.stringify(registrationsProxy)))
       })
-      .catch(() => console.error)
+      .catch(console.error)
 
   const handleResetRegistrations = (registrationIndex: number) => {
     registrationsProxy[registrationIndex] = {
@@ -227,7 +227,7 @@ const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
         registrationsProxy.splice(registrationIndex, 1)
         setRegistrationsProxy(JSON.parse(JSON.stringify(registrationsProxy)))
       })
-      .catch(() => console.error)
+      .catch(console.error)
 
   return <Card raised={true} className="time-slot-row">
     <CardContent>

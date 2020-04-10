@@ -32,6 +32,18 @@
     {% include "navbar.html" %}
 
     <div class="container">
+        <div class="alert alert-info" id="breaking-news">
+          <script>window.newLink = window.location.href.replace('5000', '3000') + 'global-scoreboard'</script>
+          A new beta version of this scoreboard, entirely rewriten in React and TypeScript using Bootstrap 4 is available over at
+          <b>
+            <a
+              href="/global-scoreboard"
+              onclick="location.href=window.newLink;return false;"
+            ><script>document.write(window.newLink)</script></a>.
+          </b>
+          <br>
+          It has about the same look and feel, but is a lot more reactive, fluid and will be seeing more updates.
+        </div>
         <div class="alert alert-info" id="ajaxResponseMessage">Building the DataTable. Please wait...</div>
 
         <div class="col-md-4 ">

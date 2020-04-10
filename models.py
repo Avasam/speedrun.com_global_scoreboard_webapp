@@ -5,8 +5,6 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from flask_login import login_user, UserMixin
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.dialects.mysql import insert
-from json import dumps, loads
 from sqlalchemy import orm, text
 from typing import Any, Dict, List, Optional, Union
 from utils import get_file, SpeedrunComError
@@ -40,6 +38,7 @@ class Player(db.Model, UserMixin):
     name: str = db.Column(db.String(32), nullable=False)
     score: int = db.Column(db.Integer, nullable=False)
     last_update: Optional[datetime] = db.Column(db.DateTime())
+    rank: Optional[int] = None
 
     schedules = db.relationship("Schedule", back_populates="owner")
 
@@ -81,7 +80,7 @@ class Player(db.Model, UserMixin):
 
     @staticmethod
     def get_all():
-        sql = text("SELECT *, rank FROM ( "
+        sql = text("SELECT user_id, name, score, last_update, rank FROM ( "
                    "    SELECT *, "
                    "        IF(score = @_last_score, @cur_rank := @cur_rank, @cur_rank := @_sequence) AS rank, "
                    "        @_sequence := @_sequence + 1, "
@@ -90,7 +89,12 @@ class Player(db.Model, UserMixin):
                    "    WHERE score > 0 "
                    "    ORDER BY score DESC "
                    ") ranked;")
-        return db.engine.execute(sql).fetchall()
+        return [Player(
+            user_id=player[0],
+            name=player[1],
+            score=player[2],
+            last_update=player[3],
+            rank=player[4]) for player in db.engine.execute(sql).fetchall()]
 
     @staticmethod
     def create(user_id: str, name: str, **kwargs) -> Player:
@@ -112,27 +116,33 @@ class Player(db.Model, UserMixin):
 
         return player
 
-    def get_friends(self):
-        sql = text("SELECT DISTINCT friend_id FROM friend "
-                   "WHERE friend.user_id = '{user_id}';".format(
-                       user_id=self.user_id))
-        return [friend_id[0] for friend_id in db.engine.execute(sql).fetchall()]
+    def get_friends(self) -> List[Player]:
+        sql = text("SELECT f.friend_id, p.name, p.score FROM friend f "
+                   "JOIN player p ON p.user_id = f.friend_id "
+                   "WHERE f.user_id = '{user_id}';"
+                   .format(user_id=self.user_id))
+        return [Player(
+            user_id=friend[0],
+            name=friend[1],
+            score=friend[2]) for friend in db.engine.execute(sql).fetchall()]
 
     def befriend(self, friend_id: str) -> bool:
         if self.user_id == friend_id:
             return False
         sql = text("INSERT INTO friend (user_id, friend_id) "
-                   "VALUES ('{user_id}', '{friend_id}');".format(
+                   "VALUES ('{user_id}', '{friend_id}');"
+                   .format(
                        user_id=self.user_id,
                        friend_id=friend_id))
-        return db.engine.execute(sql)
+        return db.engine.execute(sql).rowcount > 0
 
     def unfriend(self, friend_id: str) -> bool:
         sql = text("DELETE FROM friend "
-                   "WHERE user_id = '{user_id}' AND friend_id = '{friend_id}';".format(
+                   "WHERE user_id = '{user_id}' AND friend_id = '{friend_id}';"
+                   .format(
                        user_id=self.user_id,
                        friend_id=friend_id))
-        return db.engine.execute(sql)
+        return db.engine.execute(sql).rowcount > 0
 
     def get_schedules(self) -> List[Schedule]:
         return Schedule.query.filter(Schedule.owner_id == self.user_id).all()
@@ -273,6 +283,15 @@ class Player(db.Model, UserMixin):
     # Override from UserMixin for Flask-Login
     def get_id(self):
         return self.user_id
+
+    def to_dto(self) -> dict[str, Union[str, int, datetime]]:
+        return {
+            'userId': self.user_id,
+            'name': self.name,
+            'score': self.score,
+            'lastUpdate': self.last_update,
+            'rank': self.rank,
+        }
 
 
 class CachedRequest():

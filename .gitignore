@@ -13,6 +13,7 @@ __pycache__/
 env/
 build/
 build.zip
+*-build.zip
 develop-eggs/
 dist/
 downloads/
