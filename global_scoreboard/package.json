@@ -5,8 +5,9 @@
   "private": true,
   "scripts": {
     "start": "react-scripts start",
+    "build:dev": "set REACT_APP_BASE_URL=https://AvasamDev.pythonanywhere.com&& npm run build:prod",
     "build:prod": "react-scripts build && npm run compress-build-folder",
-    "build:dev": "set REACT_APP_BASE_URL=https://AvasamDev.pythonanywhere.com&& npm run build:prod ",
+    "compress-build-folder": "powershell Compress-Archive -Update -Path .\\build\\ -CompressionLevel Optimal -DestinationPath ..\\global-scoreboard-build.zip",
     "lint": "eslint src/**",
     "lint:fix": "npm run lint -- --fix",
     "test": "react-scripts test",
