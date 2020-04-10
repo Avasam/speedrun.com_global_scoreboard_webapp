@@ -32,7 +32,6 @@ const FriendButton = (props: FriendButtonProps) => {
 
 
   return <Button
-    className="float-right"
     variant="link"
     onClick={handleBefriendUnfriend}
     onMouseEnter={() => setIsHovered(true)}

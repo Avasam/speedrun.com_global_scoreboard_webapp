@@ -1,12 +1,24 @@
-.react-bs-table-sizePerPage-dropdown.dropdown .dropdown-menu {
+.react-bs-table-sizePerPage-dropdown {
+  margin-bottom: 0.5rem; /* Same as label */
+}
+
+.react-bs-table-sizePerPage-dropdown .dropdown-menu {
   min-width: unset;
+}
+
+.legend label {
+  margin-bottom: 0;
 }
 
 .legend,
 .react-bootstrap-table-pagination-total {
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .react-bs-table-no-data {
   text-align: center;
+}
+
+.react-bootstrap-table-page-btns-ul .page-item[title="hidden"] {
+  display: none;
 }

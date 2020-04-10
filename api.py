@@ -8,7 +8,10 @@ from functools import wraps
 from models import map_to_dto, Player, Schedule, TimeSlot
 from sqlalchemy import exc
 from typing import Any, Dict, List, Optional, Union, Tuple
+from user_updater import get_updated_user
+from utils import get_file, UserUpdaterError, SpeedrunComError
 import jwt
+import traceback
 
 # TODO: use and typecheck / typeguard JSONType
 __JSONTypeBase = Union[str, int, float, bool, None, Dict[str, Any], List[Any]]
@@ -261,6 +264,20 @@ Global Scoreboard context
 @api.route('/players', methods=('GET',))
 def get_all_players():
     return jsonify(map_to_dto(Player.get_all()))
+
+
+@api.route('/players/<name_or_id>/update', methods=('POST',))
+@authenthication_required
+def update_player(_, name_or_id: str):
+    try:
+        result = get_updated_user(name_or_id)
+        return jsonify(result), 400 if result["state"] == "warning" else 200
+    except UserUpdaterError as exception:
+        print("\n{}\n{}".format(exception.args[0]["error"], exception.args[0]["details"]))
+        return exception.args[0]["details"], 424
+    except Exception:
+        print("\nError: Unknown\n{}".format(traceback.format_exc()))
+        return traceback.format_exc(), 500
 
 
 @api.route('/players/current/friends', methods=('GET',))

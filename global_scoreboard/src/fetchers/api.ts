@@ -23,7 +23,7 @@ const apiFetch = (method: RequestInit['method'], url: string, body?: RequestInit
 export const apiGet = (location: string, queryParams?: QueryParams) =>
   apiFetch('GET', makeUrl(location, queryParams))
 
-export const apiPost = (location: string, body: object) =>
+export const apiPost = (location: string, body?: object) =>
   apiFetch('POST', makeUrl(location), JSON.stringify(body))
 
 export const apiPut = (location: string, body?: object) =>

@@ -10,6 +10,7 @@
 // - Column.searchable is a propriety that exists
 // - PaginationProps.custom is a property that exists
 // - onPageChange and onSizePerPageChange return type to void
+// - wrapperClasses neede to add "table-responsive"
 
 type RowFieldValue = string | number | Date | TODO
 type TODO = any
@@ -202,6 +203,7 @@ declare module 'react-bootstrap-table-next' {
     loading?: boolean
     overlay?: Overlay
     caption?: string | JSX.Element
+    wrapperClasses?: string
     striped?: boolean
     defaultSorted?: Sorted[]
     filter?: FilterProps<TODO>

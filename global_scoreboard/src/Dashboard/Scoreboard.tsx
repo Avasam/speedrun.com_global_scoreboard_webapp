@@ -40,7 +40,7 @@ const columns: Column[] = [
     text: 'Name',
     formatter: (_, row: Player | undefined, __, formatExtraData?: FormatExtraDataProps) =>
       row &&
-      <>
+      <span className="name-cell">
         < a
           href={`https://www.speedrun.com/user/${row.name}`}
           target="_blank"
@@ -55,7 +55,7 @@ const columns: Column[] = [
             onBefriend={formatExtraData.handleOnBefriend}
           />
         }
-      </>,
+      </span>,
   },
   {
     dataField: 'score',
@@ -125,6 +125,8 @@ const paginationOptions: PaginationProps = {
   custom: true,
   showTotal: true,
   totalSize: -1,
+  prePageTitle: 'hidden',
+  nextPageTitle: 'hidden',
   alwaysShowAllBtns: true,
   sizePerPageList: [10, 25, 50, 100],
   sizePerPageRenderer,
@@ -133,11 +135,12 @@ const paginationOptions: PaginationProps = {
 const { SearchBar } = Search
 
 const Legend = () => <span className="legend">
-  <label>Updated:&nbsp;</label>
-  <span className="daysSince1">Today</span>,&nbsp;
-  <span className="daysSince7">This week</span>,&nbsp;
-  <span className="daysSince30">This month</span>,&nbsp;
-  <span className="daysSince">Over a month ago</span>
+  <br />
+  <label>Updated:</label>{' '}
+  <span className="daysSince1">Today</span>{', '}
+  <span className="daysSince7">This&nbsp;week</span>{', '}
+  <span className="daysSince30">This&nbsp;month</span>{', '}
+  <span className="daysSince">Over&nbsp;a&nbsp;month&nbsp;ago</span>
 </span>
 
 type ScoreboardProps = {
@@ -200,6 +203,7 @@ const Scoreboard = forwardRef((props: ScoreboardProps, ref) => {
               <SizePerPageDropdownStandalone {...paginationProps} />
               <BootstrapTable
                 ref={boostrapTableRef}
+                wrapperClasses="table-responsive"
                 striped
                 rowClasses={(row?: Player) => rowClasses(row, props.currentUser, props.friends)}
                 {...toolkitprops.baseProps}

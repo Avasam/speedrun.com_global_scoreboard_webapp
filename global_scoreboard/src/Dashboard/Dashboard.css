@@ -2,6 +2,15 @@
   padding-top: 15px;
 }
 
+.name-cell {
+  display: flex;
+  justify-content: space-between;
+}
+
+.name-cell .btn.btn-link {
+  padding: 0;
+}
+
 /*--------*\
 | Coloring |
 \*--------*/
@@ -56,10 +65,12 @@ td:first-child{
   text-align: center;
 }
 
-.float-right.btn.btn-link {
-  padding: 0;
-}
-
 .row {
   margin: 0;
+}
+
+/* This is only to show the results */
+.alert.alert-success {
+  font-family: monospace;
+  white-space: pre-wrap;
 }

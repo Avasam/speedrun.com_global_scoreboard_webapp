@@ -1,11 +1,13 @@
 import './Dashboard.css'
-import { Col, Container, Row } from 'react-bootstrap'
+import { Alert, Col, Container, Row } from 'react-bootstrap'
 import React, { useEffect, useRef, useState } from 'react'
 import Scoreboard, { ScoreboardRef } from './Scoreboard'
+import { apiGet, apiPost } from '../fetchers/api'
+import { AlertProps } from 'react-bootstrap/Alert'
 import Player from '../models/Player'
 import QuickView from './QuickView'
 import UpdateRunnerForm from './UpdateRunnerForm'
-import { apiGet } from '../fetchers/api'
+import UpdateRunnerResult from '../models/UpdateRunnerResult'
 
 type DashboardProps = {
   currentUser: Player | null | undefined
@@ -19,6 +21,9 @@ const Dashboard = (props: DashboardProps) => {
   const [currentPlayer, setCurrentPlayer] = useState<Player | null>(props.currentUser || null)
   const [friends, setFriends] = useState<Player[]>([])
   const [players, setPlayers] = useState<Player[]>([])
+  const [alertVariant, setAlertVariant] = useState<AlertProps['variant']>('info')
+  // TODO add back message 'Building the Scoreboard. Please wait...' if I can detect finished loading
+  const [alertMessage, setAlertMessage] = useState('')
 
   useEffect(() => {
     // Note: Waiting to obtain both friends and players if both calls are needed
@@ -65,7 +70,39 @@ const Dashboard = (props: DashboardProps) => {
 
   const scoreboardRef = useRef<ScoreboardRef>(null)
 
-  const handleOnUpdateRunner = (player: Player) => console.log('handleOnUpdateRunner', player)
+  const handleOnUpdateRunner = (runnerNameOrId: string) => {
+    setAlertMessage('')
+    apiPost(`players/${runnerNameOrId}/update`)
+      .then<UpdateRunnerResult>(res => res.json())
+      .then(result => {
+        setAlertVariant(result.state)
+        setAlertMessage(result.message)
+        const newPlayers = [...players]
+        const index = newPlayers.findIndex(player => player.userId === result.userId)
+        if (index < 0) {
+          // TODO: insert at the right row and navigate to it
+          newPlayers.unshift({
+            rank: result.rank, // TODO: infer rank by comparing scores
+            name: result.name,
+            score: result.score,
+            lastUpdate: result.lastUpdate,
+            userId: result.userId,
+          })
+        } else {
+          // TODO: Navigate after inserting to it
+          newPlayers[index] = {
+            rank: result.rank, // TODO: infer new rank by comparing scores
+            name: result.name,
+            score: result.score,
+            lastUpdate: result.lastUpdate,
+            userId: players[index].userId,
+          }
+        }
+        setPlayers(newPlayers)
+        handleJumpToPlayer(result.userId)
+      })
+      .catch(console.error)
+  }
   const handleJumpToPlayer = (playerId: string) => scoreboardRef.current?.jumpToPlayer(playerId)
   const handleUnfriend = (playerId: string) => setFriends(friends.filter(friend => friend.userId !== playerId))
   const handleBefriend = (playerId: string) => {
@@ -75,6 +112,7 @@ const Dashboard = (props: DashboardProps) => {
   }
 
   return <Container className="dashboard-container">
+    {alertMessage && <Alert variant={alertVariant}>{alertMessage}</Alert>}
     <Row>
       <Col md={4}>
         <Row>

@@ -6,20 +6,11 @@ import Player from '../models/Player'
 
 type UpdateRunnerFormProps = {
   currentUser: Player | null
-  onUpdate: (updatedRunner: Player) => void
+  onUpdate: (runnerNameOrId: string) => void
 }
 
 const UpdateRunnerForm = (props: UpdateRunnerFormProps) => {
-
   const [updateUserNameOrId, setUpdateUserNameOrId] = useState('')
-
-  const updateRunner = () => props.onUpdate({
-    rank: -1,
-    name: 'UpdatedPlayer',
-    score: 500,
-    lastUpdate: new Date(),
-    userId: updateUserNameOrId,
-  })
 
   const handleOnChange = (event: FormEvent<ReplaceProps<'input', BsPrefixProps<'input'> & FormControlProps>>) =>
     setUpdateUserNameOrId(event.currentTarget.value || '')
@@ -39,7 +30,7 @@ const UpdateRunnerForm = (props: UpdateRunnerFormProps) => {
           <InputGroup.Append>
             <Button id="update-runner-button"
               disabled={!props.currentUser || !updateUserNameOrId}
-              onClick={updateRunner}
+              onClick={() => props.onUpdate(updateUserNameOrId)}
             >Update</Button>
           </InputGroup.Append>
         </InputGroup>

@@ -1,5 +1,5 @@
 export default interface Player {
-  rank: number
+  rank: number | undefined
   name: string
   score: number
   lastUpdate: Date
