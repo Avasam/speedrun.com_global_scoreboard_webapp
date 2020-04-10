@@ -21,8 +21,8 @@
 
     <!-- Custom CSS and JS -->
     <script type="text/javascript">window.bypass_update_restrictions = {{ bypass_update_restrictions }}</script>
-    <link rel="stylesheet" href="/assets/css/custom.css">
-    <script type="text/javascript" src="/assets/js/scoreboard-datatable.js"></script>
+    <link rel="stylesheet" href="/assets/css/custom.css?rev=2020-04-10">
+    <script type="text/javascript" src="/assets/js/scoreboard-datatable.js?rev=2020-04-10"></script>
 
     <link rel="icon" href="/assets/images/favicon.ico">
     <title>Ava's speedrun.com global scoreboard</title>
@@ -35,13 +35,15 @@
         <div class="alert alert-info" id="breaking-news">
           <script>window.newLink = window.location.href.replace('5000', '3000') + 'global-scoreboard'</script>
           A new beta version of this scoreboard, entirely rewriten in React and TypeScript using Bootstrap 4 is available over at
+          <br />
           <b>
             <a
+              style="word-break: break-all;"
               href="/global-scoreboard"
               onclick="location.href=window.newLink;return false;"
-            ><script>document.write(window.newLink)</script></a>.
+            ><script>document.write(window.newLink)</script></a>
           </b>
-          <br>
+          <br />
           It has about the same look and feel, but is a lot more reactive, fluid and will be seeing more updates.
         </div>
         <div class="alert alert-info" id="ajaxResponseMessage">Building the DataTable. Please wait...</div>
