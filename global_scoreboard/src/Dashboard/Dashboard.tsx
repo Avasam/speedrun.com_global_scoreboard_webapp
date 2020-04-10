@@ -17,13 +17,11 @@ const getFriends = () => apiGet('players/current/friends').then<Player[]>(res =>
 const getAllPlayers = () => apiGet('players').then<Player[]>(res => res.json())
 
 const Dashboard = (props: DashboardProps) => {
-
   const [currentPlayer, setCurrentPlayer] = useState<Player | null>(props.currentUser || null)
   const [friends, setFriends] = useState<Player[]>([])
   const [players, setPlayers] = useState<Player[]>([])
   const [alertVariant, setAlertVariant] = useState<AlertProps['variant']>('info')
-  // TODO add back message 'Building the Scoreboard. Please wait...' if I can detect finished loading
-  const [alertMessage, setAlertMessage] = useState('')
+  const [alertMessage, setAlertMessage] = useState('Building the Scoreboard. Please wait...')
 
   useEffect(() => {
     // Note: Waiting to obtain both friends and players if both calls are needed
@@ -42,6 +40,7 @@ const Dashboard = (props: DashboardProps) => {
             }
           }))
           setPlayers(allPlayers)
+          setAlertMessage('')
         })
     } else if (props.currentUser && players.length > 0) {
       setCurrentPlayer(players.find(player => player.userId === props.currentUser?.userId) || null)
@@ -61,7 +60,10 @@ const Dashboard = (props: DashboardProps) => {
       // Note: Loading the page already logged in starts the currentUser at undefined then quickly changes again
       // Also don't re-fetch players upon login out
       if (props.currentUser !== undefined && players.length === 0) {
-        getAllPlayers().then(setPlayers)
+        getAllPlayers().then(players => {
+          setPlayers(players)
+          setAlertMessage('')
+        })
       }
     }
     // Note: I don't actually care about players dependency and don't want to rerun this code on players change
@@ -71,7 +73,8 @@ const Dashboard = (props: DashboardProps) => {
   const scoreboardRef = useRef<ScoreboardRef>(null)
 
   const handleOnUpdateRunner = (runnerNameOrId: string) => {
-    setAlertMessage('')
+    // TODO: Reimplement the loading bar
+    setAlertMessage(`Updating "${runnerNameOrId}". This may take up to 5 mintues, depending on the amount of runs to analyse. Please Wait...`)
     apiPost(`players/${runnerNameOrId}/update`)
       .then<UpdateRunnerResult>(res => res.json())
       .then(result => {
@@ -101,7 +104,20 @@ const Dashboard = (props: DashboardProps) => {
         setPlayers(newPlayers)
         handleJumpToPlayer(result.userId)
       })
-      .catch(console.error)
+      .catch((err: Response | TypeError) => {
+        if (!(err as Response).json) {
+          const error = err as TypeError
+          console.error(error)
+          setAlertVariant('danger')
+          setAlertMessage(`${error.name}: ${error.message}`)
+        } else {
+          const res = err as Response
+          res.json().then((result: UpdateRunnerResult) => {
+            setAlertVariant(result.state)
+            setAlertMessage(result.message)
+          })
+        }
+      })
   }
   const handleJumpToPlayer = (playerId: string) => scoreboardRef.current?.jumpToPlayer(playerId)
   const handleUnfriend = (playerId: string) => setFriends(friends.filter(friend => friend.userId !== playerId))
@@ -112,7 +128,12 @@ const Dashboard = (props: DashboardProps) => {
   }
 
   return <Container className="dashboard-container">
-    {alertMessage && <Alert variant={alertVariant}>{alertMessage}</Alert>}
+    <Alert
+      variant={alertVariant}
+      style={{ visibility: alertMessage ? 'visible' : 'hidden' }}
+    >
+      {alertMessage || '&nbsp;'}
+    </Alert>
     <Row>
       <Col md={4}>
         <Row>
