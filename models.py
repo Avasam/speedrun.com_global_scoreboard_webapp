@@ -134,7 +134,7 @@ class Player(db.Model, UserMixin):
                    .format(
                        user_id=self.user_id,
                        friend_id=friend_id))
-        return db.engine.execute(sql)
+        return db.engine.execute(sql).rowcount > 0
 
     def unfriend(self, friend_id: str) -> bool:
         sql = text("DELETE FROM friend "
@@ -142,7 +142,7 @@ class Player(db.Model, UserMixin):
                    .format(
                        user_id=self.user_id,
                        friend_id=friend_id))
-        return db.engine.execute(sql)
+        return db.engine.execute(sql).rowcount > 0
 
     def get_schedules(self) -> List[Schedule]:
         return Schedule.query.filter(Schedule.owner_id == self.user_id).all()

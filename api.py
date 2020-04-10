@@ -2,10 +2,11 @@
 api.py
 - provides the API endpoints for consuming and producing REST requests and responses
 """
-from models import map_to_dto, Player, Schedule, TimeSlot
 from datetime import datetime, timedelta
 from flask import Blueprint, current_app, jsonify, request
 from functools import wraps
+from models import map_to_dto, Player, Schedule, TimeSlot
+from sqlalchemy import exc
 from typing import Any, Dict, List, Optional, Union, Tuple
 import jwt
 
@@ -266,3 +267,28 @@ def get_all_players():
 @authenthication_required
 def get_friends_current(current_user: Player):
     return jsonify(map_to_dto(current_user.get_friends()))
+
+
+@api.route('/players/current/friends/<id>', methods=('PUT',))
+@authenthication_required
+def put_friends_current(current_user: Player, id: str):
+    if current_user.user_id == id:
+        return "You can't add yourself as a friend!", 422
+    try:
+        result = current_user.befriend(id)
+    except exc.IntegrityError:
+        return f"User ID \"{id}\" is already one of your friends."
+    else:
+        if result:
+            return f"Successfully added user ID \"{id}\" as a friend."
+        else:
+            return "You can't add yourself as a friend!", 422
+
+
+@api.route('/players/current/friends/<id>', methods=('DELETE',))
+@authenthication_required
+def delete_friends_current(current_user: Player, id: str):
+    if current_user.unfriend(id):
+        return f"Successfully removed user ID \"{id}\" from your friends."
+    else:
+        return f"User ID \"{id}\" isn't one of your friends."

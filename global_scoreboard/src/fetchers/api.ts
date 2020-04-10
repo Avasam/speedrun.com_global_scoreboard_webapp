@@ -26,7 +26,7 @@ export const apiGet = (location: string, queryParams?: QueryParams) =>
 export const apiPost = (location: string, body: object) =>
   apiFetch('POST', makeUrl(location), JSON.stringify(body))
 
-export const apiPut = (location: string, body: object) =>
+export const apiPut = (location: string, body?: object) =>
   apiFetch('PUT', makeUrl(location), JSON.stringify(body))
 
 export const apiDelete = (location: string) =>

@@ -22,6 +22,13 @@ const columnClass = (cell: string) => {
   return 'daysSince1'
 }
 
+type FormatExtraDataProps = {
+  currentUser: Player | null
+  friends: Player[]
+  handleOnUnfriend: (friendId: string) => void
+  handleOnBefriend: (friendId: string) => void
+}
+
 const columns: Column[] = [
   {
     dataField: 'rank',
@@ -31,7 +38,7 @@ const columns: Column[] = [
   {
     dataField: 'name',
     text: 'Name',
-    formatter: (_, row: Player | undefined, __, formatExtraData?: { currentUser: Player, friends: Player[] }) =>
+    formatter: (_, row: Player | undefined, __, formatExtraData?: FormatExtraDataProps) =>
       row &&
       <>
         < a
@@ -40,10 +47,12 @@ const columns: Column[] = [
           rel="noopener noreferrer"
         > {row.name}</a >
         {
-          formatExtraData?.currentUser?.userId !== row.userId &&
+          formatExtraData && formatExtraData.currentUser?.userId !== row.userId &&
           <FriendButton
-            isFriend={formatExtraData?.friends.some(friend => friend.userId === row.userId) || false}
+            isFriend={formatExtraData.friends.some(friend => friend.userId === row.userId) || false}
             playerId={row.userId}
+            onUnfriend={formatExtraData.handleOnUnfriend}
+            onBefriend={formatExtraData.handleOnBefriend}
           />
         }
       </>,
@@ -134,6 +143,8 @@ type ScoreboardProps = {
   currentUser: Player | null
   players: Player[]
   friends: Player[]
+  onUnfriend: (playerId: string) => void
+  onBefriend: (playerId: string) => void
 }
 
 export type ScoreboardRef = {
@@ -162,13 +173,15 @@ const Scoreboard = forwardRef((props: ScoreboardProps, ref) => {
         <ToolkitProvider
           keyField='userId'
           data={props.players}
-          columns={columns.map(column => ({
-            ...column,
-            formatExtraData: {
+          columns={columns.map(column => {
+            const formatExtraData: FormatExtraDataProps = {
               currentUser: props.currentUser,
               friends: props.friends,
-            },
-          }))}
+              handleOnUnfriend: props.onUnfriend,
+              handleOnBefriend: props.onBefriend,
+            }
+            return { ...column, formatExtraData }
+          })}
           search
           bootstrap4
         >

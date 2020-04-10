@@ -9,7 +9,11 @@ type QuickViewProps = {
   friends: Player[]
   currentUser: Player | null
   onJumpToPlayer: (playerId: string) => void
+  onUnfriend: (playerId: string) => void
+  onBefriend: (playerId: string) => void
 }
+
+const sortByScore = <T extends { score: number }>(players: T[]) => [...players].sort((a, b) => b.score - a.score)
 
 const QuickView = (props: QuickViewProps) =>
   <>
@@ -49,7 +53,7 @@ const QuickView = (props: QuickViewProps) =>
           }
         </tr>
         {props.currentUser
-          ? props.friends.sort((a, b) => b.score - a.score).map(friend =>
+          ? sortByScore(props.friends).map(friend =>
             <tr className="highlight-friend" id={`preview-${friend.userId}`} key={`preview-${friend.userId}`}>
               <td>{friend.rank}</td>
               <td>
@@ -58,7 +62,12 @@ const QuickView = (props: QuickViewProps) =>
                   target="_blank"
                   rel="noopener noreferrer"
                 >{friend.name}</a>
-                <FriendButton isFriend={true} playerId={friend.userId} />
+                <FriendButton
+                  isFriend={true}
+                  playerId={friend.userId}
+                  onUnfriend={props.onUnfriend}
+                  onBefriend={props.onBefriend}
+                />
               </td>
               <td>{friend.score}</td>
               <td>
