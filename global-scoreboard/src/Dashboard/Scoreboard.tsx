@@ -41,11 +41,15 @@ const columns: Column[] = [
     formatter: (_, row: Player | undefined, __, formatExtraData?: FormatExtraDataProps) =>
       row &&
       <span className="name-cell">
-        < a
+        <a
           href={`https://www.speedrun.com/user/${row.name}`}
           target="_blank"
           rel="noopener noreferrer"
-        > {row.name}</a >
+        ><img
+            alt=""
+            className="flagicon"
+            src={`https://www.speedrun.com/images/flags/${row.countryCode}.png`}
+          />{row.name}</a>
         {
           formatExtraData && formatExtraData.currentUser?.userId !== row.userId &&
           <FriendButton

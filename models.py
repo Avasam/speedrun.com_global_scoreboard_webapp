@@ -36,6 +36,7 @@ class Player(db.Model, UserMixin):
 
     user_id: str = db.Column(db.String(8), primary_key=True)
     name: str = db.Column(db.String(32), nullable=False)
+    country_code: Optional[str] = db.Column(db.String(5))
     score: int = db.Column(db.Integer, nullable=False)
     last_update: Optional[datetime] = db.Column(db.DateTime())
     rank: Optional[int] = None
@@ -80,7 +81,7 @@ class Player(db.Model, UserMixin):
 
     @staticmethod
     def get_all():
-        sql = text("SELECT user_id, name, score, last_update, rank FROM ( "
+        sql = text("SELECT user_id, name, country_code, score, last_update, rank FROM ( "
                    "    SELECT *, "
                    "        IF(score = @_last_score, @cur_rank := @cur_rank, @cur_rank := @_sequence) AS rank, "
                    "        @_sequence := @_sequence + 1, "
@@ -92,9 +93,10 @@ class Player(db.Model, UserMixin):
         return [Player(
             user_id=player[0],
             name=player[1],
-            score=player[2],
-            last_update=player[3],
-            rank=player[4]) for player in db.engine.execute(sql).fetchall()]
+            country_code=player[2],
+            score=player[3],
+            last_update=player[4],
+            rank=player[5]) for player in db.engine.execute(sql).fetchall()]
 
     @staticmethod
     def create(user_id: str, name: str, **kwargs) -> Player:
@@ -288,6 +290,7 @@ class Player(db.Model, UserMixin):
         return {
             'userId': self.user_id,
             'name': self.name,
+            'countryCode': self.country_code,
             'score': self.score,
             'lastUpdate': self.last_update,
             'rank': self.rank,
