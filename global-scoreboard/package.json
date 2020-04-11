@@ -1,7 +1,7 @@
 {
   "name": "global-scoreboard",
   "version": "0.1.0",
-  "description": "The React version of an unofficial speedrun.com global scoreboard for friendly competitive speedrunning",
+  "description": "An unofficial speedrun.com global scoreboard for friendly competitive speedrunning",
   "private": true,
   "scripts": {
     "start": "react-scripts start",

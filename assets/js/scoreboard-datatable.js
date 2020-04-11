@@ -7,7 +7,7 @@ var loadingBar = '<div class="progress">' +
   '<div class="progress-bar" style="width: 100%"></div>' +
   '</div>'
 var progressBarTickInterval = 50;
-var minutes5 = 60 * 5_000;
+var minutes5 = 5 * 600;
 
 function serverToUserTime(serverTime) {
   // Create a moment using server's timezone

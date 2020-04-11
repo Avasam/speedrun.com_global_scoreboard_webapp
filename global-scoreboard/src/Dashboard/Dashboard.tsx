@@ -74,6 +74,7 @@ const Dashboard = (props: DashboardProps) => {
 
   const handleOnUpdateRunner = (runnerNameOrId: string) => {
     // TODO: Reimplement the loading bar
+    setAlertVariant('info')
     setAlertMessage(`Updating "${runnerNameOrId}". This may take up to 5 mintues, depending on the amount of runs to analyse. Please Wait...`)
     apiPost(`players/${runnerNameOrId}/update`)
       .then<UpdateRunnerResult>(res => res.json())
