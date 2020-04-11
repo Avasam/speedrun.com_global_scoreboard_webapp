@@ -42,7 +42,7 @@ const getSchedule = (id: number) =>
       res.json().then((scheduleDto: ScheduleDto) => new Schedule(scheduleDto)))
 
 const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegistrationProps) => {
-  const [schedule, setSchedule] = useState<Schedule | undefined>(undefined)
+  const [schedule, setSchedule] = useState<Schedule | null | undefined>()
   const classes = useStyles()
 
   useEffect(() => {
@@ -51,35 +51,42 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
         schedule.timeSlots.sort(TimeSlot.compareFn)
         setSchedule(schedule)
       })
-      .catch(console.error)
+      .catch(err => {
+        if (err.status === 404) {
+          setSchedule(null)
+        } else {
+          console.error(err)
+        }
+      })
   }, [props.scheduleId])
 
   return <Container>
     {!schedule
-      ? <div>Sorry. `<code>{props.scheduleId}</code>` is not a valid schedule id.</div>
+      ? schedule === null && <div>Sorry. `<code>{props.scheduleId}</code>` is not a valid schedule id.</div>
       : <div style={{ textAlign: 'left', width: 'fit-content', margin: 'auto' }}>
         <label>Schedule for: {schedule.name}</label>
         <span style={{ display: 'block' }}>All dates and times are given in your local timezone.</span>
         {!schedule.active && <div><br />This schedule is currently inactive and registration is closed.</div>}
-        {schedule.timeSlots.map(timeSlot =>
-          <List
-            key={`timeslot-${timeSlot.id}`}
-            className={classes.root}
-            subheader={
-              <ListItemText
-                className={classes.rootHeader}
-                primary={moment(timeSlot.dateTime).format(`ddd ${new DateFnsUtils().dateTime24hFormat}`)}
-                secondary={
-                  `(${timeSlot.registrations.length} / ${timeSlot.maximumEntries}` +
-                  ` entr${timeSlot.registrations.length === 1 ? 'y' : 'ies'}${timeSlot.dateTime <= new Date() ? ', past deadline' : ''})`
-                }
-              />
-            }
-          >
-            <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-              {timeSlot.registrations.length === 0
-                ? <div className={classes.nested}>No one registered for this time slot yet.</div>
-                : timeSlot.registrations.map(registration =>
+        {schedule
+          .timeSlots
+          .filter(timeSlot => timeSlot.registrations.length > 0)
+          .map(timeSlot =>
+            <List
+              key={`timeslot-${timeSlot.id}`}
+              className={classes.root}
+              subheader={
+                <ListItemText
+                  className={classes.rootHeader}
+                  primary={moment(timeSlot.dateTime).format(`ddd ${new DateFnsUtils().dateTime24hFormat}`)}
+                  secondary={
+                    `(${timeSlot.registrations.length} / ${timeSlot.maximumEntries}` +
+                    ` entr${timeSlot.registrations.length === 1 ? 'y' : 'ies'})`
+                  }
+                />
+              }
+            >
+              <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+                {timeSlot.registrations.map(registration =>
                   <List
                     key={`registration-${registration.id}`}
                     component="div"
@@ -96,9 +103,9 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
                     )}
                   </List>
                 )}
-            </div>
-          </List>
-        )}
+              </div>
+            </List>
+          )}
       </div>
     }
 
