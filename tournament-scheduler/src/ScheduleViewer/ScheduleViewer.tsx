@@ -85,20 +85,31 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
                 />
               }
             >
+              {timeSlot.participantsPerEntry <= 1 &&
+                <ListItemText secondary="Participants" className={classes.nested} />
+              }
               <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-                {timeSlot.registrations.map(registration =>
+                {timeSlot.registrations.map((registration, registrationIndex) =>
                   <List
                     key={`registration-${registration.id}`}
                     component="div"
                     disablePadding
                     subheader={
-                      <ListItemText secondary="Participants" />
+                      timeSlot.participantsPerEntry > 1
+                        ? <ListItemText secondary="Participants" />
+                        : undefined
                     }
                     className={classes.nested}
                   >
-                    {registration.participants.map((participant, index) =>
-                      <ListItem key={`participant-${index}`} className={classes.item}>
-                        <ListItemText primary={`${index + 1}. ${participant}`} />
+                    {registration.participants.map((participant, participantIndex) =>
+                      <ListItem key={`participant-${participantIndex}`} className={classes.item}>
+                        <ListItemText
+                          primary={`${
+                            (timeSlot.participantsPerEntry > 1
+                              ? participantIndex
+                              : registrationIndex) + 1
+                            }. ${participant}`}
+                        />
                       </ListItem>
                     )}
                   </List>
