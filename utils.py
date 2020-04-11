@@ -1,3 +1,4 @@
+from random import randint
 from requests import Session
 from typing import Dict, Any
 from time import sleep
@@ -7,7 +8,8 @@ import simplejson
 import requests
 
 HTTP_RETRYABLE_ERRORS = [401, 420, 500, 502]
-HTTP_ERROR_RETRY_DELAY = 5
+HTTP_ERROR_RETRY_DELAY_MIN = 5
+HTTP_ERROR_RETRY_DELAY_MAX = 15
 
 
 class UserUpdaterError(Exception):
@@ -48,8 +50,8 @@ def get_file(p_url: str, p_headers: Dict[str, Any] = None) -> dict:
             except requests.exceptions.HTTPError as exception:  # ... because it's an HTTP error
                 if raw_data.status_code in HTTP_RETRYABLE_ERRORS:
                     # debug_str
-                    print(f"WARNING: {exception.args[0]}. Retrying in {HTTP_ERROR_RETRY_DELAY} seconds.")
-                    sleep(HTTP_ERROR_RETRY_DELAY)
+                    print(f"WARNING: {exception.args[0]}. Retrying in {HTTP_ERROR_RETRY_DELAY_MIN} seconds.")
+                    sleep(HTTP_ERROR_RETRY_DELAY_MIN)
                     # No break or raise as we want to retry
                 else:
                     raise UserUpdaterError({"error": f"HTTPError {raw_data.status_code}",
@@ -62,11 +64,12 @@ def get_file(p_url: str, p_headers: Dict[str, Any] = None) -> dict:
         else:
             if "status" in json_data:  # Speedrun.com custom error
                 if json_data["status"] in HTTP_RETRYABLE_ERRORS:
+                    retry_delay = randint(HTTP_ERROR_RETRY_DELAY_MIN, HTTP_ERROR_RETRY_DELAY_MAX)
                     print("WARNING: {status}. {message}. Retrying in {delay} seconds.".format(
                         status=json_data["status"],
                         message=json_data["message"],
-                        delay=HTTP_ERROR_RETRY_DELAY))  # debug_str
-                    sleep(HTTP_ERROR_RETRY_DELAY)
+                        delay=retry_delay))  # debug_str
+                    sleep(retry_delay)
                     # No break or raise as we want to retry
                 else:
                     raise SpeedrunComError(
