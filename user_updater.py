@@ -208,6 +208,7 @@ class User:
     _points: float = 0
     _name: str = ""
     _id: str = ""
+    _country_code: str = ""
     _banned: bool = False
     _point_distribution_str: str = ""
 
@@ -223,6 +224,7 @@ class User:
         infos = CachedRequest.get_response_or_new(url)
 
         self._id = infos["data"]["id"]
+        self._country_code = infos["data"]["location"]["country"]["code"]
         self._name = infos["data"]["names"].get("international")
         japanese_name = infos["data"]["names"].get("japanese")
         if japanese_name:
@@ -376,6 +378,7 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
                             .filter(Player.user_id == user._id) \
                             .update({"user_id": user._id,
                                      "name": user._name,
+                                     "country_code": user._country_code,
                                      "score": floor(user._points),
                                      "last_update": timestamp})
                         db.session.commit()
@@ -386,6 +389,7 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
                         result_state = "success"
                         Player.create(user._id,
                                       user._name,
+                                      country_code=user._country_code,
                                       score=user._points,
                                       last_update=timestamp)
                     else:
@@ -415,6 +419,7 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
         return {'state': result_state,
                 'rank': None,
                 'name': user._name,
+                'countryCode': user._country_code,
                 'score': floor(user._points),
                 'lastUpdate': strftime("%Y-%m-%d %H:%M"),
                 'userId': user._id,

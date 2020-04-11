@@ -88,6 +88,7 @@ const Dashboard = (props: DashboardProps) => {
           newPlayers.unshift({
             rank: result.rank, // TODO: infer rank by comparing scores
             name: result.name,
+            countryCode: result.countryCode,
             score: result.score,
             lastUpdate: result.lastUpdate,
             userId: result.userId,
@@ -97,6 +98,7 @@ const Dashboard = (props: DashboardProps) => {
           newPlayers[index] = {
             rank: result.rank, // TODO: infer new rank by comparing scores
             name: result.name,
+            countryCode: result.countryCode,
             score: result.score,
             lastUpdate: result.lastUpdate,
             userId: players[index].userId,
@@ -106,18 +108,18 @@ const Dashboard = (props: DashboardProps) => {
         handleJumpToPlayer(result.userId)
       })
       .catch((err: Response | TypeError) => {
-        if (!(err as Response).json) {
-          const error = err as TypeError
-          console.error(error)
-          setAlertVariant('danger')
-          setAlertMessage(`${error.name}: ${error.message}`)
+        if (err instanceof TypeError) {
+          setAlertMessage(`${err.name}: ${err.message}`)
+        } else if (err.status === 500) {
+          err.text().then(setAlertMessage)
         } else {
-          const res = err as Response
-          res.json().then((result: UpdateRunnerResult) => {
+          err.json().then((result: UpdateRunnerResult) => {
             setAlertVariant(result.state)
             setAlertMessage(result.message)
-          })
+          }).catch(setAlertMessage)
+          return // Don't force the variant to danger
         }
+        setAlertVariant('danger')
       })
   }
   const handleJumpToPlayer = (playerId: string) => scoreboardRef.current?.jumpToPlayer(playerId)

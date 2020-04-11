@@ -9,7 +9,7 @@ from models import map_to_dto, Player, Schedule, TimeSlot
 from sqlalchemy import exc
 from typing import Any, Dict, List, Optional, Union, Tuple
 from user_updater import get_updated_user
-from utils import get_file, UserUpdaterError, SpeedrunComError
+from utils import UserUpdaterError
 import jwt
 import traceback
 
