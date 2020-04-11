@@ -23,7 +23,7 @@
 ##########################################################################
 from api import api
 from datetime import date
-from flask import Flask, send_from_directory, render_template, Response, request, redirect, url_for
+from flask import Flask, send_from_directory, render_template, request, redirect, url_for
 from flask_login import LoginManager, logout_user, login_user, current_user
 from models import db, Player
 from sqlalchemy import exc
@@ -74,10 +74,10 @@ def load_user(user_id: str) -> Union[Player, None]:
     return Player.get(user_id)
 
 
-@app.route('/react-app', defaults={'asset': 'index.html'})
-@app.route('/react-app/<path:asset>', methods=["GET"])
+@app.route('/global-scoreboard', defaults={'asset': 'index.html'})
+@app.route('/global-scoreboard/<path:asset>', methods=["GET"])
 def react_app(asset: str):
-    return send_from_directory('react-app/build/', asset)
+    return send_from_directory('global-scoreboard/build/', asset)
 
 
 @app.route('/tournament-scheduler', defaults={'asset': 'index.html'})
@@ -90,24 +90,17 @@ def tournament_scheduler(asset: str):
 def index():
     global result
     form_action: str = request.form.get("action")
-    arg_action: str = request.args.get('action')
     if request.method == "GET":
-        if arg_action == "ajaxDataTable":
-            players = Player.get_all()
-            return Response(
-                response=json.dumps(
-                    {'data': [(dict(player.items())) for player in players]}, default=str),
-                status=200,
-                mimetype="application/json")
-        else:
-            friends: List[Player] = [] if not current_user.is_authenticated else current_user.get_friends()
-            return render_template(
-                'index.html',
-                friends=friends,
-                bypass_update_restrictions=str(
-                    configs.bypass_update_restrictions).lower(),
-                current_year=str(date.today().year)
-            )
+        friends: List[Player] = []
+        if current_user.is_authenticated:
+            friends = [friend.user_id for friend in current_user.get_friends()]
+        return render_template(
+            'index.html',
+            friends=friends,
+            bypass_update_restrictions=str(
+                configs.bypass_update_restrictions).lower(),
+            current_year=str(date.today().year)
+        )
 
     elif request.method == "POST" and form_action:
         friend_id: str = request.form.get("friend-id")

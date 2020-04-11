@@ -3,6 +3,7 @@ import React, { FC, useEffect, useState } from 'react'
 import { Schedule, ScheduleDto } from '../models/Schedule'
 import DateFnsUtils from '@date-io/moment'
 import { TimeSlot } from '../models/TimeSlot'
+import { apiGet } from '../fetchers/api'
 import moment from 'moment'
 
 interface ScheduleRegistrationProps {
@@ -36,22 +37,12 @@ const useStyles = makeStyles(theme =>
 )
 
 const getSchedule = (id: number) =>
-  fetch(`${window.process.env.REACT_APP_BASE_URL}/api/schedules/${id}`, {
-    method: 'GET',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer: ${localStorage.getItem('jwtToken')}`,
-    },
-  })
-    .then(res => res.status >= 400 && res.status < 600
-      ? Promise.reject(res)
-      : res)
+  apiGet(`schedules/${id}`)
     .then(res =>
       res.json().then((scheduleDto: ScheduleDto) => new Schedule(scheduleDto)))
 
 const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegistrationProps) => {
-  const [schedule, setSchedule] = useState<Schedule | undefined>(undefined)
+  const [schedule, setSchedule] = useState<Schedule | null | undefined>()
   const classes = useStyles()
 
   useEffect(() => {
@@ -60,54 +51,72 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
         schedule.timeSlots.sort(TimeSlot.compareFn)
         setSchedule(schedule)
       })
-      .catch(console.error)
+      .catch(err => {
+        if (err.status === 404) {
+          setSchedule(null)
+        } else {
+          console.error(err)
+        }
+      })
   }, [props.scheduleId])
 
   return <Container>
     {!schedule
-      ? <div>Sorry. `<code>{props.scheduleId}</code>` is not a valid schedule id.</div>
+      ? schedule === null && <div>Sorry. `<code>{props.scheduleId}</code>` is not a valid schedule id.</div>
       : <div style={{ textAlign: 'left', width: 'fit-content', margin: 'auto' }}>
         <label>Schedule for: {schedule.name}</label>
         <span style={{ display: 'block' }}>All dates and times are given in your local timezone.</span>
         {!schedule.active && <div><br />This schedule is currently inactive and registration is closed.</div>}
-        {schedule.timeSlots.map(timeSlot =>
-          <List
-            key={`timeslot-${timeSlot.id}`}
-            className={classes.root}
-            subheader={
-              <ListItemText
-                className={classes.rootHeader}
-                primary={moment(timeSlot.dateTime).format(`ddd ${new DateFnsUtils().dateTime24hFormat}`)}
-                secondary={
-                  `(${timeSlot.registrations.length} / ${timeSlot.maximumEntries}` +
-                  ` entr${timeSlot.registrations.length === 1 ? 'y' : 'ies'})`
-                }
-              />
-            }
-          >
-            <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-              {timeSlot.registrations.length === 0
-                ? <div className={classes.nested}>No one registered for this time slot yet.</div>
-                : timeSlot.registrations.map(registration =>
+        {schedule
+          .timeSlots
+          .filter(timeSlot => timeSlot.registrations.length > 0)
+          .map(timeSlot =>
+            <List
+              key={`timeslot-${timeSlot.id}`}
+              className={classes.root}
+              subheader={
+                <ListItemText
+                  className={classes.rootHeader}
+                  primary={moment(timeSlot.dateTime).format(`ddd ${new DateFnsUtils().dateTime24hFormat}`)}
+                  secondary={
+                    `(${timeSlot.registrations.length} / ${timeSlot.maximumEntries}` +
+                    ` entr${timeSlot.registrations.length === 1 ? 'y' : 'ies'})`
+                  }
+                />
+              }
+            >
+              {timeSlot.participantsPerEntry <= 1 &&
+                <ListItemText secondary="Participants" className={classes.nested} />
+              }
+              <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+                {timeSlot.registrations.map((registration, registrationIndex) =>
                   <List
                     key={`registration-${registration.id}`}
                     component="div"
                     disablePadding
                     subheader={
-                      <ListItemText secondary="Participants" />
+                      timeSlot.participantsPerEntry > 1
+                        ? <ListItemText secondary="Participants" />
+                        : undefined
                     }
                     className={classes.nested}
                   >
-                    {registration.participants.map((participant, index) =>
-                      <ListItem key={`participant-${index}`} className={classes.item}>
-                        <ListItemText primary={`${index + 1}. ${participant}`} />
+                    {registration.participants.map((participant, participantIndex) =>
+                      <ListItem key={`participant-${participantIndex}`} className={classes.item}>
+                        <ListItemText
+                          primary={`${
+                            (timeSlot.participantsPerEntry > 1
+                              ? participantIndex
+                              : registrationIndex) + 1
+                            }. ${participant}`}
+                        />
                       </ListItem>
                     )}
                   </List>
                 )}
-            </div>
-          </List>
-        )}
+              </div>
+            </List>
+          )}
       </div>
     }
 

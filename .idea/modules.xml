@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/speedrun.com_global_leaderboard_webapp.iml" filepath="$PROJECT_DIR$/.idea/speedrun.com_global_leaderboard_webapp.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/speedrun.com_global_scoreboard_webapp.iml" filepath="$PROJECT_DIR$/.idea/speedrun.com_global_scoreboard_webapp.iml" />
     </modules>
   </component>
 </project>

@@ -1,0 +1,84 @@
+.dashboard-container {
+  padding-top: 15px;
+}
+
+.name-cell {
+  display: flex;
+  justify-content: space-between;
+}
+
+.name-cell .btn.btn-link {
+  padding: 0;
+}
+
+img.flagicon {
+  height: 12px;
+  margin-right: 4px;
+  margin-top: -4px;
+  border-radius: 2px;
+  filter: drop-shadow(1px 1px rgba(0,0,0,0.1));
+}
+
+/*--------*\
+| Coloring |
+\*--------*/
+.daysSince1 {
+  color: blue;
+}
+
+.daysSince7 {
+  color: green;
+}
+
+.daysSince30 {
+  color: darkorange;
+}
+
+.daysSince {
+  color: crimson;
+}
+
+.highlight-vip {
+  background-color: #fcf8e3;
+}
+
+tbody>tr.highlight-vip:nth-of-type(odd){
+  background-color: #f6f2dd;
+}
+
+.highlight-friend {
+  background-color: #dff0d8;
+}
+
+tbody>tr.highlight-friend:nth-of-type(odd){
+  background-color: #d9ead2;
+}
+
+.highlight-current-user {
+  background-color: #d9edf7;
+}
+
+tbody>tr.highlight-current-user:nth-of-type(odd){
+  background-color: #d3e7f1;
+}
+
+td:first-child{
+  font-weight:bold;
+}
+
+/*-----------------------*\
+| Bootstrap redifinitions |
+\*-----------------------*/
+.alert {
+  text-align: center;
+}
+
+.row {
+  margin: 0;
+}
+
+/* This is only to show the results */
+.alert.alert-success {
+  font-family: monospace;
+  white-space: pre-wrap;
+}

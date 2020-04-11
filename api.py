@@ -2,16 +2,24 @@
 api.py
 - provides the API endpoints for consuming and producing REST requests and responses
 """
-from models import map_to_dto, Player, Schedule, TimeSlot
 from datetime import datetime, timedelta
 from flask import Blueprint, current_app, jsonify, request
 from functools import wraps
+from models import map_to_dto, Player, Schedule, TimeSlot
+from sqlalchemy import exc
 from typing import Any, Dict, List, Optional, Union, Tuple
+from user_updater import get_updated_user
+from utils import UserUpdaterError
 import jwt
+import traceback
 
 # TODO: use and typecheck / typeguard JSONType
 __JSONTypeBase = Union[str, int, float, bool, None, Dict[str, Any], List[Any]]
 JSONType = Union[str, int, float, bool, None, Dict[str, __JSONTypeBase], List[__JSONTypeBase]]
+
+"""
+General context
+"""
 
 
 def authenthication_required(f):
@@ -81,6 +89,11 @@ def get_user_current(current_user: Player):
             'userId': current_user.user_id,
             'name': current_user.name,
         }})
+
+
+"""
+Tournament Scheduler context
+"""
 
 
 @api.route('/schedules', methods=('GET',))
@@ -241,3 +254,58 @@ def __validate_create_schedule(data: Dict[str, Any]) -> Tuple[Optional[str], str
             return 'timeSlots.participantsPerEntry has to be defined', name, is_active, time_slot
 
     return None, name, is_active, time_slots
+
+
+"""
+Global Scoreboard context
+"""
+
+
+@api.route('/players', methods=('GET',))
+def get_all_players():
+    return jsonify(map_to_dto(Player.get_all()))
+
+
+@api.route('/players/<name_or_id>/update', methods=('POST',))
+@authenthication_required
+def update_player(_, name_or_id: str):
+    try:
+        result = get_updated_user(name_or_id)
+        return jsonify(result), 400 if result["state"] == "warning" else 200
+    except UserUpdaterError as exception:
+        print("\n{}\n{}".format(exception.args[0]["error"], exception.args[0]["details"]))
+        return exception.args[0]["details"], 424
+    except Exception:
+        print("\nError: Unknown\n{}".format(traceback.format_exc()))
+        return traceback.format_exc(), 500
+
+
+@api.route('/players/current/friends', methods=('GET',))
+@authenthication_required
+def get_friends_current(current_user: Player):
+    return jsonify(map_to_dto(current_user.get_friends()))
+
+
+@api.route('/players/current/friends/<id>', methods=('PUT',))
+@authenthication_required
+def put_friends_current(current_user: Player, id: str):
+    if current_user.user_id == id:
+        return "You can't add yourself as a friend!", 422
+    try:
+        result = current_user.befriend(id)
+    except exc.IntegrityError:
+        return f"User ID \"{id}\" is already one of your friends."
+    else:
+        if result:
+            return f"Successfully added user ID \"{id}\" as a friend."
+        else:
+            return "You can't add yourself as a friend!", 422
+
+
+@api.route('/players/current/friends/<id>', methods=('DELETE',))
+@authenthication_required
+def delete_friends_current(current_user: Player, id: str):
+    if current_user.unfriend(id):
+        return f"Successfully removed user ID \"{id}\" from your friends."
+    else:
+        return f"User ID \"{id}\" isn't one of your friends."

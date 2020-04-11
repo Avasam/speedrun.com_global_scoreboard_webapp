@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 5.5.54, for debian-linux-gnu (x86_64)
 --
--- Host: Avasam.mysql.pythonanywhere-services.com    Database: Avasam$speedrun_global_leaderboard
+-- Host: Avasam.mysql.pythonanywhere-services.com    Database: Avasam$speedrun_global_scoreboard
 -- ------------------------------------------------------
 -- Server version	5.6.40-log
 

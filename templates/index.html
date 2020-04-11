@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" thanks="Xteye">
 <head>
     <!-- Compiled and minified JQuery -->
     <script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
@@ -21,8 +21,8 @@
 
     <!-- Custom CSS and JS -->
     <script type="text/javascript">window.bypass_update_restrictions = {{ bypass_update_restrictions }}</script>
-    <link rel="stylesheet" href="/assets/css/custom.css">
-    <script type="text/javascript" src="/assets/js/scoreboard-datatable.js"></script>
+    <link rel="stylesheet" href="/assets/css/custom.css?rev=2020-04-10">
+    <script type="text/javascript" src="/assets/js/scoreboard-datatable.js?rev=2020-04-10"></script>
 
     <link rel="icon" href="/assets/images/favicon.ico">
     <title>Ava's speedrun.com global scoreboard</title>
@@ -32,6 +32,20 @@
     {% include "navbar.html" %}
 
     <div class="container">
+        <div class="alert alert-info" id="breaking-news">
+          <script>window.newLink = window.location.href.replace('5000', '3000') + 'global-scoreboard'</script>
+          A new beta version of this scoreboard, entirely rewriten in React and TypeScript using Bootstrap 4 is available over at
+          <br />
+          <b>
+            <a
+              style="word-break: break-all;"
+              href="/global-scoreboard"
+              onclick="location.href=window.newLink;return false;"
+            ><script>document.write(window.newLink)</script></a>
+          </b>
+          <br />
+          It has about the same look and feel, but is a lot more reactive, fluid and will be seeing more updates.
+        </div>
         <div class="alert alert-info" id="ajaxResponseMessage">Building the DataTable. Please wait...</div>
 
         <div class="col-md-4 ">
@@ -149,7 +163,7 @@
 
         </div>
 
-        <footer>&copy; <a href="https://github.com/Avasam/speedrun.com_global_leaderboard_webapp/blob/master/LICENSE" target="about">Copyright</a> {{ current_year }} by <a href="https://github.com/Avasam/" target="about">Samuel Therrien</a>.
+        <footer>&copy; <a href="https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/master/LICENSE" target="about">Copyright</a> {{ current_year }} by <a href="https://github.com/Avasam/" target="about">Samuel Therrien</a>.
         Powered by <a href="https://www.speedrun.com/" target="src">speedrun.com</a> and <a href="https://www.pythonanywhere.com/" target="about">PythonAnywhere</a></footer>
     </div>
 </body>

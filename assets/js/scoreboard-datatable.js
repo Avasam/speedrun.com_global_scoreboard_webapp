@@ -3,12 +3,18 @@ var ajaxResponseMessage;
 var loginResponseMessage;
 var timeFormat = "YYYY-MM-DD HH:mm";
 var userZone = moment.tz.guess();
+var loadingBar = '<div class="progress">' +
+  '<div class="progress-bar" style="width: 100%"></div>' +
+  '</div>'
+var progressBarTickInterval = 50;
+var minutes5 = 5 * 600;
 
 function serverToUserTime(serverTime) {
   // Create a moment using server's timezone
-  var serverTimeMoment = moment.tz(serverTime, timeFormat, window.server_timezone);
+  var serverTimeMoment = moment.tz(new Date(serverTime), timeFormat, window.server_timezone);
   // Set the time to user local time
-  return serverTimeMoment.tz(userZone).format(timeFormat);
+  var localTimeString = serverTimeMoment.tz(userZone).format(timeFormat);
+  return localTimeString;
 }
 
 $(function () {
@@ -17,43 +23,46 @@ $(function () {
   loginResponseMessage = $('#loginResponseMessage');
   scoreboard = $('#scoreboard');
   scoreboard.DataTable({
-    ajax: '?action=ajaxDataTable',
+    ajax: {
+      url: '/api/players',
+      dataSrc: '',
+    },
     columns: [
       { data: 'rank' },
       { data: 'name' },
       { data: 'score' },
-      { data: 'last_update' },
-      { data: 'user_id' },
+      { data: 'lastUpdate' },
+      { data: 'userId' },
     ],
-    fnCreatedRow: function (nRow, aData, iDataIndex) {
+    fnCreatedRow: function (nRow, aData) {
       // Adapt the times to user's timezone
-      $('td:eq(3)', nRow).html(serverToUserTime(aData['last_update']));
+      $('td:eq(3)', nRow).html(serverToUserTime(aData['lastUpdate']));
       // ID and name for quick find and update
-      $(nRow).attr("id", aData['user_id']);
+      $(nRow).attr("id", aData['userId']);
       $(nRow).attr("name", aData['name']);
       // User link and friend button
       var friendFunction = "befriend";
-      if (window.friends && window.friends[aData['user_id']]) {
+      if (window.friends && window.friends[aData['userId']]) {
         $(nRow).attr("class", "highlight-friend");
         friendFunction = "unfriend";
       }
       $('td:eq(1)', nRow).html(
         `<a href="https://www.speedrun.com/user/${aData['name']}" target="_blank">${aData['name']}</a>
-                <span class="pull-right friend-icon" onClick="javascript:${friendFunction}('${aData['user_id']}');"></span>`
+                <span class="pull-right friend-icon" onClick="javascript:${friendFunction}('${aData['userId']}');"></span>`
       );
 
       // Fill the friends preview's missing data using the scoreboard
-      $('td:eq(0)', `#preview-${aData['user_id']}`).html(aData['rank']);
-      $('td:eq(1)', `#preview-${aData['user_id']}`).html(
+      $('td:eq(0)', `#preview-${aData['userId']}`).html(aData['rank']);
+      $('td:eq(1)', `#preview-${aData['userId']}`).html(
         `<a href="https://www.speedrun.com/user/${aData['name']}" target="_blank">${aData['name']}</a>
-                <span class="pull-right friend-icon" onClick="javascript:unfriend('${aData['user_id']}');"></span>`
+                <span class="pull-right friend-icon" onClick="javascript:unfriend('${aData['userId']}');"></span>`
       );
-      $('td:eq(2)', `#preview-${aData['user_id']}`).html(aData['score']);
+      $('td:eq(2)', `#preview-${aData['userId']}`).html(aData['score']);
     },
-    fnRowCallback: function (nRow, aData, iDisplayIndex) {
+    fnRowCallback: function (nRow, aData) {
       // Set the color of the cell according to the last time user was updated
       var cell = $('td:eq(3)', nRow);
-      var daysSince = currentTimeOnLoad.diff(aData['last_update'], 'days');
+      var daysSince = currentTimeOnLoad.diff(aData['lastUpdate'], 'days');
       if (daysSince < 1) {
         cell.attr("class", "daysSince1");
       } else if (daysSince < 7) {
@@ -64,8 +73,9 @@ $(function () {
         cell.attr("class", "daysSince");
       }
     },
-    fnInitComplete: function (oSettings, json) {
+    fnInitComplete: function () {
       sortTable("preview");
+      ajaxResponseMessage.css('visibility', 'hidden');
     }
   });
   $("#scoreboard_filter").parent().attr("class", "col-xs-6");
@@ -73,8 +83,6 @@ $(function () {
   $("#scoreboard_info").parent().attr("class", "col-xs-12");
   $("#scoreboard_paginate").parent().attr("class", "col-xs-12");
   scoreboard.css('display', '');
-
-  ajaxResponseMessage.css('visibility', 'hidden');
 
   // Login
   $("#login-form").submit(function (event) {
@@ -92,7 +100,7 @@ $(function () {
         loginResponseMessage.html(`There was an unknown error while trying to log you in. Status code: ${data.status}`);
         loginResponseMessage.css('visibility', 'visible');
       })
-      .always(function (data) {
+      .always(function () {
         $("#login-button").prop('disabled', false);
         $("#api-key").prop('readonly', false);
       })
@@ -115,7 +123,7 @@ $(function () {
     var unfriendBefriend = $(row.node()).hasClass("highlight-friend") ? "unfriend" : "befriend";
     var userData = row.data();
     if (userData) {
-      var daysSince = currentTimeOnLoad.diff(userData["last_update"], 'days');
+      var daysSince = currentTimeOnLoad.diff(userData["lastUpdate"], 'days');
     }
     if (!window.bypass_update_restrictions && userData && daysSince < 1) {
       ajaxResponseMessage.attr('class', 'alert alert-warning');
@@ -123,36 +131,41 @@ $(function () {
       ajaxResponseMessage.css('visibility', 'visible');
     } else {
       ajaxResponseMessage.attr('class', 'alert alert-info');
-      ajaxResponseMessage.html(`Updating "${name_or_id}". This may take up to 5 mintues, depending on the amount of runs to analyse. Please Wait...`);
+      ajaxResponseMessage.html(`Updating "${name_or_id}". This may take up to 5 mintues, depending on the amount of runs to analyse. Please Wait...${loadingBar}`);
       ajaxResponseMessage.css('visibility', 'visible');
+
       $("#update-runner-button").prop('disabled', true);
       $("#name-or-id").prop('readonly', true);
+
+      var tickPassed = 0;
+      var progressTimer = setInterval(() => {
+        $('.progress-bar').css('width', `${100 - ((tickPassed * progressBarTickInterval) / minutes5)}%`)
+        tickPassed++;
+      }, progressBarTickInterval);
 
       $.post('/', $(this).serialize(), function () { }, "json")
         .done(function (data) {
           if (data.state == "success") {
-            var rowData = scoreboard.DataTable().row(`#${data.user_id}`).data();
-            console.log(rowData);
+            var rowData = scoreboard.DataTable().row(`#${data.userId}`).data();
             if (rowData) {
               // Update the row
               rowData['rank'] = data.rank;
               rowData['name'] = data.name;
               rowData['score'] = data.score;
-              rowData['last_update'] = serverToUserTime(data.last_updated);
+              rowData['lastUpdate'] = serverToUserTime(data.lastUpdate);
               // Update the data, clear the search bar, redraw the entire table and jump to user
-              scoreboard.DataTable().row(`#${data.user_id}`).data(rowData).order([2, 'desc']).search('').draw();
-              scoreboard.DataTable().page.jumpToData(data.user_id, 4);
+              scoreboard.DataTable().row(`#${data.userId}`).data(rowData).order([2, 'desc']).search('').draw();
+              scoreboard.DataTable().page.jumpToData(data.userId, 4);
 
               var nameLink = `<a href="https://www.speedrun.com/user/${data.name}" target="_blank">${data.name}</a>
                                         <span
                                             class="pull-right friend-icon"
-                                            onClick="javascript:${unfriendBefriend}('${data.user_id}');"
+                                            onClick="javascript:${unfriendBefriend}('${data.userId}');"
                                         ></span>`;
-              $('td:eq(1)', `#${rowData['user_id']}`).html(nameLink);
+              $('td:eq(1)', `#${rowData['userId']}`).html(nameLink);
 
               // Update the friends preview table
-              previewRow = $(`#preview-${rowData['user_id']}`);
-              console.log(rowData['name']);
+              previewRow = $(`#preview-${rowData['userId']}`);
               if (previewRow) {
                 $('td:eq(0)', previewRow).html(rowData['rank']);
                 $('td:eq(1)', previewRow).html(nameLink);
@@ -165,8 +178,8 @@ $(function () {
                 'rank': data.rank,
                 'name': data.name,
                 'score': data.score,
-                'last_update': data.last_updated,
-                'user_id': data.user_id,
+                'lastUpdate': data.lastUpdate,
+                'userId': data.userId,
                 // Redraw the table
               }).draw();
             }
@@ -188,7 +201,7 @@ $(function () {
           }
         })
         .always(function (data) {
-          console.log(data);
+          clearInterval(progressTimer);
           $("#update-runner-button").prop('disabled', false);
           $("#name-or-id").prop('readonly', false);
         })
@@ -208,50 +221,11 @@ $(function () {
       <span class="daysSince">Over a month ago</span>
     </div>
   `)
-
-  /*// Autoupdater
-  // Get all rows
-  var rows = scoreboard.DataTable().rows().data();
-  var i = 0;
-  //autoUpdater();
-  function autoUpdater(){
-      while (currentTimeOnLoad.diff(rows[i][3], 'days') < 30) {
-          i++
-      }
-      $.post('/', {'action':'update-user', 'name-or-id':rows[i][4]}, function() {}, "json")
-      .done(function(data) {
-          //var row = scoreboard.DataTable().row('#'+data.user_id);
-          var tableData = scoreboard.DataTable().row('#'+data.user_id).data()
-          if (data.state == "success"){
-              // Update the row
-              tableData["rank"] = data.rank;
-              tableData["name"] = '<a href="https://www.speedrun.com/user/"'+data.name+' target="_blank">'+data.name+'</a>';
-              tableData["score"] = data.score;
-              tableData["last_updated"] = serverToUserTime(data.last_updated);
-              // Redraw the table
-              scoreboard.DataTable().draw(); //TODO: might be able to do better here using invalidate --> row.invalidate().draw()
-          }
-
-          ajaxResponseMessage.attr('class', `alert alert-${data.state}`);
-          ajaxResponseMessage.html(htmlReplace(data.message));
-          ajaxResponseMessage.css('visibility','visible');
-          i++;
-          autoUpdater();
-      })
-      .fail(function(data){
-          alert( `There was an unknown error with the AJAX request. Status code: ${data.status}` );
-      })
-      .always(function (data) {
-          console.log(data);
-      })
-
-  }*/
-
 });
 
-function jumpToPlayer(user_id) {
+function jumpToPlayer(userId) {
   scoreboard.DataTable().search('').draw();
-  scoreboard.DataTable().page.jumpToData(user_id, 4);
+  scoreboard.DataTable().page.jumpToData(userId, 4);
 }
 
 // Add a friend
@@ -272,7 +246,7 @@ function befriend(friendID) {
                     <td>${rowData["rank"]}</td>
                     <td>
                         <a href="https://www.speedrun.com/user/${rowData['name']}" target="_blank">${rowData['name']}</a>
-                        <span class="pull-right friend-icon" onClick="javascript:unfriend('${rowData['user_id']}');"></span>
+                        <span class="pull-right friend-icon" onClick="javascript:unfriend('${rowData['userId']}');"></span>
                     </td>
                     <td>${rowData["score"]}</td>
                     <td>
@@ -291,14 +265,11 @@ function befriend(friendID) {
     .fail(function (data) {
       alert(`There was an unknown error with the AJAX request. Status code: ${data.status}`);
     })
-    .always(function (data) {
-      console.log(data);
-    })
+    .always(console.info)
 }
 
 // Remove a friend
 function unfriend(friendID) {
-  // Remove a friend
   $.post('/', { 'action': 'unfriend', 'friend-id': friendID }, function () { }, 'json')
     .done(function (data) {
       if (data.state == "success") {
@@ -318,9 +289,7 @@ function unfriend(friendID) {
     .fail(function (data) {
       alert(`There was an unknown error with the AJAX request. Status code: ${data.status}`);
     })
-    .always(function (data) {
-      console.log(data);
-    })
+    .always(console.info)
 }
 
 // https://stackoverflow.com/a/7558600

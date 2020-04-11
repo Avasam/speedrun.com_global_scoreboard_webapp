@@ -3,32 +3,26 @@ import { Button, Container, Link, TextField } from '@material-ui/core'
 import React, { FC, useState } from 'react'
 import SrcApiKeyLink from './SrcApiKeyLink'
 import User from '../models/User'
+import { apiPost } from '../fetchers/api'
 import useMediaQuery from '@material-ui/core/useMediaQuery'
 
 type loginFormProps = {
-  setCurrentUser: (currentUser: User) => void
+  onLogin: (currentUser: User) => void
 }
+
+const login = (srcApiKey: string, onLoginCallback: (currentUser: User) => void) =>
+  apiPost('login', { srcApiKey })
+    .then(res => res.json())
+    .then((res: { token: string, user: User }) => {
+      console.log(res)
+      if (!res.token) return
+      localStorage.setItem('jwtToken', res.token)
+      onLoginCallback(res.user)
+    })
+    .catch(console.error)
 
 const LoginForm: FC<loginFormProps> = (props: loginFormProps) => {
   const [srcApiKeyInput, setSrcApiKeyInput] = useState('')
-
-  const login = (srcApiKey: string) =>
-    fetch(`${window.process.env.REACT_APP_BASE_URL}/api/login`, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        srcApiKey,
-      })
-    }).then(res => res.json())
-      .then((res: { token: string, user: User }) => {
-        console.log(res)
-        if (!res.token) return
-        localStorage.setItem('jwtToken', res.token)
-        props.setCurrentUser(res.user)
-      })
 
   const isMobileSize = useMediaQuery('(max-width:640px)')
 
@@ -56,7 +50,11 @@ const LoginForm: FC<loginFormProps> = (props: loginFormProps) => {
         rel='noreferrer'
       >What&apos;s my key?</Link>
     </div>
-    <Button variant='contained' color='primary' onClick={() => login(srcApiKeyInput)}>Access my schedules</Button>
+    <Button
+      variant='contained'
+      color='primary'
+      onClick={() => login(srcApiKeyInput, props.onLogin)}
+    >Access my schedules</Button>
     <span className="paragraph">
       If you don&apos;t trust the above link because SRC&apos;s api portal looks sketchy, you can also access your api key through
       <br /> <SrcApiKeyLink></SrcApiKeyLink>

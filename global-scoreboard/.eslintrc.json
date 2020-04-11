@@ -32,6 +32,10 @@
     }
   },
   "rules": {
+    "operator-assignment": [
+      "error",
+      "always"
+    ],
     "semi": [
       "error",
       "never"
