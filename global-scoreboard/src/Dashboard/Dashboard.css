@@ -77,11 +77,10 @@ td:first-child{
   margin: 0;
 }
 
+.alert {
+  white-space: pre-wrap;
+}
 /* This is only to show the results */
 .alert.alert-success {
   font-family: monospace;
-  white-space: pre-wrap;
-}
-.alert.alert-danger {
-  white-space: pre;
 }

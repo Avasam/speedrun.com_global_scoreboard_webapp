@@ -107,19 +107,30 @@ const Dashboard = (props: DashboardProps) => {
         setPlayers(newPlayers)
         handleJumpToPlayer(result.userId)
       })
-      .catch((err: Response | TypeError) => {
-        if (err instanceof TypeError) {
+      .catch((err: Response | Error) => {
+        setAlertVariant('danger')
+        if (err instanceof Error) {
           setAlertMessage(`${err.name}: ${err.message}`)
         } else if (err.status === 500) {
           err.text().then(setAlertMessage)
+        } else if (err.status === 504) {
+          setAlertVariant('warning')
+          setAlertMessage('Error 504. The webworker probably timed out, ' +
+            'which can happen if updating takes more than 5 minutes. ' +
+            'Please try again as next attempt should take less time since ' +
+            'all calls to speedrun.com are cached for a day or until server restart.')
         } else {
-          err.json().then((result: UpdateRunnerResult) => {
-            setAlertVariant(result.state || 'danger')
-            setAlertMessage(result.message)
-          }).catch(setAlertMessage)
-          return // Don't force the variant to danger
+          // TODO: simplify this all
+          try {
+            err.json().then((result: UpdateRunnerResult) => {
+              setAlertVariant(result.state || 'danger')
+              setAlertMessage(result.message)
+            }).catch(setAlertMessage)
+          } catch {
+            setAlertVariant('danger')
+            setAlertMessage('')
+          }
         }
-        setAlertVariant('danger')
       })
   }
   const handleJumpToPlayer = (playerId: string) => scoreboardRef.current?.jumpToPlayer(playerId)
