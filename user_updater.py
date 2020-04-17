@@ -19,6 +19,7 @@ import traceback
 SEPARATOR = "-" * 64
 MIN_LEADERBOARD_SIZE = 3  # This is just to optimize as the formula gives 0 points to leaderboards size < 3
 TIME_BONUS_DIVISOR = 3600 * 12  # 12h (1/2 day) for +100%
+GAMETYPE_MULTI_GAME = "rj1dy1o8"
 
 
 class Run:
@@ -279,12 +280,14 @@ class User:
                 threadsException.append({"error": "Unhandled", "details": traceback.format_exc()})
 
         if not self._banned:
-            url = "https://www.speedrun.com/api/v1/users/{user}/personal-bests".format(user=self._id)
+            url = "https://www.speedrun.com/api/v1/users/{user}/personal-bests?embed=game".format(user=self._id)
             pbs = CachedRequest.get_response_or_new(url)
             self._points = 0
             threads: List[Thread] = []
             for pb in pbs["data"]:
-                threads.append(Thread(target=set_points_thread, args=(pb,)))
+                # Skip over "multi-game" gametype
+                if GAMETYPE_MULTI_GAME not in pb["game"]["data"]["gametypes"]:
+                    threads.append(Thread(target=set_points_thread, args=(pb,)))
             for t in threads:
                 while True:
                     try:
@@ -294,7 +297,7 @@ class User:
                     except RuntimeError:
                         print(
                             f"RuntimeError: Can't start {active_count()+1}th thread. "
-                            f"Trying to just wait a bit as I don't have a better way to deal w/ it atm.")
+                            f"Trying to wait just a bit as I don't have a better way to deal w/ it atm.")
                         sleep(0.5)
             for t in threads:
                 t.join()
