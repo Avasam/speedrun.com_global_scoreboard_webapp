@@ -114,7 +114,7 @@ const Dashboard = (props: DashboardProps) => {
           err.text().then(setAlertMessage)
         } else {
           err.json().then((result: UpdateRunnerResult) => {
-            setAlertVariant(result.state)
+            setAlertVariant(result.state || 'danger')
             setAlertMessage(result.message)
           }).catch(setAlertMessage)
           return // Don't force the variant to danger
@@ -126,11 +126,18 @@ const Dashboard = (props: DashboardProps) => {
   const handleUnfriend = (playerId: string) => setFriends(friends.filter(friend => friend.userId !== playerId))
   const handleBefriend = (playerId: string) => {
     const newFriend = players.find(player => player.userId === playerId)
-    if (!newFriend) return console.error(`Couldn't add friend id ${playerId} as it was not found in array of players`)
+    if (!newFriend) {
+      return console.error(`Couldn't add friend id ${playerId} as it was not found in existing players table`)
+    }
     setFriends([...friends, newFriend])
   }
 
   return <Container className="dashboard-container">
+    <Alert variant="info">
+      This version of the scoreboard <strong>is still in beta!</strong>{' '}
+      If there&apos;s any bug or issue you&apos;d like to raise, you can do so{' '}
+      <a href="https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/issues" target="about">over here</a>.
+    </Alert>
     <Alert
       variant={alertVariant}
       style={{ visibility: alertMessage ? 'visible' : 'hidden' }}

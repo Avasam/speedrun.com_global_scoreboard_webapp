@@ -82,3 +82,6 @@ td:first-child{
   font-family: monospace;
   white-space: pre-wrap;
 }
+.alert.alert-danger {
+  white-space: pre;
+}
