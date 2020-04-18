@@ -273,11 +273,13 @@ def update_player(_, name_or_id: str):
         result = get_updated_user(name_or_id)
         return jsonify(result), 400 if result["state"] == "warning" else 200
     except UserUpdaterError as exception:
-        print("\n{}\n{}".format(exception.args[0]["error"], exception.args[0]["details"]))
-        return exception.args[0]["details"], 424
+        error_message = "Error: {}\n{}".format(exception.args[0]["error"], exception.args[0]["details"])
+        print(f"\n{error_message}")
+        return error_message, 424
     except Exception:
-        print("\nError: Unknown\n{}".format(traceback.format_exc()))
-        return traceback.format_exc(), 500
+        error_message = "Error: Unknown\n{}".format(traceback.format_exc())
+        print(f"\n{error_message}")
+        return error_message, 500
 
 
 @api.route('/players/current/friends', methods=('GET',))

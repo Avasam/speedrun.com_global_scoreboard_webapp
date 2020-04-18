@@ -111,8 +111,6 @@ const Dashboard = (props: DashboardProps) => {
         setAlertVariant('danger')
         if (err instanceof Error) {
           setAlertMessage(`${err.name}: ${err.message}`)
-        } else if (err.status === 500) {
-          err.text().then(setAlertMessage)
         } else if (err.status === 504) {
           setAlertVariant('warning')
           setAlertMessage('Error 504. The webworker probably timed out, ' +
@@ -120,16 +118,15 @@ const Dashboard = (props: DashboardProps) => {
             'Please try again as next attempt should take less time since ' +
             'all calls to speedrun.com are cached for a day or until server restart.')
         } else {
-          // TODO: simplify this all
-          try {
-            err.json().then((result: UpdateRunnerResult) => {
+          err.text().then(errorString => {
+            try {
+              const result: UpdateRunnerResult = JSON.parse(errorString)
               setAlertVariant(result.state || 'danger')
               setAlertMessage(result.message)
-            }).catch(setAlertMessage)
-          } catch {
-            setAlertVariant('danger')
-            setAlertMessage('')
-          }
+            } catch {
+              setAlertMessage(errorString)
+            }
+          })
         }
       })
   }

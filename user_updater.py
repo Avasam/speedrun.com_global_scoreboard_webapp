@@ -282,6 +282,19 @@ class User:
         if not self._banned:
             url = "https://www.speedrun.com/api/v1/users/{user}/personal-bests?embed=game".format(user=self._id)
             pbs = CachedRequest.get_response_or_new(url)
+
+            # TODO: BIG MEGA HACK / PATCH. Let's try to work around this issue ASAP.
+            runs_count = len(pbs["data"])
+            if runs_count >= 1000:
+                raise UserUpdaterError({
+                    "error": "Too Many Runs",
+                    "details": f"{self._name} has over 1000 runs ({runs_count} to be exact). " +
+                    "Due to current limitations with PythonAnywhere and the speedrun.com api, " +
+                    "updating such a user is nearly impossible. " +
+                    "I have a work in progress solution for this issue, but it will take time. " +
+                    "Sorry for the inconvenience.",
+                })
+
             self._points = 0
             threads: List[Thread] = []
             for pb in pbs["data"]:
