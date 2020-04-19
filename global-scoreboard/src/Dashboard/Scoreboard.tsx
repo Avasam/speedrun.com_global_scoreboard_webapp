@@ -45,11 +45,12 @@ const columns: Column[] = [
           href={`https://www.speedrun.com/user/${row.name}`}
           target="_blank"
           rel="noopener noreferrer"
-        ><img
+        >{row.countryCode &&
+          <img
             alt=""
             className="flagicon"
             src={`https://www.speedrun.com/images/flags/${row.countryCode}.png`}
-          />{row.name}</a>
+          />}{row.name}</a>
         {
           formatExtraData && formatExtraData.currentUser?.userId !== row.userId &&
           <FriendButton
