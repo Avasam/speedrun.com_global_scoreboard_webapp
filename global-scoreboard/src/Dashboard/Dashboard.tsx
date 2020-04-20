@@ -2,7 +2,7 @@ import './Dashboard.css'
 import { Alert, Col, Container, ProgressBar, Row } from 'react-bootstrap'
 import React, { useEffect, useRef, useState } from 'react'
 import Scoreboard, { ScoreboardRef } from './Scoreboard'
-import { apiGet, apiPost } from '../fetchers/api'
+import { apiDelete, apiGet, apiPost, apiPut } from '../fetchers/api'
 import { AlertProps } from 'react-bootstrap/Alert'
 import Player from '../models/Player'
 import QuickView from './QuickView'
@@ -13,12 +13,23 @@ type DashboardProps = {
   currentUser: Player | null | undefined
 }
 
-const getFriends = () => apiGet('players/current/friends').then<Player[]>(res => res.json())
-const getAllPlayers = () => apiGet('players').then<Player[]>(res => res.json())
-
 const progressBarTickInterval = 50
 const minutes5 = 5 * 600
 let progressTimer: NodeJS.Timeout
+
+const getFriends = () => apiGet('players/current/friends').then<Player[]>(res => res.json())
+const getAllPlayers = () => apiGet('players').then<Player[]>(res => res.json())
+
+const validateRunnerNotRecentlyUpdated = (runnerNameOrId: string, players: Player[]) => {
+  const yesterday = new Date()
+  yesterday.setDate(yesterday.getDate() - 1)
+  return !players.some(player =>
+    (player.name === runnerNameOrId || player.userId === runnerNameOrId) && new Date(player.lastUpdate) >= yesterday
+  )
+}
+
+// Let's cheat! This is much simpler and more effective
+const openLoginModal = () => document.getElementById('open-login-modal-button')?.click()
 
 const Dashboard = (props: DashboardProps) => {
   const [currentPlayer, setCurrentPlayer] = useState<Player | null>(props.currentUser || null)
@@ -92,9 +103,14 @@ const Dashboard = (props: DashboardProps) => {
   const scoreboardRef = useRef<ScoreboardRef>(null)
 
   const handleOnUpdateRunner = (runnerNameOrId: string) => {
-    startLoading()
     setAlertVariant('info')
     setAlertMessage(`Updating "${runnerNameOrId}". This may take up to 5 mintues, depending on the amount of runs to analyse. Please Wait...`)
+    if (!validateRunnerNotRecentlyUpdated(runnerNameOrId, players)) {
+      setAlertVariant('warning')
+      setAlertMessage(`Runner ${runnerNameOrId} has already been updated in the last 24h`)
+      return
+    }
+    startLoading()
     apiPost(`players/${runnerNameOrId}/update`)
       .then<UpdateRunnerResult>(res => res.json())
       .then(result => {
@@ -150,14 +166,23 @@ const Dashboard = (props: DashboardProps) => {
       })
       .finally(stopLoading)
   }
+
   const handleJumpToPlayer = (playerId: string) => scoreboardRef.current?.jumpToPlayer(playerId)
-  const handleUnfriend = (playerId: string) => setFriends(friends.filter(friend => friend.userId !== playerId))
+  const handleUnfriend = (playerId: string) =>
+    apiDelete(`players/current/friends/${playerId}`)
+      .then(() => setFriends(friends.filter(friend => friend.userId !== playerId)))
+      .catch(console.error)
   const handleBefriend = (playerId: string) => {
-    const newFriend = players.find(player => player.userId === playerId)
-    if (!newFriend) {
-      return console.error(`Couldn't add friend id ${playerId} as it was not found in existing players table`)
-    }
-    setFriends([...friends, newFriend])
+    if (!currentPlayer) return openLoginModal()
+    apiPut(`players/current/friends/${playerId}`)
+      .then(() => {
+        const newFriend = players.find(player => player.userId === playerId)
+        if (!newFriend) {
+          return console.error(`Couldn't add friend id ${playerId} as it was not found in existing players table`)
+        }
+        setFriends([...friends, newFriend])
+      })
+      .catch(console.error)
   }
 
   return <Container className="dashboard-container">
@@ -176,7 +201,11 @@ const Dashboard = (props: DashboardProps) => {
     <Row>
       <Col md={4}>
         <Row>
-          <UpdateRunnerForm onUpdate={handleOnUpdateRunner} currentUser={currentPlayer} />
+          <UpdateRunnerForm
+            onUpdate={handleOnUpdateRunner}
+            updating={progress != null}
+            currentUser={currentPlayer}
+          />
         </Row>
 
         <Row>

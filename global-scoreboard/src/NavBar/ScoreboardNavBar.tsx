@@ -28,7 +28,7 @@ const LoginInfo = (props: LoginInfoProps) => {
       <Button type="submit" variant="danger" onClick={props.onLogout}>Log out</Button>
     </>
     : <>
-      <Button variant="success" onClick={handleShow}>Log in</Button>
+      <Button id="open-login-modal-button" variant="success" onClick={handleShow}>Log in</Button>
 
       <LoginModal show={show} onClose={handleClose} onLogin={handleLogin}></LoginModal>
     </>

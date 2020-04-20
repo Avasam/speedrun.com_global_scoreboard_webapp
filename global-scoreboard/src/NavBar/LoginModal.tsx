@@ -13,18 +13,28 @@ type LoginModalProps = {
   onLogin: (currentUser: Player) => void
 }
 
-const attemptLogin = (srcApiKey: string, loginSuccessCallback: (currentUser: Player) => void) =>
-  apiPost('login', { srcApiKey })
-    .then(res => res.json())
-    .then((res: { token: string, user: Player }) => {
-      if (!res.token) return
-      localStorage.setItem('jwtToken', res.token)
-      loginSuccessCallback(res.user)
-    })
-    .catch(console.error)
-
 const LoginModal = (props: LoginModalProps) => {
   const [srcApiKeyInput, setSrcApiKeyInput] = useState('')
+  const [loginErrorMessage, setLoginErrorMessage] = useState('')
+
+  const attemptLogin = () => {
+    setLoginErrorMessage('')
+    apiPost('login', { srcApiKey: srcApiKeyInput })
+      .then(res => res.json())
+      .then((res: { token: string, user: Player }) => {
+        if (!res.token) return
+        localStorage.setItem('jwtToken', res.token)
+        props.onLogin(res.user)
+      })
+      .catch((err: Response) => {
+        if (err.status === 401) {
+          setLoginErrorMessage('Invalid SRC API key')
+        } else {
+          setLoginErrorMessage('Unknown error')
+          console.error(err)
+        }
+      })
+  }
 
   const handleSrcApiKeyChange = (event: FormEvent<ReplaceProps<'input', BsPrefixProps<'input'> & FormControlProps>>) =>
     setSrcApiKeyInput(event.currentTarget.value || '')
@@ -49,10 +59,8 @@ const LoginModal = (props: LoginModalProps) => {
                 aria-describedby="api key"
                 required
                 onChange={handleSrcApiKeyChange}
+                isInvalid={!!loginErrorMessage}
               />
-              {/* <Form.Control.Feedback type="invalid">
-              Error message goes here
-            </Form.Control.Feedback> */}
               <InputGroup.Append>
                 <Button
                   as="a"
@@ -61,12 +69,15 @@ const LoginModal = (props: LoginModalProps) => {
                   target="src"
                 >What&apos;s my key?</Button>
               </InputGroup.Append>
+              <Form.Control.Feedback type="invalid">
+                {loginErrorMessage}
+              </Form.Control.Feedback>
             </InputGroup>
           </Form.Group>
 
           <Form.Group>
             <Col xs={{ span: 6, offset: 3 }}>
-              <Button variant="success" block onClick={() => attemptLogin(srcApiKeyInput, props.onLogin)}>Log in</Button>
+              <Button variant="success" block onClick={() => attemptLogin()}>Log in</Button>
             </Col>
           </Form.Group>
 

@@ -6,6 +6,7 @@ import Player from '../models/Player'
 
 type UpdateRunnerFormProps = {
   currentUser: Player | null
+  updating: boolean
   onUpdate: (runnerNameOrId: string) => void
 }
 
@@ -29,8 +30,8 @@ const UpdateRunnerForm = (props: UpdateRunnerFormProps) => {
           />
           <InputGroup.Append>
             <Button id="update-runner-button"
-              disabled={!props.currentUser || !updateUserNameOrId}
-              onClick={() => props.onUpdate(updateUserNameOrId)}
+              disabled={props.updating || !props.currentUser || !updateUserNameOrId}
+              onClick={() => props.onUpdate(updateUserNameOrId.trim())}
             >Update</Button>
           </InputGroup.Append>
         </InputGroup>

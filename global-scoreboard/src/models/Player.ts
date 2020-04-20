@@ -3,6 +3,6 @@ export default interface Player {
   name: string
   countryCode: string | null
   score: number
-  lastUpdate: Date
+  lastUpdate: Date | string
   userId: string
 }

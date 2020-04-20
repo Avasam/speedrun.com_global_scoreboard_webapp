@@ -37,7 +37,6 @@ def authenthication_required(f):
         }
 
         if len(auth_headers) != 2:
-            print(auth_headers)
             return jsonify(invalid_msg), 401
 
         try:
@@ -47,11 +46,9 @@ def authenthication_required(f):
             if not player:
                 raise RuntimeError('User not found')
             return f(player, *args, **kwargs)
-        except jwt.ExpiredSignatureError as e:
-            print(e)
+        except jwt.ExpiredSignatureError:
             return jsonify(expired_msg), 401
-        except jwt.InvalidTokenError as e:
-            print(e)
+        except jwt.InvalidTokenError:
             return jsonify(invalid_msg), 401
 
     return _verify
@@ -63,10 +60,10 @@ api = Blueprint('api', __name__)
 @api.route('/login', methods=('POST',))
 def login():
     data: Dict[str, ] = request.get_json()
-    player = Player.authenticate(data['srcApiKey'])
+    player, error_message = Player.authenticate(data['srcApiKey'])
 
     if not player:
-        return jsonify({'message': 'Invalid credentials', 'authenticated': False}), 401
+        return jsonify({'message': error_message, 'authenticated': False}), 401
 
     token = jwt.encode({
         'sub': player.user_id,
