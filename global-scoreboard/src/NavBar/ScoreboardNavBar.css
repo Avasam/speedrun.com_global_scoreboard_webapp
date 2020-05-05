@@ -2,3 +2,17 @@
   padding-left: 0.5em;
   padding-right: 0.5em;
 }
+
+.invalid-feedback {
+  white-space: pre-wrap;
+}
+.input-group-prepend~.invalid-feedback {
+  margin-left: 38px;
+}
+.form-control~.invalid-feedback {
+  padding-left: 0.75rem;
+}
+
+#src-api-key {
+  min-width: 165px;
+}

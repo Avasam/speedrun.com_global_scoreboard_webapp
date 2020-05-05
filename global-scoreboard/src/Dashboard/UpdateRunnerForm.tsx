@@ -6,6 +6,7 @@ import Player from '../models/Player'
 
 type UpdateRunnerFormProps = {
   currentUser: Player | null
+  updating: boolean
   onUpdate: (runnerNameOrId: string) => void
 }
 
@@ -24,13 +25,14 @@ const UpdateRunnerForm = (props: UpdateRunnerFormProps) => {
             required
             placeholder={props.currentUser ? 'Name or ID' : 'Please log in first'}
             onChange={handleOnChange}
-            disabled={!props.currentUser}
+            disabled={window.process.env.REACT_APP_BYPASS_UPDATE_RESTRICTIONS !== 'true' && !props.currentUser}
             aria-describedby="update user name or id"
           />
           <InputGroup.Append>
             <Button id="update-runner-button"
-              disabled={!props.currentUser || !updateUserNameOrId}
-              onClick={() => props.onUpdate(updateUserNameOrId)}
+              disabled={window.process.env.REACT_APP_BYPASS_UPDATE_RESTRICTIONS !== 'true' &&
+                (props.updating || !props.currentUser || !updateUserNameOrId)}
+              onClick={() => props.onUpdate(updateUserNameOrId.trim())}
             >Update</Button>
           </InputGroup.Append>
         </InputGroup>

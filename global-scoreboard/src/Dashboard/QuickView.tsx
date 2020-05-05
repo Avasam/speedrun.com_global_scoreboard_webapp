@@ -44,11 +44,12 @@ const QuickView = (props: QuickViewProps) =>
                           href={`https://speedrun.com/user/${player.name}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                        ><img
+                        >{player.countryCode &&
+                          <img
                             alt=""
                             className="flagicon"
                             src={`https://www.speedrun.com/images/flags/${player.countryCode}.png`}
-                          />{player.name}</a>
+                          />}{player.name}</a>
                         {player !== props.currentUser &&
                           <FriendButton
                             isFriend={true}
