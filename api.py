@@ -10,6 +10,7 @@ from sqlalchemy import exc
 from typing import Any, Dict, List, Optional, Union, Tuple
 from user_updater import get_updated_user
 from utils import UserUpdaterError
+import configs
 import jwt
 import traceback
 
@@ -264,11 +265,12 @@ def get_all_players():
 
 
 @api.route('/players/<name_or_id>/update', methods=('POST',))
-@authenthication_required
-def update_player(_, name_or_id: str):
+def update_player(name_or_id: str):
     try:
-        result = get_updated_user(name_or_id)
-        return jsonify(result), 400 if result["state"] == "warning" else 200
+        if configs.bypass_update_restrictions:
+            return __do_update_player_bypass_restrictions(name_or_id)
+        else:
+            return __do_update_player(name_or_id)
     except UserUpdaterError as exception:
         error_message = "Error: {}\n{}".format(exception.args[0]["error"], exception.args[0]["details"])
         print(f"\n{error_message}")
@@ -277,6 +279,42 @@ def update_player(_, name_or_id: str):
         error_message = "Error: Unknown\n{}".format(traceback.format_exc())
         print(f"\n{error_message}")
         return error_message, 500
+
+
+def __do_update_player_bypass_restrictions(name_or_id: str):
+    result = get_updated_user(name_or_id)
+    return jsonify(result), 400 if result["state"] == "warning" else 200
+
+
+__currently_updating_from: Dict[str, datetime] = {}
+__currently_updating_to: Dict[str, datetime] = {}
+
+
+@authenthication_required
+def __do_update_player(current_user: Player, name_or_id: str):
+    global __currently_updating_from
+    global __currently_updating_to
+    print(__currently_updating_to)
+    now = datetime.now()
+
+    # Check if the current user is already updating someone
+    # or if the player to be updated is currently being updated
+    if current_user.user_id in __currently_updating_from \
+            and now - __currently_updating_from[current_user.user_id] <= timedelta(minutes=5):
+        return "current_user", 409
+    if name_or_id in __currently_updating_to \
+            and now - __currently_updating_to[name_or_id] <= timedelta(minutes=5):
+        return "name_or_id", 409
+    __currently_updating_from[current_user.user_id] = now
+    __currently_updating_to[name_or_id] = now
+
+    # Actually do the update process
+    result = get_updated_user(name_or_id)
+
+    # Upon update completing, allow the user to update again
+    __currently_updating_from.pop(current_user.user_id, None)
+
+    return jsonify(result), 400 if result["state"] == "warning" else 200
 
 
 @api.route('/players/current/friends', methods=('GET',))

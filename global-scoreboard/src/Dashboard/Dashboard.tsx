@@ -105,7 +105,8 @@ const Dashboard = (props: DashboardProps) => {
   const handleOnUpdateRunner = (runnerNameOrId: string) => {
     setAlertVariant('info')
     setAlertMessage(`Updating "${runnerNameOrId}". This may take up to 5 mintues, depending on the amount of runs to analyse. Please Wait...`)
-    if (!validateRunnerNotRecentlyUpdated(runnerNameOrId, players)) {
+    if (window.process.env.REACT_APP_BYPASS_UPDATE_RESTRICTIONS !== 'true' &&
+      !validateRunnerNotRecentlyUpdated(runnerNameOrId, players)) {
       setAlertVariant('warning')
       setAlertMessage(`Runner ${runnerNameOrId} has already been updated in the last 24h`)
       return
@@ -152,6 +153,20 @@ const Dashboard = (props: DashboardProps) => {
             'which can happen if updating takes more than 5 minutes. ' +
             'Please try again as next attempt should take less time since ' +
             'all calls to speedrun.com are cached for a day or until server restart.')
+        } else if (err.status === 409) {
+          err.text().then(errorString => {
+            setAlertVariant('danger')
+            switch (errorString) {
+              case 'current_user':
+                setAlertMessage('It seems you are already updating a runner. Please try again in 5 minutes.')
+                break
+              case 'name_or_id':
+                setAlertMessage('It seems that runner is already being updated (possibly by someone else). Please try again in 5 minutes.')
+                break
+              default:
+                setAlertMessage(errorString)
+            }
+          })
         } else {
           err.text().then(errorString => {
             try {

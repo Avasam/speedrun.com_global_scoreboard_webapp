@@ -294,7 +294,11 @@ class Player(db.Model, UserMixin):
         }
 
 
+memoized_requests: Dict[str, CachedRequest] = {}
+
+
 class CachedRequest():
+    global memoized_requests
     result: dict
     timestamp: datetime
 
@@ -317,9 +321,6 @@ class CachedRequest():
             result = get_file(url)
             memoized_requests[url] = CachedRequest(result, today)
             return result
-
-
-memoized_requests: Dict[str, CachedRequest] = {}
 
 
 class Schedule(db.Model):
