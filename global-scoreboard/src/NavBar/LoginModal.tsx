@@ -18,6 +18,10 @@ const LoginModal = (props: LoginModalProps) => {
   const [loginErrorMessage, setLoginErrorMessage] = useState('')
 
   const attemptLogin = () => {
+    if (!srcApiKeyInput) {
+      return setLoginErrorMessage('You must specify an API key to log in! ' +
+        '\nClick "What\'s my key?" or fill in the interactive link below to find your key.')
+    }
     setLoginErrorMessage('')
     apiPost('login', { srcApiKey: srcApiKeyInput })
       .then(res => res.json())
