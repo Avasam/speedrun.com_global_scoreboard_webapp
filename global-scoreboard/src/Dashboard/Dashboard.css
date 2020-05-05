@@ -5,6 +5,7 @@
 .name-cell {
   display: flex;
   justify-content: space-between;
+  white-space: nowrap;
 }
 
 .name-cell .btn.btn-link {

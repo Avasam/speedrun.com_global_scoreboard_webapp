@@ -1,5 +1,5 @@
 import './Dashboard.css'
-import { Alert, Col, Container, Row } from 'react-bootstrap'
+import { Alert, Col, Container, ProgressBar, Row } from 'react-bootstrap'
 import React, { useEffect, useRef, useState } from 'react'
 import Scoreboard, { ScoreboardRef } from './Scoreboard'
 import { apiGet, apiPost } from '../fetchers/api'
@@ -16,12 +16,27 @@ type DashboardProps = {
 const getFriends = () => apiGet('players/current/friends').then<Player[]>(res => res.json())
 const getAllPlayers = () => apiGet('players').then<Player[]>(res => res.json())
 
+const progressBarTickInterval = 50
+const minutes5 = 5 * 600
+let progressTimer: NodeJS.Timeout
+
 const Dashboard = (props: DashboardProps) => {
   const [currentPlayer, setCurrentPlayer] = useState<Player | null>(props.currentUser || null)
   const [friends, setFriends] = useState<Player[]>([])
   const [players, setPlayers] = useState<Player[]>([])
   const [alertVariant, setAlertVariant] = useState<AlertProps['variant']>('info')
   const [alertMessage, setAlertMessage] = useState('Building the Scoreboard. Please wait...')
+  const [progress, setProgress] = useState<number | null>(null)
+  const startLoading = () => {
+    setProgress(100)
+    progressTimer = setInterval(
+      () => setProgress(progress => progress && progress - (progressBarTickInterval / minutes5)),
+      progressBarTickInterval)
+  }
+  const stopLoading = () => {
+    setProgress(null)
+    clearInterval(progressTimer)
+  }
 
   useEffect(() => {
     // Note: Waiting to obtain both friends and players if both calls are needed
@@ -66,6 +81,10 @@ const Dashboard = (props: DashboardProps) => {
         })
       }
     }
+
+    // Clear timer to prevent leaks
+    return () => clearInterval(progressTimer)
+
     // Note: I don't actually care about players dependency and don't want to rerun this code on players change
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.currentUser])
@@ -73,7 +92,7 @@ const Dashboard = (props: DashboardProps) => {
   const scoreboardRef = useRef<ScoreboardRef>(null)
 
   const handleOnUpdateRunner = (runnerNameOrId: string) => {
-    // TODO: Reimplement the loading bar
+    startLoading()
     setAlertVariant('info')
     setAlertMessage(`Updating "${runnerNameOrId}". This may take up to 5 mintues, depending on the amount of runs to analyse. Please Wait...`)
     apiPost(`players/${runnerNameOrId}/update`)
@@ -129,6 +148,7 @@ const Dashboard = (props: DashboardProps) => {
           })
         }
       })
+      .finally(stopLoading)
   }
   const handleJumpToPlayer = (playerId: string) => scoreboardRef.current?.jumpToPlayer(playerId)
   const handleUnfriend = (playerId: string) => setFriends(friends.filter(friend => friend.userId !== playerId))
@@ -151,6 +171,7 @@ const Dashboard = (props: DashboardProps) => {
       style={{ visibility: alertMessage ? 'visible' : 'hidden' }}
     >
       {alertMessage || '&nbsp;'}
+      {progress != null && <ProgressBar animated variant="info" now={progress} />}
     </Alert>
     <Row>
       <Col md={4}>
