@@ -38,6 +38,7 @@ class Player(db.Model, UserMixin):
     name: str = db.Column(db.String(32), nullable=False)
     country_code: Optional[str] = db.Column(db.String(5))
     score: int = db.Column(db.Integer, nullable=False)
+    score_details: str = db.Column(db.String())
     last_update: Optional[datetime] = db.Column(db.DateTime())
     rank: Optional[int] = None
 
