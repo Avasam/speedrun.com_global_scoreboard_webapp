@@ -397,6 +397,7 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
                                      "name": user._name,
                                      "country_code": user._country_code,
                                      "score": floor(user._points),
+                                     "score_details": user._point_distribution_str,
                                      "last_update": timestamp})
                         db.session.commit()
 
@@ -408,6 +409,7 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
                                       user._name,
                                       country_code=user._country_code,
                                       score=user._points,
+                                      score_details=user._point_distribution_str,
                                       last_update=timestamp)
                     else:
                         text_output = f"Not inserting new data as {user} " \

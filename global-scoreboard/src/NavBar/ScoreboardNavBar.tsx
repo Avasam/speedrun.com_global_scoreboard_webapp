@@ -30,7 +30,7 @@ const LoginInfo = (props: LoginInfoProps) => {
     : <>
       <Button id="open-login-modal-button" variant="success" onClick={handleShow}>Log in</Button>
 
-      <LoginModal show={show} onClose={handleClose} onLogin={handleLogin}></LoginModal>
+      <LoginModal show={show} onClose={handleClose} onLogin={handleLogin} />
     </>
 }
 

@@ -264,6 +264,17 @@ def get_all_players():
     return jsonify(map_to_dto(Player.get_all()))
 
 
+@api.route('/players/<id>/score-details', methods=('GET',))
+def get_player_score_details(id: str):
+    player = Player.get(id)
+    print(player)
+    print(player.score_details)
+    if player:
+        return player.score_details or ""
+    else:
+        return "", 404
+
+
 @api.route('/players/<name_or_id>/update', methods=('POST',))
 def update_player(name_or_id: str):
     try:

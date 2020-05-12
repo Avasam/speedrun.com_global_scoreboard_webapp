@@ -11,6 +11,7 @@
 // - PaginationProps.custom is a property that exists
 // - onPageChange and onSizePerPageChange return type to void
 // - wrapperClasses neede to add "table-responsive"
+// - Column.text can also be Element
 
 type RowFieldValue = string | number | Date | TODO
 type TODO = any
@@ -218,7 +219,7 @@ declare module 'react-bootstrap-table-next' {
   export interface Column {
     align?: string
     dataField: string
-    text: string
+    text: string | JSX.Element
     classes?: string | ((cell: TODO, row: TODO, rowIndex: number, colIndex: number) => string)
     headerClasses?: string
     hidden?: boolean

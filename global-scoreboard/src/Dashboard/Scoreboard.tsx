@@ -7,8 +7,10 @@ import { Dropdown, DropdownButton, Spinner } from 'react-bootstrap'
 import React, { MutableRefObject, forwardRef, useRef, useState } from 'react'
 import ToolkitProvider, { Search, ToolkitProviderProps } from 'react-bootstrap-table2-toolkit'
 import paginationFactory, { PaginationListStandalone, PaginationProvider, PaginationTotalStandalone, SizePerPageDropdownStandalone } from 'react-bootstrap-table2-paginator'
-import FriendButton from './FriendButton'
 import Player from '../models/Player'
+import PlayerNameCell from './TableElements/PlayerNameCell'
+import PlayerScoreCell from './TableElements/PlayerScoreCell'
+import ScoreTitle from './TableElements/ScoreTitle'
 
 
 const currentTimeOnLoad = new Date()
@@ -40,32 +42,22 @@ const columns: Column[] = [
     text: 'Name',
     formatter: (_, row: Player | undefined, __, formatExtraData?: FormatExtraDataProps) =>
       row &&
-      <span className="name-cell">
-        <a
-          href={`https://www.speedrun.com/user/${row.name}`}
-          target="_blank"
-          rel="noopener noreferrer"
-        >{row.countryCode &&
-          <img
-            alt=""
-            className="flagicon"
-            src={`https://www.speedrun.com/images/flags/${row.countryCode}.png`}
-          />}{row.name}</a>
-        {
-          formatExtraData && formatExtraData.currentUser?.userId !== row.userId &&
-          <FriendButton
-            isFriend={formatExtraData.friends.some(friend => friend.userId === row.userId) || false}
-            playerId={row.userId}
-            onUnfriend={formatExtraData.handleOnUnfriend}
-            onBefriend={formatExtraData.handleOnBefriend}
-          />
-        }
-      </span>,
+      formatExtraData &&
+      <PlayerNameCell
+        player={row}
+        isFriend={formatExtraData.friends.some(friend => friend.userId === row.userId) || false}
+        isCurrentUser={formatExtraData.currentUser?.userId === row.userId}
+        handleOnUnfriend={formatExtraData.handleOnUnfriend}
+        handleOnBefriend={formatExtraData.handleOnBefriend}
+      />,
   },
   {
     dataField: 'score',
-    text: 'Score',
+    text: <ScoreTitle />,
     searchable: false,
+    formatter: (_, row: Player | undefined) =>
+      row &&
+      <PlayerScoreCell player={row} />
   },
   {
     dataField: 'lastUpdate',
