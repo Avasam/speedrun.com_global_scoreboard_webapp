@@ -23,7 +23,7 @@ General context
 """
 
 
-def authenthication_required(f):
+def authentication_required(f):
     @wraps(f)
     def _verify(*args, **kwargs):
         auth_headers: List[str] = request.headers.get('Authorization', '').split()
@@ -79,8 +79,16 @@ def login():
         }})
 
 
+@api.route('/configs', methods=('GET',))
+def get_configs():
+    return jsonify({
+        "bypassUpdateRestrictions": configs.bypass_update_restrictions,
+        "lastUpdatedDays": configs.last_updated_days,
+    })
+
+
 @api.route('/users/current', methods=('GET',))
-@authenthication_required
+@authentication_required
 def get_user_current(current_user: Player):
     return jsonify({
         'user': {
@@ -95,7 +103,7 @@ Tournament Scheduler context
 
 
 @api.route('/schedules', methods=('GET',))
-@authenthication_required
+@authentication_required
 def get_all_schedules(current_user: Player):
     return jsonify(map_to_dto(current_user.get_schedules()))
 
@@ -116,7 +124,7 @@ def get_schedule(id: str):
 
 
 @api.route('/schedules', methods=('POST',))
-@authenthication_required
+@authentication_required
 def post_schedule(current_user: Player):
     data: Dict[str, ] = request.get_json()
 
@@ -128,7 +136,7 @@ def post_schedule(current_user: Player):
 
 
 @api.route('/schedules/<id>', methods=('PUT',))
-@authenthication_required
+@authentication_required
 def put_schedule(current_user: Player, id: str):
     data: Dict[str, ] = request.get_json()
     try:
@@ -144,7 +152,7 @@ def put_schedule(current_user: Player, id: str):
 
 
 @api.route('/schedules/<id>', methods=('DELETE',))
-@authenthication_required
+@authentication_required
 def delete_schedule(current_user: Player, id: str):
     try:
         schedule_id = int(id)
@@ -174,7 +182,7 @@ def post_registration(id: str):
 
 
 @api.route('/registrations/<id>', methods=('PUT',))
-@authenthication_required
+@authentication_required
 def put_registration(current_user: Player, id: str):
     data: Dict[str, ] = request.get_json()
 
@@ -192,7 +200,7 @@ def put_registration(current_user: Player, id: str):
 
 
 @api.route('/registrations/<id>', methods=('DELETE',))
-@authenthication_required
+@authentication_required
 def delete_registration(current_user: Player, id: str):
     try:
         registration_id = int(id)
@@ -301,7 +309,7 @@ __currently_updating_from: Dict[str, datetime] = {}
 __currently_updating_to: Dict[str, datetime] = {}
 
 
-@authenthication_required
+@authentication_required
 def __do_update_player(current_user: Player, name_or_id: str):
     global __currently_updating_from
     global __currently_updating_to
@@ -329,13 +337,13 @@ def __do_update_player(current_user: Player, name_or_id: str):
 
 
 @api.route('/players/current/friends', methods=('GET',))
-@authenthication_required
+@authentication_required
 def get_friends_current(current_user: Player):
     return jsonify(map_to_dto(current_user.get_friends()))
 
 
 @api.route('/players/current/friends/<id>', methods=('PUT',))
-@authenthication_required
+@authentication_required
 def put_friends_current(current_user: Player, id: str):
     if current_user.user_id == id:
         return "You can't add yourself as a friend!", 422
@@ -351,7 +359,7 @@ def put_friends_current(current_user: Player, id: str):
 
 
 @api.route('/players/current/friends/<id>', methods=('DELETE',))
-@authenthication_required
+@authentication_required
 def delete_friends_current(current_user: Player, id: str):
     if current_user.unfriend(id):
         return f"Successfully removed user ID \"{id}\" from your friends."

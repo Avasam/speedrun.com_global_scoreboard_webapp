@@ -11,7 +11,7 @@
 // - PaginationProps.custom is a property that exists
 // - onPageChange and onSizePerPageChange return type to void
 // - wrapperClasses neede to add "table-responsive"
-// - Column.text can also be Element
+// - Column.text can also be Element (TODO: throws error in console though)
 
 type RowFieldValue = string | number | Date | TODO
 type TODO = any

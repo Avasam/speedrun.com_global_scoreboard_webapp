@@ -377,7 +377,7 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
             # If user doesn't exists or enough time passed since last update
             if not player or \
                 not player.last_update or \
-                (datetime.now() - player.last_update).days >= 1 or \
+                (datetime.now() - player.last_update).days >= configs.last_updated_days[0] or \
                     configs.bypass_update_restrictions:
 
                 user.set_points()

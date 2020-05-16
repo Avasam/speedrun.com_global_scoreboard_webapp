@@ -64,11 +64,11 @@ $(function () {
       var cell = $('td:eq(3)', nRow);
       var daysSince = currentTimeOnLoad.diff(aData['lastUpdate'], 'days');
       if (daysSince < 1) {
-        cell.attr("class", "daysSince1");
+        cell.attr("class", "daysSince0");
       } else if (daysSince < 7) {
-        cell.attr("class", "daysSince7");
+        cell.attr("class", "daysSince1");
       } else if (daysSince < 30) {
-        cell.attr("class", "daysSince30");
+        cell.attr("class", "daysSince2");
       } else {
         cell.attr("class", "daysSince");
       }
@@ -215,10 +215,10 @@ $(function () {
   $('#scoreboard_info').parent().prepend(`
     <div>
       <label>Updated:</label>
-      <span class="daysSince1">Today</span>,
-      <span class="daysSince7">This week</span>,
-      <span class="daysSince30">This month</span>,
-      <span class="daysSince">Over a month ago</span>
+      <span class="daysSince0">This week</span>,
+      <span class="daysSince1">This month</span>,
+      <span class="daysSince2">In the last 3 months</span>,
+      <span class="daysSince">Over 3 months</span>
     </div>
   `)
 });
