@@ -8,11 +8,13 @@ import React, { MutableRefObject, forwardRef, useRef, useState } from 'react'
 import ToolkitProvider, { Search, ToolkitProviderProps } from 'react-bootstrap-table2-toolkit'
 import paginationFactory, { PaginationListStandalone, PaginationProvider, PaginationTotalStandalone, SizePerPageDropdownStandalone } from 'react-bootstrap-table2-paginator'
 import Configs from '../models/Configs'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Player from '../models/Player'
 import PlayerNameCell from './TableElements/PlayerNameCell'
 import PlayerScoreCell from './TableElements/PlayerScoreCell'
 import ScoreTitle from './TableElements/ScoreTitle'
-
+import { faLongArrowAltDown } from '@fortawesome/free-solid-svg-icons'
+import { faLongArrowAltUp } from '@fortawesome/free-solid-svg-icons'
 
 const currentTimeOnLoad = new Date()
 
@@ -23,6 +25,16 @@ const columnClass = (cell: string) => {
   if (daysSince >= Configs.lastUpdatedDays[1]) return 'daysSince2'
   if (daysSince >= Configs.lastUpdatedDays[0]) return 'daysSince1'
   return 'daysSince0'
+}
+
+const sortCaret: Column['sortCaret'] = (order) => {
+  console.log(order)
+
+  return <span className="sortCarrets">
+    {' '}
+    <FontAwesomeIcon className={order === 'asc' ? 'active' : ''} icon={faLongArrowAltDown} />
+    <FontAwesomeIcon className={order === 'desc' ? 'active' : ''} icon={faLongArrowAltUp} />
+  </span>
 }
 
 type FormatExtraDataProps = {
@@ -51,6 +63,7 @@ const columns: Column[] = [
         handleOnUnfriend={formatExtraData.handleOnUnfriend}
         handleOnBefriend={formatExtraData.handleOnBefriend}
       />,
+    sort: true,
   },
   {
     dataField: 'score',
@@ -58,7 +71,8 @@ const columns: Column[] = [
     searchable: false,
     formatter: (_, row: Player | undefined) =>
       row &&
-      <PlayerScoreCell player={row} />
+      <PlayerScoreCell player={row} />,
+    sort: true,
   },
   {
     dataField: 'lastUpdate',
@@ -66,6 +80,7 @@ const columns: Column[] = [
     formatter: (cell: Date | undefined) => cell && new Date(cell).toISOString().slice(0, 16).replace('T', ' '),
     classes: columnClass,
     searchable: false,
+    sort: true,
   },
   {
     dataField: 'userId',
@@ -179,7 +194,7 @@ const Scoreboard = forwardRef((props: ScoreboardProps, ref) => {
           handleOnUnfriend: props.onUnfriend,
           handleOnBefriend: props.onBefriend,
         }
-        return { ...column, formatExtraData }
+        return { ...column, formatExtraData, sortCaret }
       })}
       search
       bootstrap4
@@ -213,6 +228,10 @@ const Scoreboard = forwardRef((props: ScoreboardProps, ref) => {
                     </Spinner>
                     : <span>No matching records found</span>
                 }
+                defaultSorted={[{
+                  dataField: 'score',
+                  order: 'desc',
+                }]}
               />
               <div>
                 <PaginationTotalStandalone {...paginationProps} />

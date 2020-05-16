@@ -22,3 +22,14 @@
 .react-bootstrap-table-page-btns-ul .page-item[title="hidden"] {
   display: none;
 }
+
+.sortCarrets {
+  white-space: nowrap;
+}
+
+.sortCarrets svg {
+  opacity: .5;
+}
+.sortCarrets svg.active {
+  opacity: 1;
+}
