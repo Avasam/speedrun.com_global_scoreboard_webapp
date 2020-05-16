@@ -1,12 +1,14 @@
 import './App.css'
 import 'bootstrap/dist/css/bootstrap.css'
+import Configs, { ServerConfigs } from './models/Configs'
 import React, { FC, useEffect, useState } from 'react'
 import Dashboard from './Dashboard/Dashboard'
 import Player from './models/Player'
 import ScoreboardNavBar from './NavBar/ScoreboardNavBar'
 import { apiGet } from './fetchers/api'
 
-const getCurrentUser = () => apiGet('users/current').then(res => res.json())
+const getCurrentUser = () => apiGet('users/current').then<{ user: Player | undefined }>(res => res.json())
+const getConfigs = () => apiGet('configs').then<ServerConfigs>(res => res.json())
 
 const logout = (setCurrentUser: (user: null) => void) => {
   setCurrentUser(null)
@@ -17,15 +19,19 @@ const App: FC = () => {
   const [currentUser, setCurrentUser] = useState<Player | undefined | null>(undefined)
 
   useEffect(() => {
-    getCurrentUser()
-      .then((res: { user: Player | undefined }) => res.user)
-      .then(setCurrentUser)
-      .catch(err => {
-        if (err.status === 401) {
-          setCurrentUser(null)
-        } else {
-          console.error(err)
-        }
+    Promise.all([getConfigs, getCurrentUser])
+      .then(([serverConfigsPromise, resPromise]) => {
+        serverConfigsPromise().then(Configs.setConfigs)
+        resPromise()
+          .then((res: { user: Player | undefined }) => res.user)
+          .then(setCurrentUser)
+          .catch(err => {
+            if (err.status === 401) {
+              setCurrentUser(null)
+            } else {
+              console.error(err)
+            }
+          })
       })
   }, [])
 

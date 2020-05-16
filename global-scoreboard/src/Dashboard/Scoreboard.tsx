@@ -7,6 +7,7 @@ import { Dropdown, DropdownButton, Spinner } from 'react-bootstrap'
 import React, { MutableRefObject, forwardRef, useRef, useState } from 'react'
 import ToolkitProvider, { Search, ToolkitProviderProps } from 'react-bootstrap-table2-toolkit'
 import paginationFactory, { PaginationListStandalone, PaginationProvider, PaginationTotalStandalone, SizePerPageDropdownStandalone } from 'react-bootstrap-table2-paginator'
+import Configs from '../models/Configs'
 import Player from '../models/Player'
 import PlayerNameCell from './TableElements/PlayerNameCell'
 import PlayerScoreCell from './TableElements/PlayerScoreCell'
@@ -18,10 +19,10 @@ const currentTimeOnLoad = new Date()
 const columnClass = (cell: string) => {
   // TODO: This probably doesn't take daylight savings and other weird shenaniganns into account
   const daysSince = Math.floor((currentTimeOnLoad.getTime() - Date.parse(cell)) / 86400000)
-  if (daysSince >= 30) return 'daysSince'
-  if (daysSince >= 7) return 'daysSince30'
-  if (daysSince >= 1) return 'daysSince7'
-  return 'daysSince1'
+  if (daysSince >= Configs.lastUpdatedDays[2]) return 'daysSince'
+  if (daysSince >= Configs.lastUpdatedDays[1]) return 'daysSince2'
+  if (daysSince >= Configs.lastUpdatedDays[0]) return 'daysSince1'
+  return 'daysSince0'
 }
 
 type FormatExtraDataProps = {
@@ -134,10 +135,10 @@ const { SearchBar } = Search
 const Legend = () => <span className="legend">
   <br />
   <label>Updated:</label>{' '}
-  <span className="daysSince1">Today</span>{', '}
-  <span className="daysSince7">This&nbsp;week</span>{', '}
-  <span className="daysSince30">This&nbsp;month</span>{', '}
-  <span className="daysSince">Over&nbsp;a&nbsp;month&nbsp;ago</span>
+  <span className="daysSince0">This&nbsp;week</span>{', '}
+  <span className="daysSince1">This&nbsp;month</span>{', '}
+  <span className="daysSince2">In&nbsp;the&nbsp;last&nbsp;3&nbsp;months</span>{', '}
+  <span className="daysSince">Over&nbsp;3&nbsp;months&nbsp;ago</span>
 </span>
 
 type ScoreboardProps = {

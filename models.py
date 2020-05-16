@@ -8,8 +8,9 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import orm, text
 from typing import Any, Dict, List, Optional, Tuple, Union
 from utils import get_file, SpeedrunComError
-import uuid
+import configs
 import traceback
+import uuid
 
 
 def map_to_dto(dto_mappable_object_list) -> List[Dict[str, Union[str, bool, int]]]:
@@ -310,7 +311,7 @@ class CachedRequest():
     @staticmethod
     def get_response_or_new(url: str) -> dict:
         today = datetime.utcnow()
-        yesterday = today - timedelta(days=1)
+        yesterday = today - timedelta(days=configs.last_updated_days[0])
 
         try:
             cached_request = memoized_requests[url]

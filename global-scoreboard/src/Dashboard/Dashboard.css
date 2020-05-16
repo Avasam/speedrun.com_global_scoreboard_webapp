@@ -5,15 +5,15 @@
 /*--------*\
 | Coloring |
 \*--------*/
-.daysSince1 {
+.daysSince0 {
   color: blue;
 }
 
-.daysSince7 {
+.daysSince1 {
   color: green;
 }
 
-.daysSince30 {
+.daysSince2 {
   color: darkorange;
 }
 

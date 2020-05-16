@@ -79,6 +79,14 @@ def login():
         }})
 
 
+@api.route('/configs', methods=('GET',))
+def get_configs():
+    return jsonify({
+        "bypassUpdateRestrictions": configs.bypass_update_restrictions,
+        "lastUpdatedDays": configs.last_updated_days,
+    })
+
+
 @api.route('/users/current', methods=('GET',))
 @authenthication_required
 def get_user_current(current_user: Player):
