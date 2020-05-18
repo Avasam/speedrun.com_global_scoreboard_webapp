@@ -28,6 +28,21 @@ const validateRunnerNotRecentlyUpdated = (runnerNameOrId: string, players: Playe
   )
 }
 
+const buildFriendsList = (friends: Player[], allPlayers: Player[]) =>
+  friends.map(friend => {
+    const friendPlayers = allPlayers.find(player => player.userId === friend.userId)
+    return {
+      ...friend,
+      rank: friendPlayers?.rank,
+      score: friendPlayers?.score,
+    } as Player
+  })
+
+const sortAndInferRank = (players: Player[], score: number) => {
+  players.sort((a, b) => (a.score > b.score) ? -1 : 1)
+  return players.find(player => player.score <= score)?.rank
+}
+
 // Let's cheat! This is much simpler and more effective
 const openLoginModal = () => document.getElementById('open-login-modal-button')?.click()
 
@@ -57,29 +72,13 @@ const Dashboard = (props: DashboardProps) => {
         .all([getAllPlayers(), getFriends()])
         .then(([allPlayers, friends]) => {
           setCurrentPlayer(allPlayers.find(player => player.userId === props.currentUser?.userId) || null)
-          setFriends(friends.map(friend => {
-            const existingPlayer = allPlayers.find(player => player.userId === friend.userId)
-            return {
-              ...friend,
-              rank: existingPlayer?.rank || 0,
-              score: existingPlayer?.score || 0,
-            }
-          }))
+          setFriends(buildFriendsList(friends, allPlayers))
           setPlayers(allPlayers)
           setAlertMessage('')
         })
     } else if (props.currentUser && players.length > 0) {
       setCurrentPlayer(players.find(player => player.userId === props.currentUser?.userId) || null)
-      getFriends().then(friends => setFriends(
-        friends.map(friend => {
-          const existingPlayer = players.find(player => player.userId === friend.userId)
-          return {
-            ...friend,
-            rank: existingPlayer?.rank || 0,
-            score: existingPlayer?.score || 0,
-          }
-        })
-      ))
+      getFriends().then(friends => setFriends(buildFriendsList(friends, players)))
     } else {
       setCurrentPlayer(null)
       setFriends([])
@@ -118,29 +117,35 @@ const Dashboard = (props: DashboardProps) => {
         setAlertVariant(result.state)
         setAlertMessage(result.message)
         const newPlayers = [...players]
-        const index = newPlayers.findIndex(player => player.userId === result.userId)
-        if (index < 0) {
-          // TODO: insert at the right row and navigate to it
-          newPlayers.unshift({
-            rank: result.rank, // TODO: infer rank by comparing scores
-            name: result.name,
-            countryCode: result.countryCode,
-            score: result.score,
-            lastUpdate: result.lastUpdate,
+        const existingPlayerIndex = newPlayers.findIndex(player => player.userId === result.userId)
+        const inferedRank = sortAndInferRank(newPlayers, result.score)
+        const newPlayer = {
+          rank: inferedRank,
+          name: result.name,
+          countryCode: result.countryCode,
+          score: result.score,
+          lastUpdate: result.lastUpdate,
+        }
+        if (existingPlayerIndex < 0) {
+          newPlayers.push({
+            ...newPlayer,
             userId: result.userId,
           })
         } else {
-          // TODO: Navigate after inserting to it
-          newPlayers[index] = {
-            rank: result.rank, // TODO: infer new rank by comparing scores
-            name: result.name,
-            countryCode: result.countryCode,
-            score: result.score,
-            lastUpdate: result.lastUpdate,
-            userId: players[index].userId,
+          newPlayers[existingPlayerIndex] = {
+            ...newPlayer,
+            userId: players[existingPlayerIndex].userId,
           }
         }
+
         setPlayers(newPlayers)
+        if (friends.some(friend => friend.userId === result.userId)) {
+          setFriends(buildFriendsList(friends, newPlayers))
+        }
+        if (currentPlayer?.userId === result.userId) {
+          setCurrentPlayer({ ...currentPlayer, ...result, rank: inferedRank })
+        }
+
         handleJumpToPlayer(result.userId)
       })
       .catch((err: Response | Error) => {

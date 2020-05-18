@@ -27,15 +27,12 @@ const columnClass = (cell: string) => {
   return 'daysSince0'
 }
 
-const sortCaret: Column['sortCaret'] = (order) => {
-  console.log(order)
-
-  return <span className="sortCarrets">
+const sortCaret: Column['sortCaret'] = (order) =>
+  <span className="sortCarrets">
     {' '}
     <FontAwesomeIcon className={order === 'asc' ? 'active' : ''} icon={faLongArrowAltDown} />
     <FontAwesomeIcon className={order === 'desc' ? 'active' : ''} icon={faLongArrowAltUp} />
   </span>
-}
 
 type FormatExtraDataProps = {
   currentUser: Player | null

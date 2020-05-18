@@ -19,19 +19,18 @@ const App: FC = () => {
   const [currentUser, setCurrentUser] = useState<Player | undefined | null>(undefined)
 
   useEffect(() => {
-    Promise.all([getConfigs, getCurrentUser])
-      .then(([serverConfigsPromise, resPromise]) => {
-        serverConfigsPromise().then(Configs.setConfigs)
-        resPromise()
-          .then((res: { user: Player | undefined }) => res.user)
-          .then(setCurrentUser)
-          .catch(err => {
-            if (err.status === 401) {
-              setCurrentUser(null)
-            } else {
-              console.error(err)
-            }
-          })
+    Promise
+      .all([getConfigs(), getCurrentUser()])
+      .then(([serverConfigs, res]) => {
+        Configs.setConfigs(serverConfigs)
+        setCurrentUser(res.user)
+      })
+      .catch(err => {
+        if (err.status === 401) {
+          setCurrentUser(null)
+        } else {
+          console.error(err)
+        }
       })
   }, [])
 
