@@ -8,8 +8,6 @@ import ReactDOM from 'react-dom'
 window.process = {
   env: process.env
 } as NodeJS.Process
-console.log(process.env)
-console.log(window.process.env)
 if ((process.env.REACT_APP_BASE_URL?.includes('127.0.0.1') || process.env.REACT_APP_BASE_URL?.includes('localhost'))
   && window.location.hostname !== 'localhost'
   && window.location.hostname !== '127.0.0.1'

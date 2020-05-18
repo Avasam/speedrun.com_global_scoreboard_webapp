@@ -14,7 +14,6 @@ const login = (srcApiKey: string, onLoginCallback: (currentUser: User) => void) 
   apiPost('login', { srcApiKey })
     .then(res => res.json())
     .then((res: { token: string, user: User }) => {
-      console.log(res)
       if (!res.token) return
       localStorage.setItem('jwtToken', res.token)
       onLoginCallback(res.user)
