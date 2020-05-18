@@ -1,22 +1,27 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Speedrunning Scoreboard",
+  "name": "Ava's Global Speedrunning Scoreboard (Unofficial)",
   "icons": [
     {
-      "src": "favicon.ico",
+      "src": "assets/images/favicon.webp",
+      "sizes": "512x512 192x192 64x64 32x32 24x24 16x16",
+      "type": "image/webp"
+    },
+    {
+      "src": "assets/images/favicon.ico",
       "sizes": "64x64 32x32 24x24 16x16",
       "type": "image/x-icon"
     },
     {
-      "src": "logo192.png",
+      "src": "assets/images/favicon.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "logo512.png",
+      "src": "assets/images/favicon.png",
       "type": "image/png",
       "sizes": "512x512"
-    }	 
+    }
   ],
   "start_url": ".",
   "display": "standalone",

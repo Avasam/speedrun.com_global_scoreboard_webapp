@@ -79,7 +79,7 @@ const App: FC = () => {
                 className='logo'
                 style={{ height: (!currentUser && isMobileSize) ? 'auto' : undefined }}
                 alt='logo'
-                src={`${window.process.env.REACT_APP_BASE_URL}/assets/images/favicon.ico`}
+                src={`${window.process.env.REACT_APP_BASE_URL}/assets/images/favicon.webp`}
               />
             </IconButton>
           }
