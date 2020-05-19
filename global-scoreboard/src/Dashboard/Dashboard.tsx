@@ -42,7 +42,7 @@ const inferRank = (players: Player[], score: number) => {
   const firstLowerOrEqualPlayerFound = [...players]
     .sort((a, b) => (a.score > b.score) ? -1 : 1)
     .find(player => player.score <= score)
-  if (!firstLowerOrEqualPlayerFound?.rank) return null
+  if (firstLowerOrEqualPlayerFound?.rank == null) return undefined
   return firstLowerOrEqualPlayerFound?.score === score
     ? firstLowerOrEqualPlayerFound.rank
     : firstLowerOrEqualPlayerFound.rank - 1
