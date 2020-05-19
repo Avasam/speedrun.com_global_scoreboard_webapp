@@ -7,20 +7,32 @@ import { Dropdown, DropdownButton, Spinner } from 'react-bootstrap'
 import React, { MutableRefObject, forwardRef, useRef, useState } from 'react'
 import ToolkitProvider, { Search, ToolkitProviderProps } from 'react-bootstrap-table2-toolkit'
 import paginationFactory, { PaginationListStandalone, PaginationProvider, PaginationTotalStandalone, SizePerPageDropdownStandalone } from 'react-bootstrap-table2-paginator'
-import FriendButton from './FriendButton'
+import Configs from '../models/Configs'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Player from '../models/Player'
-
+import PlayerNameCell from './TableElements/PlayerNameCell'
+import PlayerScoreCell from './TableElements/PlayerScoreCell'
+import ScoreTitle from './TableElements/ScoreTitle'
+import { faLongArrowAltDown } from '@fortawesome/free-solid-svg-icons'
+import { faLongArrowAltUp } from '@fortawesome/free-solid-svg-icons'
 
 const currentTimeOnLoad = new Date()
 
 const columnClass = (cell: string) => {
   // TODO: This probably doesn't take daylight savings and other weird shenaniganns into account
   const daysSince = Math.floor((currentTimeOnLoad.getTime() - Date.parse(cell)) / 86400000)
-  if (daysSince >= 30) return 'daysSince'
-  if (daysSince >= 7) return 'daysSince30'
-  if (daysSince >= 1) return 'daysSince7'
-  return 'daysSince1'
+  if (daysSince >= Configs.lastUpdatedDays[2]) return 'daysSince'
+  if (daysSince >= Configs.lastUpdatedDays[1]) return 'daysSince2'
+  if (daysSince >= Configs.lastUpdatedDays[0]) return 'daysSince1'
+  return 'daysSince0'
 }
+
+const sortCaret: Column['sortCaret'] = (order) =>
+  <span className="sortCarrets">
+    {' '}
+    <FontAwesomeIcon className={order === 'asc' ? 'active' : ''} icon={faLongArrowAltDown} />
+    <FontAwesomeIcon className={order === 'desc' ? 'active' : ''} icon={faLongArrowAltUp} />
+  </span>
 
 type FormatExtraDataProps = {
   currentUser: Player | null
@@ -40,32 +52,24 @@ const columns: Column[] = [
     text: 'Name',
     formatter: (_, row: Player | undefined, __, formatExtraData?: FormatExtraDataProps) =>
       row &&
-      <span className="name-cell">
-        <a
-          href={`https://www.speedrun.com/user/${row.name}`}
-          target="_blank"
-          rel="noopener noreferrer"
-        >{row.countryCode &&
-          <img
-            alt=""
-            className="flagicon"
-            src={`https://www.speedrun.com/images/flags/${row.countryCode}.png`}
-          />}{row.name}</a>
-        {
-          formatExtraData && formatExtraData.currentUser?.userId !== row.userId &&
-          <FriendButton
-            isFriend={formatExtraData.friends.some(friend => friend.userId === row.userId) || false}
-            playerId={row.userId}
-            onUnfriend={formatExtraData.handleOnUnfriend}
-            onBefriend={formatExtraData.handleOnBefriend}
-          />
-        }
-      </span>,
+      formatExtraData &&
+      <PlayerNameCell
+        player={row}
+        isFriend={formatExtraData.friends.some(friend => friend.userId === row.userId) || false}
+        isCurrentUser={formatExtraData.currentUser?.userId === row.userId}
+        handleOnUnfriend={formatExtraData.handleOnUnfriend}
+        handleOnBefriend={formatExtraData.handleOnBefriend}
+      />,
+    sort: true,
   },
   {
     dataField: 'score',
-    text: 'Score',
+    text: <ScoreTitle />,
     searchable: false,
+    formatter: (_, row: Player | undefined) =>
+      row &&
+      <PlayerScoreCell player={row} />,
+    sort: true,
   },
   {
     dataField: 'lastUpdate',
@@ -73,6 +77,7 @@ const columns: Column[] = [
     formatter: (cell: Date | undefined) => cell && new Date(cell).toISOString().slice(0, 16).replace('T', ' '),
     classes: columnClass,
     searchable: false,
+    sort: true,
   },
   {
     dataField: 'userId',
@@ -142,10 +147,10 @@ const { SearchBar } = Search
 const Legend = () => <span className="legend">
   <br />
   <label>Updated:</label>{' '}
-  <span className="daysSince1">Today</span>{', '}
-  <span className="daysSince7">This&nbsp;week</span>{', '}
-  <span className="daysSince30">This&nbsp;month</span>{', '}
-  <span className="daysSince">Over&nbsp;a&nbsp;month&nbsp;ago</span>
+  <span className="daysSince0">This&nbsp;week</span>{', '}
+  <span className="daysSince1">This&nbsp;month</span>{', '}
+  <span className="daysSince2">In&nbsp;the&nbsp;last&nbsp;3&nbsp;months</span>{', '}
+  <span className="daysSince">Over&nbsp;3&nbsp;months&nbsp;ago</span>
 </span>
 
 type ScoreboardProps = {
@@ -186,7 +191,7 @@ const Scoreboard = forwardRef((props: ScoreboardProps, ref) => {
           handleOnUnfriend: props.onUnfriend,
           handleOnBefriend: props.onBefriend,
         }
-        return { ...column, formatExtraData }
+        return { ...column, formatExtraData, sortCaret }
       })}
       search
       bootstrap4
@@ -220,6 +225,10 @@ const Scoreboard = forwardRef((props: ScoreboardProps, ref) => {
                     </Spinner>
                     : <span>No matching records found</span>
                 }
+                defaultSorted={[{
+                  dataField: 'score',
+                  order: 'desc',
+                }]}
               />
               <div>
                 <PaginationTotalStandalone {...paginationProps} />

@@ -7,7 +7,7 @@ from math import ceil, exp, floor, pi
 from models import db, CachedRequest, Player
 from threading import Thread, active_count
 from time import strftime, sleep
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 from utils import UserUpdaterError, SpeedrunComError
 import configs
 import httplib2
@@ -209,7 +209,7 @@ class User:
     _points: float = 0
     _name: str = ""
     _id: str = ""
-    _country_code: str = ""
+    _country_code: Optional[str] = None
     _banned: bool = False
     _point_distribution_str: str = ""
 
@@ -225,7 +225,8 @@ class User:
         infos = CachedRequest.get_response_or_new(url)
 
         self._id = infos["data"]["id"]
-        self._country_code = infos["data"]["location"]["country"]["code"]
+        location = infos["data"]["location"]
+        self._country_code = location["country"]["code"] if location else None
         self._name = infos["data"]["names"].get("international")
         japanese_name = infos["data"]["names"].get("japanese")
         if japanese_name:
@@ -376,7 +377,7 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
             # If user doesn't exists or enough time passed since last update
             if not player or \
                 not player.last_update or \
-                (datetime.now() - player.last_update).days >= 1 or \
+                (datetime.now() - player.last_update).days >= configs.last_updated_days[0] or \
                     configs.bypass_update_restrictions:
 
                 user.set_points()
@@ -396,6 +397,7 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
                                      "name": user._name,
                                      "country_code": user._country_code,
                                      "score": floor(user._points),
+                                     "score_details": user._point_distribution_str,
                                      "last_update": timestamp})
                         db.session.commit()
 
@@ -407,6 +409,7 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
                                       user._name,
                                       country_code=user._country_code,
                                       score=user._points,
+                                      score_details=user._point_distribution_str,
                                       last_update=timestamp)
                     else:
                         text_output = f"Not inserting new data as {user} " \

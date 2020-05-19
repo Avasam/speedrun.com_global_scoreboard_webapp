@@ -6,3 +6,8 @@ footer {
 .close.close {
   font-size: 1.6rem;
 }
+
+.btn.btn-link {
+  padding: 0;
+  border: none;
+}

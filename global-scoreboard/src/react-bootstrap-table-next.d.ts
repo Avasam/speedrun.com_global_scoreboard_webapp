@@ -11,6 +11,9 @@
 // - PaginationProps.custom is a property that exists
 // - onPageChange and onSizePerPageChange return type to void
 // - wrapperClasses neede to add "table-responsive"
+// - Column.text can also be Element (TODO: throws error in console though)
+// - Column.sortCaret exists
+// - BootstrapTable.sort exists
 
 type RowFieldValue = string | number | Date | TODO
 type TODO = any
@@ -189,6 +192,10 @@ declare module 'react-bootstrap-table-next' {
         startEditing: (rowindex: number, columnindex: number) => void
       }
     }
+    sort: {
+      dataField: string
+      order: SortOrder
+    }
   }
   export interface BootstrapTableProps extends PaginationProps {
     keyField: string
@@ -218,7 +225,7 @@ declare module 'react-bootstrap-table-next' {
   export interface Column {
     align?: string
     dataField: string
-    text: string
+    text: string | JSX.Element
     classes?: string | ((cell: TODO, row: TODO, rowIndex: number, colIndex: number) => string)
     headerClasses?: string
     hidden?: boolean
@@ -229,10 +236,11 @@ declare module 'react-bootstrap-table-next' {
     formatExtraData?: TODO
     formatter?: (cell: TODO, row: TODO, rowIndex: number, formatExtraData: any) => string | ReactElement | undefined
     headerStyle?: (colum: TODO, colIndex: number) => any
-    sortFunc?<T>(a: T, b: T, order: 'asc' | 'desc', rowA: Row, rowB: Row): number
+    sortFunc?<T>(a: T, b: T, order: SortOrder, rowA: Row, rowB: Row): number
     style?: (colum: TODO, colIndex: number) => {}
     filterValue?<T>(cell: T, row: TODO): any
     onSort?(dataField: string, order: SortOrder): void
+    sortCaret?: (order: SortOrder | null | undefined, column: Column) => JSX.Element | null
   }
   export type Row = RowT
 }

@@ -1,0 +1,7 @@
+/* Bootstrap override to give enough space for the results*/
+@media (min-width: 576px) {
+  .modal-dialog {
+    width: fit-content;
+    max-width: 1080px;
+  }
+}

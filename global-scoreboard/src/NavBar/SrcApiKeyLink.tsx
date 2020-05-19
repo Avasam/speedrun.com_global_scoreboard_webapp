@@ -19,7 +19,9 @@ const SrcApiKeyLink: FC = () => {
           target="src"
         >www.speedrun.com/</Button>
       </InputGroup.Prepend>
+      {/* TODO: Adapt to characters length like in tournament scheduler */}
       <Form.Control
+        style={{ minWidth: 85 }}
         type="text"
         name="src-name"
         placeholder="SRC name"

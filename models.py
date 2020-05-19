@@ -6,10 +6,11 @@ from datetime import datetime, timedelta
 from flask_login import login_user, UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import orm, text
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 from utils import get_file, SpeedrunComError
-import uuid
+import configs
 import traceback
+import uuid
 
 
 def map_to_dto(dto_mappable_object_list) -> List[Dict[str, Union[str, bool, int]]]:
@@ -38,31 +39,28 @@ class Player(db.Model, UserMixin):
     name: str = db.Column(db.String(32), nullable=False)
     country_code: Optional[str] = db.Column(db.String(5))
     score: int = db.Column(db.Integer, nullable=False)
+    score_details: str = db.Column(db.String())
     last_update: Optional[datetime] = db.Column(db.DateTime())
     rank: Optional[int] = None
 
     schedules = db.relationship("Schedule", back_populates="owner")
 
     @staticmethod
-    def authenticate(api_key: str):
+    def authenticate(api_key: str) -> Tuple[Optional[Player], Optional[str]]:
         try:  # Get user from speedrun.com using the API key
             data = get_file(
                 "https://www.speedrun.com/api/v1/profile",
                 {"X-API-Key": api_key}
             )["data"]
         except SpeedrunComError:
-            print("\nError: Unknown\n{}".format(traceback.format_exc()))
-            return None
-            # TODO: return json.dumps({'state': 'warning', 'message': 'Invalid API key.'})
+            return None, 'Invalid API key.'
         except Exception:
             print("\nError: Unknown\n{}".format(traceback.format_exc()))
-            return None
-            # TODO: return json.dumps({"state": "danger", "message": traceback.format_exc()})
+            return None, traceback.format_exc()
 
         user_id: Optional[str] = data["id"]
         if not user_id:  # Confirms wether the API key is valid
-            return None
-            # TODO: return json.dumps({'state': 'warning', 'message': 'Invalid API key.'})
+            return None, 'Invalid API key.'
 
         user_name: str = data["names"]["international"]
         print(f"Logging in '{user_id}' ({user_name})")
@@ -73,7 +71,7 @@ class Player(db.Model, UserMixin):
 
         login_user(player)  # Login for non SPA
 
-        return player
+        return player, None
 
     @staticmethod
     def get(id: str) -> Player:
@@ -298,7 +296,11 @@ class Player(db.Model, UserMixin):
         }
 
 
+memoized_requests: Dict[str, CachedRequest] = {}
+
+
 class CachedRequest():
+    global memoized_requests
     result: dict
     timestamp: datetime
 
@@ -309,7 +311,7 @@ class CachedRequest():
     @staticmethod
     def get_response_or_new(url: str) -> dict:
         today = datetime.utcnow()
-        yesterday = today - timedelta(days=1)
+        yesterday = today - timedelta(days=configs.last_updated_days[0])
 
         try:
             cached_request = memoized_requests[url]
@@ -321,9 +323,6 @@ class CachedRequest():
             result = get_file(url)
             memoized_requests[url] = CachedRequest(result, today)
             return result
-
-
-memoized_requests: Dict[str, CachedRequest] = {}
 
 
 class Schedule(db.Model):

@@ -2,7 +2,7 @@ import './Dashboard.css'
 import { Alert, Col, Container, ProgressBar, Row } from 'react-bootstrap'
 import React, { useEffect, useRef, useState } from 'react'
 import Scoreboard, { ScoreboardRef } from './Scoreboard'
-import { apiGet, apiPost } from '../fetchers/api'
+import { apiDelete, apiGet, apiPost, apiPut } from '../fetchers/api'
 import { AlertProps } from 'react-bootstrap/Alert'
 import Player from '../models/Player'
 import QuickView from './QuickView'
@@ -13,12 +13,38 @@ type DashboardProps = {
   currentUser: Player | null | undefined
 }
 
-const getFriends = () => apiGet('players/current/friends').then<Player[]>(res => res.json())
-const getAllPlayers = () => apiGet('players').then<Player[]>(res => res.json())
-
 const progressBarTickInterval = 50
 const minutes5 = 5 * 600
 let progressTimer: NodeJS.Timeout
+
+const getFriends = () => apiGet('players/current/friends').then<Player[]>(res => res.json())
+const getAllPlayers = () => apiGet('players').then<Player[]>(res => res.json())
+
+const validateRunnerNotRecentlyUpdated = (runnerNameOrId: string, players: Player[]) => {
+  const yesterday = new Date()
+  yesterday.setDate(yesterday.getDate() - 1)
+  return !players.some(player =>
+    (player.name === runnerNameOrId || player.userId === runnerNameOrId) && new Date(player.lastUpdate) >= yesterday
+  )
+}
+
+const buildFriendsList = (friends: Player[], allPlayers: Player[]) =>
+  friends.map(friend => {
+    const friendPlayers = allPlayers.find(player => player.userId === friend.userId)
+    return {
+      ...friend,
+      rank: friendPlayers?.rank,
+      score: friendPlayers?.score,
+    } as Player
+  })
+
+const sortAndInferRank = (players: Player[], score: number) => {
+  players.sort((a, b) => (a.score > b.score) ? -1 : 1)
+  return players.find(player => player.score <= score)?.rank
+}
+
+// Let's cheat! This is much simpler and more effective
+const openLoginModal = () => document.getElementById('open-login-modal-button')?.click()
 
 const Dashboard = (props: DashboardProps) => {
   const [currentPlayer, setCurrentPlayer] = useState<Player | null>(props.currentUser || null)
@@ -46,29 +72,13 @@ const Dashboard = (props: DashboardProps) => {
         .all([getAllPlayers(), getFriends()])
         .then(([allPlayers, friends]) => {
           setCurrentPlayer(allPlayers.find(player => player.userId === props.currentUser?.userId) || null)
-          setFriends(friends.map(friend => {
-            const existingPlayer = allPlayers.find(player => player.userId === friend.userId)
-            return {
-              ...friend,
-              rank: existingPlayer?.rank || 0,
-              score: existingPlayer?.score || 0,
-            }
-          }))
+          setFriends(buildFriendsList(friends, allPlayers))
           setPlayers(allPlayers)
           setAlertMessage('')
         })
     } else if (props.currentUser && players.length > 0) {
       setCurrentPlayer(players.find(player => player.userId === props.currentUser?.userId) || null)
-      getFriends().then(friends => setFriends(
-        friends.map(friend => {
-          const existingPlayer = players.find(player => player.userId === friend.userId)
-          return {
-            ...friend,
-            rank: existingPlayer?.rank || 0,
-            score: existingPlayer?.score || 0,
-          }
-        })
-      ))
+      getFriends().then(friends => setFriends(buildFriendsList(friends, players)))
     } else {
       setCurrentPlayer(null)
       setFriends([])
@@ -92,38 +102,50 @@ const Dashboard = (props: DashboardProps) => {
   const scoreboardRef = useRef<ScoreboardRef>(null)
 
   const handleOnUpdateRunner = (runnerNameOrId: string) => {
-    startLoading()
     setAlertVariant('info')
     setAlertMessage(`Updating "${runnerNameOrId}". This may take up to 5 mintues, depending on the amount of runs to analyse. Please Wait...`)
+    if (window.process.env.REACT_APP_BYPASS_UPDATE_RESTRICTIONS !== 'true' &&
+      !validateRunnerNotRecentlyUpdated(runnerNameOrId, players)) {
+      setAlertVariant('warning')
+      setAlertMessage(`Runner ${runnerNameOrId} has already been updated in the last 24h`)
+      return
+    }
+    startLoading()
     apiPost(`players/${runnerNameOrId}/update`)
       .then<UpdateRunnerResult>(res => res.json())
       .then(result => {
         setAlertVariant(result.state)
         setAlertMessage(result.message)
         const newPlayers = [...players]
-        const index = newPlayers.findIndex(player => player.userId === result.userId)
-        if (index < 0) {
-          // TODO: insert at the right row and navigate to it
-          newPlayers.unshift({
-            rank: result.rank, // TODO: infer rank by comparing scores
-            name: result.name,
-            countryCode: result.countryCode,
-            score: result.score,
-            lastUpdate: result.lastUpdate,
+        const existingPlayerIndex = newPlayers.findIndex(player => player.userId === result.userId)
+        const inferedRank = sortAndInferRank(newPlayers, result.score)
+        const newPlayer = {
+          rank: inferedRank,
+          name: result.name,
+          countryCode: result.countryCode,
+          score: result.score,
+          lastUpdate: result.lastUpdate,
+        }
+        if (existingPlayerIndex < 0) {
+          newPlayers.push({
+            ...newPlayer,
             userId: result.userId,
           })
         } else {
-          // TODO: Navigate after inserting to it
-          newPlayers[index] = {
-            rank: result.rank, // TODO: infer new rank by comparing scores
-            name: result.name,
-            countryCode: result.countryCode,
-            score: result.score,
-            lastUpdate: result.lastUpdate,
-            userId: players[index].userId,
+          newPlayers[existingPlayerIndex] = {
+            ...newPlayer,
+            userId: players[existingPlayerIndex].userId,
           }
         }
+
         setPlayers(newPlayers)
+        if (friends.some(friend => friend.userId === result.userId)) {
+          setFriends(buildFriendsList(friends, newPlayers))
+        }
+        if (currentPlayer?.userId === result.userId) {
+          setCurrentPlayer({ ...currentPlayer, ...result, rank: inferedRank })
+        }
+
         handleJumpToPlayer(result.userId)
       })
       .catch((err: Response | Error) => {
@@ -136,6 +158,20 @@ const Dashboard = (props: DashboardProps) => {
             'which can happen if updating takes more than 5 minutes. ' +
             'Please try again as next attempt should take less time since ' +
             'all calls to speedrun.com are cached for a day or until server restart.')
+        } else if (err.status === 409) {
+          err.text().then(errorString => {
+            setAlertVariant('danger')
+            switch (errorString) {
+              case 'current_user':
+                setAlertMessage('It seems you are already updating a runner. Please try again in 5 minutes.')
+                break
+              case 'name_or_id':
+                setAlertMessage('It seems that runner is already being updated (possibly by someone else). Please try again in 5 minutes.')
+                break
+              default:
+                setAlertMessage(errorString)
+            }
+          })
         } else {
           err.text().then(errorString => {
             try {
@@ -150,14 +186,23 @@ const Dashboard = (props: DashboardProps) => {
       })
       .finally(stopLoading)
   }
+
   const handleJumpToPlayer = (playerId: string) => scoreboardRef.current?.jumpToPlayer(playerId)
-  const handleUnfriend = (playerId: string) => setFriends(friends.filter(friend => friend.userId !== playerId))
+  const handleUnfriend = (playerId: string) =>
+    apiDelete(`players/current/friends/${playerId}`)
+      .then(() => setFriends(friends.filter(friend => friend.userId !== playerId)))
+      .catch(console.error)
   const handleBefriend = (playerId: string) => {
-    const newFriend = players.find(player => player.userId === playerId)
-    if (!newFriend) {
-      return console.error(`Couldn't add friend id ${playerId} as it was not found in existing players table`)
-    }
-    setFriends([...friends, newFriend])
+    if (!currentPlayer) return openLoginModal()
+    apiPut(`players/current/friends/${playerId}`)
+      .then(() => {
+        const newFriend = players.find(player => player.userId === playerId)
+        if (!newFriend) {
+          return console.error(`Couldn't add friend id ${playerId} as it was not found in existing players table`)
+        }
+        setFriends([...friends, newFriend])
+      })
+      .catch(console.error)
   }
 
   return <Container className="dashboard-container">
@@ -176,7 +221,11 @@ const Dashboard = (props: DashboardProps) => {
     <Row>
       <Col md={4}>
         <Row>
-          <UpdateRunnerForm onUpdate={handleOnUpdateRunner} currentUser={currentPlayer} />
+          <UpdateRunnerForm
+            onUpdate={handleOnUpdateRunner}
+            updating={progress != null}
+            currentUser={currentPlayer}
+          />
         </Row>
 
         <Row>
