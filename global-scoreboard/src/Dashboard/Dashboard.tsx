@@ -38,9 +38,14 @@ const buildFriendsList = (friends: Player[], allPlayers: Player[]) =>
     } as Player
   })
 
-const sortAndInferRank = (players: Player[], score: number) => {
-  players.sort((a, b) => (a.score > b.score) ? -1 : 1)
-  return players.find(player => player.score <= score)?.rank
+const inferRank = (players: Player[], score: number) => {
+  const firstLowerOrEqualPlayerFound = [...players]
+    .sort((a, b) => (a.score > b.score) ? -1 : 1)
+    .find(player => player.score <= score)
+  if (firstLowerOrEqualPlayerFound?.rank == null) return undefined
+  return firstLowerOrEqualPlayerFound?.score === score
+    ? firstLowerOrEqualPlayerFound.rank
+    : firstLowerOrEqualPlayerFound.rank - 1
 }
 
 // Let's cheat! This is much simpler and more effective
@@ -118,7 +123,7 @@ const Dashboard = (props: DashboardProps) => {
         setAlertMessage(result.message)
         const newPlayers = [...players]
         const existingPlayerIndex = newPlayers.findIndex(player => player.userId === result.userId)
-        const inferedRank = sortAndInferRank(newPlayers, result.score)
+        const inferedRank = inferRank(newPlayers, result.score)
         const newPlayer = {
           rank: inferedRank,
           name: result.name,

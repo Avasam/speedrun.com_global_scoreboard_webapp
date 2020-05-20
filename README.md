@@ -2,15 +2,15 @@
 
 The webapp version of an unofficial speedrun.com global scoreboard for competitive speedrunning
 
-Disclaimer: This is still in early testing and subject to drastic changes if needed.
+Disclaimer: Whilst most of the quirks have been figured out, there could still be changes that affect current scores.
 
 ### **[See the scoreboard](https://avasam.pythonanywhere.com/)**
 
-There you can also update any user you want.
+There you can also update and bookmark any user you want.
 
-How the score is calculated: **This is out of date! New logic has been added**
+How the score is calculated:
 
-- The sum of every valid PB of a user is scored according to a formula. (see ~~old link~~) TODO: new formula based on time's standart deviation, WR, Median and mean.  
+- The sum of every valid PB of a user is scored according to a formula. TODO: new formula based on time's standart deviation, WR, Median and mean.  
 - Said formula gives you more points the shorter your time is and the more players there are. Which encourages having a good time in games with a lot of players without having to be first (altough being in the top does give a lot of points because you have a lot more competition).
 - The only 2 arbitrary numbers are: 4 and 60%
   - 4 (3?)is the minimum amount of players that should be present in a leaderboard.
@@ -22,6 +22,8 @@ How the score is calculated: **This is out of date! New logic has been added**
 Individual levels are worth a fraction of full-game runs: `1 / (number_of_IL + 1)`.
 
 Runs w/o video/image verifications are not considered AND not counted.
+
+Scoreboards and multi-games are also ignored.
 
 ## Dev environment setup
 
