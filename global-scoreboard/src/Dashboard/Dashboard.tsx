@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import Scoreboard, { ScoreboardRef } from './Scoreboard'
 import { apiDelete, apiGet, apiPost, apiPut } from '../fetchers/api'
 import { AlertProps } from 'react-bootstrap/Alert'
+import Configs from '../models/Configs'
 import Player from '../models/Player'
 import QuickView from './QuickView'
 import UpdateRunnerForm from './UpdateRunnerForm'
@@ -112,7 +113,8 @@ const Dashboard = (props: DashboardProps) => {
     if (window.process.env.REACT_APP_BYPASS_UPDATE_RESTRICTIONS !== 'true' &&
       !validateRunnerNotRecentlyUpdated(runnerNameOrId, players)) {
       setAlertVariant('warning')
-      setAlertMessage(`Runner ${runnerNameOrId} has already been updated in the last 24h`)
+      const cantUpdateTime = Configs.lastUpdatedDays[0]
+      setAlertMessage(`Runner ${runnerNameOrId} has already been updated in the past ${cantUpdateTime} day${cantUpdateTime === 1 ? '' : 's'}`)
       return
     }
     startLoading()
