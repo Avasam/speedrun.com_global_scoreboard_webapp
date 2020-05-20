@@ -14,6 +14,7 @@
 // - Column.text can also be Element (TODO: throws error in console though)
 // - Column.sortCaret exists
 // - BootstrapTable.sort exists
+// - SearchFieldProps.ref?
 
 type RowFieldValue = string | number | Date | TODO
 type TODO = any
@@ -312,6 +313,7 @@ declare module 'react-bootstrap-table2-toolkit' {
   interface SearchFieldProps {
     className?: string
     placeholder?: string
+    ref: SearchBar
   }
   interface SearchProps {
     searchText?: string

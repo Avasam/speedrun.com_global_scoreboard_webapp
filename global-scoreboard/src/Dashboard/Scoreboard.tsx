@@ -4,8 +4,8 @@ import 'react-bootstrap-table2-paginator/dist/react-bootstrap-table2-paginator.m
 import './Scoreboard.css'
 import BootstrapTable, { Column } from 'react-bootstrap-table-next'
 import { Dropdown, DropdownButton, Spinner } from 'react-bootstrap'
-import React, { MutableRefObject, forwardRef, useRef, useState } from 'react'
-import ToolkitProvider, { Search, ToolkitProviderProps } from 'react-bootstrap-table2-toolkit'
+import React, { Component, MutableRefObject, forwardRef, useRef, useState } from 'react'
+import ToolkitProvider, { Search, SearchProps, ToolkitProviderProps } from 'react-bootstrap-table2-toolkit'
 import paginationFactory, { PaginationListStandalone, PaginationProvider, PaginationTotalStandalone, SizePerPageDropdownStandalone } from 'react-bootstrap-table2-paginator'
 import Configs from '../models/Configs'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -172,10 +172,13 @@ const Scoreboard = forwardRef((props: ScoreboardProps, ref) => {
       const currSizePerPage = boostrapTableRef.current?.paginationContext.currSizePerPage
       const jumpToPage = Math.floor(playerIndex / Number(currSizePerPage)) + 1
 
-      goToPage(jumpToPage)
+      // Note: setState is used to ensure the table had time to update before jumping
+      searchBarRef.current?.props.onClear?.()
+      searchBarRef.current?.setState({ value: '' }, () => goToPage(jumpToPage))
     }
   }
 
+  const searchBarRef = useRef<Component<SearchProps>>(null)
   const boostrapTableRef = useRef<BootstrapTable>(null)
   const [page, goToPage] = useState<number | undefined>()
 
@@ -209,7 +212,7 @@ const Scoreboard = forwardRef((props: ScoreboardProps, ref) => {
         >
           {(({ paginationProps, paginationTableProps }) =>
             <div>
-              <SearchBar {...toolkitprops.searchProps} />
+              <SearchBar ref={searchBarRef} {...toolkitprops.searchProps} />
               <SizePerPageDropdownStandalone {...paginationProps} />
               <BootstrapTable
                 ref={boostrapTableRef}
