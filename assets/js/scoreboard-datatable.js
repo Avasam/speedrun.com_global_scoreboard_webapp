@@ -63,11 +63,11 @@ $(function () {
       // Set the color of the cell according to the last time user was updated
       var cell = $('td:eq(3)', nRow);
       var daysSince = currentTimeOnLoad.diff(aData['lastUpdate'], 'days');
-      if (daysSince < 1) {
+      if (daysSince < 7) {
         cell.attr("class", "daysSince0");
-      } else if (daysSince < 7) {
-        cell.attr("class", "daysSince1");
       } else if (daysSince < 30) {
+        cell.attr("class", "daysSince1");
+      } else if (daysSince < 91) {
         cell.attr("class", "daysSince2");
       } else {
         cell.attr("class", "daysSince");
@@ -126,8 +126,9 @@ $(function () {
       var daysSince = currentTimeOnLoad.diff(userData["lastUpdate"], 'days');
     }
     if (!window.bypass_update_restrictions && userData && daysSince < 1) {
+
       ajaxResponseMessage.attr('class', 'alert alert-warning');
-      ajaxResponseMessage.html(`Runner ${userData["name"]} has already been updated in the last 24h.`);
+      ajaxResponseMessage.html(`Runner ${userData["name"]} has already been updated in the past 7 days.`);
       ajaxResponseMessage.css('visibility', 'visible');
     } else {
       ajaxResponseMessage.attr('class', 'alert alert-info');

@@ -431,7 +431,9 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
                     text_output += ("\n" if text_output else "") + errors_str
                     result_state = "danger"
             else:
-                text_output = "This user has already been updated in the last 24h"
+                cant_update_time = configs.last_updated_days[0]
+                text_output = f"This user has already been updated in the past {cant_update_time} day" \
+                    "s" if cant_update_time != 1 else ""
                 result_state = "warning"
 
         print(text_output)
