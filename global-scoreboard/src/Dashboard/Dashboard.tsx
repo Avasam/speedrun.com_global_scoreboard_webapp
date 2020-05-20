@@ -167,7 +167,7 @@ const Dashboard = (props: DashboardProps) => {
             'all calls to speedrun.com are cached for a day or until server restart.')
         } else if (err.status === 409) {
           err.text().then(errorString => {
-            setAlertVariant('danger')
+            setAlertVariant('warning')
             switch (errorString) {
               case 'current_user':
                 setAlertMessage('It seems you are already updating a runner. Please try again in 5 minutes.')

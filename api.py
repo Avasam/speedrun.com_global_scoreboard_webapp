@@ -313,16 +313,19 @@ __currently_updating_to: Dict[str, datetime] = {}
 def __do_update_player(current_user: Player, name_or_id: str):
     global __currently_updating_from
     global __currently_updating_to
-    print(__currently_updating_to)
     now = datetime.now()
 
     # Check if the current user is already updating someone
     # or if the player to be updated is currently being updated
     if current_user.user_id in __currently_updating_from \
             and now - __currently_updating_from[current_user.user_id] <= timedelta(minutes=5):
+        # CONSIDER: #seconds_left = (5 * 60) - (now - __currently_updating_from[name_or_id])
+        # return {"messageKey": "current_user", "timeLeft": seconds_left}, 409
         return "current_user", 409
     if name_or_id in __currently_updating_to \
             and now - __currently_updating_to[name_or_id] <= timedelta(minutes=5):
+        # CONSIDER: #seconds_left = (5 * 60) - (now - __currently_updating_to[name_or_id]).seconds
+        # return {"messageKey": "name_or_id", "timeLeft": seconds_left}, 409
         return "name_or_id", 409
     __currently_updating_from[current_user.user_id] = now
     __currently_updating_to[name_or_id] = now
