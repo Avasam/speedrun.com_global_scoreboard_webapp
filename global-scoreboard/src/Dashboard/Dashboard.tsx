@@ -19,13 +19,18 @@ const minutes5 = 5 * 600
 let progressTimer: NodeJS.Timeout
 
 const getFriends = () => apiGet('players/current/friends').then<Player[]>(res => res.json())
-const getAllPlayers = () => apiGet('players').then<Player[]>(res => res.json())
+const getAllPlayers = () => apiGet('players')
+  .then<Player[]>(res => res.json())
+  .then(players => {
+    players.forEach(player => player.lastUpdate = new Date(player.lastUpdate))
+    return players
+  })
 
 const validateRunnerNotRecentlyUpdated = (runnerNameOrId: string, players: Player[]) => {
   const yesterday = new Date()
   yesterday.setDate(yesterday.getDate() - 1)
   return !players.some(player =>
-    (player.name === runnerNameOrId || player.userId === runnerNameOrId) && new Date(player.lastUpdate) >= yesterday
+    (player.name === runnerNameOrId || player.userId === runnerNameOrId) && player.lastUpdate >= yesterday
   )
 }
 
@@ -120,6 +125,10 @@ const Dashboard = (props: DashboardProps) => {
     startLoading()
     apiPost(`players/${runnerNameOrId}/update`)
       .then<UpdateRunnerResult>(res => res.json())
+      .then(playerResult => {
+        playerResult.lastUpdate = new Date(playerResult.lastUpdate)
+        return playerResult
+      })
       .then(result => {
         setAlertVariant(result.state)
         setAlertMessage(result.message)
