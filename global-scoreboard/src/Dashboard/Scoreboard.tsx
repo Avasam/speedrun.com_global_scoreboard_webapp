@@ -167,24 +167,16 @@ export type ScoreboardRef = {
   jumpToPlayer: (playerId: string) => void
 }
 
-const genSortItem = (sortItem: number | Date | null | undefined) => {
-  if (!sortItem) return 0
-  if (typeof sortItem === 'number') return sortItem
-  if (sortItem instanceof Date) return sortItem.getTime()
-  // On other return directly
-  return sortItem
-}
-
 const buildSortFunction = (boostrapTable: BootstrapTable) => {
   const sortOrder = boostrapTable.sortContext.state.sortOrder === 'asc' ? 1 : -1
   const sortKey = boostrapTable.sortContext.state.sortColumn.dataField as PlayerField
   return (a: Player, b: Player) => {
     const sortItemA = a[sortKey]
     const sortItemB = b[sortKey]
-    type notString = Exclude<typeof sortItemA, string>
+
     const comparison = (sortItemA as string).localeCompare !== undefined
       ? (sortItemA as string).localeCompare(sortItemB as string)
-      : (genSortItem(sortItemA as notString) > genSortItem(sortItemB as notString)) ? 1 : -1
+      : ((sortItemA || 0) > (sortItemB || 0)) ? 1 : -1
     return comparison * sortOrder
   }
 }
