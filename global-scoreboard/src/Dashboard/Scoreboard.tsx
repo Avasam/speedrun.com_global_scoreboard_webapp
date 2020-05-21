@@ -9,7 +9,7 @@ import ToolkitProvider, { Search, SearchProps, ToolkitProviderProps } from 'reac
 import paginationFactory, { PaginationListStandalone, PaginationProvider, PaginationTotalStandalone, SizePerPageDropdownStandalone } from 'react-bootstrap-table2-paginator'
 import Configs from '../models/Configs'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import Player, { PlayerFields } from '../models/Player'
+import Player, { PlayerField } from '../models/Player'
 import PlayerNameCell from './TableElements/PlayerNameCell'
 import PlayerScoreCell from './TableElements/PlayerScoreCell'
 import ScoreTitle from './TableElements/ScoreTitle'
@@ -175,7 +175,7 @@ const genSortItem = (sortItem: number | Date | null | undefined) => {
 
 const buildSortFunction = (boostrapTable: BootstrapTable) => {
   const sortOrder = boostrapTable.sortContext.state.sortOrder === 'asc' ? 1 : -1
-  const sortKey = boostrapTable.sortContext.state.sortColumn.dataField as PlayerFields
+  const sortKey = boostrapTable.sortContext.state.sortColumn.dataField as PlayerField
   return (a: Player, b: Player) => {
     const sortItemA = a[sortKey]
     const sortItemB = b[sortKey]
