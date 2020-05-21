@@ -45,13 +45,14 @@ const buildFriendsList = (friends: Player[], allPlayers: Player[]) =>
   })
 
 const inferRank = (players: Player[], score: number) => {
-  const firstLowerOrEqualPlayerFound = [...players]
-    .sort((a, b) => (a.score > b.score) ? -1 : 1)
-    .find(player => player.score <= score)
-  if (firstLowerOrEqualPlayerFound?.rank == null) return undefined
-  return firstLowerOrEqualPlayerFound?.score === score
-    ? firstLowerOrEqualPlayerFound.rank
-    : firstLowerOrEqualPlayerFound.rank - 1
+  const sortedPlayers = [...players].sort((a, b) => b.score - a.score)
+  const lowerOrEqualPlayerFoundIndex = sortedPlayers.findIndex(player => player.score <= score)
+  if (lowerOrEqualPlayerFoundIndex === 0) return 1
+
+  const lowerOrEqualPlayerFound = sortedPlayers[lowerOrEqualPlayerFoundIndex]
+  if (lowerOrEqualPlayerFound.rank == null) return undefined
+  if (lowerOrEqualPlayerFound.score === score) return lowerOrEqualPlayerFound.rank
+  return lowerOrEqualPlayerFoundIndex + .5
 }
 
 // Let's cheat! This is much simpler and more effective

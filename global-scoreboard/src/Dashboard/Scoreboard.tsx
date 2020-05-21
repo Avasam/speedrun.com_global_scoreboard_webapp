@@ -18,7 +18,8 @@ import { faLongArrowAltUp } from '@fortawesome/free-solid-svg-icons'
 
 const currentTimeOnLoad = new Date()
 
-const columnClass = (cell: Date) => {
+const columnClass = (cell: Date | undefined) => {
+  if (!cell) return 'daysSince0'
   // TODO: This probably doesn't take daylight savings and other weird shenanigans into account
   const daysSince = Math.floor((currentTimeOnLoad.getTime() - cell.getTime()) / 86400000)
   if (daysSince >= Configs.lastUpdatedDays[2]) return 'daysSince'
@@ -171,12 +172,12 @@ const buildSortFunction = (boostrapTable: BootstrapTable) => {
   const sortOrder = boostrapTable.sortContext.state.sortOrder === 'asc' ? 1 : -1
   const sortKey = boostrapTable.sortContext.state.sortColumn.dataField as PlayerField
   return (a: Player, b: Player) => {
-    const sortItemA = a[sortKey]
-    const sortItemB = b[sortKey]
+    const sortItemA = a[sortKey] || 0
+    const sortItemB = b[sortKey] || 0
 
-    const comparison = (sortItemA as string).localeCompare !== undefined
-      ? (sortItemA as string).localeCompare(sortItemB as string)
-      : ((sortItemA || 0) > (sortItemB || 0)) ? 1 : -1
+    const comparison = typeof sortItemA === 'string'
+      ? sortItemA.localeCompare(sortItemB as string)
+      : sortItemA > sortItemB ? 1 : sortItemA < sortItemB ? -1 : 0
     return comparison * sortOrder
   }
 }
