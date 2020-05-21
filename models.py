@@ -79,7 +79,7 @@ class Player(db.Model, UserMixin):
 
     @staticmethod
     def get_all():
-        sql = text("SELECT user_id, name, country_code, score, last_update, rank FROM ( "
+        sql = text("SELECT user_id, name, country_code, score, last_update, CONVERT(rank, SIGNED INT) rank FROM ( "
                    "    SELECT *, "
                    "        IF(score = @_last_score, @cur_rank := @cur_rank, @cur_rank := @_sequence) AS rank, "
                    "        @_sequence := @_sequence + 1, "

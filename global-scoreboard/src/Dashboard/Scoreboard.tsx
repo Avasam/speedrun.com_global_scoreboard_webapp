@@ -4,12 +4,12 @@ import 'react-bootstrap-table2-paginator/dist/react-bootstrap-table2-paginator.m
 import './Scoreboard.css'
 import BootstrapTable, { Column } from 'react-bootstrap-table-next'
 import { Dropdown, DropdownButton, Spinner } from 'react-bootstrap'
+import Player, { PlayerField } from '../models/Player'
 import React, { Component, MutableRefObject, forwardRef, useRef, useState } from 'react'
 import ToolkitProvider, { Search, SearchProps, ToolkitProviderProps } from 'react-bootstrap-table2-toolkit'
 import paginationFactory, { PaginationListStandalone, PaginationProvider, PaginationTotalStandalone, SizePerPageDropdownStandalone } from 'react-bootstrap-table2-paginator'
 import Configs from '../models/Configs'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import Player from '../models/Player'
 import PlayerNameCell from './TableElements/PlayerNameCell'
 import PlayerScoreCell from './TableElements/PlayerScoreCell'
 import ScoreTitle from './TableElements/ScoreTitle'
@@ -18,9 +18,10 @@ import { faLongArrowAltUp } from '@fortawesome/free-solid-svg-icons'
 
 const currentTimeOnLoad = new Date()
 
-const columnClass = (cell: string) => {
-  // TODO: This probably doesn't take daylight savings and other weird shenaniganns into account
-  const daysSince = Math.floor((currentTimeOnLoad.getTime() - Date.parse(cell)) / 86400000)
+const columnClass = (cell: Date | undefined) => {
+  if (!cell) return 'daysSince0'
+  // TODO: This probably doesn't take daylight savings and other weird shenanigans into account
+  const daysSince = Math.floor((currentTimeOnLoad.getTime() - cell.getTime()) / 86400000)
   if (daysSince >= Configs.lastUpdatedDays[2]) return 'daysSince'
   if (daysSince >= Configs.lastUpdatedDays[1]) return 'daysSince2'
   if (daysSince >= Configs.lastUpdatedDays[0]) return 'daysSince1'
@@ -40,6 +41,8 @@ type FormatExtraDataProps = {
   handleOnUnfriend: (friendId: string) => void
   handleOnBefriend: (friendId: string) => void
 }
+
+const dateFormat = { year: 'numeric', month: 'long', day: 'numeric' }
 
 const columns: Column[] = [
   {
@@ -74,7 +77,7 @@ const columns: Column[] = [
   {
     dataField: 'lastUpdate',
     text: 'Last Updated',
-    formatter: (cell: Date | undefined) => cell && new Date(cell).toISOString().slice(0, 16).replace('T', ' '),
+    formatter: (cell: Date | undefined) => cell && cell.toLocaleDateString('en-us', dateFormat),
     classes: columnClass,
     searchable: false,
     sort: true,
@@ -165,16 +168,33 @@ export type ScoreboardRef = {
   jumpToPlayer: (playerId: string) => void
 }
 
+const buildSortFunction = (boostrapTable: BootstrapTable) => {
+  const sortOrder = boostrapTable.sortContext.state.sortOrder === 'asc' ? 1 : -1
+  const sortKey = boostrapTable.sortContext.state.sortColumn.dataField as PlayerField
+  return (a: Player, b: Player) => {
+    const sortItemA = a[sortKey] || 0
+    const sortItemB = b[sortKey] || 0
+
+    const comparison = typeof sortItemA === 'string'
+      ? sortItemA.localeCompare(sortItemB as string)
+      : sortItemA > sortItemB ? 1 : sortItemA < sortItemB ? -1 : 0
+    return comparison * sortOrder
+  }
+}
+
 const Scoreboard = forwardRef((props: ScoreboardProps, ref) => {
   (ref as MutableRefObject<ScoreboardRef>).current = {
     jumpToPlayer: (playerId: string) => {
-      const playerIndex = props.players.findIndex(player => player.userId === playerId)
-      const currSizePerPage = boostrapTableRef.current?.paginationContext.currSizePerPage
+      if (boostrapTableRef.current == null) throw new TypeError('boostrapTableRef.current is null or undefined')
+      if (searchBarRef.current == null) throw new TypeError('searchBarRef.current is null or undefined')
+      const sortedPlayers = [...props.players].sort(buildSortFunction(boostrapTableRef.current))
+      const playerIndex = sortedPlayers.findIndex(player => player.userId === playerId)
+      const currSizePerPage = boostrapTableRef.current.paginationContext.currSizePerPage
       const jumpToPage = Math.floor(playerIndex / Number(currSizePerPage)) + 1
 
       // Note: setState is used to ensure the table had time to update before jumping
-      searchBarRef.current?.props.onClear?.()
-      searchBarRef.current?.setState({ value: '' }, () => goToPage(jumpToPage))
+      searchBarRef.current.props.onClear?.()
+      searchBarRef.current.setState({ value: '' }, () => goToPage(jumpToPage))
     }
   }
 

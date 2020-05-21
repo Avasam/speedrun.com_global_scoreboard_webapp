@@ -19,13 +19,18 @@ const minutes5 = 5 * 600
 let progressTimer: NodeJS.Timeout
 
 const getFriends = () => apiGet('players/current/friends').then<Player[]>(res => res.json())
-const getAllPlayers = () => apiGet('players').then<Player[]>(res => res.json())
+const getAllPlayers = () => apiGet('players')
+  .then<Player[]>(res => res.json())
+  .then(players => {
+    players.forEach(player => player.lastUpdate = new Date(player.lastUpdate))
+    return players
+  })
 
 const validateRunnerNotRecentlyUpdated = (runnerNameOrId: string, players: Player[]) => {
   const yesterday = new Date()
   yesterday.setDate(yesterday.getDate() - 1)
   return !players.some(player =>
-    (player.name === runnerNameOrId || player.userId === runnerNameOrId) && new Date(player.lastUpdate) >= yesterday
+    (player.name === runnerNameOrId || player.userId === runnerNameOrId) && player.lastUpdate >= yesterday
   )
 }
 
@@ -40,13 +45,14 @@ const buildFriendsList = (friends: Player[], allPlayers: Player[]) =>
   })
 
 const inferRank = (players: Player[], score: number) => {
-  const firstLowerOrEqualPlayerFound = [...players]
-    .sort((a, b) => (a.score > b.score) ? -1 : 1)
-    .find(player => player.score <= score)
-  if (firstLowerOrEqualPlayerFound?.rank == null) return undefined
-  return firstLowerOrEqualPlayerFound?.score === score
-    ? firstLowerOrEqualPlayerFound.rank
-    : firstLowerOrEqualPlayerFound.rank - 1
+  const sortedPlayers = [...players].sort((a, b) => b.score - a.score)
+  const lowerOrEqualPlayerFoundIndex = sortedPlayers.findIndex(player => player.score <= score)
+  if (lowerOrEqualPlayerFoundIndex === 0) return 1
+
+  const lowerOrEqualPlayerFound = sortedPlayers[lowerOrEqualPlayerFoundIndex]
+  if (lowerOrEqualPlayerFound.rank == null) return undefined
+  if (lowerOrEqualPlayerFound.score === score) return lowerOrEqualPlayerFound.rank
+  return lowerOrEqualPlayerFoundIndex + .5
 }
 
 // Let's cheat! This is much simpler and more effective
@@ -120,6 +126,10 @@ const Dashboard = (props: DashboardProps) => {
     startLoading()
     apiPost(`players/${runnerNameOrId}/update`)
       .then<UpdateRunnerResult>(res => res.json())
+      .then(playerResult => {
+        playerResult.lastUpdate = new Date(playerResult.lastUpdate)
+        return playerResult
+      })
       .then(result => {
         setAlertVariant(result.state)
         setAlertMessage(result.message)

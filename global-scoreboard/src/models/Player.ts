@@ -4,6 +4,8 @@ export default interface Player {
   countryCode: string | null
   score: number
   scoreDetails?: string
-  lastUpdate: Date | string
+  lastUpdate: Date
   userId: string
 }
+
+export type PlayerField = keyof Player
