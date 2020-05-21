@@ -9,7 +9,7 @@ import ToolkitProvider, { Search, SearchProps, ToolkitProviderProps } from 'reac
 import paginationFactory, { PaginationListStandalone, PaginationProvider, PaginationTotalStandalone, SizePerPageDropdownStandalone } from 'react-bootstrap-table2-paginator'
 import Configs from '../models/Configs'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import Player from '../models/Player'
+import Player, { PlayerFields } from '../models/Player'
 import PlayerNameCell from './TableElements/PlayerNameCell'
 import PlayerScoreCell from './TableElements/PlayerScoreCell'
 import ScoreTitle from './TableElements/ScoreTitle'
@@ -165,16 +165,41 @@ export type ScoreboardRef = {
   jumpToPlayer: (playerId: string) => void
 }
 
+const genSortItem = (sortItem: number | Date | null | undefined) => {
+  if (!sortItem) return 0
+  if (typeof sortItem === 'number') return sortItem
+  if (sortItem instanceof Date) return sortItem.getTime()
+  // On other return directly
+  return sortItem
+}
+
+const buildSortFunction = (boostrapTable: BootstrapTable) => {
+  const sortOrder = boostrapTable.sortContext.state.sortOrder === 'asc' ? 1 : -1
+  const sortKey = boostrapTable.sortContext.state.sortColumn.dataField as PlayerFields
+  return (a: Player, b: Player) => {
+    const sortItemA = a[sortKey]
+    const sortItemB = b[sortKey]
+    type notString = Exclude<typeof sortItemA, string>
+    const comparison = (sortItemA as string).localeCompare !== undefined
+      ? (sortItemA as string).localeCompare(sortItemB as string)
+      : (genSortItem(sortItemA as notString) > genSortItem(sortItemB as notString)) ? 1 : -1
+    return comparison * sortOrder
+  }
+}
+
 const Scoreboard = forwardRef((props: ScoreboardProps, ref) => {
   (ref as MutableRefObject<ScoreboardRef>).current = {
     jumpToPlayer: (playerId: string) => {
-      const playerIndex = props.players.findIndex(player => player.userId === playerId)
-      const currSizePerPage = boostrapTableRef.current?.paginationContext.currSizePerPage
+      if (boostrapTableRef.current == null) throw new TypeError('boostrapTableRef.current is null or undefined')
+      if (searchBarRef.current == null) throw new TypeError('searchBarRef.current is null or undefined')
+      const sortedPlayers = [...props.players].sort(buildSortFunction(boostrapTableRef.current))
+      const playerIndex = sortedPlayers.findIndex(player => player.userId === playerId)
+      const currSizePerPage = boostrapTableRef.current.paginationContext.currSizePerPage
       const jumpToPage = Math.floor(playerIndex / Number(currSizePerPage)) + 1
 
       // Note: setState is used to ensure the table had time to update before jumping
-      searchBarRef.current?.props.onClear?.()
-      searchBarRef.current?.setState({ value: '' }, () => goToPage(jumpToPage))
+      searchBarRef.current.props.onClear?.()
+      searchBarRef.current.setState({ value: '' }, () => goToPage(jumpToPage))
     }
   }
 

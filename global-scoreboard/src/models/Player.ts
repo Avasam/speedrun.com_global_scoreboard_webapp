@@ -7,3 +7,5 @@ export default interface Player {
   lastUpdate: Date | string
   userId: string
 }
+
+export type PlayerField = keyof Player
