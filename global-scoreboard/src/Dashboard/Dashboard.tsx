@@ -224,7 +224,6 @@ const Dashboard = (props: DashboardProps) => {
 
   return <Container className="dashboard-container">
     <Alert variant="info">
-      This version of the scoreboard <strong>is still in beta!</strong>{' '}
       If there&apos;s any bug or issue you&apos;d like to raise, you can do so{' '}
       <a href="https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/issues" target="about">over here</a>.
     </Alert>

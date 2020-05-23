@@ -84,6 +84,7 @@ class Run:
             previous_time = leaderboard["data"]["runs"][0]["run"]["times"]["primary_t"]
             is_speedrun: bool = False
 
+            # TODO: extract the function for valid runs into a function and use a list map
             # Get a list of all banned players in this leaderboard
             banned_players = []
             for player in leaderboard["data"]["players"]["data"]:
@@ -114,11 +115,13 @@ class Run:
             original_population = len(valid_runs)
             if is_speedrun and original_population >= MIN_LEADERBOARD_SIZE:  # Avoid useless computation and errors
                 # Sort and remove last 5%
+                # TODO: Why we sorting here?
                 valid_runs = sorted(valid_runs[:int(original_population * 0.95) or None],
                                     key=lambda r: r["run"]["times"]["primary_t"])
 
                 # TODO: This is not optimized
                 pre_fix_worst_time = valid_runs[-1]["run"]["times"]["primary_t"]
+                # TODO: Extract "cutoff everything after soft cutoff" to its own function
                 # Find the time that is most often repeated in the leaderboard (after the median) and cut off that time
                 cut_off_median_time: int = valid_runs[int(len(valid_runs)*0.8)]["run"]["times"]["primary_t"]
                 count: int = 0
@@ -177,15 +180,15 @@ class Run:
                         adjusted_lowest_deviation = pre_fix_worst_time - mean
                         normalized_deviation = adjusted_deviation / adjusted_lowest_deviation
 
-                        # Bonus points for long games
-                        length_bonus = 1 + (wr_time / TIME_BONUS_DIVISOR)
                         # More people means more accurate relative time and more optimised/hard to reach low times
                         certainty_adjustment = 1 - 1 / (population + 1)
+                        # Cap the exponent to π
+                        e_exponent = min(normalized_deviation * certainty_adjustment, pi)
+                        # Bonus points for long games
+                        length_bonus = 1 + (wr_time / TIME_BONUS_DIVISOR)
 
-                        # Cap the base to π
-                        e_base = min(normalized_deviation * certainty_adjustment, pi)
                         # Give points, hard cap to 6 character
-                        self._points = min(exp(e_base) * 10 * length_bonus, 999.99)
+                        self._points = min(exp(e_exponent) * 10 * length_bonus, 999.99)
                         # Set names
                         game_category = re.split(
                             "[/#]",
@@ -201,7 +204,7 @@ class Run:
                             url = "https://www.speedrun.com/api/v1/games/{game}/levels".format(game=self.game)
                             levels = CachedRequest.get_response_or_new(url)
                             self.level_count = len(levels["data"])
-                            self._points /= self.level_count or 1
+                            self._points /= (self.level_count or 0) + 1
         print(self)
 
 
@@ -265,7 +268,7 @@ class User:
                                    pb_subcategory_variables,
                                    pb["run"]["level"])
                     # If a category has already been counted, only keep the one that's worth the most.
-                    # This can happen in leaderboards with multiple coop runs or multiple subcategories.
+                    # This can happen in leaderboards with coop runs or subcategories.
                     if run._points > 0:
                         for counted_run in counted_runs:
                             if counted_run == run:
