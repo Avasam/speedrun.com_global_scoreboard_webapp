@@ -33,7 +33,14 @@
 
     <div class="container">
         <div class="alert alert-info" id="breaking-news">
-          <script>window.newLink = window.location.href.replace('5000', '3000') + 'global-scoreboard'</script>
+          <script>
+          window.newLink = window
+            .location
+            .href
+            .replace('5000', '3000')
+            .replace('avasam.pythonanywhere.com', 'www.avasam.dev')
+            + 'global-scoreboard'
+          </script>
           This version of the scoreboard is now deprecated and will soon be replaced by a newer one,
           <span> </span>entirely rewriten in React and TypeScript using Bootstrap 4 available over at
           <br />
