@@ -33,8 +33,16 @@
 
     <div class="container">
         <div class="alert alert-info" id="breaking-news">
-          <script>window.newLink = window.location.href.replace('5000', '3000') + 'global-scoreboard'</script>
-          A new <strong>beta</strong> version of this scoreboard, entirely rewriten in React and TypeScript using Bootstrap 4 is available over at
+          <script>
+          window.newLink = window
+            .location
+            .href
+            .replace('5000', '3000')
+            .replace('avasam.pythonanywhere.com', 'www.avasam.dev')
+            + 'global-scoreboard'
+          </script>
+          This version of the scoreboard is now deprecated and will soon be replaced by a newer one,
+          <span> </span>entirely rewriten in React and TypeScript using Bootstrap 4 available over at
           <br />
           <b>
             <a
@@ -44,7 +52,8 @@
             ><script>document.write(window.newLink)</script></a>
           </b>
           <br />
-          It has about the same look and feel, but is a lot more reactive, fluid and will be seeing more updates.
+          Don't worry, both URLs will stay valid.
+          <span> </span>It has about the same look and feel, but is a lot more reactive, fluid and will be seeing more updates.
         </div>
         <div class="alert alert-info" id="ajaxResponseMessage">Building the DataTable. Please wait...</div>
 

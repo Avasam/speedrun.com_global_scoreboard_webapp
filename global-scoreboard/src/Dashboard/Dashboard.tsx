@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import Scoreboard, { ScoreboardRef } from './Scoreboard'
 import { apiDelete, apiGet, apiPost, apiPut } from '../fetchers/api'
 import { AlertProps } from 'react-bootstrap/Alert'
+import Configs from '../models/Configs'
 import Player from '../models/Player'
 import QuickView from './QuickView'
 import UpdateRunnerForm from './UpdateRunnerForm'
@@ -18,13 +19,18 @@ const minutes5 = 5 * 600
 let progressTimer: NodeJS.Timeout
 
 const getFriends = () => apiGet('players/current/friends').then<Player[]>(res => res.json())
-const getAllPlayers = () => apiGet('players').then<Player[]>(res => res.json())
+const getAllPlayers = () => apiGet('players')
+  .then<Player[]>(res => res.json())
+  .then(players => {
+    players.forEach(player => player.lastUpdate = new Date(player.lastUpdate))
+    return players
+  })
 
 const validateRunnerNotRecentlyUpdated = (runnerNameOrId: string, players: Player[]) => {
   const yesterday = new Date()
   yesterday.setDate(yesterday.getDate() - 1)
   return !players.some(player =>
-    (player.name === runnerNameOrId || player.userId === runnerNameOrId) && new Date(player.lastUpdate) >= yesterday
+    (player.name === runnerNameOrId || player.userId === runnerNameOrId) && player.lastUpdate >= yesterday
   )
 }
 
@@ -38,9 +44,15 @@ const buildFriendsList = (friends: Player[], allPlayers: Player[]) =>
     } as Player
   })
 
-const sortAndInferRank = (players: Player[], score: number) => {
-  players.sort((a, b) => (a.score > b.score) ? -1 : 1)
-  return players.find(player => player.score <= score)?.rank
+const inferRank = (players: Player[], score: number) => {
+  const sortedPlayers = [...players].sort((a, b) => b.score - a.score)
+  const lowerOrEqualPlayerFoundIndex = sortedPlayers.findIndex(player => player.score <= score)
+  if (lowerOrEqualPlayerFoundIndex === 0) return 1
+
+  const lowerOrEqualPlayerFound = sortedPlayers[lowerOrEqualPlayerFoundIndex]
+  if (lowerOrEqualPlayerFound.rank == null) return undefined
+  if (lowerOrEqualPlayerFound.score === score) return lowerOrEqualPlayerFound.rank
+  return lowerOrEqualPlayerFoundIndex + .5
 }
 
 // Let's cheat! This is much simpler and more effective
@@ -107,18 +119,23 @@ const Dashboard = (props: DashboardProps) => {
     if (window.process.env.REACT_APP_BYPASS_UPDATE_RESTRICTIONS !== 'true' &&
       !validateRunnerNotRecentlyUpdated(runnerNameOrId, players)) {
       setAlertVariant('warning')
-      setAlertMessage(`Runner ${runnerNameOrId} has already been updated in the last 24h`)
+      const cantUpdateTime = Configs.lastUpdatedDays[0]
+      setAlertMessage(`Runner ${runnerNameOrId} has already been updated in the past ${cantUpdateTime} day${cantUpdateTime === 1 ? '' : 's'}`)
       return
     }
     startLoading()
     apiPost(`players/${runnerNameOrId}/update`)
       .then<UpdateRunnerResult>(res => res.json())
+      .then(playerResult => {
+        playerResult.lastUpdate = new Date(playerResult.lastUpdate)
+        return playerResult
+      })
       .then(result => {
         setAlertVariant(result.state)
         setAlertMessage(result.message)
         const newPlayers = [...players]
         const existingPlayerIndex = newPlayers.findIndex(player => player.userId === result.userId)
-        const inferedRank = sortAndInferRank(newPlayers, result.score)
+        const inferedRank = inferRank(newPlayers, result.score)
         const newPlayer = {
           rank: inferedRank,
           name: result.name,
@@ -160,7 +177,7 @@ const Dashboard = (props: DashboardProps) => {
             'all calls to speedrun.com are cached for a day or until server restart.')
         } else if (err.status === 409) {
           err.text().then(errorString => {
-            setAlertVariant('danger')
+            setAlertVariant('warning')
             switch (errorString) {
               case 'current_user':
                 setAlertMessage('It seems you are already updating a runner. Please try again in 5 minutes.')
@@ -207,7 +224,8 @@ const Dashboard = (props: DashboardProps) => {
 
   return <Container className="dashboard-container">
     <Alert variant="info">
-      This version of the scoreboard <strong>is still in beta!</strong>{' '}
+      We have switched to a new URL! Makes sure to update your bookmark!
+      <br />
       If there&apos;s any bug or issue you&apos;d like to raise, you can do so{' '}
       <a href="https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/issues" target="about">over here</a>.
     </Alert>
