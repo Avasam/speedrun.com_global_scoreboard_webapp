@@ -2,7 +2,7 @@
 
 The webapp version of an unofficial speedrun.com global scoreboard for competitive speedrunning
 
-### **[See the scoreboard](https://avasam.pythonanywhere.com/)**
+### **[See the scoreboard](https://www.Avasam.dev/)**
 
 There you can also update and bookmark any user you want.
 
