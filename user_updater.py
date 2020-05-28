@@ -183,7 +183,7 @@ class Run:
                         # More people means more accurate relative time and more optimised/hard to reach low times
                         certainty_adjustment = 1 - 1 / (population + 1)
                         # Cap the exponent to π
-                        e_exponent = min(normalized_deviation * certainty_adjustment, pi)
+                        e_exponent = min(normalized_deviation, pi) * certainty_adjustment
                         # Bonus points for long games
                         length_bonus = 1 + (wr_time / TIME_BONUS_DIVISOR)
 
