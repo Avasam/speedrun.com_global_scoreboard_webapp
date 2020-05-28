@@ -4,7 +4,7 @@
 from collections import Counter
 from datetime import datetime
 from math import ceil, exp, floor, pi
-from models import db, CachedRequest, Player
+from models import db, CachedRequest, GameValues, Player
 from threading import Thread, active_count
 from time import strftime, sleep
 from typing import Dict, List, Optional, Tuple, Union
@@ -34,6 +34,10 @@ class Run:
     level_name: str = ""
     level_count: int = 0
     _points: float = 0
+    # This below section is for game search
+    _mean_time: float = 0
+    _is_wr_time: bool = False
+    _platform: str = ""
 
     def __init__(self, id_: str, primary_t: float, game: str, category: str, variables={}, level: str = ""):
         self.id_ = id_
@@ -122,14 +126,14 @@ class Run:
                 # TODO: This is not optimized
                 pre_fix_worst_time = valid_runs[-1]["run"]["times"]["primary_t"]
                 # TODO: Extract "cutoff everything after soft cutoff" to its own function
-                # Find the time that is most often repeated in the leaderboard (after the median) and cut off that time
-                cut_off_median_time: int = valid_runs[int(len(valid_runs)*0.8)]["run"]["times"]["primary_t"]
+                # Find the time that's most often repeated in the leaderboard (after the 8th octile) and cut off after
+                cut_off_80th_percentile: int = valid_runs[int(len(valid_runs)*0.8)]["run"]["times"]["primary_t"]
                 count: int = 0
                 most_repeated_time_pos: int = 0
                 most_repeated_time_count: int = 0
                 last_value: int = 0
                 i: int = len(valid_runs)
-                # Go in reverse this way we can break at median
+                # Go in reverse this way we can break at the percentile
                 for run in reversed(valid_runs):
                     value: int = run["run"]["times"]["primary_t"]
                     if value == last_value:
@@ -141,9 +145,9 @@ class Run:
                         count = 0
                     last_value = value
 
-                    # We hit the median, there's no more to be analyzed
-                    # If the most repeated time IS the median, still remove it (< not <=)
-                    if value < cut_off_median_time:
+                    # We hit the 80th percentile, there's no more to be analyzed
+                    # If the most repeated time IS the 80th percentile, still remove it (< not <=)
+                    if value < cut_off_80th_percentile:
                         # Have the most repeated time repeat at least a certain amount
                         if most_repeated_time_count > MIN_LEADERBOARD_SIZE:
                             # Actually keep the last one (+1) as it'll be worth 0 points and used for other calculations
@@ -161,6 +165,8 @@ class Run:
                     mean_temp = mean
                     mean += (value - mean_temp) / population
                     sigma += (value - mean_temp) * (value - mean)
+
+                self._mean_time = mean
 
                 wr_time = valid_runs[0]["run"]["times"]["primary_t"]
 
@@ -183,7 +189,7 @@ class Run:
                         # More people means more accurate relative time and more optimised/hard to reach low times
                         certainty_adjustment = 1 - 1 / (population + 1)
                         # Cap the exponent to π
-                        e_exponent = min(normalized_deviation * certainty_adjustment, pi)
+                        e_exponent = min(normalized_deviation, pi) * certainty_adjustment
                         # Bonus points for long games
                         length_bonus = 1 + (wr_time / TIME_BONUS_DIVISOR)
 
@@ -267,6 +273,11 @@ class User:
                                    pb["run"]["category"],
                                    pb_subcategory_variables,
                                    pb["run"]["level"])
+
+                    # Set game search data
+                    run._is_wr_time = pb["place"] == 1
+                    run._platform = pb["run"]["system"]["platform"]
+
                     # If a category has already been counted, only keep the one that's worth the most.
                     # This can happen in leaderboards with coop runs or subcategories.
                     if run._points > 0:
@@ -332,6 +343,20 @@ class User:
                 run_pts = ceil((run._points * 100)) / 100
                 run_str_lst.append((run_str, run_pts))
                 biggest_str_length = max(biggest_str_length, len(run_str))
+
+                # This section is kinda hacked in. Used to allow searching for games by their worth
+                # Run should be worth more than 1 point, not be a level and be made by WR holder
+                if run._points < 1 or run.level or not run._is_wr_time:
+                    continue
+                GameValues.create_or_update(
+                    run_id=run.id_,
+                    game_id=run.game,
+                    category_id=run.category,
+                    platform_id=run._platform,
+                    wr_time=floor(run.primary_t),
+                    wr_points=floor(run._points),
+                    mean_time=floor(run._mean_time),
+                )
 
             self._point_distribution_str = f"\n{'Game - Category (Level)':<{biggest_str_length}} | Points" \
                                            f"\n{'-'*biggest_str_length} | ------"
