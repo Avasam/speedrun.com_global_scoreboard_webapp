@@ -51,7 +51,7 @@ const columns: Column[] = [
     text: 'Game',
     formatter: (_, row: GameValueRow | undefined) =>
       row &&
-      <a href={`https:www.speedrun.com/run/${row.runId}`} target="src">{row.runId}</a>
+      <a href={`https://www.speedrun.com/run/${row.runId}`} target="src">{row.runId}</a>
   },
   {
     dataField: 'categoryId',
