@@ -3,6 +3,7 @@ import 'bootstrap/dist/css/bootstrap.css'
 import Configs, { ServerConfigs } from './models/Configs'
 import React, { FC, useEffect, useState } from 'react'
 import Dashboard from './Dashboard/Dashboard'
+import GameSearch from './GameSearch/GameSearch'
 import Player from './models/Player'
 import ScoreboardNavBar from './NavBar/ScoreboardNavBar'
 import { apiGet } from './fetchers/api'
@@ -44,7 +45,11 @@ const App: FC = () => {
         onLogout={() => logout(setCurrentUser)}
       />
 
-      <Dashboard currentUser={currentUser} />
+      {window.location.pathname === '/global-scoreboard/game-search' &&
+        (currentUser || window.process.env.REACT_APP_BYPASS_UPDATE_RESTRICTIONS === 'true')
+        ? <GameSearch />
+        : <Dashboard currentUser={currentUser} />
+      }
       <footer>
         &copy; <a
           href="https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/master/LICENSE"

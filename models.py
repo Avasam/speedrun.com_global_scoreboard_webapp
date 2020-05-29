@@ -397,6 +397,17 @@ class GameValues(db.Model, UserMixin):
         except orm.exc.NoResultFound:
             return None
 
+    def to_dto(self) -> dict[str, Union[str, int]]:
+        return {
+            'gameId': self.game_id,
+            'categoryId': self.category_id,
+            'platformId': self.platform_id,
+            'wrTime': self.wr_time,
+            'wrPoints': self.wr_points,
+            'meanTime': self.mean_time,
+            'runId': self.run_id,
+        }
+
 
 class Schedule(db.Model):
     __tablename__ = "schedule"
