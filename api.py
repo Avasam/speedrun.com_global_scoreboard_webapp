@@ -5,7 +5,7 @@ api.py
 from datetime import datetime, timedelta
 from flask import Blueprint, current_app, jsonify, request
 from functools import wraps
-from models import map_to_dto, Player, Schedule, TimeSlot
+from models import map_to_dto, GameValues, Player, Schedule, TimeSlot
 from sqlalchemy import exc
 from typing import Any, Dict, List, Optional, Union, Tuple
 from user_updater import get_updated_user
@@ -368,3 +368,11 @@ def delete_friends_current(current_user: Player, id: str):
         return f"Successfully removed user ID \"{id}\" from your friends."
     else:
         return f"User ID \"{id}\" isn't one of your friends."
+
+
+"""
+Game Search context
+"""
+@api.route('/game-values', methods=('GET',))
+def get_all_game_values():
+    return jsonify(map_to_dto(GameValues.query.all()))
