@@ -17,7 +17,7 @@ interface PlatformDto {
   name: string
 }
 
-type PlatformMap = Map<string, string>
+type IdToNameMap = { [key: string]: string }
 
 interface GameValue {
   gameId: string
@@ -42,7 +42,7 @@ const sortCaret: Column['sortCaret'] = (order) =>
   </span>
 
 type FormatExtraDataProps = {
-  platforms: PlatformMap
+  platforms: IdToNameMap
 }
 
 const columns: Column[] = [
@@ -51,11 +51,14 @@ const columns: Column[] = [
     text: 'Game',
     formatter: (_, row: GameValueRow | undefined) =>
       row &&
-      <a href={`https://www.speedrun.com/run/${row.runId}`} target="src">{row.runId}</a>
+      <a href={`https://www.speedrun.com/run/${row.runId}`} target="src">{getNameForGameId(row.gameId)}</a>
   },
   {
     dataField: 'categoryId',
     text: 'Category',
+    formatter: (_, row: GameValueRow | undefined) =>
+      row &&
+      getNameForCategoryId(row.categoryId)
   },
   {
     dataField: 'platformId',
@@ -63,7 +66,7 @@ const columns: Column[] = [
     formatter: (_, row: GameValueRow | undefined, __, formatExtraData?: FormatExtraDataProps) =>
       row &&
       formatExtraData &&
-      formatExtraData.platforms.get(row.platformId)
+      formatExtraData.platforms[row.platformId]
   },
   {
     dataField: 'wrTime',
@@ -162,13 +165,43 @@ const getAllGameValues = () => apiGet('game-values')
 const getAllPlatforms = () => apiGet('https://www.speedrun.com/api/v1/platforms', { max: 200 }, false)
   .then<{ data: PlatformDto[] }>(res => res.json())
   .then<PlatformDto[]>(res => res.data)
-  .then<PlatformMap>(platforms => new Map(platforms.map(platform => [platform.id, platform.name])))
+  .then<IdToNameMap>(platforms => Object.fromEntries(platforms.map(platform => [platform.id, platform.name])))
+
+const getNameForGameId = (gameId: string) => {
+  let games: IdToNameMap = JSON.parse(localStorage.getItem('games') || '{}')
+  const gameName = games[gameId]
+  if (gameName) return gameName
+  apiGet(`https://www.speedrun.com/api/v1/games/${gameId}`, undefined, false)
+    .then(res => res.json())
+    .then<string>(res => res.data.names.international)
+    .then(gameName => {
+      games = JSON.parse(localStorage.getItem('games') || '{}')
+      games[gameId] = gameName
+      localStorage.setItem('games', JSON.stringify(games))
+    })
+  return gameId
+}
+
+const getNameForCategoryId = (categoryId: string) => {
+  let categories: IdToNameMap = JSON.parse(localStorage.getItem('categories') || '{}')
+  const gameName = categories[categoryId]
+  if (gameName) return gameName
+  apiGet(`https://www.speedrun.com/api/v1/categories/${categoryId}`, undefined, false)
+    .then(res => res.json())
+    .then<string>(res => res.data.name)
+    .then(gameName => {
+      categories = JSON.parse(localStorage.getItem('categories') || '{}')
+      categories[categoryId] = gameName
+      localStorage.setItem('categories', JSON.stringify(categories))
+    })
+  return categoryId
+}
 
 const GameSearch = () => {
   const searchBarRef = useRef<Component<SearchProps>>(null)
   const boostrapTableRef = useRef<BootstrapTable>(null)
   const [gameValues, setGameValues] = useState<GameValueRow[]>([])
-  const [platforms, setPlatforms] = useState<PlatformMap>()
+  const [platforms, setPlatforms] = useState<IdToNameMap>()
 
   useEffect(() => {
     getAllGameValues().then(setGameValues)
