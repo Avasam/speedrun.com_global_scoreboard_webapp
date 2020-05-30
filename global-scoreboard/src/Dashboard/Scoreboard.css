@@ -25,6 +25,7 @@
 
 .sortCarrets {
   white-space: nowrap;
+  display: inline-block;
 }
 
 .sortCarrets svg {

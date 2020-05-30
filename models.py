@@ -331,7 +331,7 @@ class GameValues(db.Model, UserMixin):
     game_id: str = db.Column(db.String(8), primary_key=True)
     category_id: str = db.Column(db.String(8), primary_key=True)
     run_id: str = db.Column(db.String(8), nullable=False)
-    platform_id: str = db.Column(db.String(8), nullable=False)
+    platform_id: Optional[str] = db.Column(db.String(8))
     wr_time: int = db.Column(db.Integer, nullable=False)
     wr_points: int = db.Column(db.Integer, nullable=False)
     mean_time: int = db.Column(db.Integer, nullable=False)
@@ -340,7 +340,7 @@ class GameValues(db.Model, UserMixin):
     def create_or_update(
             game_id: str,
             category_id: str,
-            platform_id: str,
+            platform_id: Optional[str],
             wr_time: int,
             wr_points: int,
             mean_time: int,
@@ -368,7 +368,7 @@ class GameValues(db.Model, UserMixin):
     def create(
             game_id: str,
             category_id: str,
-            platform_id: str,
+            platform_id: Optional[str],
             wr_time: int,
             wr_points: int,
             mean_time: int,

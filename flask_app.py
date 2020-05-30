@@ -23,7 +23,7 @@
 ##########################################################################
 from api import api
 from datetime import date
-from flask import Flask, send_from_directory, render_template, request, redirect, url_for
+from flask import Flask, send_file, send_from_directory, render_template, request, redirect, url_for
 from flask_login import LoginManager, logout_user, login_user, current_user
 from models import db, Player
 from sqlalchemy import exc
@@ -77,7 +77,9 @@ def load_user(user_id: str) -> Union[Player, None]:
 @app.route('/global-scoreboard', defaults={'asset': 'index.html'})
 @app.route('/global-scoreboard/<path:asset>', methods=["GET"])
 def react_app(asset: str):
-    return send_from_directory('global-scoreboard/build/', asset)
+    if asset[:6] == 'static':
+        return send_from_directory('global-scoreboard/build/', asset)
+    return send_file('global-scoreboard/build/index.html')
 
 
 @app.route('/tournament-scheduler', defaults={'asset': 'index.html'})

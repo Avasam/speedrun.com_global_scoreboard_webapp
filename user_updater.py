@@ -37,7 +37,7 @@ class Run:
     # This below section is for game search
     _mean_time: float = 0
     _is_wr_time: bool = False
-    _platform: str = ""
+    _platform: Optional[str] = None
 
     def __init__(self, id_: str, primary_t: float, game: str, category: str, variables={}, level: str = ""):
         self.id_ = id_
