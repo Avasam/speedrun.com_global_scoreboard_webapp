@@ -187,7 +187,8 @@ class Run:
                         normalized_deviation = adjusted_deviation / adjusted_lowest_deviation
 
                         # More people means more accurate relative time and more optimised/hard to reach low times
-                        certainty_adjustment = 1 - 1 / (population + 1)
+                        # This function would equal 0 if population = MIN_LEADERBOARD_SIZE - 1
+                        certainty_adjustment = 1 - 1 / (population - MIN_LEADERBOARD_SIZE + 2)
                         # Cap the exponent to π
                         e_exponent = min(normalized_deviation, pi) * certainty_adjustment
                         # Bonus points for long games
