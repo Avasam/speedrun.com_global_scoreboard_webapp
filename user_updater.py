@@ -166,6 +166,9 @@ class Run:
                     mean += (value - mean_temp) / population
                     sigma += (value - mean_temp) * (value - mean)
 
+                # Full level leaderboards with mean under a minute are ignored
+                if mean < 60 and not self.level:
+                    return
                 self._mean_time = mean
 
                 wr_time = valid_runs[0]["run"]["times"]["primary_t"]
@@ -211,7 +214,12 @@ class Run:
                             url = "https://www.speedrun.com/api/v1/games/{game}/levels".format(game=self.game)
                             levels = CachedRequest.get_response_or_new(url)
                             self.level_count = len(levels["data"])
-                            self._points /= (self.level_count or 0) + 1
+                            calc_level_count = (self.level_count or 0) + 1
+                            # ILs leaderboards with mean under their fraction of a minute are ignored
+                            if mean * calc_level_count < 60:
+                                self._points = 0
+                            else:
+                                self._points /= calc_level_count
         print(self)
 
 
