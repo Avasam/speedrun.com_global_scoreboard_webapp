@@ -6,6 +6,7 @@
     "ms-python.python",
     "sonarsource.sonarlint-vscode",
     "ms-vscode.vscode-typescript-tslint-plugin",
-    "davidanson.vscode-markdownlint"
+    "davidanson.vscode-markdownlint",
+    "eamodio.gitlens"
   ]
 }
