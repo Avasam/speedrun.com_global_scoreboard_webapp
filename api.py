@@ -375,5 +375,6 @@ def delete_friends_current(current_user: Player, id: str):
 Game Search context
 """
 @api.route('/game-values', methods=('GET',))
+@authentication_required
 def get_all_game_values():
     return jsonify(map_to_dto(GameValues.query.all()))
