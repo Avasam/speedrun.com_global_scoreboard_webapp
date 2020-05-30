@@ -330,11 +330,12 @@ def __do_update_player(current_user: Player, name_or_id: str):
     __currently_updating_from[current_user.user_id] = now
     __currently_updating_to[name_or_id] = now
 
-    # Actually do the update process
-    result = get_updated_user(name_or_id)
-
-    # Upon update completing, allow the user to update again
-    __currently_updating_from.pop(current_user.user_id, None)
+    try:
+        # Actually do the update process
+        result = get_updated_user(name_or_id)
+    finally:
+        # Upon update completing, allow the user to update again
+        __currently_updating_from.pop(current_user.user_id, None)
 
     return jsonify(result), 400 if result["state"] == "warning" else 200
 
