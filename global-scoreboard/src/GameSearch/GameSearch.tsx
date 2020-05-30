@@ -1,5 +1,6 @@
 /* eslint-disable react/display-name */
 /* eslint-disable react/prop-types */
+import '../Dashboard/Scoreboard.css'
 import 'react-bootstrap-table2-paginator/dist/react-bootstrap-table2-paginator.min.css'
 import BootstrapTable, { Column } from 'react-bootstrap-table-next'
 import { Container, Dropdown, DropdownButton, Spinner } from 'react-bootstrap'
@@ -35,11 +36,13 @@ interface GameValueRow extends GameValue {
 }
 
 const sortCaret: Column['sortCaret'] = (order) =>
-  <span className="sortCarrets">
+  <>
     {' '}
-    <FontAwesomeIcon className={order === 'asc' ? 'active' : ''} icon={faLongArrowAltDown} />
-    <FontAwesomeIcon className={order === 'desc' ? 'active' : ''} icon={faLongArrowAltUp} />
-  </span>
+    <span className="sortCarrets">
+      <FontAwesomeIcon className={order === 'asc' ? 'active' : ''} icon={faLongArrowAltDown} />
+      <FontAwesomeIcon className={order === 'desc' ? 'active' : ''} icon={faLongArrowAltUp} />
+    </span>
+  </>
 
 type FormatExtraDataProps = {
   platforms: IdToNameMap
