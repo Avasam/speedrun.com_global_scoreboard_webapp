@@ -23,7 +23,7 @@ type IdToNameMap = { [key: string]: string }
 interface GameValue {
   gameId: string
   categoryId: string
-  platformId: string
+  platformId: string | null
   meanTime: number
   runId: string
   wrPoints: number
@@ -69,7 +69,9 @@ const columns: Column[] = [
     formatter: (_, row: GameValueRow | undefined, __, formatExtraData?: FormatExtraDataProps) =>
       row &&
       formatExtraData &&
-      formatExtraData.platforms[row.platformId]
+      (row.platformId
+        ? formatExtraData.platforms[row.platformId]
+        : '-')
   },
   {
     dataField: 'wrTime',
