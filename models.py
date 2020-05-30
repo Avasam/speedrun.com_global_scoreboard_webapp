@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 from datetime import datetime, timedelta
-from flask_login import login_user, UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import orm, text
 from typing import Any, Dict, List, Optional, Tuple, Union
@@ -32,7 +31,7 @@ friend = db.Table(
 )
 
 
-class Player(db.Model, UserMixin):
+class Player(db.Model):
     __tablename__ = "player"
 
     user_id: str = db.Column(db.String(8), primary_key=True)
@@ -68,8 +67,6 @@ class Player(db.Model, UserMixin):
         player: Player = Player.get(user_id)
         if not player:
             player = Player.create(user_id, user_name)
-
-        login_user(player)  # Login for non SPA
 
         return player, None
 
@@ -325,7 +322,7 @@ class CachedRequest():
             return result
 
 
-class GameValues(db.Model, UserMixin):
+class GameValues(db.Model):
     __tablename__ = "game_values"
 
     game_id: str = db.Column(db.String(8), primary_key=True)

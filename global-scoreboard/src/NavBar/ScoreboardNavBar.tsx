@@ -45,6 +45,10 @@ const ScoreboardNavBar = (props: LoginInfoProps) =>
             href="https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/master/README.md"
             target="about"
           >About</Nav.Link>
+          <Nav.Link
+            href="https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/issues"
+            target="about"
+          >Report a bug, issue or suggestion</Nav.Link>
         </Nav>
         {props.username !== undefined &&
           <LoginInfo {...props} />

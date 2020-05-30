@@ -22,17 +22,9 @@
 # samuel.06@hotmail.com
 ##########################################################################
 from api import api
-from datetime import date
-from flask import Flask, send_file, send_from_directory, render_template, request, redirect, url_for
-from flask_login import LoginManager, logout_user, login_user, current_user
-from models import db, Player
-from sqlalchemy import exc
-from typing import List, Optional, Union
-from user_updater import get_updated_user
-from utils import get_file, UserUpdaterError, SpeedrunComError
+from flask import Flask, send_file, send_from_directory, redirect, url_for
+from models import db
 import configs
-import json
-import traceback
 
 # Setup Flask app
 app = Flask(__name__, static_folder="assets")
@@ -63,20 +55,10 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = configs.sql_track_modifications
 db.app = app
 db.init_app(app)
 
-# Setup Flask-Login
-login_manager = LoginManager()
-login_manager.init_app(app)
-
-
-@login_manager.user_loader
-def load_user(user_id: str) -> Union[Player, None]:
-    # type: (str) -> Union[Player, None]
-    return Player.get(user_id)
-
 
 @app.route('/global-scoreboard', defaults={'asset': 'index.html'})
 @app.route('/global-scoreboard/<path:asset>', methods=["GET"])
-def react_app(asset: str):
+def global_scoreboard(asset: str):
     if asset[:6] == 'static':
         return send_from_directory('global-scoreboard/build/', asset)
     return send_file('global-scoreboard/build/index.html')
@@ -90,117 +72,7 @@ def tournament_scheduler(asset: str):
 
 @app.route('/', methods=["GET", "POST"])
 def index():
-    global result
-    form_action: str = request.form.get("action")
-    if request.method == "GET":
-        friends: List[Player] = []
-        if current_user.is_authenticated:
-            friends = [friend.user_id for friend in current_user.get_friends()]
-        return render_template(
-            'index.html',
-            friends=friends,
-            bypass_update_restrictions=str(
-                configs.bypass_update_restrictions).lower(),
-            current_year=str(date.today().year)
-        )
-
-    elif request.method == "POST" and form_action:
-        friend_id: str = request.form.get("friend-id")
-        if form_action == "update-user":
-            if current_user.is_authenticated or configs.bypass_update_restrictions:
-                try:
-                    result = get_updated_user(request.form.get("name-or-id"))
-                except UserUpdaterError as exception:
-                    print("\n{}\n{}".format(exception.args[0]["error"], exception.args[0]["details"]))
-                    result = {"state": "danger",
-                              "message": exception.args[0]["details"]}
-                except Exception:
-                    print("\nError: Unknown\n{}".format(traceback.format_exc()))
-                    result = {"state": "danger",
-                              "message": traceback.format_exc()}
-                finally:
-                    return json.dumps(result)
-            else:
-                return json.dumps({'state': 'warning',
-                                   'message': 'You must be logged in to update a user!'})
-
-        elif form_action == "unfriend":
-            if current_user.is_authenticated:
-                if friend_id:
-                    if current_user.unfriend(friend_id).rowcount > 0:
-                        return json.dumps(
-                            {'state': 'success',
-                             'message': f"Successfully removed user ID \"{friend_id}\" from your friends."})
-                    else:
-                        return json.dumps({'state': 'warning',
-                                           'message': f"User ID \"{friend_id}\" isn't one of your friends."})
-                else:
-                    return json.dumps({'state': 'warning',
-                                       'message': 'You must specify a friend ID to remove!'})
-            else:
-                return json.dumps({'state': 'warning',
-                                   'message': 'You must be logged in to remove friends!'})
-
-        elif form_action == "befriend":
-            if current_user.is_authenticated:
-                if friend_id:
-                    try:
-                        result = current_user.befriend(friend_id)
-                    except exc.IntegrityError:
-                        return json.dumps({'state': 'warning',
-                                           'message': f"User ID \"{friend_id}\" is already one of your friends."})
-                    else:
-                        if result:
-                            return json.dumps({'state': 'success',
-                                               'message': f"Successfully added user ID \"{friend_id}\" as a friend."})
-                        else:
-                            return json.dumps({'state': 'warning',
-                                               'message': "You can't add yourself as a friend!"})
-                else:
-                    return json.dumps({'state': 'warning',
-                                       'message': 'You must specify a friend ID to add!'})
-            else:
-                return json.dumps({'state': 'warning',
-                                   'message': 'You must be logged in to add friends!'})
-
-        elif form_action == "login":
-            api_key = request.form.get("api-key")
-            print("api_key = ", api_key)
-            if api_key:
-                try:  # Get user from speedrun.com using the API key
-                    data = get_file("https://www.speedrun.com/api/v1/profile", {"X-API-Key": api_key})["data"]
-                except SpeedrunComError:
-                    print("\nError: Unknown\n{}".format(traceback.format_exc()))
-                    return json.dumps({'state': 'warning',
-                                       'message': 'Invalid API key.'})
-                except Exception:
-                    print("\nError: Unknown\n{}".format(traceback.format_exc()))
-                    return json.dumps({"state": "danger",
-                                       "message": traceback.format_exc()})
-
-                user_id: Optional[str] = data["id"]
-                if user_id:  # Confirms the API key is valid
-                    user_name: str = data["names"]["international"]
-                    print(f"Logging in '{user_id}' ({user_name})")
-
-                    loaded_user = load_user(user_id)
-                    if not loaded_user:
-                        loaded_user = Player.create(user_id, user_name)
-                    login_user(loaded_user)
-                    return json.dumps({'state': 'success',
-                                       'message': "Successfully logged in. "
-                                                  "Please refresh the page if it isn't done automatically."})
-                else:
-                    return json.dumps({'state': 'warning',
-                                       'message': 'Invalid API key.'})
-            else:
-                return json.dumps({'state': 'warning',
-                                   'message': 'You must specify an API key to log in!'})
-
-        elif form_action == "logout":
-            logout_user()
-            return redirect(url_for('index'))
-    return redirect(url_for('index'))
+    return redirect(url_for('global_scoreboard'))
 
 
 if __name__ == '__main__':

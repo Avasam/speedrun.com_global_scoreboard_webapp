@@ -225,9 +225,6 @@ const Dashboard = (props: DashboardProps) => {
   return <Container className="dashboard-container">
     <Alert variant="info">
       We have switched to a new URL! Makes sure to update your bookmark!
-      <br />
-      If there&apos;s any bug or issue you&apos;d like to raise, you can do so{' '}
-      <a href="https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/issues" target="about">over here</a>.
     </Alert>
     <Alert
       variant={alertVariant}
