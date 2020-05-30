@@ -49,9 +49,22 @@ type FormatExtraDataProps = {
   platforms: IdToNameMap
 }
 
+const formatTime = (totalSeconds: number) => {
+  const hours = totalSeconds / 3600 | 0
+  totalSeconds %= 3600
+  const minutes = totalSeconds / 60 | 0
+  const seconds = totalSeconds % 60 | 0
+  return hours.toString().padStart(2, '0') +
+    ':' +
+    minutes.toString().padStart(2, '0') +
+    ':' +
+    seconds.toString().padStart(2, '0')
+}
+
 const columns: Column[] = [
   {
     dataField: 'runId',
+    text: '',
     searchable: false,
     formatter: (_, row: GameValueRow | undefined) =>
       row &&
@@ -88,7 +101,7 @@ const columns: Column[] = [
     sort: true,
     formatter: (_, row: GameValueRow | undefined) =>
       row &&
-      new Date(row.meanTime * 1000).toISOString().substr(11, 8),
+      formatTime(row.wrTime),
   },
   {
     dataField: 'wrPointsPerSecond',
@@ -97,7 +110,7 @@ const columns: Column[] = [
     sort: true,
     formatter: (_, row: GameValueRow | undefined) =>
       row &&
-      `${(row.wrPointsPerSecond * 60).toFixed(1)} pt/m`,
+      `${(row.wrPointsPerSecond * 600 | 0) / 10} pt/m`,
   },
   {
     dataField: 'wrPoints',
@@ -112,7 +125,7 @@ const columns: Column[] = [
     sort: true,
     formatter: (_, row: GameValueRow | undefined) =>
       row &&
-      `${(row.meanPointsPerSecond * 60).toFixed(1)} pt/m`,
+      `${(row.meanPointsPerSecond * 600 | 0) / 10} pt/m`,
   },
   {
     dataField: 'meanTime',
@@ -121,7 +134,7 @@ const columns: Column[] = [
     sort: true,
     formatter: (_, row: GameValueRow | undefined) =>
       row &&
-      new Date(row.meanTime * 1000).toISOString().substr(11, 8),
+      formatTime(row.meanTime),
   },
 ]
 
@@ -222,7 +235,7 @@ const GameSearch = () => {
   }, [])
 
   return <Container>
-    <label>GameSearch:</label>
+    <label>Game search:</label>
     <ToolkitProvider
       keyField='runId'
       data={gameValues}

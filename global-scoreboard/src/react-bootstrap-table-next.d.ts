@@ -11,7 +11,7 @@
 // - PaginationProps.custom is a property that exists
 // - onPageChange and onSizePerPageChange return type to void
 // - wrapperClasses neede to add "table-responsive"
-// - Column.text can also be Element or optionnal (TODO: throws error in console though)
+// - Column.text can also be Element (TODO: throws error in console though)
 // - Column.sortCaret exists
 // - BootstrapTable.sort exists
 // - SearchFieldProps.ref?
@@ -226,7 +226,7 @@ declare module 'react-bootstrap-table-next' {
   export interface Column {
     align?: string
     dataField: string
-    text?: string | JSX.Element
+    text: string | JSX.Element
     classes?: string | ((cell: TODO, row: TODO, rowIndex: number, colIndex: number) => string)
     headerClasses?: string
     hidden?: boolean
