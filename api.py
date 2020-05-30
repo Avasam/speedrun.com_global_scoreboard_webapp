@@ -376,5 +376,5 @@ Game Search context
 """
 @api.route('/game-values', methods=('GET',))
 @authentication_required
-def get_all_game_values():
+def get_all_game_values(current_user: Player):
     return jsonify(map_to_dto(GameValues.query.all()))
