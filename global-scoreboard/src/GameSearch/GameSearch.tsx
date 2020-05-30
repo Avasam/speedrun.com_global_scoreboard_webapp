@@ -9,6 +9,7 @@ import ToolkitProvider, { Search, SearchProps, ToolkitProviderProps } from 'reac
 import paginationFactory, { PaginationListStandalone, PaginationProvider, PaginationTotalStandalone, SizePerPageDropdownStandalone } from 'react-bootstrap-table2-paginator'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { apiGet } from '../fetchers/api'
+import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
 import { faLongArrowAltDown } from '@fortawesome/free-solid-svg-icons'
 import { faLongArrowAltUp } from '@fortawesome/free-solid-svg-icons'
 const { SearchBar } = Search
@@ -50,11 +51,18 @@ type FormatExtraDataProps = {
 
 const columns: Column[] = [
   {
+    dataField: 'runId',
+    searchable: false,
+    formatter: (_, row: GameValueRow | undefined) =>
+      row &&
+      <a href={`https://www.speedrun.com/run/${row.runId}`} target="src"><FontAwesomeIcon icon={faExternalLinkAlt} /></a>
+  },
+  {
     dataField: 'gameId',
     text: 'Game',
     formatter: (_, row: GameValueRow | undefined) =>
       row &&
-      <a href={`https://www.speedrun.com/run/${row.runId}`} target="src">{getNameForGameId(row.gameId)}</a>
+      getNameForGameId(row.gameId)
   },
   {
     dataField: 'categoryId',
@@ -99,7 +107,7 @@ const columns: Column[] = [
   },
   {
     dataField: 'meanPointsPerSecond',
-    text: 'WR Points/Mean Time',
+    text: 'WR Points/Avg Time',
     searchable: false,
     sort: true,
     formatter: (_, row: GameValueRow | undefined) =>
@@ -108,7 +116,7 @@ const columns: Column[] = [
   },
   {
     dataField: 'meanTime',
-    text: 'Mean Time',
+    text: 'Avg Time',
     searchable: false,
     sort: true,
     formatter: (_, row: GameValueRow | undefined) =>
@@ -223,7 +231,9 @@ const GameSearch = () => {
         const formatExtraData: FormatExtraDataProps = { platforms }
         return { ...column, formatExtraData, sortCaret }
       })}
-      search
+      search={{
+        searchFormatted: true
+      }}
       bootstrap4
     >
       {(toolkitprops: ToolkitProviderProps) =>
