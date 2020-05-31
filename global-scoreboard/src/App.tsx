@@ -1,4 +1,5 @@
 import './App.css'
+import 'react-picky/dist/picky.css'
 import 'bootstrap/dist/css/bootstrap.css'
 import Configs, { ServerConfigs } from './models/Configs'
 import React, { FC, useEffect, useState } from 'react'

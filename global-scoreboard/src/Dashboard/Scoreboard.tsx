@@ -69,7 +69,8 @@ const columns: Column[] = [
   },
   {
     dataField: 'score',
-    text: <ScoreTitle />,
+    text: 'Score',
+    headerFormatter: () => <ScoreTitle />,
     searchable: false,
     formatter: (_, row: Player | undefined) =>
       row &&

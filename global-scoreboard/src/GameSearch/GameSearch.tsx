@@ -2,12 +2,15 @@
 /* eslint-disable react/prop-types */
 import '../Dashboard/Scoreboard.css'
 import 'react-bootstrap-table2-paginator/dist/react-bootstrap-table2-paginator.min.css'
+import './GameSearch.css'
 import BootstrapTable, { Column } from 'react-bootstrap-table-next'
-import { Container, Dropdown, DropdownButton, Spinner } from 'react-bootstrap'
+import { Container, Dropdown, DropdownButton, FormControl, InputGroup, Spinner } from 'react-bootstrap'
 import React, { Component, useEffect, useRef, useState } from 'react'
 import ToolkitProvider, { Search, SearchProps, ToolkitProviderProps } from 'react-bootstrap-table2-toolkit'
+import filterFactory, { Comparator, multiSelectFilter, numberFilter } from 'react-bootstrap-table2-filter'
 import paginationFactory, { PaginationListStandalone, PaginationProvider, PaginationTotalStandalone, SizePerPageDropdownStandalone } from 'react-bootstrap-table2-paginator'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { Picky } from 'react-picky'
 import { apiGet } from '../fetchers/api'
 import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
 import { faLongArrowAltDown } from '@fortawesome/free-solid-svg-icons'
@@ -36,6 +39,22 @@ interface GameValueRow extends GameValue {
   meanPointsPerSecond: number
 }
 
+interface PlatformSelectOption {
+  id: string
+  name: string
+}
+
+type FormatExtraDataProps = {
+  platforms: IdToNameMap
+}
+
+// Note: false positive
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+let platformFilter: FilterFunction<string[]>
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+let minTimeFilter: NumberFilterFunction
+let maxTimeFilter: NumberFilterFunction
+
 const sortCaret: Column['sortCaret'] = (order) =>
   <>
     {' '}
@@ -45,11 +64,7 @@ const sortCaret: Column['sortCaret'] = (order) =>
     </span>
   </>
 
-type FormatExtraDataProps = {
-  platforms: IdToNameMap
-}
-
-const formatTime = (totalSeconds: number) => {
+const secondsToTimeString = (totalSeconds: number) => {
   const hours = totalSeconds / 3600 | 0
   totalSeconds %= 3600
   const minutes = totalSeconds / 60 | 0
@@ -59,6 +74,15 @@ const formatTime = (totalSeconds: number) => {
     minutes.toString().padStart(2, '0') +
     ':' +
     seconds.toString().padStart(2, '0')
+}
+
+const timeStringToSeconds = (timeString: string) => {
+  if (!timeString) return ''
+  const t = timeString.split(':')
+  const h = t[t.length - 3] ?? '0'
+  const m = t[t.length - 2] ?? '0'
+  const s = t[t.length - 1]
+  return (+h) * 3600 + (+m) * 60 + (+s)
 }
 
 const columns: Column[] = [
@@ -92,7 +116,12 @@ const columns: Column[] = [
       formatExtraData &&
       (row.platformId
         ? formatExtraData.platforms[row.platformId]
-        : '-')
+        : '-'),
+    filter: multiSelectFilter({
+      options: {},
+      getFilter: filter => platformFilter = filter,
+      style: { 'display': 'none' },
+    }),
   },
   {
     dataField: 'wrTime',
@@ -101,7 +130,11 @@ const columns: Column[] = [
     sort: true,
     formatter: (_, row: GameValueRow | undefined) =>
       row &&
-      formatTime(row.wrTime),
+      secondsToTimeString(row.wrTime),
+    filter: numberFilter({
+      getFilter: filter => maxTimeFilter = filter,
+      style: { 'display': 'none' },
+    }),
   },
   {
     dataField: 'wrPointsPerSecond',
@@ -134,7 +167,11 @@ const columns: Column[] = [
     sort: true,
     formatter: (_, row: GameValueRow | undefined) =>
       row &&
-      formatTime(row.meanTime),
+      secondsToTimeString(row.meanTime),
+    filter: numberFilter({
+      getFilter: filter => minTimeFilter = filter,
+      style: { 'display': 'none' },
+    }),
   },
 ]
 
@@ -228,24 +265,50 @@ const GameSearch = () => {
   const boostrapTableRef = useRef<BootstrapTable>(null)
   const [gameValues, setGameValues] = useState<GameValueRow[]>([])
   const [platforms, setPlatforms] = useState<IdToNameMap>()
+  const [selectedPlatforms, setSelectedPlatforms] = useState<PlatformSelectOption[]>([])
+  const [minTimeText, setMinTimeText] = useState('')
+  const [maxTimeText, setMaxTimeText] = useState('')
 
   useEffect(() => {
     getAllGameValues().then(setGameValues)
     getAllPlatforms().then(setPlatforms)
   }, [])
 
+  const handlePlatformSelection = (platforms: PlatformSelectOption[]) => {
+    platformFilter(platforms.map(platform => platform.id))
+    setSelectedPlatforms(platforms)
+  }
+
+  const handleMinTimeChange: React.ChangeEventHandler<HTMLInputElement> = event => {
+    if (!event.currentTarget.value.match(/^[1-9]?[\d:]{0,7}\d?$/)) return
+    setMinTimeText(event.currentTarget.value)
+    minTimeFilter({
+      number: timeStringToSeconds(event.currentTarget.value),
+      comparator: Comparator.GE,
+    })
+  }
+
+  const handleMaxTimeChange: React.ChangeEventHandler<HTMLInputElement> = event => {
+    if (!event.currentTarget.value.match(/^[1-9]?[\d:]{0,7}\d?$/)) return
+    setMaxTimeText(event.currentTarget.value)
+    maxTimeFilter({
+      number: timeStringToSeconds(event.currentTarget.value),
+      comparator: Comparator.LE,
+    })
+  }
+
   return <Container>
-    <label>Game search:</label>
+    <br />
     <ToolkitProvider
       keyField='runId'
       data={gameValues}
       columns={columns.map(column => {
-        if (!platforms) return { ...column }
+        if (!platforms) return column
         const formatExtraData: FormatExtraDataProps = { platforms }
         return { ...column, formatExtraData, sortCaret }
       })}
       search={{
-        searchFormatted: true
+        searchFormatted: true,
       }}
       bootstrap4
     >
@@ -258,7 +321,52 @@ const GameSearch = () => {
         >
           {(({ paginationProps, paginationTableProps }) =>
             <div>
-              <SearchBar ref={searchBarRef} {...toolkitprops.searchProps} />
+              <SearchBar
+                ref={searchBarRef}
+                {...toolkitprops.searchProps}
+                placeholder="Game / Category search"
+              />
+              <Picky
+                id="platform-multiselect"
+                valueKey="id"
+                labelKey="name"
+                buttonProps={{ 'className': 'form-control' }}
+                placeholder="Filter by platforms"
+                manySelectedPlaceholder="%s platforms selected"
+                allSelectedPlaceholder="All platforms selected"
+                numberDisplayed={1}
+                options={Object
+                  .entries(platforms || {})
+                  .reduce((platformOptions, [id, name]) => {
+                    if (gameValues.some(gameValue => gameValue.platformId === id)) {
+                      platformOptions.push({ id, name })
+                    }
+                    return platformOptions
+                  }, [] as PlatformSelectOption[])}
+                value={selectedPlatforms}
+                multiple={true}
+                includeSelectAll={true}
+                includeFilter={true}
+                onChange={values => handlePlatformSelection(values as PlatformSelectOption[])}
+              />
+              <div className="time-between">
+                <label>Time between</label>
+                <InputGroup>
+                  <FormControl
+                    name="min-time"
+                    placeholder="Min Avg"
+                    value={minTimeText}
+                    onChange={handleMinTimeChange} />
+                  <InputGroup.Append className="input-group-prepend">
+                    <InputGroup.Text>-</InputGroup.Text>
+                  </InputGroup.Append>
+                  <FormControl
+                    name="max-time"
+                    placeholder="Max WR"
+                    value={maxTimeText}
+                    onChange={handleMaxTimeChange} />
+                </InputGroup>
+              </div>
               <SizePerPageDropdownStandalone {...paginationProps} />
               <BootstrapTable
                 ref={boostrapTableRef}
@@ -277,6 +385,7 @@ const GameSearch = () => {
                   dataField: 'wrPoints',
                   order: 'desc',
                 }]}
+                filter={filterFactory()}
               />
               <div>
                 <PaginationTotalStandalone {...paginationProps} />

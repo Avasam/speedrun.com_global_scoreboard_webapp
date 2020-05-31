@@ -1,6 +1,5 @@
-import { BsPrefixProps, ReplaceProps } from 'react-bootstrap/helpers'
-import { Button, Col, Form, FormControlProps, InputGroup } from 'react-bootstrap'
-import React, { FormEvent, useState } from 'react'
+import { Button, Col, Form, InputGroup } from 'react-bootstrap'
+import React, { useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import GenericModal from '../GenericModal'
 import Player from '../models/Player'
@@ -41,8 +40,8 @@ const LoginModal = (props: LoginModalProps) => {
       })
   }
 
-  const handleSrcApiKeyChange = (event: FormEvent<ReplaceProps<'input', BsPrefixProps<'input'> & FormControlProps>>) =>
-    setSrcApiKeyInput(event.currentTarget.value || '')
+  const handleSrcApiKeyChange: React.ChangeEventHandler<HTMLInputElement> = event =>
+    setSrcApiKeyInput(event.currentTarget.value)
 
   return (
     <GenericModal show={props.show} onHide={props.onClose} title="Enter your API key" >
