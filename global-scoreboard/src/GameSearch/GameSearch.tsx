@@ -272,29 +272,45 @@ const GameSearch = () => {
   useEffect(() => {
     getAllGameValues().then(setGameValues)
     getAllPlatforms().then(setPlatforms)
+    doPlatformSelection(JSON.parse(localStorage.getItem('selectedPlatforms') || '[]'))
+    doMinTimeChange(JSON.parse(localStorage.getItem('selectedMinTime') || '""'))
+    doMaxTimeChange(JSON.parse(localStorage.getItem('selectedMaxTime') || '""'))
   }, [])
 
-  const handlePlatformSelection = (platforms: PlatformSelectOption[]) => {
+
+  const doPlatformSelection = (platforms: PlatformSelectOption[]) => {
     platformFilter(platforms.map(platform => platform.id))
     setSelectedPlatforms(platforms)
   }
+  const handlePlatformSelection = (platforms: PlatformSelectOption[]) => {
+    doPlatformSelection(platforms)
+    localStorage.setItem('selectedPlatforms', JSON.stringify(platforms))
+  }
 
-  const handleMinTimeChange: React.ChangeEventHandler<HTMLInputElement> = event => {
-    if (!event.currentTarget.value.match(/^[1-9]?[\d:]{0,7}\d?$/)) return
-    setMinTimeText(event.currentTarget.value)
+  const doMinTimeChange = (minTime: string) => {
+    setMinTimeText(minTime)
     minTimeFilter({
-      number: timeStringToSeconds(event.currentTarget.value),
+      number: timeStringToSeconds(minTime),
       comparator: Comparator.GE,
     })
   }
-
-  const handleMaxTimeChange: React.ChangeEventHandler<HTMLInputElement> = event => {
+  const handleMinTimeChange: React.ChangeEventHandler<HTMLInputElement> = event => {
     if (!event.currentTarget.value.match(/^[1-9]?[\d:]{0,7}\d?$/)) return
-    setMaxTimeText(event.currentTarget.value)
+    doMinTimeChange(event.currentTarget.value)
+    localStorage.setItem('selectedMinTime', JSON.stringify(event.currentTarget.value))
+  }
+
+  const doMaxTimeChange = (maxTime: string) => {
+    setMaxTimeText(maxTime)
     maxTimeFilter({
-      number: timeStringToSeconds(event.currentTarget.value),
+      number: timeStringToSeconds(maxTime),
       comparator: Comparator.LE,
     })
+  }
+  const handleMaxTimeChange: React.ChangeEventHandler<HTMLInputElement> = event => {
+    if (!event.currentTarget.value.match(/^[1-9]?[\d:]{0,7}\d?$/)) return
+    doMaxTimeChange(event.currentTarget.value)
+    localStorage.setItem('selectedMaxTime', JSON.stringify(event.currentTarget.value))
   }
 
   return <Container>
