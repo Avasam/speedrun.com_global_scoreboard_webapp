@@ -32,7 +32,8 @@ The score is calculated by summing up every valid PB of a user according to a fo
 2. All runs not considered valid (w/o video/image verification or banned user) runs are removed from the leaderboard and can be considered as non-existant from now on.
 3. Remove the last 5% of the leaderboard
 4. <TODO: 80th percentile soft cutoff> From this step onward, the amount of runners in the leaderboard will be reffered to as the "population".
-5. Generate a logaritmic curve that looks like below. Where the (mean/median?) = 1 and the last run is worth 0
+5. Generate a logaritmic curve that looks somewhat like below. Where the mean time = 1 and the last run is worth 0  
+![Curve Example](/assets/images/Curve%20example.jpg)
     - 5.1. A signed standart deviation is obtained for all the runs
     - 5.2. The deviation is adjusted so that the last run is worth 0 points. By adding the lowest (unsigned) deviation to the signed deviation
     - 5.3. The deviation is then normalized so that the mean time is worth 1 point and the last run is still worth 0 points. By dividing the adjusted deviation with the adjusted lowest deviation. Capped at π.
@@ -42,8 +43,6 @@ The score is calculated by summing up every valid PB of a user according to a fo
     - `length_bonus = 1 + (wr_time / TIME_BONUS_DIVISOR)`. This is to slightly bonify longuer runs which which usually require more time put in the game to achieve a similar level of execution
         - `TIME_BONUS_DIVISOR = 3600 * 12`: 12h (1/2 day) for +100%
 7. Finally, if the run is an IL (Individual Level), the points are divided by "the quantity of ILs for the game + 1"
-
-![Curve Example](/assets/images/Curve example.jpg)
 
 ---
 
