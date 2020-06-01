@@ -27,16 +27,16 @@ The score is calculated by summing up every valid PB of a user according to a fo
     - The leaderboard (for the current sub-category) has at least 3 runs
     - Is part of a speedrun leaderboard, not a scoreboard
     - After step #4, not all runs have the same time
-    - After step #4, the mean time is not under a minute
-        - ILs' mean should not be under their fraction of a minute (see step #7)
+    - After step #4, the average time is not under a minute
+        - ILs' average should not be under their fraction of a minute (see step #7)
 2. All runs not considered valid (w/o video/image verification or banned user) runs are removed from the leaderboard and can be considered as non-existant from now on.
 3. Remove the last 5% of the leaderboard
 4. <TODO: 80th percentile soft cutoff> From this step onward, the amount of runners in the leaderboard will be reffered to as the "population".
-5. Generate a logaritmic curve that looks somewhat like below. Where the mean time = 1 and the last run is worth 0  
+5. Generate a logaritmic curve that looks somewhat like below. Where the average time = 1 and the last run is worth 0  
 ![Curve Example](/assets/images/Curve%20example.jpg)
     - 5.1. A signed standart deviation is obtained for all the runs
     - 5.2. The deviation is adjusted so that the last run is worth 0 points. By adding the lowest (unsigned) deviation to the signed deviation
-    - 5.3. The deviation is then normalized so that the mean time is worth 1 point and the last run is still worth 0 points. By dividing the adjusted deviation with the adjusted lowest deviation. Capped at π.
+    - 5.3. The deviation is then normalized so that the average time is worth 1 point and the last run is still worth 0 points. By dividing the adjusted deviation with the adjusted lowest deviation. Capped at π.
     - 5.5. Points for a run are equal to: `e^(normalized_deviation * certainty_adjustment)`
         - `certainty_adjustment = 1 - 1 / (population - 1)`
 6. The points for a run are then multiplied by a "length bonus", the decimal point is shifted to the right by 1 and is capped at 999.99
