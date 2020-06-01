@@ -46,8 +46,7 @@ const App: FC = () => {
         onLogout={() => logout(setCurrentUser)}
       />
 
-      {window.location.pathname === '/global-scoreboard/game-search' &&
-        (currentUser || window.process.env.REACT_APP_BYPASS_UPDATE_RESTRICTIONS === 'true')
+      {window.location.pathname === '/global-scoreboard/game-search' && currentUser
         ? <GameSearch />
         : <Dashboard currentUser={currentUser} />
       }

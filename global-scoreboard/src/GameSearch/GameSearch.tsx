@@ -46,6 +46,10 @@ interface PlatformSelectOption {
 
 type FormatExtraDataProps = {
   platforms: IdToNameMap
+  gameMap: IdToNameMap
+  setGameMap: React.Dispatch<React.SetStateAction<IdToNameMap>>
+  categoryMap: IdToNameMap
+  setCategoryMap: React.Dispatch<React.SetStateAction<IdToNameMap>>
 }
 
 // Note: false positive
@@ -84,39 +88,60 @@ const timeStringToSeconds = (timeString: string) => {
   const s = t[t.length - 1]
   return (+h) * 3600 + (+m) * 60 + (+s)
 }
-
 const columns: Column[] = [
   {
     dataField: 'runId',
     text: '',
     searchable: false,
-    formatter: (_, row: GameValueRow | undefined) =>
-      row &&
-      <a href={`https://www.speedrun.com/run/${row.runId}`} target="src"><FontAwesomeIcon icon={faExternalLinkAlt} /></a>
+    formatter: (_, row: GameValueRow | undefined, __, formatExtraData?: FormatExtraDataProps) => {
+      if (!row || !formatExtraData) return ''
+      if (!formatExtraData.gameMap[row.gameId] || !formatExtraData.categoryMap[row.categoryId]) {
+        fetchValueNamesForRun(row.runId)
+          .then(results => {
+            if (!results) return
+            const [game, category] = results
+            formatExtraData.setGameMap(prevGames => {
+              const newGames = { ...prevGames, ...game }
+              localStorage.setItem('games', JSON.stringify(newGames))
+              return newGames
+            })
+            formatExtraData.setCategoryMap(prevCategories => {
+              const newCategories = { ...prevCategories, ...category }
+              localStorage.setItem('categories', JSON.stringify(newCategories))
+              return newCategories
+            })
+          })
+      }
+      return <a href={`https://www.speedrun.com/run/${row.runId}`} target="src"><FontAwesomeIcon icon={faExternalLinkAlt} /></a>
+    }
   },
   {
     dataField: 'gameId',
     text: 'Game',
-    formatter: (_, row: GameValueRow | undefined) =>
-      row &&
-      getNameForGameId(row.gameId)
+    formatter: (_, row: GameValueRow | undefined, __, formatExtraData?: FormatExtraDataProps) =>
+      (row &&
+        formatExtraData &&
+        formatExtraData.gameMap[row.gameId]) ||
+      row?.gameId
   },
   {
     dataField: 'categoryId',
     text: 'Category',
-    formatter: (_, row: GameValueRow | undefined) =>
-      row &&
-      getNameForCategoryId(row.categoryId)
+    formatter: (_, row: GameValueRow | undefined, __, formatExtraData?: FormatExtraDataProps) =>
+      (row &&
+        formatExtraData &&
+        formatExtraData.categoryMap[row.categoryId]) ||
+      row?.categoryId
   },
   {
     dataField: 'platformId',
     text: 'Platform',
     formatter: (_, row: GameValueRow | undefined, __, formatExtraData?: FormatExtraDataProps) =>
-      row &&
-      formatExtraData &&
-      (row.platformId
-        ? formatExtraData.platforms[row.platformId]
-        : '-'),
+      (row &&
+        row.platformId &&
+        formatExtraData &&
+        formatExtraData.platforms[row.platformId]) ||
+      '-',
     filter: multiSelectFilter({
       options: {},
       getFilter: filter => platformFilter = filter,
@@ -230,34 +255,22 @@ const getAllPlatforms = () => apiGet('https://www.speedrun.com/api/v1/platforms'
   .then<PlatformDto[]>(res => res.data)
   .then<IdToNameMap>(platforms => Object.fromEntries(platforms.map(platform => [platform.id, platform.name])))
 
-const getNameForGameId = (gameId: string) => {
-  let games: IdToNameMap = JSON.parse(localStorage.getItem('games') || '{}')
-  const gameName = games[gameId]
-  if (gameName) return gameName
-  apiGet(`https://www.speedrun.com/api/v1/games/${gameId}`, undefined, false)
+const requestsStartedForRun = new Map<string, boolean>()
+const fetchValueNamesForRun = async (runId: string) => {
+  if (requestsStartedForRun.get(runId)) return
+  requestsStartedForRun.set(runId, true)
+  return apiGet(`https://www.speedrun.com/api/v1/runs/${runId}?embed=game,category`, undefined, false)
     .then(res => res.json())
-    .then<string>(res => res.data.names.international)
-    .then(gameName => {
-      games = JSON.parse(localStorage.getItem('games') || '{}')
-      games[gameId] = gameName
-      localStorage.setItem('games', JSON.stringify(games))
+    .then<[IdToNameMap, IdToNameMap]>(res => {
+      return [
+        { [res.data.game.data.id]: res.data.game.data.names.international },
+        { [res.data.category.data.id]: res.data.category.data.name },
+      ]
     })
-  return gameId
-}
-
-const getNameForCategoryId = (categoryId: string) => {
-  let categories: IdToNameMap = JSON.parse(localStorage.getItem('categories') || '{}')
-  const gameName = categories[categoryId]
-  if (gameName) return gameName
-  apiGet(`https://www.speedrun.com/api/v1/categories/${categoryId}`, undefined, false)
-    .then(res => res.json())
-    .then<string>(res => res.data.name)
-    .then(gameName => {
-      categories = JSON.parse(localStorage.getItem('categories') || '{}')
-      categories[categoryId] = gameName
-      localStorage.setItem('categories', JSON.stringify(categories))
+    .catch(_ => {
+      requestsStartedForRun.delete(runId)
+      return
     })
-  return categoryId
 }
 
 const GameSearch = () => {
@@ -266,17 +279,20 @@ const GameSearch = () => {
   const [gameValues, setGameValues] = useState<GameValueRow[]>([])
   const [platforms, setPlatforms] = useState<IdToNameMap>()
   const [selectedPlatforms, setSelectedPlatforms] = useState<PlatformSelectOption[]>([])
+  const [gameMap, setGameMap] = useState<IdToNameMap>({})
+  const [categoryMap, setCategoryMap] = useState<IdToNameMap>({})
   const [minTimeText, setMinTimeText] = useState('')
   const [maxTimeText, setMaxTimeText] = useState('')
 
   useEffect(() => {
-    getAllGameValues().then(setGameValues)
-    getAllPlatforms().then(setPlatforms)
+    setGameMap(JSON.parse(localStorage.getItem('games') || '{}'))
+    setCategoryMap(JSON.parse(localStorage.getItem('categories') || '{}'))
     doPlatformSelection(JSON.parse(localStorage.getItem('selectedPlatforms') || '[]'))
     doMinTimeChange(JSON.parse(localStorage.getItem('selectedMinTime') || '""'))
     doMaxTimeChange(JSON.parse(localStorage.getItem('selectedMaxTime') || '""'))
+    getAllGameValues().then(setGameValues)
+    getAllPlatforms().then(setPlatforms)
   }, [])
-
 
   const doPlatformSelection = (platforms: PlatformSelectOption[]) => {
     platformFilter(platforms.map(platform => platform.id))
@@ -320,7 +336,7 @@ const GameSearch = () => {
       data={gameValues}
       columns={columns.map(column => {
         if (!platforms) return column
-        const formatExtraData: FormatExtraDataProps = { platforms }
+        const formatExtraData: FormatExtraDataProps = { platforms, gameMap, setGameMap, categoryMap, setCategoryMap }
         return { ...column, formatExtraData, sortCaret }
       })}
       search={{
