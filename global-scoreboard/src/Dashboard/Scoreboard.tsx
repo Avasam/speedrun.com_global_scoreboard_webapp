@@ -73,15 +73,11 @@ const columns: Column[] = [
   {
     dataField: 'score',
     text: 'Score',
-    headerFormatter: (column, _, components) => {
-      console.log(column, _, components)
-      console.log(components.sortElement.props)
-      console.log(components.sortElement.props.order)
-      return <>
+    headerFormatter: (column, _, components) =>
+      <>
         <ScoreTitle />
         {sortCaret(getSortOrder())}
-      </>
-    },
+      </>,
     searchable: false,
     formatter: (_, row: Player | undefined) =>
       row &&
