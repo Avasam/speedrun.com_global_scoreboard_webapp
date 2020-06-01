@@ -5,7 +5,7 @@ api.py
 from datetime import datetime, timedelta
 from flask import Blueprint, current_app, jsonify, request
 from functools import wraps
-from models import map_to_dto, Player, Schedule, TimeSlot
+from models import map_to_dto, GameValues, Player, Schedule, TimeSlot
 from sqlalchemy import exc
 from typing import Any, Dict, List, Optional, Union, Tuple
 from user_updater import get_updated_user
@@ -330,11 +330,12 @@ def __do_update_player(current_user: Player, name_or_id: str):
     __currently_updating_from[current_user.user_id] = now
     __currently_updating_to[name_or_id] = now
 
-    # Actually do the update process
-    result = get_updated_user(name_or_id)
-
-    # Upon update completing, allow the user to update again
-    __currently_updating_from.pop(current_user.user_id, None)
+    try:
+        # Actually do the update process
+        result = get_updated_user(name_or_id)
+    finally:
+        # Upon update completing, allow the user to update again
+        __currently_updating_from.pop(current_user.user_id, None)
 
     return jsonify(result), 400 if result["state"] == "warning" else 200
 
@@ -368,3 +369,12 @@ def delete_friends_current(current_user: Player, id: str):
         return f"Successfully removed user ID \"{id}\" from your friends."
     else:
         return f"User ID \"{id}\" isn't one of your friends."
+
+
+"""
+Game Search context
+"""
+@api.route('/game-values', methods=('GET',))
+@authentication_required
+def get_all_game_values(current_user: Player):
+    return jsonify(map_to_dto(GameValues.query.all()))

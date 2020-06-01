@@ -29,11 +29,13 @@ const columnClass = (cell: Date | undefined) => {
 }
 
 const sortCaret: Column['sortCaret'] = (order) =>
-  <span className="sortCarrets">
+  <>
     {' '}
-    <FontAwesomeIcon className={order === 'asc' ? 'active' : ''} icon={faLongArrowAltDown} />
-    <FontAwesomeIcon className={order === 'desc' ? 'active' : ''} icon={faLongArrowAltUp} />
-  </span>
+    <span className="sortCarrets">
+      <FontAwesomeIcon className={order === 'asc' ? 'active' : ''} icon={faLongArrowAltDown} />
+      <FontAwesomeIcon className={order === 'desc' ? 'active' : ''} icon={faLongArrowAltUp} />
+    </span>
+  </>
 
 type FormatExtraDataProps = {
   currentUser: Player | null
@@ -67,7 +69,8 @@ const columns: Column[] = [
   },
   {
     dataField: 'score',
-    text: <ScoreTitle />,
+    text: 'Score',
+    headerFormatter: () => <ScoreTitle />,
     searchable: false,
     formatter: (_, row: Player | undefined) =>
       row &&

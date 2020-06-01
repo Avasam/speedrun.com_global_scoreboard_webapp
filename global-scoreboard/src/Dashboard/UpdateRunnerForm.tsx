@@ -1,7 +1,6 @@
 
-import { BsPrefixProps, ReplaceProps } from 'react-bootstrap/helpers'
-import { Button, Form, FormControlProps, InputGroup } from 'react-bootstrap'
-import React, { FormEvent, useState } from 'react'
+import { Button, Form, InputGroup } from 'react-bootstrap'
+import React, { useState } from 'react'
 import Player from '../models/Player'
 
 type UpdateRunnerFormProps = {
@@ -13,8 +12,8 @@ type UpdateRunnerFormProps = {
 const UpdateRunnerForm = (props: UpdateRunnerFormProps) => {
   const [updateUserNameOrId, setUpdateUserNameOrId] = useState('')
 
-  const handleOnChange = (event: FormEvent<ReplaceProps<'input', BsPrefixProps<'input'> & FormControlProps>>) =>
-    setUpdateUserNameOrId(event.currentTarget.value || '')
+  const handleOnChange: React.ChangeEventHandler<HTMLInputElement> = event =>
+    setUpdateUserNameOrId(event.currentTarget.value)
 
   return (
     <Form>

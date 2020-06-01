@@ -37,7 +37,7 @@ const LoginInfo = (props: LoginInfoProps) => {
 const ScoreboardNavBar = (props: LoginInfoProps) =>
   <Navbar collapseOnSelect expand="md" bg="dark" variant="dark">
     <Container>
-      <Navbar.Brand href="#/">Ava&apos;s speedrunning global scoreboard</Navbar.Brand>
+      <Navbar.Brand href="/global-scoreboard">Ava&apos;s speedrunning global scoreboard</Navbar.Brand>
       <Navbar.Toggle aria-controls="basic-navbar-nav" />
       <Navbar.Collapse id="basic-navbar-nav">
         <Nav className="mr-auto">
@@ -45,6 +45,10 @@ const ScoreboardNavBar = (props: LoginInfoProps) =>
             href="https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/master/README.md"
             target="about"
           >About</Nav.Link>
+          <Nav.Link
+            href="https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/issues"
+            target="about"
+          >Report a bug, issue or suggestion</Nav.Link>
         </Nav>
         {props.username !== undefined &&
           <LoginInfo {...props} />

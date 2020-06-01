@@ -6,6 +6,11 @@
   min-width: unset;
 }
 
+label,
+.search-label {
+  margin-right: 0.5rem; /* Same as label bottom */
+}
+
 .legend label {
   margin-bottom: 0;
 }
@@ -25,6 +30,7 @@
 
 .sortCarrets {
   white-space: nowrap;
+  display: inline-block;
 }
 
 .sortCarrets svg {
