@@ -290,10 +290,10 @@ class User:
                     # If a category has already been counted, only keep the one that's worth the most.
                     # This can happen in leaderboards with coop runs or subcategories.
                     if run._points > 0:
-                        for counted_run in counted_runs:
+                        for i, counted_run in enumerate(counted_runs):
                             if counted_run == run:
                                 if run._points > counted_run._points:
-                                    counted_run = run
+                                    counted_runs[i] = run
                                 break
                         else:
                             counted_runs.append(run)
