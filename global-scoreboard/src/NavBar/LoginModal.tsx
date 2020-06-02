@@ -45,7 +45,7 @@ const LoginModal = (props: LoginModalProps) => {
 
   return (
     <GenericModal show={props.show} onHide={props.onClose} title="Enter your API key" >
-      <Form>
+      <Form onSubmit={(event: React.FormEvent<HTMLFormElement>) => event.preventDefault()}>
         <Form.Group controlId="src-api-key">
           <Form.Label>Enter your API key</Form.Label>
           <InputGroup>
@@ -76,7 +76,7 @@ const LoginModal = (props: LoginModalProps) => {
 
         <Form.Group>
           <Col xs={{ span: 6, offset: 3 }}>
-            <Button variant="success" block onClick={() => attemptLogin()}>Log in</Button>
+            <Button type="submit" variant="success" block onClick={() => attemptLogin()}>Log in</Button>
           </Col>
         </Form.Group>
 
