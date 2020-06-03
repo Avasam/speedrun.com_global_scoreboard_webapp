@@ -342,14 +342,6 @@ class GameValues(db.Model):
             wr_points: int,
             mean_time: int,
             run_id: str):
-        print("GameValues",
-              game_id,
-              category_id,
-              platform_id,
-              wr_time,
-              wr_points,
-              mean_time,
-              run_id)
         existing_game_values = GameValues.get(game_id, category_id)
         if existing_game_values is None:
             return GameValues.create(game_id, category_id, platform_id, wr_time, wr_points, mean_time, run_id)

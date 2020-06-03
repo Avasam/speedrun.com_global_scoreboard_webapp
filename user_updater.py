@@ -220,7 +220,6 @@ class Run:
                                 self._points = 0
                             else:
                                 self._points /= calc_level_count
-        print(self)
 
 
 class User:
@@ -255,6 +254,7 @@ class User:
 
     def set_points(self) -> None:
         counted_runs: List[Run] = []
+        kept_for_game_values: List[Run] = []
 
         def set_points_thread(pb) -> None:
             try:
@@ -290,10 +290,17 @@ class User:
                     # If a category has already been counted, only keep the one that's worth the most.
                     # This can happen in leaderboards with coop runs or subcategories.
                     if run._points > 0:
-                        for counted_run in counted_runs:
+                        for i, counted_run in enumerate(counted_runs):
                             if counted_run == run:
                                 if run._points > counted_run._points:
-                                    counted_run = run
+                                    # If other run was a WR in its sub category, keep for GameValues
+                                    if counted_run._is_wr_time:
+                                        kept_for_game_values.append(counted_run)
+                                    counted_runs[i] = run
+                                # If this run was a WR in its sub category, keep for GameValues
+                                else:
+                                    if run._is_wr_time:
+                                        kept_for_game_values.append(run)
                                 break
                         else:
                             counted_runs.append(run)
@@ -356,6 +363,18 @@ class User:
                 # This section is kinda hacked in. Used to allow searching for games by their worth
                 # Run should be worth more than 1 point, not be a level and be made by WR holder
                 if run._points < 1 or run.level or not run._is_wr_time:
+                    continue
+                GameValues.create_or_update(
+                    run_id=run.id_,
+                    game_id=run.game,
+                    category_id=run.category,
+                    platform_id=run._platform,
+                    wr_time=floor(run.primary_t),
+                    wr_points=floor(run._points),
+                    mean_time=floor(run._mean_time),
+                )
+            for run in kept_for_game_values:
+                if run._points < 1 or run.level:
                     continue
                 GameValues.create_or_update(
                     run_id=run.id_,
@@ -473,7 +492,6 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
                     "s" if cant_update_time != 1 else ""
                 result_state = "warning"
 
-        print(text_output)
         return {'state': result_state,
                 'rank': None,
                 'name': user._name,

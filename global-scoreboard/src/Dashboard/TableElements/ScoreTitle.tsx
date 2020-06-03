@@ -5,14 +5,18 @@ import { faInfoCircle } from '@fortawesome/free-solid-svg-icons'
 
 const ScoreTitle = () => <>
   {'Score '}
-  <OverlayTrigger
-    placement="bottom"
-    overlay={
-      <Tooltip id="rankInfo">Click on a blue score for a detailed view</Tooltip>
-    }
-  >
-    <FontAwesomeIcon icon={faInfoCircle} />
-  </OverlayTrigger>
+  <span onClick={event => event.stopPropagation()}>
+    <OverlayTrigger
+      placement="bottom"
+      overlay={
+        <Tooltip
+          id="rankInfo"
+        >Click on a blue score for a detailed view</Tooltip>
+      }
+    >
+      <FontAwesomeIcon icon={faInfoCircle} />
+    </OverlayTrigger>
+  </span>
 </>
 
 export default ScoreTitle

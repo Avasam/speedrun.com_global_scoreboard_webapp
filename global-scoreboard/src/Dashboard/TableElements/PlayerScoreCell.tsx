@@ -25,7 +25,7 @@ const PlayerScoreCell = (props: PlayerScoreCellProps) => {
         )
       : setShow(true)
 
-  return !props.player.countryCode
+  return !props.player.scoreDetails
     ? <span>{props.player.score}</span>
     : <>
       <Button
@@ -39,14 +39,9 @@ const PlayerScoreCell = (props: PlayerScoreCellProps) => {
         onHide={handleClose}
         title={`Runner: ${props.player.name} (${props.player.userId}), ${props.player.score} pts`}
       >
-        {props.player.scoreDetails
-          ? <div className="alert alert-success">
-            {props.player.scoreDetails}
-          </div>
-          : <div>
-            No details available. You can update {props.player.name} ({props.player.userId}) to get more details about their runs.
-          </div>
-        }
+        <div className="alert alert-success">
+          {props.player.scoreDetails}
+        </div>
       </GenericModal>
     </>
 }

@@ -15,6 +15,9 @@ import PlayerScoreCell from './TableElements/PlayerScoreCell'
 import ScoreTitle from './TableElements/ScoreTitle'
 import { faLongArrowAltDown } from '@fortawesome/free-solid-svg-icons'
 import { faLongArrowAltUp } from '@fortawesome/free-solid-svg-icons'
+const { SearchBar } = Search
+
+let getSortOrder: () => SortOrder | undefined
 
 const currentTimeOnLoad = new Date()
 
@@ -28,7 +31,7 @@ const columnClass = (cell: Date | undefined) => {
   return 'daysSince0'
 }
 
-const sortCaret: Column['sortCaret'] = (order) =>
+const sortCaret = (order?: SortOrder | null) =>
   <>
     {' '}
     <span className="sortCarrets">
@@ -70,7 +73,11 @@ const columns: Column[] = [
   {
     dataField: 'score',
     text: 'Score',
-    headerFormatter: () => <ScoreTitle />,
+    headerFormatter: (column, _, components) =>
+      <>
+        <ScoreTitle />
+        {sortCaret(getSortOrder())}
+      </>,
     searchable: false,
     formatter: (_, row: Player | undefined) =>
       row &&
@@ -148,8 +155,6 @@ const paginationOptions: PaginationProps = {
   sizePerPageRenderer,
 }
 
-const { SearchBar } = Search
-
 const Legend = () => <span className="legend">
   <br />
   <label>Updated:</label>{' '}
@@ -204,6 +209,8 @@ const Scoreboard = forwardRef((props: ScoreboardProps, ref) => {
   const searchBarRef = useRef<Component<SearchProps>>(null)
   const boostrapTableRef = useRef<BootstrapTable>(null)
   const [page, goToPage] = useState<number | undefined>()
+
+  getSortOrder = () => boostrapTableRef.current?.sortContext.state.sortOrder
 
   return <>
     <label>Scoreboard:</label>
