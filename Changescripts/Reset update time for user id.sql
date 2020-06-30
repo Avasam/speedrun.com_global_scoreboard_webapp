@@ -1,3 +1,4 @@
 UPDATE player
-SET last_update = DATEADD(dd, -6, CURRENT_TIMESTAMP)
-WHERE user_id = '';
+SET last_update = subdate(current_date, 7)
+WHERE last_update > subdate(current_date, 7)
+AND user_id = '';

@@ -126,7 +126,8 @@ class Run:
                 # TODO: This is not optimized
                 pre_fix_worst_time = valid_runs[-1]["run"]["times"]["primary_t"]
                 # TODO: Extract "cutoff everything after soft cutoff" to its own function
-                # Find the time that's most often repeated in the leaderboard (after the 8th octile) and cut off after
+                # Find the time that's most often repeated in the leaderboard (after the 80th percentile)
+                # and cut off everything after that
                 cut_off_80th_percentile: int = valid_runs[int(len(valid_runs)*0.8)]["run"]["times"]["primary_t"]
                 count: int = 0
                 most_repeated_time_pos: int = 0
