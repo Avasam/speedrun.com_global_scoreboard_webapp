@@ -26,6 +26,8 @@
 // - CustomFilterProps extends
 // - NumberFIlterFunction
 // - FilterProps.getFilter exists
+// - export SearchFieldProps and SearchProps
+// - onSearch has first parameter searchText: string
 
 type RowFieldValue = ReactText | Date | TODO
 type TODO = any
@@ -324,15 +326,15 @@ declare module 'react-bootstrap-table2-toolkit' {
     className?: string
     style?: {}
   }
-  interface SearchFieldProps {
+  export interface SearchFieldProps {
     className?: string
     placeholder?: string
-    ref: SearchBar
+    ref?: SearchBar
   }
-  interface SearchProps {
+  export interface SearchProps {
     searchText?: string
     onClear?(): void
-    onSearch?(): void
+    onSearch?(searchText: string): void
   }
   export class ColumnToggle {
     static ToggleList(props: ColumnToggleProps): ReactElement

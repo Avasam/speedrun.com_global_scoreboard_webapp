@@ -5,17 +5,17 @@ import 'react-bootstrap-table2-paginator/dist/react-bootstrap-table2-paginator.m
 import './GameSearch.css'
 import BootstrapTable, { Column } from 'react-bootstrap-table-next'
 import { Container, Dropdown, DropdownButton, FormControl, InputGroup, Spinner } from 'react-bootstrap'
-import React, { Component, useEffect, useRef, useState } from 'react'
-import ToolkitProvider, { Search, SearchProps, ToolkitProviderProps } from 'react-bootstrap-table2-toolkit'
+import React, { useEffect, useState } from 'react'
+import ToolkitProvider, { ToolkitProviderProps } from 'react-bootstrap-table2-toolkit'
 import filterFactory, { Comparator, multiSelectFilter, numberFilter } from 'react-bootstrap-table2-filter'
 import paginationFactory, { PaginationListStandalone, PaginationProvider, PaginationTotalStandalone, SizePerPageDropdownStandalone } from 'react-bootstrap-table2-paginator'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import GameCategorySearch from './GameCategorySearchBar'
 import { Picky } from 'react-picky'
 import { apiGet } from '../fetchers/api'
 import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
 import { faLongArrowAltDown } from '@fortawesome/free-solid-svg-icons'
 import { faLongArrowAltUp } from '@fortawesome/free-solid-svg-icons'
-const { SearchBar } = Search
 
 interface PlatformDto {
   id: string
@@ -274,8 +274,6 @@ const fetchValueNamesForRun = async (runId: string) => {
 }
 
 const GameSearch = () => {
-  const searchBarRef = useRef<Component<SearchProps>>(null)
-  const boostrapTableRef = useRef<BootstrapTable>(null)
   const [gameValues, setGameValues] = useState<GameValueRow[]>([])
   const [platforms, setPlatforms] = useState<IdToNameMap>()
   const [selectedPlatforms, setSelectedPlatforms] = useState<PlatformSelectOption[]>([])
@@ -294,13 +292,13 @@ const GameSearch = () => {
     getAllPlatforms().then(setPlatforms)
   }, [])
 
-  const doPlatformSelection = (platforms: PlatformSelectOption[]) => {
-    platformFilter(platforms.map(platform => platform.id))
-    setSelectedPlatforms(platforms)
+  const doPlatformSelection = (selectedPlatformOptions: PlatformSelectOption[]) => {
+    platformFilter(selectedPlatformOptions.map(platform => platform.id))
+    setSelectedPlatforms(selectedPlatformOptions)
   }
-  const handlePlatformSelection = (platforms: PlatformSelectOption[]) => {
-    doPlatformSelection(platforms)
-    localStorage.setItem('selectedPlatforms', JSON.stringify(platforms))
+  const handlePlatformSelection = (selectedPlatformOptions: PlatformSelectOption[]) => {
+    doPlatformSelection(selectedPlatformOptions)
+    localStorage.setItem('selectedPlatforms', JSON.stringify(selectedPlatformOptions))
   }
 
   const doMinTimeChange = (minTime: string) => {
@@ -353,10 +351,10 @@ const GameSearch = () => {
         >
           {(({ paginationProps, paginationTableProps }) =>
             <div>
-              <SearchBar
-                ref={searchBarRef}
+              <GameCategorySearch
                 {...toolkitprops.searchProps}
                 placeholder="Game / Category search"
+                setGameMap={setGameMap}
               />
               <Picky
                 id="platform-multiselect"
@@ -401,7 +399,6 @@ const GameSearch = () => {
               </div>
               <SizePerPageDropdownStandalone {...paginationProps} />
               <BootstrapTable
-                ref={boostrapTableRef}
                 wrapperClasses="table-responsive"
                 striped
                 {...toolkitprops.baseProps}
