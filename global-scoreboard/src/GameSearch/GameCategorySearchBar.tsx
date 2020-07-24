@@ -41,10 +41,10 @@ const GameCategorySearch = (props: GameCategorySearchProps) => {
               localStorage.setItem('games', JSON.stringify(newGames))
               return newGames
             })
-            return props.onSearch?.(searchText)
+            props.onSearch?.(searchText)
           }),
+    // Note: 500 is double the default table update
     500)
-  // Note: 500 is double the default table update
 
   return <FormLabel>
     <FormControl
