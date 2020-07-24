@@ -24,7 +24,8 @@ const UpdateRunnerForm = (props: UpdateRunnerFormProps) => {
             required
             placeholder={props.currentUser ? 'Name or ID' : 'Please log in first'}
             onChange={handleOnChange}
-            disabled={window.process.env.REACT_APP_BYPASS_UPDATE_RESTRICTIONS !== 'true' && !props.currentUser}
+            disabled={window.process.env.REACT_APP_BYPASS_UPDATE_RESTRICTIONS !== 'true' &&
+              (props.updating || !props.currentUser)}
             aria-describedby="update user name or id"
           />
           <InputGroup.Append>
