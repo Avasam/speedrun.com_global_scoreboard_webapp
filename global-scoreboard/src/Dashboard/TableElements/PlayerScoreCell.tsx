@@ -1,4 +1,3 @@
-
 import './PlayerScoreCell.css'
 import React, { useState } from 'react'
 import { Button } from 'react-bootstrap'
@@ -15,7 +14,7 @@ const PlayerScoreCell = (props: PlayerScoreCellProps) => {
 
   const handleClose = () => setShow(false)
   const handleShow = () =>
-    props.player.scoreDetails == null
+    props.player.scoreDetails === undefined
       ? apiGet(`players/${props.player.userId}/score-details`)
         .then(res =>
           res.text().then(scoreDetails => {
@@ -25,7 +24,8 @@ const PlayerScoreCell = (props: PlayerScoreCellProps) => {
         )
       : setShow(true)
 
-  return !props.player.scoreDetails
+  // Date is last known update date for a user with details
+  return props.player.lastUpdate < new Date('2020-05-19')
     ? <span>{props.player.score}</span>
     : <>
       <Button
@@ -40,7 +40,11 @@ const PlayerScoreCell = (props: PlayerScoreCellProps) => {
         title={`Runner: ${props.player.name} (${props.player.userId}), ${props.player.score} pts`}
       >
         <div className="alert alert-success">
-          {props.player.scoreDetails}
+          {props.player.scoreDetails
+            ? props.player.scoreDetails
+            : ('No details available. ' +
+              `You can update ${props.player.name} (${props.player.userId}) to get more details about their runs.`)
+          }
         </div>
       </GenericModal>
     </>
