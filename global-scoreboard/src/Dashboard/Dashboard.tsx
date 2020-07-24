@@ -223,9 +223,6 @@ const Dashboard = (props: DashboardProps) => {
   }
 
   return <Container className="dashboard-container">
-    <Alert variant="info">
-      We have switched to a new URL! Makes sure to update your bookmark!
-    </Alert>
     <Alert
       variant={alertVariant}
       style={{ visibility: alertMessage ? 'visible' : 'hidden' }}

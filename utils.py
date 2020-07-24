@@ -7,7 +7,7 @@ import json
 import simplejson
 import requests
 
-HTTP_RETRYABLE_ERRORS = [401, 420, 500, 502]
+HTTP_RETRYABLE_ERRORS = [401, 420, 502]
 HTTP_ERROR_RETRY_DELAY_MIN = 5
 HTTP_ERROR_RETRY_DELAY_MAX = 15
 
