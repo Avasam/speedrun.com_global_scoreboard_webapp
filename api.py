@@ -5,11 +5,12 @@ api.py
 from datetime import datetime, timedelta
 from flask import Blueprint, current_app, jsonify, request
 from functools import wraps
-from models import map_to_dto, Player, Schedule, TimeSlot
+from models import map_to_dto, GameValues, Player, Schedule, TimeSlot
 from sqlalchemy import exc
 from typing import Any, Dict, List, Optional, Union, Tuple
 from user_updater import get_updated_user
 from utils import UserUpdaterError
+import configs
 import jwt
 import traceback
 
@@ -22,7 +23,7 @@ General context
 """
 
 
-def authenthication_required(f):
+def authentication_required(f):
     @wraps(f)
     def _verify(*args, **kwargs):
         auth_headers: List[str] = request.headers.get('Authorization', '').split()
@@ -37,7 +38,6 @@ def authenthication_required(f):
         }
 
         if len(auth_headers) != 2:
-            print(auth_headers)
             return jsonify(invalid_msg), 401
 
         try:
@@ -47,11 +47,9 @@ def authenthication_required(f):
             if not player:
                 raise RuntimeError('User not found')
             return f(player, *args, **kwargs)
-        except jwt.ExpiredSignatureError as e:
-            print(e)
+        except jwt.ExpiredSignatureError:
             return jsonify(expired_msg), 401
-        except jwt.InvalidTokenError as e:
-            print(e)
+        except jwt.InvalidTokenError:
             return jsonify(invalid_msg), 401
 
     return _verify
@@ -63,10 +61,10 @@ api = Blueprint('api', __name__)
 @api.route('/login', methods=('POST',))
 def login():
     data: Dict[str, ] = request.get_json()
-    player = Player.authenticate(data['srcApiKey'])
+    player, error_message = Player.authenticate(data['srcApiKey'])
 
     if not player:
-        return jsonify({'message': 'Invalid credentials', 'authenticated': False}), 401
+        return jsonify({'message': error_message, 'authenticated': False}), 401
 
     token = jwt.encode({
         'sub': player.user_id,
@@ -81,8 +79,16 @@ def login():
         }})
 
 
+@api.route('/configs', methods=('GET',))
+def get_configs():
+    return jsonify({
+        "bypassUpdateRestrictions": configs.bypass_update_restrictions,
+        "lastUpdatedDays": configs.last_updated_days,
+    })
+
+
 @api.route('/users/current', methods=('GET',))
-@authenthication_required
+@authentication_required
 def get_user_current(current_user: Player):
     return jsonify({
         'user': {
@@ -97,7 +103,7 @@ Tournament Scheduler context
 
 
 @api.route('/schedules', methods=('GET',))
-@authenthication_required
+@authentication_required
 def get_all_schedules(current_user: Player):
     return jsonify(map_to_dto(current_user.get_schedules()))
 
@@ -118,7 +124,7 @@ def get_schedule(id: str):
 
 
 @api.route('/schedules', methods=('POST',))
-@authenthication_required
+@authentication_required
 def post_schedule(current_user: Player):
     data: Dict[str, ] = request.get_json()
 
@@ -130,7 +136,7 @@ def post_schedule(current_user: Player):
 
 
 @api.route('/schedules/<id>', methods=('PUT',))
-@authenthication_required
+@authentication_required
 def put_schedule(current_user: Player, id: str):
     data: Dict[str, ] = request.get_json()
     try:
@@ -146,7 +152,7 @@ def put_schedule(current_user: Player, id: str):
 
 
 @api.route('/schedules/<id>', methods=('DELETE',))
-@authenthication_required
+@authentication_required
 def delete_schedule(current_user: Player, id: str):
     try:
         schedule_id = int(id)
@@ -176,7 +182,7 @@ def post_registration(id: str):
 
 
 @api.route('/registrations/<id>', methods=('PUT',))
-@authenthication_required
+@authentication_required
 def put_registration(current_user: Player, id: str):
     data: Dict[str, ] = request.get_json()
 
@@ -194,7 +200,7 @@ def put_registration(current_user: Player, id: str):
 
 
 @api.route('/registrations/<id>', methods=('DELETE',))
-@authenthication_required
+@authentication_required
 def delete_registration(current_user: Player, id: str):
     try:
         registration_id = int(id)
@@ -266,28 +272,82 @@ def get_all_players():
     return jsonify(map_to_dto(Player.get_all()))
 
 
+@api.route('/players/<id>/score-details', methods=('GET',))
+def get_player_score_details(id: str):
+    player = Player.get(id)
+    print(player)
+    print(player.score_details)
+    if player:
+        return player.score_details or ""
+    else:
+        return "", 404
+
+
 @api.route('/players/<name_or_id>/update', methods=('POST',))
-@authenthication_required
-def update_player(_, name_or_id: str):
+def update_player(name_or_id: str):
     try:
-        result = get_updated_user(name_or_id)
-        return jsonify(result), 400 if result["state"] == "warning" else 200
+        if configs.bypass_update_restrictions:
+            return __do_update_player_bypass_restrictions(name_or_id)
+        else:
+            return __do_update_player(name_or_id)
     except UserUpdaterError as exception:
-        print("\n{}\n{}".format(exception.args[0]["error"], exception.args[0]["details"]))
-        return exception.args[0]["details"], 424
+        error_message = "Error: {}\n{}".format(exception.args[0]["error"], exception.args[0]["details"])
+        print(f"\n{error_message}")
+        return error_message, 424
     except Exception:
-        print("\nError: Unknown\n{}".format(traceback.format_exc()))
-        return traceback.format_exc(), 500
+        error_message = "Error: Unknown\n{}".format(traceback.format_exc())
+        print(f"\n{error_message}")
+        return error_message, 500
+
+
+def __do_update_player_bypass_restrictions(name_or_id: str):
+    result = get_updated_user(name_or_id)
+    return jsonify(result), 400 if result["state"] == "warning" else 200
+
+
+__currently_updating_from: Dict[str, datetime] = {}
+__currently_updating_to: Dict[str, datetime] = {}
+
+
+@authentication_required
+def __do_update_player(current_user: Player, name_or_id: str):
+    global __currently_updating_from
+    global __currently_updating_to
+    now = datetime.now()
+
+    # Check if the current user is already updating someone
+    # or if the player to be updated is currently being updated
+    if current_user.user_id in __currently_updating_from \
+            and now - __currently_updating_from[current_user.user_id] <= timedelta(minutes=5):
+        # CONSIDER: #seconds_left = (5 * 60) - (now - __currently_updating_from[name_or_id])
+        # return {"messageKey": "current_user", "timeLeft": seconds_left}, 409
+        return "current_user", 409
+    if name_or_id in __currently_updating_to \
+            and now - __currently_updating_to[name_or_id] <= timedelta(minutes=5):
+        # CONSIDER: #seconds_left = (5 * 60) - (now - __currently_updating_to[name_or_id]).seconds
+        # return {"messageKey": "name_or_id", "timeLeft": seconds_left}, 409
+        return "name_or_id", 409
+    __currently_updating_from[current_user.user_id] = now
+    __currently_updating_to[name_or_id] = now
+
+    try:
+        # Actually do the update process
+        result = get_updated_user(name_or_id)
+    finally:
+        # Upon update completing, allow the user to update again
+        __currently_updating_from.pop(current_user.user_id, None)
+
+    return jsonify(result), 400 if result["state"] == "warning" else 200
 
 
 @api.route('/players/current/friends', methods=('GET',))
-@authenthication_required
+@authentication_required
 def get_friends_current(current_user: Player):
     return jsonify(map_to_dto(current_user.get_friends()))
 
 
 @api.route('/players/current/friends/<id>', methods=('PUT',))
-@authenthication_required
+@authentication_required
 def put_friends_current(current_user: Player, id: str):
     if current_user.user_id == id:
         return "You can't add yourself as a friend!", 422
@@ -303,9 +363,18 @@ def put_friends_current(current_user: Player, id: str):
 
 
 @api.route('/players/current/friends/<id>', methods=('DELETE',))
-@authenthication_required
+@authentication_required
 def delete_friends_current(current_user: Player, id: str):
     if current_user.unfriend(id):
         return f"Successfully removed user ID \"{id}\" from your friends."
     else:
         return f"User ID \"{id}\" isn't one of your friends."
+
+
+"""
+Game Search context
+"""
+@api.route('/game-values', methods=('GET',))
+@authentication_required
+def get_all_game_values(current_user: Player):
+    return jsonify(map_to_dto(GameValues.query.all()))

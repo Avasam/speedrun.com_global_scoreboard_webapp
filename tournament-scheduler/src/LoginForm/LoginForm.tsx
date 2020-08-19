@@ -14,7 +14,6 @@ const login = (srcApiKey: string, onLoginCallback: (currentUser: User) => void) 
   apiPost('login', { srcApiKey })
     .then(res => res.json())
     .then((res: { token: string, user: User }) => {
-      console.log(res)
       if (!res.token) return
       localStorage.setItem('jwtToken', res.token)
       onLoginCallback(res.user)
@@ -28,7 +27,7 @@ const LoginForm: FC<loginFormProps> = (props: loginFormProps) => {
 
   return <Container className='login-form-container'>
     {!isMobileSize &&
-      <img src={`${window.process.env.REACT_APP_BASE_URL}/assets/images/favicon.ico`} alt='logo' />
+      <img src={`${window.process.env.REACT_APP_BASE_URL}/assets/images/favicon.webp`} alt='logo' />
     }
     <span style={{ marginTop: '16px' }}>
       You only need to login to create and manage schedules.

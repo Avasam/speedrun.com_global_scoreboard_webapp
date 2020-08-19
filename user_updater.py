@@ -4,10 +4,10 @@
 from collections import Counter
 from datetime import datetime
 from math import ceil, exp, floor, pi
-from models import db, CachedRequest, Player
+from models import db, CachedRequest, GameValues, Player
 from threading import Thread, active_count
 from time import strftime, sleep
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 from utils import UserUpdaterError, SpeedrunComError
 import configs
 import httplib2
@@ -34,6 +34,10 @@ class Run:
     level_name: str = ""
     level_count: int = 0
     _points: float = 0
+    # This below section is for game search
+    _mean_time: float = 0
+    _is_wr_time: bool = False
+    _platform: Optional[str] = None
 
     # TODO: Reanable sonarlint max args rule
     def __init__(
@@ -95,6 +99,7 @@ class Run:
             previous_time = leaderboard["data"]["runs"][0]["run"]["times"]["primary_t"]
             is_speedrun: bool = False
 
+            # TODO: extract the function for valid runs into a function and use a list map
             # Get a list of all banned players in this leaderboard
             banned_players = []
             for player in leaderboard["data"]["players"]["data"]:
@@ -125,19 +130,22 @@ class Run:
             original_population = len(valid_runs)
             if is_speedrun and original_population >= MIN_LEADERBOARD_SIZE:  # Avoid useless computation and errors
                 # Sort and remove last 5%
+                # TODO: Why we sorting here?
                 valid_runs = sorted(valid_runs[:int(original_population * 0.95) or None],
                                     key=lambda r: r["run"]["times"]["primary_t"])
 
                 # TODO: This is not optimized
                 pre_fix_worst_time = valid_runs[-1]["run"]["times"]["primary_t"]
-                # Find the time that is most often repeated in the leaderboard (after the median) and cut off that time
-                cut_off_median_time: int = valid_runs[int(len(valid_runs)*0.8)]["run"]["times"]["primary_t"]
+                # TODO: Extract "cutoff everything after soft cutoff" to its own function
+                # Find the time that's most often repeated in the leaderboard (after the 80th percentile)
+                # and cut off everything after that
+                cut_off_80th_percentile: int = valid_runs[int(len(valid_runs)*0.8)]["run"]["times"]["primary_t"]
                 count: int = 0
                 most_repeated_time_pos: int = 0
                 most_repeated_time_count: int = 0
                 last_value: int = 0
                 i: int = len(valid_runs)
-                # Go in reverse this way we can break at median
+                # Go in reverse this way we can break at the percentile
                 for run in reversed(valid_runs):
                     value: int = run["run"]["times"]["primary_t"]
                     if value == last_value:
@@ -149,9 +157,9 @@ class Run:
                         count = 0
                     last_value = value
 
-                    # We hit the median, there's no more to be analyzed
-                    # If the most repeated time IS the median, still remove it (< not <=)
-                    if value < cut_off_median_time:
+                    # We hit the 80th percentile, there's no more to be analyzed
+                    # If the most repeated time IS the 80th percentile, still remove it (< not <=)
+                    if value < cut_off_80th_percentile:
                         # Have the most repeated time repeat at least a certain amount
                         if most_repeated_time_count > MIN_LEADERBOARD_SIZE:
                             # Actually keep the last one (+1) as it'll be worth 0 points and used for other calculations
@@ -169,6 +177,11 @@ class Run:
                     mean_temp = mean
                     mean += (value - mean_temp) / population
                     sigma += (value - mean_temp) * (value - mean)
+
+                # Full level leaderboards with mean under a minute are ignored
+                if mean < 60 and not self.level:
+                    return
+                self._mean_time = mean
 
                 wr_time = valid_runs[0]["run"]["times"]["primary_t"]
 
@@ -188,15 +201,16 @@ class Run:
                         adjusted_lowest_deviation = pre_fix_worst_time - mean
                         normalized_deviation = adjusted_deviation / adjusted_lowest_deviation
 
+                        # More people means more accurate relative time and more optimised/hard to reach low times
+                        # This function would equal 0 if population = MIN_LEADERBOARD_SIZE - 1
+                        certainty_adjustment = 1 - 1 / (population - MIN_LEADERBOARD_SIZE + 2)
+                        # Cap the exponent to π
+                        e_exponent = min(normalized_deviation, pi) * certainty_adjustment
                         # Bonus points for long games
                         length_bonus = 1 + (wr_time / TIME_BONUS_DIVISOR)
-                        # More people means more accurate relative time and more optimised/hard to reach low times
-                        certainty_adjustment = 1 - 1 / (population + 1)
 
-                        # Cap the base to π
-                        e_base = min(normalized_deviation * certainty_adjustment, pi)
                         # Give points, hard cap to 6 character
-                        self._points = min(exp(e_base) * 10 * length_bonus, 999.99)
+                        self._points = min(exp(e_exponent) * 10 * length_bonus, 999.99)
                         # Set names
                         game_category = re.split(
                             "[/#]",
@@ -208,15 +222,20 @@ class Run:
 
                         # If the run is an Individual Level and worth looking at, set the level count and name
                         if self.level and self._points > 0:
-                            self._points /= self.level_count or 1
-        print(self)
+                            self.level_name = game_category[1]  # Always 2nd of 3 items
+                            calc_level_count = (self.level_count or 0) + 1
+                            # ILs leaderboards with mean under their fraction of a minute are ignored
+                            if mean * calc_level_count < 60:
+                                self._points = 0
+                            else:
+                                self._points /= calc_level_count
 
 
 class User:
     _points: float = 0
     _name: str = ""
     _id: str = ""
-    _country_code: str = ""
+    _country_code: Optional[str] = None
     _banned: bool = False
     _point_distribution_str: str = ""
 
@@ -232,7 +251,8 @@ class User:
         infos = CachedRequest.get_response_or_new(url)
 
         self._id = infos["data"]["id"]
-        self._country_code = infos["data"]["location"]["country"]["code"]
+        location = infos["data"]["location"]
+        self._country_code = location["country"]["code"] if location else None
         self._name = infos["data"]["names"].get("international")
         japanese_name = infos["data"]["names"].get("japanese")
         if japanese_name:
@@ -243,6 +263,7 @@ class User:
 
     def set_points(self) -> None:
         counted_runs: List[Run] = []
+        kept_for_game_values: List[Run] = []
 
         def set_points_thread(pb) -> None:
             try:
@@ -271,13 +292,24 @@ class User:
                                    pb["run"]["level"],
                                    pb_level_name,
                                    len(pb["game"]["data"]["levels"]["data"]))
-                    # If a category has already been counted, only keep the one that's worth the most.
-                    # This can happen in leaderboards with multiple coop runs or multiple subcategories.
+
+                    # Set game search data
+                    run._is_wr_time = pb["place"] == 1
+                    run._platform = pb["run"]["system"]["platform"]
+
+                    # This can happen in leaderboards with coop runs or subcategories.
                     if run._points > 0:
-                        for counted_run in counted_runs:
+                        for i, counted_run in enumerate(counted_runs):
                             if counted_run == run:
                                 if run._points > counted_run._points:
-                                    counted_run = run
+                                    # If other run was a WR in its sub category, keep for GameValues
+                                    if counted_run._is_wr_time:
+                                        kept_for_game_values.append(counted_run)
+                                    counted_runs[i] = run
+                                # If this run was a WR in its sub category, keep for GameValues
+                                else:
+                                    if run._is_wr_time:
+                                        kept_for_game_values.append(run)
                                 break
                         else:
                             counted_runs.append(run)
@@ -292,6 +324,19 @@ class User:
                 "https://www.speedrun.com/api/v1/users/{user}/personal-bests?embed=level,game.levels,game.variables" \
                 .format(user=self._id)
             pbs = CachedRequest.get_response_or_new(url)
+
+            # TODO: BIG MEGA HACK / PATCH. Let's try to work around this issue ASAP.
+            runs_count = len(pbs["data"])
+            if runs_count >= 1000:
+                raise UserUpdaterError({
+                    "error": "Too Many Runs",
+                    "details": f"{self._name} has over 1000 runs ({runs_count} to be exact). " +
+                    "Due to current limitations with PythonAnywhere and the speedrun.com api, " +
+                    "updating such a user is nearly impossible. " +
+                    "I have a work in progress solution for this issue, but it will take time. " +
+                    "Sorry for the inconvenience.",
+                })
+
             self._points = 0
             threads: List[Thread] = []
             for pb in pbs["data"]:
@@ -325,6 +370,32 @@ class User:
                 run_pts = ceil((run._points * 100)) / 100
                 run_str_lst.append((run_str, run_pts))
                 biggest_str_length = max(biggest_str_length, len(run_str))
+
+                # This section is kinda hacked in. Used to allow searching for games by their worth
+                # Run should be worth more than 1 point, not be a level and be made by WR holder
+                if run._points < 1 or run.level or not run._is_wr_time:
+                    continue
+                GameValues.create_or_update(
+                    run_id=run.id_,
+                    game_id=run.game,
+                    category_id=run.category,
+                    platform_id=run._platform,
+                    wr_time=floor(run.primary_t),
+                    wr_points=floor(run._points),
+                    mean_time=floor(run._mean_time),
+                )
+            for run in kept_for_game_values:
+                if run._points < 1 or run.level:
+                    continue
+                GameValues.create_or_update(
+                    run_id=run.id_,
+                    game_id=run.game,
+                    category_id=run.category,
+                    platform_id=run._platform,
+                    wr_time=floor(run.primary_t),
+                    wr_points=floor(run._points),
+                    mean_time=floor(run._mean_time),
+                )
 
             self._point_distribution_str = f"\n{'Game - Category (Level)':<{biggest_str_length}} | Points" \
                                            f"\n{'-'*biggest_str_length} | ------"
@@ -373,7 +444,7 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
             # If user doesn't exists or enough time passed since last update
             if not player or \
                 not player.last_update or \
-                (datetime.now() - player.last_update).days >= 1 or \
+                (datetime.now() - player.last_update).days >= configs.last_updated_days[0] or \
                     configs.bypass_update_restrictions:
 
                 user.set_points()
@@ -393,6 +464,7 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
                                      "name": user._name,
                                      "country_code": user._country_code,
                                      "score": floor(user._points),
+                                     "score_details": user._point_distribution_str,
                                      "last_update": timestamp})
                         db.session.commit()
 
@@ -404,6 +476,7 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
                                       user._name,
                                       country_code=user._country_code,
                                       score=user._points,
+                                      score_details=user._point_distribution_str,
                                       last_update=timestamp)
                     else:
                         text_output = f"Not inserting new data as {user} " \
@@ -425,10 +498,11 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
                     text_output += ("\n" if text_output else "") + errors_str
                     result_state = "danger"
             else:
-                text_output = "This user has already been updated in the last 24h"
+                cant_update_time = configs.last_updated_days[0]
+                text_output = f"This user has already been updated in the past {cant_update_time} day" \
+                    "s" if cant_update_time != 1 else ""
                 result_state = "warning"
 
-        print(text_output)
         return {'state': result_state,
                 'rank': None,
                 'name': user._name,

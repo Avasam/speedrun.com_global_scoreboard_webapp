@@ -3,13 +3,13 @@
 
 from __future__ import annotations
 from datetime import datetime, timedelta
-from flask_login import login_user, UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import orm, text
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 from utils import get_file, SpeedrunComError
-import uuid
+import configs
 import traceback
+import uuid
 
 
 def map_to_dto(dto_mappable_object_list) -> List[Dict[str, Union[str, bool, int]]]:
@@ -31,38 +31,35 @@ friend = db.Table(
 )
 
 
-class Player(db.Model, UserMixin):
+class Player(db.Model):
     __tablename__ = "player"
 
     user_id: str = db.Column(db.String(8), primary_key=True)
     name: str = db.Column(db.String(32), nullable=False)
     country_code: Optional[str] = db.Column(db.String(5))
     score: int = db.Column(db.Integer, nullable=False)
+    score_details: str = db.Column(db.String())
     last_update: Optional[datetime] = db.Column(db.DateTime())
     rank: Optional[int] = None
 
     schedules = db.relationship("Schedule", back_populates="owner")
 
     @staticmethod
-    def authenticate(api_key: str):
+    def authenticate(api_key: str) -> Tuple[Optional[Player], Optional[str]]:
         try:  # Get user from speedrun.com using the API key
             data = get_file(
                 "https://www.speedrun.com/api/v1/profile",
                 {"X-API-Key": api_key}
             )["data"]
         except SpeedrunComError:
-            print("\nError: Unknown\n{}".format(traceback.format_exc()))
-            return None
-            # TODO: return json.dumps({'state': 'warning', 'message': 'Invalid API key.'})
+            return None, 'Invalid API key.'
         except Exception:
             print("\nError: Unknown\n{}".format(traceback.format_exc()))
-            return None
-            # TODO: return json.dumps({"state": "danger", "message": traceback.format_exc()})
+            return None, traceback.format_exc()
 
         user_id: Optional[str] = data["id"]
         if not user_id:  # Confirms wether the API key is valid
-            return None
-            # TODO: return json.dumps({'state': 'warning', 'message': 'Invalid API key.'})
+            return None, 'Invalid API key.'
 
         user_name: str = data["names"]["international"]
         print(f"Logging in '{user_id}' ({user_name})")
@@ -71,9 +68,7 @@ class Player(db.Model, UserMixin):
         if not player:
             player = Player.create(user_id, user_name)
 
-        login_user(player)  # Login for non SPA
-
-        return player
+        return player, None
 
     @staticmethod
     def get(id: str) -> Player:
@@ -81,7 +76,7 @@ class Player(db.Model, UserMixin):
 
     @staticmethod
     def get_all():
-        sql = text("SELECT user_id, name, country_code, score, last_update, rank FROM ( "
+        sql = text("SELECT user_id, name, country_code, score, last_update, CONVERT(rank, SIGNED INT) rank FROM ( "
                    "    SELECT *, "
                    "        IF(score = @_last_score, @cur_rank := @cur_rank, @cur_rank := @_sequence) AS rank, "
                    "        @_sequence := @_sequence + 1, "
@@ -119,14 +114,15 @@ class Player(db.Model, UserMixin):
         return player
 
     def get_friends(self) -> List[Player]:
-        sql = text("SELECT f.friend_id, p.name, p.score FROM friend f "
+        sql = text("SELECT f.friend_id, p.name, p.country_code, p.score FROM friend f "
                    "JOIN player p ON p.user_id = f.friend_id "
                    "WHERE f.user_id = '{user_id}';"
                    .format(user_id=self.user_id))
         return [Player(
             user_id=friend[0],
             name=friend[1],
-            score=friend[2]) for friend in db.engine.execute(sql).fetchall()]
+            country_code=friend[2],
+            score=friend[3]) for friend in db.engine.execute(sql).fetchall()]
 
     def befriend(self, friend_id: str) -> bool:
         if self.user_id == friend_id:
@@ -297,7 +293,11 @@ class Player(db.Model, UserMixin):
         }
 
 
+memoized_requests: Dict[str, CachedRequest] = {}
+
+
 class CachedRequest():
+    global memoized_requests
     result: dict
     timestamp: datetime
 
@@ -308,7 +308,7 @@ class CachedRequest():
     @staticmethod
     def get_response_or_new(url: str) -> dict:
         today = datetime.utcnow()
-        yesterday = today - timedelta(days=1)
+        yesterday = today - timedelta(days=configs.last_updated_days[0])
 
         try:
             cached_request = memoized_requests[url]
@@ -322,7 +322,80 @@ class CachedRequest():
             return result
 
 
-memoized_requests: Dict[str, CachedRequest] = {}
+class GameValues(db.Model):
+    __tablename__ = "game_values"
+
+    game_id: str = db.Column(db.String(8), primary_key=True)
+    category_id: str = db.Column(db.String(8), primary_key=True)
+    run_id: str = db.Column(db.String(8), nullable=False)
+    platform_id: Optional[str] = db.Column(db.String(8))
+    wr_time: int = db.Column(db.Integer, nullable=False)
+    wr_points: int = db.Column(db.Integer, nullable=False)
+    mean_time: int = db.Column(db.Integer, nullable=False)
+
+    @staticmethod
+    def create_or_update(
+            game_id: str,
+            category_id: str,
+            platform_id: Optional[str],
+            wr_time: int,
+            wr_points: int,
+            mean_time: int,
+            run_id: str):
+        existing_game_values = GameValues.get(game_id, category_id)
+        if existing_game_values is None:
+            return GameValues.create(game_id, category_id, platform_id, wr_time, wr_points, mean_time, run_id)
+        existing_game_values.platform_id = platform_id
+        existing_game_values.wr_time = wr_time
+        existing_game_values.wr_points = wr_points
+        existing_game_values.mean_time = mean_time
+        existing_game_values.run_id = run_id
+        db.session.commit()
+        return existing_game_values
+
+    @staticmethod
+    def create(
+            game_id: str,
+            category_id: str,
+            platform_id: Optional[str],
+            wr_time: int,
+            wr_points: int,
+            mean_time: int,
+            run_id: str) -> GameValues:
+        game_values = GameValues(
+            game_id=game_id,
+            category_id=category_id,
+            platform_id=platform_id,
+            wr_time=wr_time,
+            wr_points=wr_points,
+            mean_time=mean_time,
+            run_id=run_id)
+        db.session.add(game_values)
+        db.session.commit()
+
+        return game_values
+
+    @staticmethod
+    def get(game_id: str, category_id: str) -> Optional[Player]:
+        try:
+            return GameValues \
+                .query \
+                .filter(GameValues.game_id == game_id) \
+                .filter(GameValues.category_id == category_id) \
+                .one()
+        except orm.exc.NoResultFound:
+            return None
+
+    def to_dto(self) -> dict[str, Union[str, int]]:
+        return {
+            'gameId': self.game_id,
+            'categoryId': self.category_id,
+            'platformId': self.platform_id,
+            'wrTime': self.wr_time,
+            'wrPoints': self.wr_points,
+            'meanTime': self.mean_time,
+            'runId': self.run_id,
+        }
 
 
 class Schedule(db.Model):

@@ -3,7 +3,7 @@
 // Origin: https://gitlab.com/fluidattacks/integrates/-/blob/master/front/src/typings/react-bootstrap-table-2/index.d.ts
 // Modified:
 // - rowClasses and classes: added function definition
-// - totalSize supports numbers and non-optional because of 'Warning: Failed prop type: The prop `dataSize` is marked as required in `PaginationTotal`, but its value is `undefined`.'
+// - totalSize supports numbers and is required because of 'Warning: Failed prop type: The prop `dataSize` is marked as required in `PaginationTotal`, but its value is `undefined`.'
 // - sizePerPageList supports array of number
 // - export PaginationProvider, PaginationListStandalone, PaginationTotalStandalone and SizePerPageDropdownStandalone
 // - currSizePerPage is actually a string
@@ -11,8 +11,25 @@
 // - PaginationProps.custom is a property that exists
 // - onPageChange and onSizePerPageChange return type to void
 // - wrapperClasses neede to add "table-responsive"
+// - Column.sortCaret exists
+// - BootstrapTable.sort exists
+// - SearchFieldProps.ref?
+// - formatter as ReactNode
+// - headerFormatter exists
+// - Replaced string | number by ReactText
+// - Replaced CSSStyleDeclaration by React.CSSProperties
+// - Replaced OptionSelectFilterProps by { [key: ReactText]: string }
+// - Extends FilterProps and all optionnal
+// - Column.filter as component with FilterProps
+// - Column.filterRenderer exists
+// - Column.filter type is React.Component<FilterProps>
+// - CustomFilterProps extends
+// - NumberFIlterFunction
+// - FilterProps.getFilter exists
+// - export SearchFieldProps and SearchProps
+// - onSearch has first parameter searchText: string
 
-type RowFieldValue = string | number | Date | TODO
+type RowFieldValue = ReactText | Date | TODO
 type TODO = any
 type Pagination = TODO
 // TODO: check missings : https://react-bootstrap-table.github.io/react-bootstrap-table2/docs/pagination-props.html
@@ -20,7 +37,7 @@ interface PaginationProps {
   custom?: boolean
   page?: number
   sizePerPage?: number
-  totalSize: string | number
+  totalSize: ReactText
   pageStartIndex?: number
   paginationSize?: number
   showTotal?: boolean
@@ -80,35 +97,35 @@ interface Filter<Type extends TODO = TODO> {
 }
 interface FilterProps<Type extends TODO> {
   getFilter?(filter: FilterFunction<Type>): TODO
-  onFilter?(filterVal: string, data: any): TODO
+  onFilter?(filterVal: string, data?: any): TODO
   onInput?(event: React.SyntheticEvent<HTMLInputElement>, value: string): void
   defaultValue?: Type
   placeholder?: string
   className?: string
-  style?: CSSStyleDeclaration
+  style?: React.CSSProperties
   delay?: number
   comparator?: PredefinedComparatorTypes
   caseSensitive?: true
-  comparatorStyle?: CSSStyleDeclaration
+  comparatorStyle?: React.CSSProperties
   comparatorClassName?: string
   withoutEmptyComparatorOption?: boolean
 }
 type TextFilterProps = FilterProps<TODO>
 interface DateFilterProps extends FilterProps<TODO> {
-  dateStyle?: CSSStyleDeclaration
+  dateStyle?: React.CSSProperties
   dateClassName?: string
   defaultValue?: { date: Date, comparator: PredefinedComparatorTypes }
 }
-interface OptionSelectFilterProps { value: string | number, label: string }
 interface SelectFilterProps extends FilterProps<TODO> {
-  options?: OptionSelectFilterProps[] | string[]
+  options: { [key: ReactText]: string }
   withoutEmptyOption?: boolean
 }
 interface NumberFilterProps extends FilterProps<TODO> {
+  getFilter?(filter: NumberFilterFunction): TODO
   options?: number[]
   withoutEmptyNumberOption?: boolean
   comparators?: PredefinedComparatorTypes[]
-  numberStyle?: CSSStyleDeclaration
+  numberStyle?: React.CSSProperties
   numberClassName?: string
   defaultValue?: { number: number, comparator: PredefinedComparatorTypes }
 }
@@ -118,12 +135,13 @@ interface RemoteProps {
   pagination?: boolean
   sort?: boolean
 }
-interface CustomFilterProps {
-  type: TODO//: FILTER_TYPES.NUMBER,  // default is FILTER_TYPES.TEXT
+interface CustomFilterProps extends FilterProps<TODO> {
+  type?: TODO//: FILTER_TYPES.NUMBER,  // default is FILTER_TYPES.TEXT
   comparator?: PredefinedComparatorTypes//: Comparator.EQ, // only work if type is FILTER_TYPES.SELECT
   caseSensitive?: boolean//false, // default is true
 }
 type FilterFunction<Type extends TODO> = (val: Type) => TODO
+type NumberFilterFunction = (val: { number: number | '', comparator: PredefinedComparatorTypes }) => TODO
 type FilterVal = string | TODO
 type FilterType = 'TEXT' | TODO
 interface ComparatorTypes {
@@ -189,6 +207,10 @@ declare module 'react-bootstrap-table-next' {
         startEditing: (rowindex: number, columnindex: number) => void
       }
     }
+    sort: {
+      dataField: string
+      order: SortOrder
+    }
   }
   export interface BootstrapTableProps extends PaginationProps {
     keyField: string
@@ -225,14 +247,17 @@ declare module 'react-bootstrap-table-next' {
     isDummyField?: boolean
     sort?: boolean
     searchable?: boolean
-    filter?: TODO
+    filter?: React.Component<FilterProps>
     formatExtraData?: TODO
-    formatter?: (cell: TODO, row: TODO, rowIndex: number, formatExtraData: any) => string | ReactElement | undefined
+    formatter?: (cell: TODO, row: TODO, rowIndex: number, formatExtraData: any) => ReactNode
+    headerFormatter?: (column: Column, colIndex: number, components: any) => ReactNode
     headerStyle?: (colum: TODO, colIndex: number) => any
-    sortFunc?<T>(a: T, b: T, order: 'asc' | 'desc', rowA: Row, rowB: Row): number
+    sortFunc?<T>(a: T, b: T, order: SortOrder, rowA: Row, rowB: Row): number
     style?: (colum: TODO, colIndex: number) => {}
     filterValue?<T>(cell: T, row: TODO): any
     onSort?(dataField: string, order: SortOrder): void
+    sortCaret?: (order: SortOrder | null | undefined, column: Column) => JSX.Element | null
+    filterRenderer?: (onFilter: FilterProps['onFilter'], column: Column) => ReactElement
   }
   export type Row = RowT
 }
@@ -301,14 +326,15 @@ declare module 'react-bootstrap-table2-toolkit' {
     className?: string
     style?: {}
   }
-  interface SearchFieldProps {
+  export interface SearchFieldProps {
     className?: string
     placeholder?: string
+    ref?: SearchBar
   }
-  interface SearchProps {
+  export interface SearchProps {
     searchText?: string
     onClear?(): void
-    onSearch?(): void
+    onSearch?(searchText: string): void
   }
   export class ColumnToggle {
     static ToggleList(props: ColumnToggleProps): ReactElement

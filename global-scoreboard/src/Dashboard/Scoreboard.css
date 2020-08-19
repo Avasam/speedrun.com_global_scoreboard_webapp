@@ -6,6 +6,11 @@
   min-width: unset;
 }
 
+label,
+.search-label {
+  margin-right: 0.5rem; /* Same as label bottom */
+}
+
 .legend label {
   margin-bottom: 0;
 }
@@ -21,4 +26,16 @@
 
 .react-bootstrap-table-page-btns-ul .page-item[title="hidden"] {
   display: none;
+}
+
+.sortCarrets {
+  white-space: nowrap;
+  display: inline-block;
+}
+
+.sortCarrets svg {
+  opacity: .5;
+}
+.sortCarrets svg.active {
+  opacity: 1;
 }

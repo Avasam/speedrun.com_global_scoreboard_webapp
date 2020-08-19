@@ -1,12 +1,16 @@
 import './App.css'
+import 'react-picky/dist/picky.css'
 import 'bootstrap/dist/css/bootstrap.css'
+import Configs, { ServerConfigs } from './models/Configs'
 import React, { FC, useEffect, useState } from 'react'
 import Dashboard from './Dashboard/Dashboard'
+import GameSearch from './GameSearch/GameSearch'
 import Player from './models/Player'
 import ScoreboardNavBar from './NavBar/ScoreboardNavBar'
 import { apiGet } from './fetchers/api'
 
-const getCurrentUser = () => apiGet('users/current').then(res => res.json())
+const getCurrentUser = () => apiGet('users/current').then<{ user: Player | undefined }>(res => res.json())
+const getConfigs = () => apiGet('configs').then<ServerConfigs>(res => res.json())
 
 const logout = (setCurrentUser: (user: null) => void) => {
   setCurrentUser(null)
@@ -17,15 +21,20 @@ const App: FC = () => {
   const [currentUser, setCurrentUser] = useState<Player | undefined | null>(undefined)
 
   useEffect(() => {
-    getCurrentUser()
-      .then((res: { user: Player | undefined }) => res.user)
-      .then(setCurrentUser)
-      .catch(err => {
-        if (err.status === 401) {
-          setCurrentUser(null)
-        } else {
-          console.error(err)
-        }
+    Promise
+      .all([getConfigs(), getCurrentUser])
+      .then(([serverConfigs, resPromise]) => {
+        Configs.setConfigs(serverConfigs)
+        resPromise()
+          .then((res: { user: Player | undefined }) => res.user)
+          .then(setCurrentUser)
+          .catch(err => {
+            if (err.status === 401) {
+              setCurrentUser(null)
+            } else {
+              console.error(err)
+            }
+          })
       })
   }, [])
 
@@ -37,7 +46,10 @@ const App: FC = () => {
         onLogout={() => logout(setCurrentUser)}
       />
 
-      <Dashboard currentUser={currentUser} />
+      {window.location.pathname === '/global-scoreboard/game-search' && currentUser
+        ? <GameSearch />
+        : <Dashboard currentUser={currentUser} />
+      }
       <footer>
         &copy; <a
           href="https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/master/LICENSE"
@@ -45,7 +57,14 @@ const App: FC = () => {
         >Copyright</a> {new Date().getFullYear()} by <a
           href="https://github.com/Avasam/"
           target="about"
-        >Samuel Therrien</a>.
+        >Samuel Therrien</a> (
+        <a href="https://www.twitch.tv/Avasam" target="about">
+          Avasam<img
+            height="14"
+            alt="Twitch"
+            src="https://static.twitchcdn.net/assets/favicon-32-d6025c14e900565d6177.png"
+          ></img>
+        </a>).
         Powered by <a
           href="https://www.speedrun.com/"
           target="src"

@@ -1,12 +1,11 @@
-import { BsPrefixProps, ReplaceProps } from 'react-bootstrap/helpers'
-import { Button, Form, FormControlProps, InputGroup } from 'react-bootstrap'
-import React, { FC, FormEvent, useState } from 'react'
+import { Button, Form, InputGroup } from 'react-bootstrap'
+import React, { FC, useState } from 'react'
 
 const SrcApiKeyLink: FC = () => {
   const [srcNameInput, setSrcNameInput] = useState('')
 
-  const handleNameChange = (event: FormEvent<ReplaceProps<'input', BsPrefixProps<'input'> & FormControlProps>>) =>
-    setSrcNameInput(event.currentTarget.value || '')
+  const handleNameChange: React.ChangeEventHandler<HTMLInputElement> = event =>
+    setSrcNameInput(event.currentTarget.value)
 
   return <span className='src-api-key-link'>
     <InputGroup>
@@ -19,7 +18,9 @@ const SrcApiKeyLink: FC = () => {
           target="src"
         >www.speedrun.com/</Button>
       </InputGroup.Prepend>
+      {/* TODO: Adapt to characters length like in tournament scheduler */}
       <Form.Control
+        style={{ minWidth: 85 }}
         type="text"
         name="src-name"
         placeholder="SRC name"

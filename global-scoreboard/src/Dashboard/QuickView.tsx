@@ -1,9 +1,11 @@
 import './QuickView.css'
 import { Button, Table } from 'react-bootstrap'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import FriendButton from './FriendButton'
 import Player from '../models/Player'
+import PlayerNameCell from './TableElements/PlayerNameCell'
+import PlayerScoreCell from './TableElements/PlayerScoreCell'
 import React from 'react'
+import ScoreTitle from './TableElements/ScoreTitle'
 import { faArrowAltCircleRight } from '@fortawesome/free-solid-svg-icons'
 
 type QuickViewProps = {
@@ -23,7 +25,7 @@ const QuickView = (props: QuickViewProps) =>
           <tr>
             <th>Rank</th>
             <th>Name</th>
-            <th colSpan={2}>Score</th>
+            <th colSpan={2}><ScoreTitle /></th>
           </tr>
         </thead>
         <tbody>
@@ -39,27 +41,15 @@ const QuickView = (props: QuickViewProps) =>
                   >
                     <td>{player.rank}</td>
                     <td>
-                      <span className="name-cell">
-                        <a
-                          href={`https://speedrun.com/user/${player.name}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        ><img
-                            alt=""
-                            className="flagicon"
-                            src={`https://www.speedrun.com/images/flags/${player.countryCode}.png`}
-                          />{player.name}</a>
-                        {player !== props.currentUser &&
-                          <FriendButton
-                            isFriend={true}
-                            playerId={player.userId}
-                            onUnfriend={props.onUnfriend}
-                            onBefriend={props.onBefriend}
-                          />
-                        }
-                      </span>
+                      <PlayerNameCell
+                        player={player}
+                        isFriend={true}
+                        isCurrentUser={player === props.currentUser}
+                        handleOnUnfriend={props.onUnfriend}
+                        handleOnBefriend={props.onUnfriend}
+                      />
                     </td>
-                    <td>{player.score}</td>
+                    <td><PlayerScoreCell player={player} /></td>
                     <td>
                       <Button
                         variant="link"

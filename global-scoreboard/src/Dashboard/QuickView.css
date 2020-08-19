@@ -1,3 +1,7 @@
 td:last-child .btn.btn-link {
   padding: 0;
 }
+
+.table-responsive-lg {
+  width: 100%;
+}
