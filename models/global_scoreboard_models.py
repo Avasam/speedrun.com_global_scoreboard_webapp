@@ -60,7 +60,17 @@ class Run:
     _is_wr_time: bool = False
     _platform: Optional[str] = None
 
-    def __init__(self, id_: str, primary_t: float, game: str, category: str, variables={}, level: str = ""):
+    # TODO: Reanable sonarlint max args rule
+    def __init__(
+            self,
+            id_: str,
+            primary_t: float,
+            game: str,
+            category: str,
+            variables={},
+            level: str = "",
+            level_name: str = "",
+            level_count: int = 0):
         self.id_ = id_
         self.primary_t = primary_t
         self.game = game
@@ -69,7 +79,8 @@ class Run:
         self.category_name = category
         self.variables = variables
         self.level = level
-        self.level_name = level
+        self.level_name = level_name
+        self.level_count = level_count
         self.__set_points()
 
     def __str__(self) -> str:
@@ -233,9 +244,6 @@ class Run:
                         # If the run is an Individual Level and worth looking at, set the level count and name
                         if self.level and self._points > 0:
                             self.level_name = game_category[1]  # Always 2nd of 3 items
-                            url = "https://www.speedrun.com/api/v1/games/{game}/levels".format(game=self.game)
-                            levels = CachedRequest.get_response_or_new(url)
-                            self.level_count = len(levels["data"])
                             calc_level_count = (self.level_count or 0) + 1
                             # ILs leaderboards with mean under their fraction of a minute are ignored
                             if mean * calc_level_count < 60:
@@ -281,10 +289,8 @@ class User:
         def set_points_thread(pb) -> None:
             try:
                 # Get a list of the game's subcategory variables
-                url = "https://www.speedrun.com/api/v1/games/{game}/variables".format(game=pb["run"]["game"])
-                game_variables = CachedRequest.get_response_or_new(url)
                 game_subcategory_ids: List[str] = []
-                for game_variable in game_variables["data"]:
+                for game_variable in pb["game"]["data"]["variables"]["data"]:
                     if game_variable["is-subcategory"]:
                         game_subcategory_ids.append(game_variable["id"])
 
@@ -296,12 +302,15 @@ class User:
                         # ... and add it to the run's subcategory variables
                         pb_subcategory_variables[pb_var_id] = pb_var_value
 
+                pb_level_name = pb["level"]["data"]["name"] if len(pb["level"]["data"]) > 0 else ""
                 run: Run = Run(pb["run"]["id"],
                                pb["run"]["times"]["primary_t"],
                                pb["run"]["game"],
                                pb["run"]["category"],
                                pb_subcategory_variables,
-                               pb["run"]["level"])
+                               pb["run"]["level"],
+                               pb_level_name,
+                               len(pb["game"]["data"]["levels"]["data"]))
 
                 # Set game search data
                 run._is_wr_time = pb["place"] == 1
@@ -331,7 +340,9 @@ class User:
                 threadsException.append({"error": "Unhandled", "details": traceback.format_exc()})
 
         if not self._banned:
-            url = "https://www.speedrun.com/api/v1/users/{user}/personal-bests?embed=game".format(user=self._id)
+            url = \
+                "https://www.speedrun.com/api/v1/users/{user}/personal-bests?embed=level,game.levels,game.variables" \
+                .format(user=self._id)
             pbs = CachedRequest.get_response_or_new(url)
 
             # TODO: BIG MEGA HACK / PATCH. Let's try to work around this issue ASAP.
