@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from math import ceil, exp, floor, pi
 from models.game_search_models import GameValues
 from services.utils import get_file, UserUpdaterError
+from services.user_updater_helpers import extract_valid_personal_bests, get_subcategory_variables
 from threading import Thread, active_count
 from time import sleep
 from typing import Dict, List, Optional, Tuple
@@ -12,7 +13,6 @@ import traceback
 
 MIN_LEADERBOARD_SIZE = 3  # This is just to optimize as the formula gives 0 points to leaderboards size < 3
 TIME_BONUS_DIVISOR = 3600 * 12  # 12h (1/2 day) for +100%
-GAMETYPE_MULTI_GAME = "rj1dy1o8"
 
 memoized_requests: Dict[str, CachedRequest] = {}
 
@@ -288,19 +288,7 @@ class User:
 
         def set_points_thread(pb) -> None:
             try:
-                # Get a list of the game's subcategory variables
-                game_subcategory_ids: List[str] = []
-                for game_variable in pb["game"]["data"]["variables"]["data"]:
-                    if game_variable["is-subcategory"]:
-                        game_subcategory_ids.append(game_variable["id"])
-
-                pb_subcategory_variables: Dict[str, Dict[str, str]] = {}
-                # For every variable in the run...
-                for pb_var_id, pb_var_value in pb["run"]["values"].items():
-                    # ...find if said variable is one of the game's subcategories...
-                    if pb_var_id in game_subcategory_ids:
-                        # ... and add it to the run's subcategory variables
-                        pb_subcategory_variables[pb_var_id] = pb_var_value
+                pb_subcategory_variables = get_subcategory_variables(pb["run"])
 
                 pb_level_name = pb["level"]["data"]["name"] if len(pb["level"]["data"]) > 0 else ""
                 run: Run = Run(pb["run"]["id"],
@@ -341,12 +329,13 @@ class User:
 
         if not self._banned:
             url = \
-                "https://www.speedrun.com/api/v1/users/{user}/personal-bests?embed=level,game.levels,game.variables" \
-                .format(user=self._id)
-            pbs = CachedRequest.get_response_or_new(url)
+                "https://www.speedrun.com/api/v1/runs?user={user}&status=verified" \
+                "&embed=level,game.levels,game.variables&max=200&offset={offset}" \
+                .format(user=self._id, offset=0)
+            runs = CachedRequest.get_response_or_new(url)
 
             # TODO: BIG MEGA HACK / PATCH. Let's try to work around this issue ASAP.
-            runs_count = len(pbs["data"])
+            runs_count = len(runs["data"])
             if runs_count >= 1000:
                 raise UserUpdaterError({
                     "error": "Too Many Runs",
@@ -358,16 +347,9 @@ class User:
                 })
 
             self._points = 0
-            threads: List[Thread] = []
-            for pb in pbs["data"]:
-                # Check if it's a valid run:
-                # - not a "multi-game" gametype
-                # - has a category
-                # - has video verification
-                if GAMETYPE_MULTI_GAME not in pb["game"]["data"]["gametypes"] \
-                        and pb["run"]["category"] \
-                        and pb["run"].get("videos"):
-                    threads.append(Thread(target=set_points_thread, args=(pb,)))
+
+            threads: List[Thread] = [Thread(target=set_points_thread, args=(pb,))
+                                     for pb in extract_valid_personal_bests(runs["data"])]
             for t in threads:
                 while True:
                     try:
