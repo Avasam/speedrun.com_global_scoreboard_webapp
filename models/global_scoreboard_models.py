@@ -67,7 +67,7 @@ class Run:
             primary_t: float,
             game: str,
             category: str,
-            variables={},
+            variables=None,
             level: str = "",
             level_name: str = "",
             level_count: int = 0):
@@ -77,7 +77,7 @@ class Run:
         self.game_name = game
         self.category = category
         self.category_name = category
-        self.variables = variables
+        self.variables = variables if variables is not None else {}
         self.level = level
         self.level_name = level_name
         self.level_count = level_count
@@ -282,7 +282,7 @@ class User:
             self._banned = True
             self._points = 0
 
-    def set_points(self, threadsException) -> None:
+    def set_points(self, threads_exceptions) -> None:
         counted_runs: List[Run] = []
         kept_for_game_values: List[Run] = []
 
@@ -335,9 +335,9 @@ class User:
                         counted_runs.append(run)
 
             except UserUpdaterError as exception:
-                threadsException.append(exception.args[0])
+                threads_exceptions.append(exception.args[0])
             except Exception:
-                threadsException.append({"error": "Unhandled", "details": traceback.format_exc()})
+                threads_exceptions.append({"error": "Unhandled", "details": traceback.format_exc()})
 
         if not self._banned:
             url = \

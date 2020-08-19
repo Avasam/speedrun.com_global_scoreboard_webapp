@@ -15,8 +15,8 @@ SEPARATOR = "-" * 64
 
 def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
     """Called from flask_app and AutoUpdateUsers.run()"""
-    global threadsException
-    threadsException = []
+    global threads_exceptions
+    threads_exceptions = []
     text_output: str = p_user_id
     result_state: str = "info"
 
@@ -51,8 +51,8 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
                 (datetime.now() - player.last_update).days >= configs.last_updated_days[0] or \
                     configs.bypass_update_restrictions:
 
-                user.set_points(threadsException)
-                if not threadsException:
+                user.set_points(threads_exceptions)
+                if not threads_exceptions:
 
                     print(f"\nLooking for {user._id}")  # debug_str
                     timestamp = strftime("%Y-%m-%d %H:%M")
@@ -90,7 +90,7 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
 
                 else:
                     error_str_list: List[str] = []
-                    for e in threadsException:
+                    for e in threads_exceptions:
                         error_str_list.append("Error: {}\n{}".format(e["error"], e["details"]))
                     error_str_counter = Counter(error_str_list)
                     errors_str = "{0}" \
