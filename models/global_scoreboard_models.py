@@ -1,23 +1,13 @@
 from __future__ import annotations
 from datetime import datetime, timedelta
-from typing import Dict
-from services.utils import get_file
-import configs
-
-from collections import Counter
-from datetime import datetime
 from math import ceil, exp, floor, pi
-from models.core_models import db, Player
 from models.game_search_models import GameValues
-from models.global_scoreboard_models import CachedRequest
+from services.utils import get_file, UserUpdaterError
 from threading import Thread, active_count
-from time import strftime, sleep
-from typing import Dict, List, Optional, Tuple, Union
-from services.utils import UserUpdaterError, SpeedrunComError
+from time import sleep
+from typing import Dict, List, Optional, Tuple
 import configs
-import httplib2
 import re
-import requests
 import traceback
 
 MIN_LEADERBOARD_SIZE = 3  # This is just to optimize as the formula gives 0 points to leaderboards size < 3
