@@ -10,7 +10,7 @@ from models.models_utils import map_to_dto
 from sqlalchemy import exc
 from typing import Dict
 from services.user_updater import get_updated_user
-from services.utils import UserUpdaterError
+from services.utils import UnderALotOfPressure, UserUpdaterError
 import configs
 import traceback
 
@@ -51,8 +51,12 @@ def update_player(name_or_id: str):
 
 
 def __do_update_player_bypass_restrictions(name_or_id: str):
-    result = get_updated_user(name_or_id)
-    return jsonify(result), 400 if result["state"] == "warning" else 200
+    try:
+        result = get_updated_user(name_or_id)
+        return jsonify(result), 400 if result["state"] == "warning" else 200
+    except UnderALotOfPressure:
+        # Meme code for meme error
+        return "", 418
 
 
 __currently_updating_from: Dict[str, datetime] = {}
@@ -83,6 +87,9 @@ def __do_update_player(current_user: Player, name_or_id: str):
     try:
         # Actually do the update process
         result = get_updated_user(name_or_id)
+    except UnderALotOfPressure:
+        # Meme code for meme error
+        return "", 418
     finally:
         # Upon update completing, allow the user to update again
         __currently_updating_from.pop(current_user.user_id, None)

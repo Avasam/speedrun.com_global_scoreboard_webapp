@@ -1,5 +1,4 @@
 from typing import Dict, List, Any
-import json
 
 GAMETYPE_MULTI_GAME = "rj1dy1o8"
 BasicJSONType = Dict[str, Any]
@@ -15,15 +14,16 @@ def extract_valid_personal_bests(runs: List[BasicJSONType]) -> List[BasicJSONTyp
     best_know_runs: BasicJSONType = {}
 
     def keep_if_pb(run: BasicJSONType):
-        game = run["game"]["data"]["gametypes"]["id"]
+        game = run["game"]["data"]["id"]
         category = run["category"]
-        level = run["level"]
-        # TODO: this does not garrantee reliable order for the same key-value pairs
-        subcategories = json.dumps(get_subcategory_variables(run))
+        level = run["level"]["data"]["id"] if run["level"]["data"] else ""
+        sorted_dict = sorted(get_subcategory_variables(run).items())
+        subcategories = str(sorted_dict)
         identifier = game + category + level + subcategories
-        best = best_know_runs.get(identifier)
-        if not best \
-                or best["times"]["primary_t"] < run["times"]["primary_t"]:
+
+        existing_best = best_know_runs.get(identifier)
+        if not existing_best \
+                or existing_best["times"]["primary_t"] > run["times"]["primary_t"]:
             best_know_runs[identifier] = run
 
     for run in runs:

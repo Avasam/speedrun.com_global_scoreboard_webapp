@@ -1,8 +1,8 @@
 from random import randint
 from requests import Session
-from typing import Dict, Any
+from threading import Thread, active_count
 from time import sleep
-from typing import Optional
+from typing import Any, Dict, List, Optional
 import json
 import simplejson
 import requests
@@ -18,6 +18,11 @@ class UserUpdaterError(Exception):
 
 
 class SpeedrunComError(UserUpdaterError):
+    """ Usage: raise NotFoundError({"error":"404 Not Found", "details":"Details of error"}) """
+    pass
+
+
+class UnderALotOfPressure(SpeedrunComError):
     """ Usage: raise NotFoundError({"error":"404 Not Found", "details":"Details of error"}) """
     pass
 
@@ -53,6 +58,9 @@ def get_file(p_url: str, p_headers: Dict[str, Any] = None) -> dict:
                     print(f"WARNING: {exception.args[0]}. Retrying in {HTTP_ERROR_RETRY_DELAY_MIN} seconds.")
                     sleep(HTTP_ERROR_RETRY_DELAY_MIN)
                     # No break or raise as we want to retry
+                elif raw_data.status_code == 503:
+                    raise UnderALotOfPressure({"error": f"HTTPError {raw_data.status_code}",
+                                               "details": exception.args[0]})
                 else:
                     raise UserUpdaterError({"error": f"HTTPError {raw_data.status_code}",
                                             "details": exception.args[0]})
@@ -85,3 +93,19 @@ def parse_str_to_bool(string_to_parse: Optional[str]) -> bool:
 
 def parse_str_to_nullable_bool(string_to_parse: Optional[str]) -> Optional[bool]:
     return None if string_to_parse is None else string_to_parse.lower() == 'true'
+
+
+def start_and_wait_for_threads(threads: List[Thread]):
+    for t in threads:
+        while True:
+            try:
+                if active_count() <= 8:
+                    t.start()
+                    break
+            except RuntimeError:
+                print(
+                    f"RuntimeError: Can't start {active_count()+1}th thread. "
+                    f"Trying to wait just a bit as I don't have a better way to deal w/ it atm.")
+                sleep(0.5)
+    for t in threads:
+        t.join()
