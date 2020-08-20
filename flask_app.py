@@ -20,10 +20,14 @@
 #
 # Contact:
 # samuel.06@hotmail.com
+# api.core_api import api as core_api
 ##########################################################################
-from api import api
+from api.core_api import api as core_api
+from api.game_search_api import api as game_search_api
+from api.global_scoreboard_api import api as global_scoreboard_api
+from api.tournament_scheduler_api import api as tournament_scheduler_api
 from flask import Flask, send_file, send_from_directory, redirect, url_for
-from models import db
+from models.core_models import db
 import configs
 
 # Setup Flask app
@@ -35,7 +39,10 @@ app.config["SECRET_KEY"] = configs.secret_key
 app.config["TEMPLATE_AUTO_RELOAD"] = configs.auto_reload_templates
 
 # Setup access to the API
-app.register_blueprint(api, url_prefix="/api")
+app.register_blueprint(core_api, url_prefix="/api")
+app.register_blueprint(game_search_api, url_prefix="/api")
+app.register_blueprint(global_scoreboard_api, url_prefix="/api")
+app.register_blueprint(tournament_scheduler_api, url_prefix="/api")
 if (configs.allow_cors):
     from flask_cors import CORS
     CORS(app, resources={r"/api/*": {"origins": "*"}})

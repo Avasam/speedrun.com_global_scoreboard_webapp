@@ -47,6 +47,7 @@ const buildFriendsList = (friends: Player[], allPlayers: Player[]) =>
 const inferRank = (players: Player[], score: number) => {
   const sortedPlayers = [...players].sort((a, b) => b.score - a.score)
   const lowerOrEqualPlayerFoundIndex = sortedPlayers.findIndex(player => player.score <= score)
+  if (lowerOrEqualPlayerFoundIndex <= 0) return players.length
   if (lowerOrEqualPlayerFoundIndex === 0) return 1
 
   const lowerOrEqualPlayerFound = sortedPlayers[lowerOrEqualPlayerFoundIndex]
@@ -63,7 +64,7 @@ const Dashboard = (props: DashboardProps) => {
   const [friends, setFriends] = useState<Player[]>([])
   const [players, setPlayers] = useState<Player[]>([])
   const [alertVariant, setAlertVariant] = useState<AlertProps['variant']>('info')
-  const [alertMessage, setAlertMessage] = useState('Building the Scoreboard. Please wait...')
+  const [alertMessage, setAlertMessage] = useState<JSX.Element | string>('Building the Scoreboard. Please wait...')
   const [progress, setProgress] = useState<number | null>(null)
   const startLoading = () => {
     setProgress(100)
@@ -169,6 +170,18 @@ const Dashboard = (props: DashboardProps) => {
         setAlertVariant('danger')
         if (err instanceof Error) {
           setAlertMessage(`${err.name}: ${err.message}`)
+        } else if (err.status === 418) {
+          setAlertVariant('warning')
+          setAlertMessage(<div>
+            <p>You know the drill...</p>
+            <p>
+              <img src="https://speedrun.com/themes/Default/1st.png" alt="" />
+              <br />
+              <img src="https://speedrun.com/themes/Default/logo.png" alt="speedrun.com" style={{ width: 384 }} />
+            </p>
+            <p>Oops! The site&apos;s under a lot of pressure right now. Please try again in a minute.</p>
+            <img src="https://brand.twitch.tv/assets/emotes/lib/kappa.png" alt="Kappa" />
+          </div>)
         } else if (err.status === 504) {
           setAlertVariant('warning')
           setAlertMessage('Error 504. The webworker probably timed out, ' +
