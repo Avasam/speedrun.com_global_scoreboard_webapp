@@ -177,3 +177,4 @@ configs.py
 */node_modules
 */.pnp
 .pnp.js
+!*/dependencies/**

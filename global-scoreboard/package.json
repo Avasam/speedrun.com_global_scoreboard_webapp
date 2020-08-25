@@ -13,6 +13,9 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
+  "//": {
+    "react-bootstrap-table-next": "^4.0.3"
+  },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.30",
     "@fortawesome/free-regular-svg-icons": "^5.14.0",
@@ -21,7 +24,7 @@
     "bootstrap": "^4.5.2",
     "react": "^16.13.1",
     "react-bootstrap": "^1.3.0",
-    "react-bootstrap-table-next": "^4.0.3",
+    "react-bootstrap-table-next": "file:dependencies/react-bootstrap-table-next",
     "react-bootstrap-table2-filter": "^1.3.3",
     "react-bootstrap-table2-paginator": "^2.1.2",
     "react-bootstrap-table2-toolkit": "^2.1.3",
