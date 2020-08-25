@@ -1,0 +1,81 @@
+{
+  "_from": "react-bootstrap-table-next@4.0.3",
+  "_id": "react-bootstrap-table-next@4.0.3",
+  "_inBundle": false,
+  "_integrity": "sha512-uKxC73qUdUfusRf2uzDfMiF9LvTG5vuhTZa0lbAgHWSLLLaKTsI0iHf1e4+c7gP71q8dFsp7StvkP65SxC1JRg==",
+  "_location": "/react-bootstrap-table-next",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "version",
+    "registry": true,
+    "raw": "react-bootstrap-table-next@4.0.3",
+    "name": "react-bootstrap-table-next",
+    "escapedName": "react-bootstrap-table-next",
+    "rawSpec": "4.0.3",
+    "saveSpec": null,
+    "fetchSpec": "4.0.3"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/react-bootstrap-table-next/-/react-bootstrap-table-next-4.0.3.tgz",
+  "_shasum": "b55873b01adfe22a7181904b784a9d24ac2822cf",
+  "_spec": "react-bootstrap-table-next@4.0.3",
+  "_where": "E:\\Users\\Avasam\\Documents\\Git\\speedrun.com_global_leaderboard_webapp\\global-scoreboard",
+  "author": {
+    "name": "AllenFang"
+  },
+  "bugs": {
+    "url": "https://github.com/react-bootstrap-table/react-bootstrap-table2/issues"
+  },
+  "bundleDependencies": false,
+  "contributors": [
+    {
+      "name": "Allen Fang",
+      "email": "ayu780129@hotmail.com",
+      "url": "https://github.com/AllenFang"
+    },
+    {
+      "name": "Chun-MingChen",
+      "email": "nick830314@gmail.com",
+      "url": "https://github.com/Chun-MingChen"
+    }
+  ],
+  "dependencies": {
+    "classnames": "^2.2.5",
+    "react-transition-group": "^4.2.0",
+    "underscore": "1.9.1"
+  },
+  "deprecated": false,
+  "description": "Next generation of react-bootstrap-table",
+  "files": [
+    "lib/",
+    "dist/"
+  ],
+  "homepage": "https://github.com/react-bootstrap-table/react-bootstrap-table2#readme",
+  "keywords": [
+    "react",
+    "bootstrap",
+    "table",
+    "grid",
+    "react-component"
+  ],
+  "license": "MIT",
+  "main": "./lib/index.js",
+  "name": "react-bootstrap-table-next",
+  "peerDependencies": {
+    "classnames": "^2.2.5",
+    "prop-types": "^15.0.0",
+    "react": "^16.3.0",
+    "react-dom": "^16.3.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/react-bootstrap-table/react-bootstrap-table2.git"
+  },
+  "tags": [
+    "react"
+  ],
+  "version": "4.0.3"
+}
