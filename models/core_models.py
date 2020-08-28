@@ -106,7 +106,7 @@ class Player(db.Model):
         return player
 
     def get_friends(self) -> List[Player]:
-        sql = text("SELECT f.friend_id, p.name, p.country_code, p.score FROM friend f "
+        sql = text("SELECT f.friend_id, p.name, p.country_code, p.score, p.last_update FROM friend f "
                    "JOIN player p ON p.user_id = f.friend_id "
                    "WHERE f.user_id = '{user_id}';"
                    .format(user_id=self.user_id))
@@ -114,7 +114,8 @@ class Player(db.Model):
             user_id=friend[0],
             name=friend[1],
             country_code=friend[2],
-            score=friend[3]) for friend in db.engine.execute(sql).fetchall()]
+            score=friend[3],
+            last_update=friend[4]) for friend in db.engine.execute(sql).fetchall()]
 
     def befriend(self, friend_id: str) -> bool:
         if self.user_id == friend_id:
