@@ -35,14 +35,7 @@ const validateRunnerNotRecentlyUpdated = (runnerNameOrId: string, players: Playe
 }
 
 const buildFriendsList = (friends: Player[], allPlayers: Player[]) =>
-  friends.map(friend => {
-    const friendPlayers = allPlayers.find(player => player.userId === friend.userId)
-    return {
-      ...friend,
-      rank: friendPlayers?.rank,
-      score: friendPlayers?.score,
-    } as Player
-  })
+  allPlayers.filter(player => friends.some(friend => player.userId === friend.userId))
 
 const inferRank = (players: Player[], score: number) => {
   const sortedPlayers = [...players].sort((a, b) => b.score - a.score)
@@ -137,7 +130,7 @@ const Dashboard = (props: DashboardProps) => {
         const newPlayers = [...players]
         const existingPlayerIndex = newPlayers.findIndex(player => player.userId === result.userId)
         const inferedRank = inferRank(newPlayers, result.score)
-        const newPlayer = {
+        const playerModifications = {
           rank: inferedRank,
           name: result.name,
           countryCode: result.countryCode,
@@ -146,14 +139,14 @@ const Dashboard = (props: DashboardProps) => {
         }
         if (existingPlayerIndex < 0) {
           newPlayers.push({
-            ...newPlayer,
+            ...playerModifications,
             userId: result.userId,
           })
         } else {
-          newPlayers[existingPlayerIndex] = {
-            ...newPlayer,
+          newPlayers[existingPlayerIndex] = Object.assign({
             userId: players[existingPlayerIndex].userId,
-          }
+          },
+            playerModifications)
         }
 
         setPlayers(newPlayers)

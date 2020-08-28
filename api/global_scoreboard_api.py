@@ -4,11 +4,11 @@ responses within the Global Scoreboard context
 """
 from api.api_wrappers import authentication_required
 from datetime import datetime, timedelta
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from models.core_models import Player
 from models.models_utils import map_to_dto
 from sqlalchemy import exc
-from typing import Dict
+from typing import cast, Dict, Optional
 from services.user_updater import get_updated_user
 from services.utils import UnderALotOfPressure, UserUpdaterError
 import configs
@@ -100,7 +100,15 @@ def __do_update_player(current_user: Player, name_or_id: str):
 @api.route('/players/current/friends', methods=('GET',))
 @authentication_required
 def get_friends_current(current_user: Player):
-    return jsonify(map_to_dto(current_user.get_friends()))
+    field: Optional[str] = request.args.get('field')
+    friends_dto = map_to_dto(current_user.get_friends())
+
+    if field is None:
+        return jsonify(friends_dto)
+    try:
+        return jsonify([friend[cast(str, field)] for friend in friends_dto])
+    except KeyError:
+        return "", 400
 
 
 @api.route('/players/current/friends/<id>', methods=('PUT',))
