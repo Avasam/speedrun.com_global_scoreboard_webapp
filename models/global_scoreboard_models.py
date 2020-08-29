@@ -6,6 +6,7 @@ from services.utils import get_file, UserUpdaterError, start_and_wait_for_thread
 from services.user_updater_helpers import extract_valid_personal_bests, get_subcategory_variables
 from threading import Thread
 from typing import Dict, List, Optional, Tuple
+from urllib import parse
 import configs
 import re
 import traceback
@@ -42,10 +43,21 @@ class SrcRequest():
             return result
 
     @staticmethod
-    def get_paginated_response(url: str) -> dict:
+    def get_paginated_response(url: str, max_results: Optional[int] = None) -> dict:
         summed_results = {"data": []}
         next_url = url
         while next_url:
+            # First ensure the next request won't being us above max_results
+            if max_results:
+                query_params = parse.parse_qs(parse.urlparse(next_url).query)
+                max_param = query_params.get('max')
+                offset_param = query_params.get('offset')
+                results_per_page = int(max_param[0]) if max_param else 0
+                next_offset = int(offset_param[0]) if offset_param else 0
+                if results_per_page + next_offset > max_results:
+                    break
+
+            # Get the next page of results and combine it with previous ones
             result = get_file(next_url)
             next_url = next((link["uri"] for link in result["pagination"]["links"] if link["rel"] == "next"), None)
             summed_results["data"] += result["data"]
@@ -353,78 +365,78 @@ class User:
             except Exception:
                 threads_exceptions.append({"error": "Unhandled", "details": traceback.format_exc()})
 
-        if not self._banned:
-            url = \
-                "https://www.speedrun.com/api/v1/runs?user={user}&status=verified" \
-                "&embed=level,game.levels,game.variables&max=200" \
-                .format(user=self._id)
-            runs = SrcRequest.get_paginated_response(url)
+        self._points = 0
+        if self._banned:
 
-            # TODO: BIG MEGA HACK / PATCH. Let's try to work around this issue ASAP.
-            runs_count = len(runs["data"])
-            if runs_count >= 1000:
-                raise UserUpdaterError({
-                    "error": "Too Many Runs",
-                    "details": f"{self._name} has over 1000 runs ({runs_count} to be exact). " +
-                    "Due to current limitations with PythonAnywhere and the speedrun.com api, " +
-                    "updating such a user is nearly impossible. " +
-                    "I have a work in progress solution for this issue, but it will take time. " +
-                    "Sorry for the inconvenience.",
-                })
+            return
 
-            self._points = 0
+        pagesize = 200
+        maxsize = pagesize * 5
+        url = \
+            "https://www.speedrun.com/api/v1/runs?user={user}&status=verified" \
+            "&embed=level,game.levels,game.variables&max={pagesize}" \
+            .format(user=self._id, pagesize=pagesize)
+        runs = SrcRequest.get_paginated_response(url, maxsize)
 
-            threads = [Thread(target=set_points_thread, args=(run,))
-                       for run in extract_valid_personal_bests(runs["data"])]
-            start_and_wait_for_threads(threads)
+        # TODO: BIG MEGA HACK / PATCH. Let's try to work around this issue ASAP.
+        runs_count = len(runs["data"])
+        if runs_count >= maxsize:
+            self._point_distribution_str = "\nThis user has too many runs. " \
+                f"Only the last {runs_count} have been counted." \
+                "\nDue to current limitations with PythonAnywhere and the speedrun.com api, " \
+                "fully updating such a user is nearly impossible. " \
+                "I have a work in progress solution for this issue, but it will take time. " \
+                "\nSorry for the inconvenience."
 
-            # Sum up the runs' score
-            counted_runs.sort(key=lambda r: r._points, reverse=True)
-            run_str_lst: List[Tuple[str, float]] = []
-            biggest_str_length: int = 0
+        threads = [Thread(target=set_points_thread, args=(run,))
+                   for run in extract_valid_personal_bests(runs["data"])]
+        start_and_wait_for_threads(threads)
 
-            for run in counted_runs:
-                self._points += run._points
-                run_str = ("{game} - {category}{level}".format(game=run.game_name,
-                                                               category=run.category_name,
-                                                               level=f" ({run.level_name})" if run.level_name else ""))
-                run_pts = ceil((run._points * 100)) / 100
-                run_str_lst.append((run_str, run_pts))
-                biggest_str_length = max(biggest_str_length, len(run_str))
+        # Sum up the runs' score
+        counted_runs.sort(key=lambda r: r._points, reverse=True)
+        run_str_lst: List[Tuple[str, float]] = []
+        biggest_str_length: int = 0
 
-                # This section is kinda hacked in. Used to allow searching for games by their worth
-                # Run should be worth more than 1 point, not be a level and be made by WR holder
-                if run._points < 1 or run.level or not run._is_wr_time:
-                    continue
-                GameValues.create_or_update(
-                    run_id=run.id_,
-                    game_id=run.game,
-                    category_id=run.category,
-                    platform_id=run._platform,
-                    wr_time=floor(run.primary_t),
-                    wr_points=floor(run._points),
-                    mean_time=floor(run._mean_time),
-                )
-            for run in kept_for_game_values:
-                if run._points < 1 or run.level:
-                    continue
-                GameValues.create_or_update(
-                    run_id=run.id_,
-                    game_id=run.game,
-                    category_id=run.category,
-                    platform_id=run._platform,
-                    wr_time=floor(run.primary_t),
-                    wr_points=floor(run._points),
-                    mean_time=floor(run._mean_time),
-                )
+        for run in counted_runs:
+            self._points += run._points
+            run_str = ("{game} - {category}{level}".format(game=run.game_name,
+                                                           category=run.category_name,
+                                                           level=f" ({run.level_name})" if run.level_name else ""))
+            run_pts = ceil((run._points * 100)) / 100
+            run_str_lst.append((run_str, run_pts))
+            biggest_str_length = max(biggest_str_length, len(run_str))
 
-            self._point_distribution_str = f"\n{'Game - Category (Level)':<{biggest_str_length}} | Points" \
-                                           f"\n{'-'*biggest_str_length} | ------"
-            for run_infos in run_str_lst:
-                self._point_distribution_str += f"\n{run_infos[0]:<{biggest_str_length}} | " + \
-                    f"{run_infos[1]:.2f}".rjust(6, ' ')
+            # This section is kinda hacked in. Used to allow searching for games by their worth
+            # Run should be worth more than 1 point, not be a level and be made by WR holder
+            if run._points < 1 or run.level or not run._is_wr_time:
+                continue
+            GameValues.create_or_update(
+                run_id=run.id_,
+                game_id=run.game,
+                category_id=run.category,
+                platform_id=run._platform,
+                wr_time=floor(run.primary_t),
+                wr_points=floor(run._points),
+                mean_time=floor(run._mean_time),
+            )
+        for run in kept_for_game_values:
+            if run._points < 1 or run.level:
+                continue
+            GameValues.create_or_update(
+                run_id=run.id_,
+                game_id=run.game,
+                category_id=run.category,
+                platform_id=run._platform,
+                wr_time=floor(run.primary_t),
+                wr_points=floor(run._points),
+                mean_time=floor(run._mean_time),
+            )
 
-            if self._banned:
-                self._points = 0  # In case the banned flag has been set mid-thread
-        else:
-            self._points = 0
+        self._point_distribution_str += f"\n{'Game - Category (Level)':<{biggest_str_length}} | Points" \
+            f"\n{'-'*biggest_str_length} | ------"
+        for run_infos in run_str_lst:
+            self._point_distribution_str += f"\n{run_infos[0]:<{biggest_str_length}} | " + \
+                f"{run_infos[1]:.2f}".rjust(6, ' ')
+
+        if self._banned:
+            self._points = 0  # In case the banned flag has been set mid-thread
