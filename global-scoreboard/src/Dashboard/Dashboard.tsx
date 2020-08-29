@@ -35,18 +35,12 @@ const validateRunnerNotRecentlyUpdated = (runnerNameOrId: string, players: Playe
 }
 
 const buildFriendsList = (friends: Player[], allPlayers: Player[]) =>
-  friends.map(friend => {
-    const friendPlayers = allPlayers.find(player => player.userId === friend.userId)
-    return {
-      ...friend,
-      rank: friendPlayers?.rank,
-      score: friendPlayers?.score,
-    } as Player
-  })
+  allPlayers.filter(player => friends.some(friend => player.userId === friend.userId))
 
 const inferRank = (players: Player[], score: number) => {
   const sortedPlayers = [...players].sort((a, b) => b.score - a.score)
   const lowerOrEqualPlayerFoundIndex = sortedPlayers.findIndex(player => player.score <= score)
+  if (lowerOrEqualPlayerFoundIndex <= 0) return players.length
   if (lowerOrEqualPlayerFoundIndex === 0) return 1
 
   const lowerOrEqualPlayerFound = sortedPlayers[lowerOrEqualPlayerFoundIndex]
@@ -63,7 +57,7 @@ const Dashboard = (props: DashboardProps) => {
   const [friends, setFriends] = useState<Player[]>([])
   const [players, setPlayers] = useState<Player[]>([])
   const [alertVariant, setAlertVariant] = useState<AlertProps['variant']>('info')
-  const [alertMessage, setAlertMessage] = useState('Building the Scoreboard. Please wait...')
+  const [alertMessage, setAlertMessage] = useState<JSX.Element | string>('Building the Scoreboard. Please wait...')
   const [progress, setProgress] = useState<number | null>(null)
   const startLoading = () => {
     setProgress(100)
@@ -136,7 +130,7 @@ const Dashboard = (props: DashboardProps) => {
         const newPlayers = [...players]
         const existingPlayerIndex = newPlayers.findIndex(player => player.userId === result.userId)
         const inferedRank = inferRank(newPlayers, result.score)
-        const newPlayer = {
+        const playerModifications = {
           rank: inferedRank,
           name: result.name,
           countryCode: result.countryCode,
@@ -145,14 +139,14 @@ const Dashboard = (props: DashboardProps) => {
         }
         if (existingPlayerIndex < 0) {
           newPlayers.push({
-            ...newPlayer,
+            ...playerModifications,
             userId: result.userId,
           })
         } else {
-          newPlayers[existingPlayerIndex] = {
-            ...newPlayer,
+          newPlayers[existingPlayerIndex] = Object.assign({
             userId: players[existingPlayerIndex].userId,
-          }
+          },
+            playerModifications)
         }
 
         setPlayers(newPlayers)
@@ -169,6 +163,18 @@ const Dashboard = (props: DashboardProps) => {
         setAlertVariant('danger')
         if (err instanceof Error) {
           setAlertMessage(`${err.name}: ${err.message}`)
+        } else if (err.status === 418) {
+          setAlertVariant('warning')
+          setAlertMessage(<div>
+            <p>You know the drill...</p>
+            <p>
+              <img src="https://speedrun.com/themes/Default/1st.png" alt="" />
+              <br />
+              <img src="https://speedrun.com/themes/Default/logo.png" alt="speedrun.com" style={{ width: 384 }} />
+            </p>
+            <p>Oops! The site&apos;s under a lot of pressure right now. Please try again in a minute.</p>
+            <img src="https://brand.twitch.tv/assets/emotes/lib/kappa.png" alt="Kappa" />
+          </div>)
         } else if (err.status === 504) {
           setAlertVariant('warning')
           setAlertMessage('Error 504. The webworker probably timed out, ' +

@@ -278,8 +278,7 @@ in one of these ways:
     Source of the work are being offered to the general public at no
     charge under subsection 6d.
 
-  A separable portion of the object code, whose source code is excluded
-from the Corresponding Source as a System Library, need not be
+  A separable portion of the object code, whose source code is excluded the Corresponding Source as a System Library, need not be
 included in conveying the object code work.
 
   A "User Product" is either (1) a "consumer product", which means any
@@ -543,8 +542,7 @@ License would be to refrain entirely from conveying the Program.
 Program, your modified version must prominently offer all users
 interacting with it remotely through a computer network (if your version
 supports such interaction) an opportunity to receive the Corresponding
-Source of your version by providing access to the Corresponding Source
-from a network server at no charge, through some standard or customary
+Source of your version by providing access to the Corresponding Source a network server at no charge, through some standard or customary
 means of facilitating copying of software.  This Corresponding Source
 shall include the Corresponding Source for any work covered by version 3
 of the GNU General Public License that is incorporated pursuant to the
