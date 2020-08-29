@@ -370,16 +370,19 @@ class User:
 
             return
 
+        pagesize = 200
+        maxsize = pagesize * 5
         url = \
             "https://www.speedrun.com/api/v1/runs?user={user}&status=verified" \
-            "&embed=level,game.levels,game.variables&orderby=verify-date&direction=desc&max=200" \
-            .format(user=self._id)
-        runs = SrcRequest.get_paginated_response(url, 800)
+            "&embed=level,game.levels,game.variables&max={pagesize}" \
+            .format(user=self._id, pagesize=pagesize)
+        runs = SrcRequest.get_paginated_response(url, maxsize)
 
         # TODO: BIG MEGA HACK / PATCH. Let's try to work around this issue ASAP.
         runs_count = len(runs["data"])
-        if runs_count >= 800:
-            self._point_distribution_str = f"\nThis user has too many runs. Only the last {runs_count} have been counted." \
+        if runs_count >= maxsize:
+            self._point_distribution_str = "\nThis user has too many runs. " \
+                f"Only the last {runs_count} have been counted." \
                 "\nDue to current limitations with PythonAnywhere and the speedrun.com api, " \
                 "fully updating such a user is nearly impossible. " \
                 "I have a work in progress solution for this issue, but it will take time. " \
