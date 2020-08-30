@@ -1,22 +1,19 @@
 import './Dashboard.css'
-import { Alert, Col, Container, ProgressBar, Row } from 'react-bootstrap'
+import { Col, Container, Row } from 'react-bootstrap'
 import React, { useEffect, useRef, useState } from 'react'
 import Scoreboard, { ScoreboardRef } from './Scoreboard'
 import { apiDelete, apiGet, apiPost, apiPut } from '../fetchers/api'
 import { AlertProps } from 'react-bootstrap/Alert'
 import Configs from '../models/Configs'
 import Player from '../models/Player'
-import QuickView from './QuickView'
+import QuickView from './QuickView/QuickView'
+import UpdateMessage from './UpdateMessage'
 import UpdateRunnerForm from './UpdateRunnerForm'
 import UpdateRunnerResult from '../models/UpdateRunnerResult'
 
 type DashboardProps = {
   currentUser: Player | null | undefined
 }
-
-const progressBarTickInterval = 50
-const minutes5 = 5_000 * 60
-let progressTimer: NodeJS.Timeout
 
 const getFriends = () => apiGet('players/current/friends').then<Player[]>(res => res.json())
 const getAllPlayers = () => apiGet('players')
@@ -59,18 +56,6 @@ const Dashboard = (props: DashboardProps) => {
   const [alertVariant, setAlertVariant] = useState<AlertProps['variant']>('info')
   const [alertMessage, setAlertMessage] = useState<JSX.Element | string>('Building the Scoreboard. Please wait...')
   const [updateStartTime, setUpdateStartTime] = useState<number | null>(null)
-  const [currentTime, setCurrentTime] = useState<number>(new Date().getTime())
-  const startLoading = () => {
-    setUpdateStartTime(new Date().getTime())
-    setCurrentTime(new Date().getTime())
-    progressTimer = setInterval(
-      () => setCurrentTime(new Date().getTime()),
-      progressBarTickInterval)
-  }
-  const stopLoading = () => {
-    setUpdateStartTime(null)
-    clearInterval(progressTimer)
-  }
 
   useEffect(() => {
     // Note: Waiting to obtain both friends and players if both calls are needed
@@ -100,9 +85,6 @@ const Dashboard = (props: DashboardProps) => {
       }
     }
 
-    // Clear timer to prevent leaks
-    return () => clearInterval(progressTimer)
-
     // Note: I don't actually care about players dependency and don't want to rerun this code on players change
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.currentUser])
@@ -119,7 +101,7 @@ const Dashboard = (props: DashboardProps) => {
       setAlertMessage(`Runner ${runnerNameOrId} has already been updated in the past ${cantUpdateTime} day${cantUpdateTime === 1 ? '' : 's'}`)
       return
     }
-    startLoading()
+    setUpdateStartTime(new Date().getTime())
     apiPost(`players/${runnerNameOrId}/update`)
       .then<UpdateRunnerResult>(res => res.json())
       .then(playerResult => {
@@ -209,7 +191,7 @@ const Dashboard = (props: DashboardProps) => {
           })
         }
       })
-      .finally(stopLoading)
+      .finally(() => setUpdateStartTime(null))
   }
 
   const handleJumpToPlayer = (playerId: string) => scoreboardRef.current?.jumpToPlayer(playerId)
@@ -231,18 +213,11 @@ const Dashboard = (props: DashboardProps) => {
   }
 
   return <Container className="dashboard-container">
-    <Alert
+    <UpdateMessage
       variant={alertVariant}
-      style={{ visibility: alertMessage ? 'visible' : 'hidden' }}
-    >
-      {alertMessage || '&nbsp;'}
-      {updateStartTime != null &&
-        <ProgressBar
-          animated
-          variant="info"
-          now={(1 - (currentTime - updateStartTime) / minutes5) * 100}
-        />}
-    </Alert>
+      message={alertMessage}
+      updateStartTime={updateStartTime}
+    />
     <Row>
       <Col md={4}>
         <Row>

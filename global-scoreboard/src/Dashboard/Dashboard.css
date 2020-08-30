@@ -54,15 +54,13 @@ td:first-child{
 \*-----------------------*/
 .alert {
   text-align: center;
+  white-space: pre-wrap;
 }
 
 .row {
   margin: 0;
 }
 
-.alert {
-  white-space: pre-wrap;
-}
 /* This is only to show the results */
 .alert.alert-success {
   font-family: monospace;
