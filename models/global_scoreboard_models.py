@@ -3,7 +3,8 @@ from datetime import datetime, timedelta
 from math import ceil, exp, floor, pi
 from models.game_search_models import GameValues
 from services.utils import get_file, UserUpdaterError, start_and_wait_for_threads
-from services.user_updater_helpers import extract_valid_personal_bests, get_subcategory_variables
+from services.user_updater_helpers import BasicJSONType, extract_valid_personal_bests, get_probability_terms, \
+    get_subcategory_variables, keep_runs_before_soft_cutoff, keep_last_full_game_runs, MIN_LEADERBOARD_SIZE
 from threading import Thread
 from typing import Dict, List, Optional, Tuple
 from urllib import parse
@@ -11,7 +12,6 @@ import configs
 import re
 import traceback
 
-MIN_LEADERBOARD_SIZE = 3  # This is just to optimize as the formula gives 0 points to leaderboards size < 3
 TIME_BONUS_DIVISOR = 3600 * 12  # 12h (1/2 day) for +100%
 MAX_RUNS_COUNT = 1000
 
@@ -195,55 +195,14 @@ class Run:
         wr_time = valid_runs[0]["run"]["times"]["primary_t"]
         if wr_time < 60 and not self.level:
             return
-        # Set game search data
-        self._is_wr_time = wr_time == self.primary_t
 
-        # TODO: This is not optimized
-        pre_fix_worst_time = valid_runs[-1]["run"]["times"]["primary_t"]
-        # TODO: Extract "cutoff everything after soft cutoff" to its own function
-        # Find the time that's most often repeated in the leaderboard (after the 80th percentile)
-        # and cut off everything after that
-        cut_off_80th_percentile: int = valid_runs[int(len(valid_runs)*0.8)]["run"]["times"]["primary_t"]
-        count: int = 0
-        most_repeated_time_pos: int = 0
-        most_repeated_time_count: int = 0
-        last_value: int = 0
-        i: int = len(valid_runs)
-        # Go in reverse this way we can break at the percentile
-        for run in reversed(valid_runs):
-            value: int = run["run"]["times"]["primary_t"]
-            if value == last_value:
-                count += 1
-            else:
-                if count >= most_repeated_time_count:
-                    most_repeated_time_count = count
-                    most_repeated_time_pos = i
-                count = 0
-            last_value = value
+        # Find the time that's most often repeated in the leaderboard
+        # (after the 80th percentile) and cut off everything after that
+        pre_cutoff_worst_time = valid_runs[-1]["run"]["times"]["primary_t"]
+        valid_runs = keep_runs_before_soft_cutoff(valid_runs)
 
-            # We hit the 80th percentile, there's no more to be analyzed
-            # If the most repeated time IS the 80th percentile, still remove it (< not <=)
-            if value < cut_off_80th_percentile:
-                # Have the most repeated time repeat at least a certain amount
-                if most_repeated_time_count > MIN_LEADERBOARD_SIZE:
-                    # Actually keep the last one (+1) as it'll be worth 0 points and used for other calculations
-                    del valid_runs[most_repeated_time_pos+1:]
-                break
-            i -= 1
+        mean, standard_deviation, population = get_probability_terms(valid_runs)
 
-        # Second iteration: maths!
-        mean: float = 0.0
-        sigma: float = 0.0
-        population: int = 0
-        for run in valid_runs:
-            value = run["run"]["times"]["primary_t"]
-            population += 1
-            mean_temp = mean
-            mean += (value - mean_temp) / population
-            sigma += (value - mean_temp) * (value - mean)
-
-        self._mean_time = mean
-        standard_deviation = (sigma / population) ** 0.5
         # CHECK: All runs must not have the exact same time
         if standard_deviation <= 0:
             return
@@ -263,7 +222,7 @@ class Run:
         # Scale all the adjusted deviations so that the mean is worth 1 but the worse stays 0...
         # using the lowest time's deviation from before the "similar times" fix!
         # (runs not affected by the prior fix won't see any difference)
-        adjusted_lowest_deviation = pre_fix_worst_time - mean
+        adjusted_lowest_deviation = pre_cutoff_worst_time - mean
         normalized_deviation = adjusted_deviation / adjusted_lowest_deviation
 
         # More people means more accurate relative time and more optimised/hard to reach low times
@@ -294,6 +253,10 @@ class Run:
                 self._points = 0
             else:
                 self._points /= calc_level_count
+
+        # Set game search data
+        self._is_wr_time = wr_time == self.primary_t
+        self._mean_time = mean
 
 
 class User:
@@ -379,23 +342,19 @@ class User:
             "https://www.speedrun.com/api/v1/runs?user={user}&status=verified" \
             "&embed=level,game.levels,game.variables&max={pagesize}" \
             .format(user=self._id, pagesize=200)
-        runs = SrcRequest.get_paginated_response(url)
+        runs: List[BasicJSONType] = SrcRequest.get_paginated_response(url)["data"]
+        runs = extract_valid_personal_bests(runs)
 
-        runs_count = len(runs["data"])
-        if runs_count >= MAX_RUNS_COUNT:
-            self._point_distribution_str = f"\nOnly the last {MAX_RUNS_COUNT} runs " \
-                f"(out of {runs_count}) have been counted." \
+        original_runs_count = len(runs)
+        if original_runs_count >= MAX_RUNS_COUNT:
+            runs = keep_last_full_game_runs(runs, MAX_RUNS_COUNT)
+
+            self._point_distribution_str = f"\nOnly kept the last {len(runs)} runs (out of {original_runs_count})." \
                 "\nDue to current limitations with PythonAnywhere and the speedrun.com api, " \
-                "fully updating such a user is nearly impossible. " \
-
-        last_runs = sorted(
-            extract_valid_personal_bests(runs["data"]),
-            key=lambda run: run["date"],
-            reverse=True
-        )[:MAX_RUNS_COUNT]
+                "fully updating such a user is nearly impossible."
 
         threads = [Thread(target=set_points_thread, args=(run,))
-                   for run in last_runs]
+                   for run in runs]
         start_and_wait_for_threads(threads)
 
         # Sum up the runs' score
