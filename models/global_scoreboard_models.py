@@ -47,18 +47,31 @@ class SrcRequest():
         summed_results = {"data": []}
         next_url = url
         while next_url:
-            # First ensure the next request won't being us above max_results
+            # First ensure the next request won't bring us above max_results
+            query_params = parse.parse_qs(parse.urlparse(next_url).query)
+            max_param = query_params.get('max')
+            results_per_page = int(max_param[0]) if max_param else 20
             if max_results:
-                query_params = parse.parse_qs(parse.urlparse(next_url).query)
-                max_param = query_params.get('max')
                 offset_param = query_params.get('offset')
-                results_per_page = int(max_param[0]) if max_param else 0
                 next_offset = int(offset_param[0]) if offset_param else 0
                 if results_per_page + next_offset > max_results:
                     break
 
             # Get the next page of results and combine it with previous ones
-            result = get_file(next_url)
+            while True:
+                try:
+                    result = get_file(next_url)
+                    break
+                except UserUpdaterError as exception:
+                    print(exception.args[0]['error'])
+                    if exception.args[0]['error'] != "HTTPError 500" or results_per_page < 20:
+                        raise exception
+                    halved_results_per_page = floor(results_per_page / 2)
+                    print("SRC returned 500 for a paginated request. "
+                          f"Halving the max results per page from {results_per_page} to {halved_results_per_page}")
+                    next_url = next_url.replace(f"max={results_per_page}", f"max={halved_results_per_page}")
+                    results_per_page = halved_results_per_page
+
             next_url = next((link["uri"] for link in result["pagination"]["links"] if link["rel"] == "next"), None)
             summed_results["data"] += result["data"]
 
@@ -375,20 +388,25 @@ class User:
             "https://www.speedrun.com/api/v1/runs?user={user}&status=verified" \
             "&embed=level,game.levels,game.variables&max={pagesize}" \
             .format(user=self._id, pagesize=pagesize)
-        runs = SrcRequest.get_paginated_response(url, maxsize)
+        runs = SrcRequest.get_paginated_response(url)
 
         # TODO: BIG MEGA HACK / PATCH. Let's try to work around this issue ASAP.
         runs_count = len(runs["data"])
         if runs_count >= maxsize:
-            self._point_distribution_str = "\nThis user has too many runs. " \
-                f"Only the last {runs_count} have been counted." \
+            self._point_distribution_str = f"\nOnly the last {maxsize} runs (out of {runs_count}) have been counted." \
                 "\nDue to current limitations with PythonAnywhere and the speedrun.com api, " \
                 "fully updating such a user is nearly impossible. " \
                 "I have a work in progress solution for this issue, but it will take time. " \
                 "\nSorry for the inconvenience."
 
+        last_runs = sorted(
+            extract_valid_personal_bests(runs["data"]),
+            key=lambda run: run["date"],
+            reverse=True
+        )[:maxsize]
+
         threads = [Thread(target=set_points_thread, args=(run,))
-                   for run in extract_valid_personal_bests(runs["data"])]
+                   for run in last_runs]
         start_and_wait_for_threads(threads)
 
         # Sum up the runs' score
