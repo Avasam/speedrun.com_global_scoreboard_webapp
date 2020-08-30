@@ -43,27 +43,20 @@ class SrcRequest():
             return result
 
     @staticmethod
-    def get_paginated_response(url: str, max_results: Optional[int] = None) -> dict:
+    def get_paginated_response(url: str) -> dict:
         summed_results = {"data": []}
         next_url = url
         while next_url:
-            # First ensure the next request won't bring us above max_results
-            query_params = parse.parse_qs(parse.urlparse(next_url).query)
-            max_param = query_params.get('max')
+            max_param = parse.parse_qs(parse.urlparse(next_url).query).get('max')
             results_per_page = int(max_param[0]) if max_param else 20
-            if max_results:
-                offset_param = query_params.get('offset')
-                next_offset = int(offset_param[0]) if offset_param else 0
-                if results_per_page + next_offset > max_results:
-                    break
 
-            # Get the next page of results and combine it with previous ones
+            # Get the next page of results ...
             while True:
                 try:
                     result = get_file(next_url)
                     break
+                # If it failed, try again with a smaller page
                 except UserUpdaterError as exception:
-                    print(exception.args[0]['error'])
                     if exception.args[0]['error'] != "HTTPError 500" or results_per_page < 20:
                         raise exception
                     halved_results_per_page = floor(results_per_page / 2)
@@ -72,6 +65,7 @@ class SrcRequest():
                     next_url = next_url.replace(f"max={results_per_page}", f"max={halved_results_per_page}")
                     results_per_page = halved_results_per_page
 
+            # ... and combine it with previous ones
             next_url = next((link["uri"] for link in result["pagination"]["links"] if link["rel"] == "next"), None)
             summed_results["data"] += result["data"]
 
