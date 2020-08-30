@@ -43,6 +43,10 @@ def get_file(p_url: str, p_headers: Dict[str, Any] = None) -> dict:
     while True:
         try:
             raw_data = session.get(p_url, headers=p_headers)
+        except ConnectionResetError as exception:  # Connexion error
+            print(f"WARNING: {exception.args[0]}. Retrying in {HTTP_ERROR_RETRY_DELAY_MIN} seconds.")
+            sleep(HTTP_ERROR_RETRY_DELAY_MIN)
+            continue
         except requests.exceptions.ConnectionError as exception:  # Connexion error
             raise UserUpdaterError({"error": "Can't establish connexion to speedrun.com", "details": exception})
 
