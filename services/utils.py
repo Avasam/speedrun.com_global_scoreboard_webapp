@@ -2,7 +2,7 @@ from random import randint
 from requests import Session
 from threading import Thread, active_count
 from time import sleep
-from typing import Any, cast, Dict, List, Optional
+from typing import Any, cast, Dict, List, Optional, Union
 import json
 import simplejson
 import requests
@@ -113,3 +113,7 @@ def start_and_wait_for_threads(threads: List[Thread]):
                 sleep(0.5)
     for t in threads:
         t.join()
+
+
+def map_to_dto(dto_mappable_object_list) -> List[Dict[str, Union[str, bool, int]]]:
+    return [dto_mappable_object.to_dto() for dto_mappable_object in dto_mappable_object_list]
