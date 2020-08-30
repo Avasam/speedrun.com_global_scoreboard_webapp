@@ -367,7 +367,6 @@ class User:
 
         self._points = 0
         if self._banned:
-
             return
 
         pagesize = 200
@@ -399,9 +398,10 @@ class User:
 
         for run in counted_runs:
             self._points += run._points
-            run_str = ("{game} - {category}{level}".format(game=run.game_name,
-                                                           category=run.category_name,
-                                                           level=f" ({run.level_name})" if run.level_name else ""))
+            run_str = "{game} - {category}{level}".format(
+                game=run.game_name,
+                category=run.category_name,
+                level=f" ({run.level_name})" if run.level_name else "")
             run_pts = ceil((run._points * 100)) / 100
             run_str_lst.append((run_str, run_pts))
             biggest_str_length = max(biggest_str_length, len(run_str))

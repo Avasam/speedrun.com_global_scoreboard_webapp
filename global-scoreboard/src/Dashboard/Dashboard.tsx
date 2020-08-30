@@ -15,7 +15,7 @@ type DashboardProps = {
 }
 
 const progressBarTickInterval = 50
-const minutes5 = 5 * 600
+const minutes5 = 5_000 * 60
 let progressTimer: NodeJS.Timeout
 
 const getFriends = () => apiGet('players/current/friends').then<Player[]>(res => res.json())
@@ -58,15 +58,17 @@ const Dashboard = (props: DashboardProps) => {
   const [players, setPlayers] = useState<Player[]>([])
   const [alertVariant, setAlertVariant] = useState<AlertProps['variant']>('info')
   const [alertMessage, setAlertMessage] = useState<JSX.Element | string>('Building the Scoreboard. Please wait...')
-  const [progress, setProgress] = useState<number | null>(null)
+  const [updateStartTime, setUpdateStartTime] = useState<number | null>(null)
+  const [currentTime, setCurrentTime] = useState<number>(new Date().getTime())
   const startLoading = () => {
-    setProgress(100)
+    setUpdateStartTime(new Date().getTime())
+    setCurrentTime(new Date().getTime())
     progressTimer = setInterval(
-      () => setProgress(progress => progress && progress - (progressBarTickInterval / minutes5)),
+      () => setCurrentTime(new Date().getTime()),
       progressBarTickInterval)
   }
   const stopLoading = () => {
-    setProgress(null)
+    setUpdateStartTime(null)
     clearInterval(progressTimer)
   }
 
@@ -234,14 +236,19 @@ const Dashboard = (props: DashboardProps) => {
       style={{ visibility: alertMessage ? 'visible' : 'hidden' }}
     >
       {alertMessage || '&nbsp;'}
-      {progress != null && <ProgressBar animated variant="info" now={progress} />}
+      {updateStartTime != null &&
+        <ProgressBar
+          animated
+          variant="info"
+          now={(1 - (currentTime - updateStartTime) / minutes5) * 100}
+        />}
     </Alert>
     <Row>
       <Col md={4}>
         <Row>
           <UpdateRunnerForm
             onUpdate={handleOnUpdateRunner}
-            updating={progress != null}
+            updating={updateStartTime != null}
             currentUser={currentPlayer}
           />
         </Row>
