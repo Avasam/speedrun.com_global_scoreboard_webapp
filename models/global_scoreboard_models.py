@@ -13,6 +13,7 @@ import traceback
 
 MIN_LEADERBOARD_SIZE = 3  # This is just to optimize as the formula gives 0 points to leaderboards size < 3
 TIME_BONUS_DIVISOR = 3600 * 12  # 12h (1/2 day) for +100%
+MAX_RUNS_COUNT = 1000
 
 memoized_requests: Dict[str, SrcRequest] = {}
 
@@ -374,28 +375,24 @@ class User:
         if self._banned:
             return
 
-        pagesize = 200
-        maxsize = pagesize * 5
         url = \
             "https://www.speedrun.com/api/v1/runs?user={user}&status=verified" \
             "&embed=level,game.levels,game.variables&max={pagesize}" \
-            .format(user=self._id, pagesize=pagesize)
+            .format(user=self._id, pagesize=200)
         runs = SrcRequest.get_paginated_response(url)
 
-        # TODO: BIG MEGA HACK / PATCH. Let's try to work around this issue ASAP.
         runs_count = len(runs["data"])
-        if runs_count >= maxsize:
-            self._point_distribution_str = f"\nOnly the last {maxsize} runs (out of {runs_count}) have been counted." \
+        if runs_count >= MAX_RUNS_COUNT:
+            self._point_distribution_str = f"\nOnly the last {MAX_RUNS_COUNT} runs " \
+                f"(out of {runs_count}) have been counted." \
                 "\nDue to current limitations with PythonAnywhere and the speedrun.com api, " \
                 "fully updating such a user is nearly impossible. " \
-                "I have a work in progress solution for this issue, but it will take time. " \
-                "\nSorry for the inconvenience."
 
         last_runs = sorted(
             extract_valid_personal_bests(runs["data"]),
             key=lambda run: run["date"],
             reverse=True
-        )[:maxsize]
+        )[:MAX_RUNS_COUNT]
 
         threads = [Thread(target=set_points_thread, args=(run,))
                    for run in last_runs]

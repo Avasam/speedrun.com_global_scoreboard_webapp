@@ -27,7 +27,7 @@ def extract_valid_personal_bests(runs: List[BasicJSONType]) -> List[BasicJSONTyp
             best_know_runs[identifier] = run
 
     for run in runs:
-        if run["times"]["primary_t"] >= 60 \
+        if (run["level"]["data"] and run["times"]["primary_t"] >= 60) \
                 and GAMETYPE_MULTI_GAME not in run["game"]["data"]["gametypes"] \
                 and run["category"] \
                 and run.get("videos"):
