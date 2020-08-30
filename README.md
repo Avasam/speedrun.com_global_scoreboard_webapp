@@ -27,8 +27,8 @@ The score is calculated by summing up every valid PB of a user according to a fo
     - The leaderboard (for the current sub-category) has at least 3 runs
     - Is part of a speedrun leaderboard, not a scoreboard
     - After step #4, not all runs have the same time
-    - After step #4, the average time is not under a minute
-        - ILs' average should not be under their fraction of a minute (see step #7)
+    - After step #4, the WR time is not under a minute
+        - ILs' WR should not be under their fraction of a minute (see step #7)
 2. All runs not considered valid (w/o video/image verification or banned user) runs are removed from the leaderboard and can be considered as non-existant from now on.
 3. Remove the last 5% of the leaderboard
 4. <TODO: 80th percentile soft cutoff> From this step onward, the amount of runners in the leaderboard will be reffered to as the "population".

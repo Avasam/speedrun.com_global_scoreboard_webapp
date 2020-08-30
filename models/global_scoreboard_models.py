@@ -196,6 +196,13 @@ class Run:
         valid_runs = sorted(valid_runs[:int(original_population * 0.95) or None],
                             key=lambda r: r["run"]["times"]["primary_t"])
 
+        # CHECK: Full level leaderboards with WR under a minute are ignored
+        wr_time = valid_runs[0]["run"]["times"]["primary_t"]
+        if wr_time < 60 and not self.level:
+            return
+        # Set game search data
+        self._is_wr_time = wr_time == self.primary_t
+
         # TODO: This is not optimized
         pre_fix_worst_time = valid_runs[-1]["run"]["times"]["primary_t"]
         # TODO: Extract "cutoff everything after soft cutoff" to its own function
@@ -240,14 +247,8 @@ class Run:
             mean += (value - mean_temp) / population
             sigma += (value - mean_temp) * (value - mean)
 
-        # CHECK: Full level leaderboards with mean under a minute are ignored
-        if mean < 60 and not self.level:
-            return
-
         self._mean_time = mean
-        wr_time = valid_runs[0]["run"]["times"]["primary_t"]
         standard_deviation = (sigma / population) ** 0.5
-
         # CHECK: All runs must not have the exact same time
         if standard_deviation <= 0:
             return
@@ -263,9 +264,6 @@ class Run:
         # CHECK: The last counted run isn't worth any points
         if adjusted_deviation <= 0:
             return
-
-        # Set game search data
-        self._is_wr_time = wr_time == self.primary_t
 
         # Scale all the adjusted deviations so that the mean is worth 1 but the worse stays 0...
         # using the lowest time's deviation from before the "similar times" fix!
@@ -296,8 +294,8 @@ class Run:
         if self.level and self._points > 0:
             self.level_name = game_category[1]  # Always 2nd of 3 items
             calc_level_count = (self.level_count or 0) + 1
-            # ILs leaderboards with mean under their fraction of a minute are ignored
-            if mean * calc_level_count < 60:
+            # ILs leaderboards with WR under their fraction of a minute are ignored
+            if wr_time * calc_level_count < 60:
                 self._points = 0
             else:
                 self._points /= calc_level_count
