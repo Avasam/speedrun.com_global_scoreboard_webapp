@@ -41,9 +41,9 @@ const inferRank = (players: Player[], score: number) => {
   if (lowerOrEqualPlayerFoundIndex < 0) return players.length
 
   const lowerOrEqualPlayerFound = sortedPlayers[lowerOrEqualPlayerFoundIndex]
-  if (lowerOrEqualPlayerFound.rank == null) return undefined
-  if (lowerOrEqualPlayerFound.score === score) return lowerOrEqualPlayerFound.rank
-  return lowerOrEqualPlayerFoundIndex + .5
+  return (lowerOrEqualPlayerFound.score === score && lowerOrEqualPlayerFound.rank)
+    ? lowerOrEqualPlayerFound.rank
+    : lowerOrEqualPlayerFoundIndex + 1
 }
 
 // Let's cheat! This is much simpler and more effective
