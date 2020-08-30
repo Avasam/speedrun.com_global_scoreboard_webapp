@@ -96,6 +96,7 @@ class Run:
             id_: str,
             primary_t: float,
             game: str,
+            game_name: str,
             category: str,
             variables=None,
             level: str = "",
@@ -104,9 +105,8 @@ class Run:
         self.id_ = id_
         self.primary_t = primary_t
         self.game = game
-        self.game_name = game
+        self.game_name = game_name
         self.category = category
-        self.category_name = category
         self.variables = variables if variables is not None else {}
         self.level = level
         self.level_name = level_name
@@ -235,18 +235,19 @@ class Run:
 
         # Give points, hard cap to 6 character
         self._points = min(exp(e_exponent) * 10 * length_bonus, 999.99)
-        # Set names
-        game_category = re.split(
-            "[/#]",
-            leaderboard["data"]["weblink"][leaderboard["data"]["weblink"].rindex("com/") + 4:]
+        # Set category name
+        self.category_name = re.sub(
+            r"((\d\d)$|Any)",
+            r"\1%",
+            leaderboard["data"]["weblink"]
+            .split('#')[1]
             .replace("_", " ")
-            .title())
-        self.game_name = game_category[0]  # Always first of 2-3 items
-        self.category_name = game_category[-1]  # Always last of 2-3 items
+            .replace("%2B", "+")
+            .title()
+        )
 
         # If the run is an Individual Level and worth looking at, set the level count and name
         if self.level and self._points > 0:
-            self.level_name = game_category[1]  # Always 2nd of 3 items
             calc_level_count = (self.level_count or 0) + 1
             # ILs leaderboards with WR under their fraction of a minute are ignored
             if wr_time * calc_level_count < 60:
@@ -302,6 +303,7 @@ class User:
                 run: Run = Run(pb["id"],
                                pb["times"]["primary_t"],
                                pb["game"]["data"]["id"],
+                               pb["game"]["data"]["names"]["international"],
                                pb["category"],
                                pb_subcategory_variables,
                                pb_level_id,
@@ -338,8 +340,7 @@ class User:
         if self._banned:
             return
 
-        url = \
-            "https://www.speedrun.com/api/v1/runs?user={user}&status=verified" \
+        url = "https://www.speedrun.com/api/v1/runs?user={user}&status=verified" \
             "&embed=level,game.levels,game.variables&max={pagesize}" \
             .format(user=self._id, pagesize=200)
         runs: List[BasicJSONType] = SrcRequest.get_paginated_response(url)["data"]
