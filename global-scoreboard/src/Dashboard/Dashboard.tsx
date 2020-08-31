@@ -2,12 +2,12 @@ import './Dashboard.css'
 import { Col, Container, Row } from 'react-bootstrap'
 import React, { useEffect, useRef, useState } from 'react'
 import Scoreboard, { ScoreboardRef } from './Scoreboard'
+import UpdateMessage, { renderScoreTable } from './UpdateMessage'
 import { apiDelete, apiGet, apiPost, apiPut } from '../fetchers/api'
 import { AlertProps } from 'react-bootstrap/Alert'
 import Configs from '../models/Configs'
 import Player from '../models/Player'
 import QuickView from './QuickView/QuickView'
-import UpdateMessage from './UpdateMessage'
 import UpdateRunnerForm from './UpdateRunnerForm'
 import UpdateRunnerResult from '../models/UpdateRunnerResult'
 
@@ -110,7 +110,7 @@ const Dashboard = (props: DashboardProps) => {
       })
       .then(result => {
         setAlertVariant(result.state)
-        setAlertMessage(result.message)
+        setAlertMessage(renderScoreTable(result.message))
         const newPlayers = [...players]
         const existingPlayerIndex = newPlayers.findIndex(player => player.userId === result.userId)
         const inferedRank = inferRank(newPlayers, result.score)

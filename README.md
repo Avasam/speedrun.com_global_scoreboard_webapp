@@ -33,13 +33,13 @@ The score is calculated by summing up every valid PB of a user according to a fo
 3. All runs not considered valid (w/o video/image verification or banned user) runs are removed from the leaderboard and can be considered as non-existant from now on.
 4. Remove the last 5% of the leaderboard
 5. 80th percentile soft cutoff: Find the time that's most often repeated in the leaderboard (at least thrice, after the 80th percentile) and cut off everything after that. This is for runs where there's a lot of similar times near the end of the leaderboard. We consider such times to be the a "soft maximum limit". (Either because ti's impossible to do worse, or because you have to go slow)  
-From this step onward, the amount of runners in the leaderboard will be reffered to as the "population". Except for step #5.3 where the lowest deviation is be taken from before the cutoff.
+From this step onward, the amount of runners in the leaderboard will be reffered to as the "population". Except for step #6.3 where the lowest deviation is be taken from before the cutoff.
 6. Generate a logaritmic curve that looks somewhat like below. Where the average time = 1 and the last run is worth 0  
 ![Curve Example](/assets/images/Curve%20example.jpg)
-    - 5.1. A signed standart deviation is obtained for all the runs
-    - 5.2. The deviation is adjusted so that the last run is worth 0 points. By adding the lowest (unsigned) deviation to the signed deviation
-    - 5.3. The deviation is then normalized so that the average time is worth 1 point and the last run is still worth 0 points. By dividing the adjusted deviation with the adjusted lowest deviation. Capped at π.
-    - 5.5. Points for a run are equal to: `e^(normalized_deviation * certainty_adjustment)`
+    - 6.1. A signed standart deviation is obtained for all the runs
+    - 6.2. The deviation is adjusted so that the last run is worth 0 points. By adding the lowest (unsigned) deviation to the signed deviation
+    - 6.3. The deviation is then normalized so that the average time is worth 1 point and the last run is still worth 0 points. By dividing the adjusted deviation with the adjusted lowest deviation. Capped at π.
+    - 6.4. Points for a run are equal to: `e^(normalized_deviation * certainty_adjustment)`
         - `certainty_adjustment = 1 - 1 / (population - 1)`
 7. The points for a run are then multiplied by a "length bonus", the decimal point is shifted to the right by 1 and is capped at 999.99
     - `length_bonus = 1 + (wr_time / TIME_BONUS_DIVISOR)`. This is to slightly bonify longuer runs which which usually require more time put in the game to achieve a similar level of execution

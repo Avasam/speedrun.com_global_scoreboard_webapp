@@ -4,6 +4,7 @@ import { Button } from 'react-bootstrap'
 import GenericModal from '../../GenericModal'
 import Player from '../../models/Player'
 import { apiGet } from '../../fetchers/api'
+import { renderScoreTable } from '../UpdateMessage'
 
 type PlayerScoreCellProps = {
   player: Player
@@ -41,7 +42,7 @@ const PlayerScoreCell = (props: PlayerScoreCellProps) => {
       >
         <div className="alert alert-success">
           {props.player.scoreDetails
-            ? props.player.scoreDetails
+            ? renderScoreTable(props.player.scoreDetails)
             : ('No details available. ' +
               `You can update ${props.player.name} (${props.player.userId}) to get more details about their runs.`)
           }

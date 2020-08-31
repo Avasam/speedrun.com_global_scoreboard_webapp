@@ -49,6 +49,18 @@ td:first-child{
   font-weight:bold;
 }
 
+table.scoreDetailsTable {
+  margin: auto;
+  border: 1px solid;
+  text-align: left;
+}
+table.scoreDetailsTable td {
+  border-bottom: 1px dotted;
+}
+table.scoreDetailsTable th {
+  border-bottom: 1px solid;
+}
+
 /*-----------------------*\
 | Bootstrap redifinitions |
 \*-----------------------*/
