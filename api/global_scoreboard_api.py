@@ -6,11 +6,10 @@ from api.api_wrappers import authentication_required
 from datetime import datetime, timedelta
 from flask import Blueprint, jsonify, request
 from models.core_models import Player
-from models.models_utils import map_to_dto
 from sqlalchemy import exc
 from typing import cast, Dict, Optional
 from services.user_updater import get_updated_user
-from services.utils import UnderALotOfPressure, UserUpdaterError
+from services.utils import map_to_dto, UnderALotOfPressure, UserUpdaterError
 import configs
 import traceback
 

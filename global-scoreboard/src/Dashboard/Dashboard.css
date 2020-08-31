@@ -49,20 +49,30 @@ td:first-child{
   font-weight:bold;
 }
 
+table.scoreDetailsTable {
+  margin: auto;
+  border: 1px solid;
+  text-align: left;
+}
+table.scoreDetailsTable td {
+  border-bottom: 1px dotted;
+}
+table.scoreDetailsTable th {
+  border-bottom: 1px solid;
+}
+
 /*-----------------------*\
 | Bootstrap redifinitions |
 \*-----------------------*/
 .alert {
   text-align: center;
+  white-space: pre-wrap;
 }
 
 .row {
   margin: 0;
 }
 
-.alert {
-  white-space: pre-wrap;
-}
 /* This is only to show the results */
 .alert.alert-success {
   font-family: monospace;

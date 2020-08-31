@@ -3,7 +3,8 @@ from datetime import datetime, timedelta
 from math import ceil, exp, floor, pi
 from models.game_search_models import GameValues
 from services.utils import get_file, UserUpdaterError, start_and_wait_for_threads
-from services.user_updater_helpers import extract_valid_personal_bests, get_subcategory_variables
+from services.user_updater_helpers import BasicJSONType, extract_valid_personal_bests, get_probability_terms, \
+    get_subcategory_variables, keep_runs_before_soft_cutoff, keep_last_full_game_runs, MIN_LEADERBOARD_SIZE
 from threading import Thread
 from typing import Dict, List, Optional, Tuple
 from urllib import parse
@@ -11,8 +12,8 @@ import configs
 import re
 import traceback
 
-MIN_LEADERBOARD_SIZE = 3  # This is just to optimize as the formula gives 0 points to leaderboards size < 3
 TIME_BONUS_DIVISOR = 3600 * 12  # 12h (1/2 day) for +100%
+MAX_RUNS_COUNT = 1000
 
 memoized_requests: Dict[str, SrcRequest] = {}
 
@@ -43,22 +44,29 @@ class SrcRequest():
             return result
 
     @staticmethod
-    def get_paginated_response(url: str, max_results: Optional[int] = None) -> dict:
+    def get_paginated_response(url: str) -> dict:
         summed_results = {"data": []}
         next_url = url
         while next_url:
-            # First ensure the next request won't being us above max_results
-            if max_results:
-                query_params = parse.parse_qs(parse.urlparse(next_url).query)
-                max_param = query_params.get('max')
-                offset_param = query_params.get('offset')
-                results_per_page = int(max_param[0]) if max_param else 0
-                next_offset = int(offset_param[0]) if offset_param else 0
-                if results_per_page + next_offset > max_results:
-                    break
+            max_param = parse.parse_qs(parse.urlparse(next_url).query).get('max')
+            results_per_page = int(max_param[0]) if max_param else 20
 
-            # Get the next page of results and combine it with previous ones
-            result = get_file(next_url)
+            # Get the next page of results ...
+            while True:
+                try:
+                    result = get_file(next_url)
+                    break
+                # If it failed, try again with a smaller page
+                except UserUpdaterError as exception:
+                    if exception.args[0]['error'] != "HTTPError 500" or results_per_page < 20:
+                        raise exception
+                    halved_results_per_page = floor(results_per_page / 2)
+                    print("SRC returned 500 for a paginated request. "
+                          f"Halving the max results per page from {results_per_page} to {halved_results_per_page}")
+                    next_url = next_url.replace(f"max={results_per_page}", f"max={halved_results_per_page}")
+                    results_per_page = halved_results_per_page
+
+            # ... and combine it with previous ones
             next_url = next((link["uri"] for link in result["pagination"]["links"] if link["rel"] == "next"), None)
             summed_results["data"] += result["data"]
 
@@ -88,6 +96,7 @@ class Run:
             id_: str,
             primary_t: float,
             game: str,
+            game_name: str,
             category: str,
             variables=None,
             level: str = "",
@@ -96,9 +105,8 @@ class Run:
         self.id_ = id_
         self.primary_t = primary_t
         self.game = game
-        self.game_name = game
+        self.game_name = game_name
         self.category = category
-        self.category_name = category
         self.variables = variables if variables is not None else {}
         self.level = level
         self.level_name = level_name
@@ -183,57 +191,17 @@ class Run:
         valid_runs = sorted(valid_runs[:int(original_population * 0.95) or None],
                             key=lambda r: r["run"]["times"]["primary_t"])
 
-        # TODO: This is not optimized
-        pre_fix_worst_time = valid_runs[-1]["run"]["times"]["primary_t"]
-        # TODO: Extract "cutoff everything after soft cutoff" to its own function
-        # Find the time that's most often repeated in the leaderboard (after the 80th percentile)
-        # and cut off everything after that
-        cut_off_80th_percentile: int = valid_runs[int(len(valid_runs)*0.8)]["run"]["times"]["primary_t"]
-        count: int = 0
-        most_repeated_time_pos: int = 0
-        most_repeated_time_count: int = 0
-        last_value: int = 0
-        i: int = len(valid_runs)
-        # Go in reverse this way we can break at the percentile
-        for run in reversed(valid_runs):
-            value: int = run["run"]["times"]["primary_t"]
-            if value == last_value:
-                count += 1
-            else:
-                if count >= most_repeated_time_count:
-                    most_repeated_time_count = count
-                    most_repeated_time_pos = i
-                count = 0
-            last_value = value
-
-            # We hit the 80th percentile, there's no more to be analyzed
-            # If the most repeated time IS the 80th percentile, still remove it (< not <=)
-            if value < cut_off_80th_percentile:
-                # Have the most repeated time repeat at least a certain amount
-                if most_repeated_time_count > MIN_LEADERBOARD_SIZE:
-                    # Actually keep the last one (+1) as it'll be worth 0 points and used for other calculations
-                    del valid_runs[most_repeated_time_pos+1:]
-                break
-            i -= 1
-
-        # Second iteration: maths!
-        mean: float = 0.0
-        sigma: float = 0.0
-        population: int = 0
-        for run in valid_runs:
-            value = run["run"]["times"]["primary_t"]
-            population += 1
-            mean_temp = mean
-            mean += (value - mean_temp) / population
-            sigma += (value - mean_temp) * (value - mean)
-
-        # CHECK: Full level leaderboards with mean under a minute are ignored
-        if mean < 60 and not self.level:
+        # CHECK: Full level leaderboards with WR under a minute are ignored
+        wr_time = valid_runs[0]["run"]["times"]["primary_t"]
+        if wr_time < 60 and not self.level:
             return
 
-        self._mean_time = mean
-        wr_time = valid_runs[0]["run"]["times"]["primary_t"]
-        standard_deviation = (sigma / population) ** 0.5
+        # Find the time that's most often repeated in the leaderboard
+        # (after the 80th percentile) and cut off everything after that
+        pre_cutoff_worst_time = valid_runs[-1]["run"]["times"]["primary_t"]
+        valid_runs = keep_runs_before_soft_cutoff(valid_runs)
+
+        mean, standard_deviation, population = get_probability_terms(valid_runs)
 
         # CHECK: All runs must not have the exact same time
         if standard_deviation <= 0:
@@ -251,13 +219,10 @@ class Run:
         if adjusted_deviation <= 0:
             return
 
-        # Set game search data
-        self._is_wr_time = wr_time == self.primary_t
-
         # Scale all the adjusted deviations so that the mean is worth 1 but the worse stays 0...
         # using the lowest time's deviation from before the "similar times" fix!
         # (runs not affected by the prior fix won't see any difference)
-        adjusted_lowest_deviation = pre_fix_worst_time - mean
+        adjusted_lowest_deviation = pre_cutoff_worst_time - mean
         normalized_deviation = adjusted_deviation / adjusted_lowest_deviation
 
         # More people means more accurate relative time and more optimised/hard to reach low times
@@ -270,24 +235,29 @@ class Run:
 
         # Give points, hard cap to 6 character
         self._points = min(exp(e_exponent) * 10 * length_bonus, 999.99)
-        # Set names
-        game_category = re.split(
-            "[/#]",
-            leaderboard["data"]["weblink"][leaderboard["data"]["weblink"].rindex("com/") + 4:]
+        # Set category name
+        self.category_name = re.sub(
+            r"((\d\d)$|Any)",
+            r"\1%",
+            leaderboard["data"]["weblink"]
+            .split('#')[1]
             .replace("_", " ")
-            .title())
-        self.game_name = game_category[0]  # Always first of 2-3 items
-        self.category_name = game_category[-1]  # Always last of 2-3 items
+            .replace("%2B", "+")
+            .title()
+        )
 
         # If the run is an Individual Level and worth looking at, set the level count and name
         if self.level and self._points > 0:
-            self.level_name = game_category[1]  # Always 2nd of 3 items
             calc_level_count = (self.level_count or 0) + 1
-            # ILs leaderboards with mean under their fraction of a minute are ignored
-            if mean * calc_level_count < 60:
+            # ILs leaderboards with WR under their fraction of a minute are ignored
+            if wr_time * calc_level_count < 60:
                 self._points = 0
             else:
                 self._points /= calc_level_count
+
+        # Set game search data
+        self._is_wr_time = wr_time == self.primary_t
+        self._mean_time = mean
 
 
 class User:
@@ -333,6 +303,7 @@ class User:
                 run: Run = Run(pb["id"],
                                pb["times"]["primary_t"],
                                pb["game"]["data"]["id"],
+                               pb["game"]["data"]["names"]["international"],
                                pb["category"],
                                pb_subcategory_variables,
                                pb_level_id,
@@ -367,29 +338,24 @@ class User:
 
         self._points = 0
         if self._banned:
-
             return
 
-        pagesize = 200
-        maxsize = pagesize * 5
-        url = \
-            "https://www.speedrun.com/api/v1/runs?user={user}&status=verified" \
+        url = "https://www.speedrun.com/api/v1/runs?user={user}&status=verified" \
             "&embed=level,game.levels,game.variables&max={pagesize}" \
-            .format(user=self._id, pagesize=pagesize)
-        runs = SrcRequest.get_paginated_response(url, maxsize)
+            .format(user=self._id, pagesize=200)
+        runs: List[BasicJSONType] = SrcRequest.get_paginated_response(url)["data"]
+        runs = extract_valid_personal_bests(runs)
 
-        # TODO: BIG MEGA HACK / PATCH. Let's try to work around this issue ASAP.
-        runs_count = len(runs["data"])
-        if runs_count >= maxsize:
-            self._point_distribution_str = "\nThis user has too many runs. " \
-                f"Only the last {runs_count} have been counted." \
+        original_runs_count = len(runs)
+        if original_runs_count >= MAX_RUNS_COUNT:
+            runs = keep_last_full_game_runs(runs, MAX_RUNS_COUNT)
+
+            self._point_distribution_str = f"\nOnly kept the last {len(runs)} runs (out of {original_runs_count})." \
                 "\nDue to current limitations with PythonAnywhere and the speedrun.com api, " \
-                "fully updating such a user is nearly impossible. " \
-                "I have a work in progress solution for this issue, but it will take time. " \
-                "\nSorry for the inconvenience."
+                "fully updating such a user is nearly impossible."
 
         threads = [Thread(target=set_points_thread, args=(run,))
-                   for run in extract_valid_personal_bests(runs["data"])]
+                   for run in runs]
         start_and_wait_for_threads(threads)
 
         # Sum up the runs' score
@@ -399,9 +365,10 @@ class User:
 
         for run in counted_runs:
             self._points += run._points
-            run_str = ("{game} - {category}{level}".format(game=run.game_name,
-                                                           category=run.category_name,
-                                                           level=f" ({run.level_name})" if run.level_name else ""))
+            run_str = "{game} - {category}{level}".format(
+                game=run.game_name,
+                category=run.category_name,
+                level=f" ({run.level_name})" if run.level_name else "")
             run_pts = ceil((run._points * 100)) / 100
             run_str_lst.append((run_str, run_pts))
             biggest_str_length = max(biggest_str_length, len(run_str))

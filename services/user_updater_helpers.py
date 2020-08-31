@@ -2,6 +2,7 @@ from typing import Dict, List, Any
 
 GAMETYPE_MULTI_GAME = "rj1dy1o8"
 BasicJSONType = Dict[str, Any]
+MIN_LEADERBOARD_SIZE = 3  # This is just to optimize as the formula gives 0 points to leaderboards size < 3
 
 
 def extract_valid_personal_bests(runs: List[BasicJSONType]) -> List[BasicJSONType]:
@@ -27,7 +28,8 @@ def extract_valid_personal_bests(runs: List[BasicJSONType]) -> List[BasicJSONTyp
             best_know_runs[identifier] = run
 
     for run in runs:
-        if GAMETYPE_MULTI_GAME not in run["game"]["data"]["gametypes"] \
+        if (not run["level"]["data"] or run["times"]["primary_t"] >= 60) \
+                and GAMETYPE_MULTI_GAME not in run["game"]["data"]["gametypes"] \
                 and run["category"] \
                 and run.get("videos"):
             keep_if_pb(run)
@@ -54,3 +56,60 @@ def get_subcategory_variables(run: BasicJSONType) -> Dict[str, Dict[str, str]]:
         for pb_var_id, pb_var_value in run["values"].items()
         if pb_var_id in game_subcategory_ids
     }
+
+
+def keep_last_full_game_runs(runs: List[BasicJSONType], max: int):
+    return sorted(
+        filter(
+            lambda run: not run["level"]["data"],
+            runs),
+        key=lambda run: run["date"],
+        reverse=True
+    )[:max]
+
+
+def get_probability_terms(pbs: List[BasicJSONType]):
+    mean: float = 0.0
+    sigma: float = 0.0
+    population: int = 0
+    for pb in pbs:
+        value = pb["run"]["times"]["primary_t"]
+        population += 1
+        mean_temp = mean
+        mean += (value - mean_temp) / population
+        sigma += (value - mean_temp) * (value - mean)
+    standard_deviation = (sigma / population) ** 0.5
+
+    return mean, standard_deviation, population
+
+
+def keep_runs_before_soft_cutoff(runs: List[BasicJSONType], ):
+    i: int = len(runs)
+    cut_off_80th_percentile: int = runs[int(i*0.8)]["run"]["times"]["primary_t"]
+    count: int = 0
+    most_repeated_time_lowest_pos: int = 0
+    most_repeated_time_count: int = 0
+    previous_value: int = 0
+    # Go in reverse this way we can break at the percentile
+    for run in reversed(runs):
+        value: int = run["run"]["times"]["primary_t"]
+        if value == previous_value:
+            count += 1
+        else:
+            if count > most_repeated_time_count:
+                most_repeated_time_count = count
+                most_repeated_time_lowest_pos = i + 1
+            count = 0
+        previous_value = value
+
+        # We hit the 80th percentile, there's no more to be analyzed
+        # If the most repeated time IS the 80th percentile, still remove it (< not <=)
+        if value < cut_off_80th_percentile:
+            # Have the most repeated time repeat at least a certain amount
+            if most_repeated_time_count > MIN_LEADERBOARD_SIZE:
+                # Actually keep the last one as it'll be worth 0 points and used for other calculations
+                return runs[:most_repeated_time_lowest_pos]
+            break
+        i -= 1
+
+    return runs

@@ -22,7 +22,7 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
 
     try:
         user = User(p_user_id)
-        print(f"{SEPARATOR}\n{user._name}")  # debug_str
+        print(f"{SEPARATOR}\n{user._name}")
 
         try:
             user.set_code_and_name()
@@ -53,8 +53,7 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
 
                 user.set_points(threads_exceptions)
                 if not threads_exceptions:
-
-                    print(f"\nLooking for {user._id}")  # debug_str
+                    print(f"\nLooking for {user._id}")
                     timestamp = strftime("%Y-%m-%d %H:%M")
 
                     # If user already exists, update the database entry

@@ -6,7 +6,7 @@ from api.api_wrappers import authentication_required
 from flask import Blueprint, jsonify, request
 from models.core_models import Player
 from models.tournament_scheduler_models import Schedule, TimeSlot
-from models.models_utils import map_to_dto
+from services.utils import map_to_dto
 from typing import Any, Dict, List, Optional, Tuple
 
 api = Blueprint('tournament_scheduler_api', __name__)
