@@ -28,7 +28,7 @@ The score is calculated by summing up every valid PB of a user according to a fo
     - Is part of a speedrun leaderboard, not a scoreboard
     - After step #5, not all runs have the same time
     - After step #5, the WR time is not under a minute
-        - ILs' WR should not be under their fraction of a minute (see step #7)
+        - ILs' WR should not be under their fraction of a minute (see step #8)
 2. Due to current limitations with PythonAnywhere and the speedrun.com api, only up to the last 1000 runs will be kept.
 3. All runs not considered valid (w/o video/image verification or banned user) runs are removed from the leaderboard and can be considered as non-existant from now on.
 4. Remove the last 5% of the leaderboard
