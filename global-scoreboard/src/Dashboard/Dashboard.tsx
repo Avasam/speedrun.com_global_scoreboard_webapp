@@ -93,7 +93,7 @@ const Dashboard = (props: DashboardProps) => {
 
   const handleOnUpdateRunner = (runnerNameOrId: string) => {
     setAlertVariant('info')
-    setAlertMessage(`Updating "${runnerNameOrId}". This may take up to 5 mintues, depending on the amount of runs to analyse. Please Wait...`)
+    setAlertMessage(`Updating "${runnerNameOrId}". This may take up to 5 minutes, depending on the amount of runs to analyse. Please Wait...`)
     if (window.process.env.REACT_APP_BYPASS_UPDATE_RESTRICTIONS !== 'true' &&
       !validateRunnerNotRecentlyUpdated(runnerNameOrId, players)) {
       setAlertVariant('warning')
