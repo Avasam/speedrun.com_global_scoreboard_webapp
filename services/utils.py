@@ -44,7 +44,7 @@ def get_file(p_url: str, p_headers: Dict[str, Any] = None) -> dict:
     while True:
         try:
             raw_data = session.get(p_url, headers=p_headers)
-        except (ConnectionResetError, requests.exceptions.ConnectionResetError, requests.ConnectionResetError) as exception:  # Connexion error
+        except ConnectionResetError as exception:  # Connexion error
             print('ConnectionResetError is:', exception.__class__.__name__)
             print(traceback.format_exc())
             print(f"WARNING: {exception.args[0]}. Retrying in {HTTP_ERROR_RETRY_DELAY_MIN} seconds.")
