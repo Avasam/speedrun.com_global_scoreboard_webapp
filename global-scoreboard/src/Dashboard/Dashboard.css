@@ -57,6 +57,9 @@ table.scoreDetailsTable {
 table.scoreDetailsTable td {
   border-bottom: 1px dotted;
 }
+table.scoreDetailsTable td:last-child {
+  text-align: right;
+}
 table.scoreDetailsTable th {
   border-bottom: 1px solid;
 }
