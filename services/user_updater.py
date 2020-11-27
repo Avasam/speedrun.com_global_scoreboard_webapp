@@ -275,7 +275,7 @@ def __set_run_points(self) -> None:
         return
 
     # Scale all the adjusted deviations so that the mean is worth 1 but the worse stays 0...
-    # using the lowest time's deviation from before the "similar times" fix!
+    # using the lowest time's deviation from before the "repeated times" fix!
     # (runs not affected by the prior fix won't see any difference)
     adjusted_lowest_deviation = pre_cutoff_worst_time - mean
     normalized_deviation = adjusted_deviation / adjusted_lowest_deviation
@@ -283,13 +283,15 @@ def __set_run_points(self) -> None:
     # More people means more accurate relative time and more optimised/hard to reach low times
     # This function would equal 0 if population = MIN_LEADERBOARD_SIZE - 1
     certainty_adjustment = 1 - 1 / (population - MIN_LEADERBOARD_SIZE + 2)
-    # Cap the exponent to π
+    # Cap the deviation to π
     e_exponent = min(normalized_deviation, pi) * certainty_adjustment
     # Bonus points for long games
     length_bonus = 1 + (wr_time / TIME_BONUS_DIVISOR)
 
     # Give points, hard cap to 6 character
-    self._points = min(exp(e_exponent) * 10 * length_bonus, 999.99)
+    self._points = min((exp(e_exponent) - 1) * 10 * length_bonus, 999.99)
+    self._points *= self.level_fraction
+
     # Set category name
     self.category_name = re.sub(
         r"((\d\d)$|Any)(?!%)",
@@ -299,8 +301,6 @@ def __set_run_points(self) -> None:
         .replace("_", " ")
         .title()
     )
-
-    self._points *= self.level_fraction
 
     # Set game search data
     self._is_wr_time = wr_time == self.primary_t
