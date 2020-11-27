@@ -1,6 +1,8 @@
-import { Alert, ProgressBar } from 'react-bootstrap'
+import { Alert, OverlayTrigger, ProgressBar, Tooltip } from 'react-bootstrap'
 import React, { useEffect, useState } from 'react'
 import { AlertProps } from 'react-bootstrap/Alert'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faInfoCircle } from '@fortawesome/free-solid-svg-icons'
 
 type UpdateMessageProps = {
   variant: AlertProps['variant']
@@ -11,8 +13,26 @@ type UpdateMessageProps = {
 const progressBarTickInterval = 16 // 60 FPS
 const minutes5 = 5_000 * 60
 let progressTimer: NodeJS.Timeout
+let position: number
+
+const renderRow = (rows: any[]) => {
+  return rows.map((row, rowi) =>
+    <tr key={`row${rowi}`}>
+      <td>
+        {Math.round((position += row.levelFraction) * 10) / 10}
+      </td>
+      <td>
+        {row.gameName} - {row.categoryName}{row.levelName ? ` (${row.levelName})` : ''}
+      </td>
+      <td>
+        {(row.points as number).toFixed(2)}
+      </td>
+    </tr>
+  )
+}
 
 export const renderScoreTable = (baseString: string) => {
+  position = 0
   const allElements = baseString
     .split('\n')
     .map(row =>
@@ -24,27 +44,78 @@ export const renderScoreTable = (baseString: string) => {
     .slice(0, firstTableElement)
     .reduce((prev, curr) => prev + `${curr[0]}\n`, '')
     .trim()
+
+  // Note: TableElements is used for rendering old string formatted table
   const tableElements = allElements.slice(firstTableElement)
-  console.log(topMessage)
-  console.log(tableElements)
+
+  let topRuns: any[] = []
+  let lesserRuns: any[] = []
+
+  if (tableElements.length === 1 && tableElements[0].length === 1) {
+    try {
+      const scoreDetails = JSON.parse(tableElements[0][0])
+      topRuns = scoreDetails[0]
+      lesserRuns = scoreDetails[1]
+    } catch {
+      // suppress
+    }
+  }
 
   return <>
-    {topMessage}
+    <div>{topMessage}</div>
+    {topRuns.length > 0 && <label>Top 100 runs:</label>}
     <table className="scoreDetailsTable">
-      <tr>
-        <th>{tableElements[0][0]}</th>
-        <th>{tableElements[0][1]}</th>
-      </tr>
-      {tableElements.slice(2).map((row, rowi) =>
-        <tr key={`row${rowi}`}>
-          {row.map((element, elementi) =>
-            <td key={`element${elementi}`}>
-              {element}
-            </td>
-          )}
+      <thead>
+        <tr>
+          <th>#{topRuns.length > 0 && <OverlayTrigger
+            placement="bottom"
+            overlay={
+              <Tooltip
+                id="levelFractionInfo"
+              >Individual Levels (IL) are weighted and scored to a fraction of a Full Game run. See the About page for a complete explanation.</Tooltip>
+            }
+          >
+            <FontAwesomeIcon icon={faInfoCircle} />
+          </OverlayTrigger>}</th>
+          <th>Game - Category (Level)</th>
+          <th>Points</th>
         </tr>
-      )}
-    </table>
+      </thead>
+      {topRuns.length > 0
+        ? <tbody>
+          {renderRow(topRuns)}
+        </tbody>
+        : <tbody>
+          {/* Note: TableElements is used for rendering old string formatted table */}
+          {tableElements.slice(2).map((row, rowi) =>
+            <tr key={`row${rowi}`}>
+              <td>{rowi + 1}</td>
+              {row.map((element, elementi) =>
+                <td key={`element${elementi}`}>
+                  {element}
+                </td>
+              )}
+            </tr>
+          )}
+        </tbody>
+      }
+    </table >
+    {lesserRuns.length > 0 && <>
+      <br />
+      <label>Other runs:</label>
+      <table className="scoreDetailsTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Game - Category (Level)</th>
+            <th>Points</th>
+          </tr>
+        </thead>
+        <tbody>
+          {renderRow(lesserRuns)}
+        </tbody>
+      </table>
+    </>}
   </>
 }
 

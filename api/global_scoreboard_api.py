@@ -24,8 +24,6 @@ def get_all_players():
 @api.route('/players/<id>/score-details', methods=('GET',))
 def get_player_score_details(id: str):
     player = Player.get(id)
-    print(player)
-    print(player.score_details)
     if player:
         return player.score_details or ""
     else:
@@ -41,11 +39,9 @@ def update_player(name_or_id: str):
             return __do_update_player(name_or_id)
     except UserUpdaterError as exception:
         error_message = "Error: {}\n{}".format(exception.args[0]["error"], exception.args[0]["details"])
-        print(f"\n{error_message}")
         return error_message, 424
     except Exception:
         error_message = "Error: Unknown\n{}".format(traceback.format_exc())
-        print(f"\n{error_message}")
         return error_message, 500
 
 

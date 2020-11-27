@@ -275,7 +275,7 @@ class Player(db.Model):
     def get_id(self):
         return self.user_id
 
-    def to_dto(self) -> dict[str, Union[str, int, datetime]]:
+    def to_dto(self) -> dict[str, Union[str, int, datetime, None]]:
         return {
             'userId': self.user_id,
             'name': self.name,
