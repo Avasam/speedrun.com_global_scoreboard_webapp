@@ -74,12 +74,11 @@ class Run:
     variables = {}
     level: str = ""
     level_name: str = ""
-    level_count: int = 0
+    level_fraction: float = 1
     _points: float = 0
     # This below section is for game search
     _mean_time: float = 0
     _is_wr_time: bool = False
-    _platform: Optional[str] = None
 
     # TODO: Reanable sonarlint max args rule
     def __init__(
@@ -101,10 +100,10 @@ class Run:
         self.variables = variables if variables is not None else {}
         self.level = level
         self.level_name = level_name
-        self.level_count = level_count
+        self.level_fraction = 1 / (level_count + 1) if level else 1
 
     def __str__(self) -> str:
-        level_str = f"Level/{self.level_count}: {self.level}, " if self.level else ""
+        level_str = f"Level/{self.level_fraction}: {self.level}, " if self.level else ""
         return f"Run: <Game: {self.game}, " \
                f"Category: {self.category}, {level_str}{self.variables} {ceil(self._points * 100) / 100}>"
 
@@ -125,10 +124,11 @@ class Run:
 
     def to_dto(self) -> dict[str, Union[str, float]]:
         return {
-            'game_name': self.game_name,
-            'category_name': self.category_name,
-            'level_name': self.level_name,
+            'gameName': self.game_name,
+            'categoryName': self.category_name,
+            'levelName': self.level_name,
             'points': self._points,
+            'levelFraction': self.level_fraction
         }
 
 

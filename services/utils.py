@@ -6,7 +6,6 @@ from typing import Any, cast, Dict, List, Optional, Union
 import json
 import requests
 import simplejson
-import traceback
 
 HTTP_RETRYABLE_ERRORS = [401, 420, 502]
 HTTP_ERROR_RETRY_DELAY_MIN = 5
@@ -44,27 +43,15 @@ def get_file(p_url: str, p_headers: Dict[str, Any] = None) -> dict:
     while True:
         try:
             raw_data = session.get(p_url, headers=p_headers)
-        except ConnectionResetError as exception:  # Connexion error
-            print('ConnectionResetError is:', exception.__class__.__name__)
-            print(traceback.format_exc())
-            print(f"WARNING: {exception.args[0]}. Retrying in {HTTP_ERROR_RETRY_DELAY_MIN} seconds.")
-            sleep(HTTP_ERROR_RETRY_DELAY_MIN)
-            raise exception
-            # continue
-        except requests.exceptions.ConnectionError as exception:  # Connexion error
-            print('ConnectionError is:', exception.__class__.__name__)
-            print(traceback.format_exc())
-            raise UserUpdaterError({"error": "Can't establish connexion to speedrun.com", "details": exception})
+        except (ConnectionResetError, requests.exceptions.ConnectionError) as exception:  # Connexion error
+            raise UserUpdaterError({
+                "error": "Can't establish connexion to speedrun.com. "
+                f"Please try again ({exception.__class__.__name__})",
+                "details": exception,
+            })
 
         try:
             json_data = raw_data.json()
-        except ConnectionResetError as exception:  # Connexion error
-            print('2nd ConnectionResetError is:', exception.__class__.__name__)
-            print(traceback.format_exc())
-            print(f"WARNING: {exception.args[0]}. Retrying in {HTTP_ERROR_RETRY_DELAY_MIN} seconds.")
-            sleep(HTTP_ERROR_RETRY_DELAY_MIN)
-            raise exception
-            # continue
         # Didn't receive a JSON file ...
         # Hack: casting as any due to missing type definition
         except (json.decoder.JSONDecodeError, cast(Any, simplejson).scanner.JSONDecodeError) as exception:

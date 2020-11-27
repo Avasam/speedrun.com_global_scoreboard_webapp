@@ -10,7 +10,7 @@ MIN_SAMPLE_SIZE = 100
 def extract_valid_personal_bests(runs: List[BasicJSONType]) -> List[BasicJSONType]:
     """
     Check if it's a valid run:
-    - is over a minute (or an IL)
+    - is over a minute (or an IL, we don't have access to the IL's fraction yet)
     - not a "multi-game" gametype
     - has a category
     - has video verification
@@ -40,15 +40,17 @@ def extract_valid_personal_bests(runs: List[BasicJSONType]) -> List[BasicJSONTyp
     return list(best_know_runs.values())
 
 
-def extract_sorted_valid_runs_from_leaderboard(leaderboard: BasicJSONType) -> List[BasicJSONType]:
+def extract_sorted_valid_runs_from_leaderboard(
+        leaderboard: BasicJSONType,
+        level_fraction: float) -> List[BasicJSONType]:
     """
-    Check if the run is vali:
+    Check if the run is valid:
     - none of the players are banned
     - place is at least 1
     - has video verification
 
-    Check if the leaderboard if valid:
-    - WR is over a minute (or an IL)
+    Check if the leaderboard is valid:
+    - WR is over its fraction of a minute
     - has more than MIN_LEADERBOARD_SIZE players
     - not a scoreboard
 
@@ -56,8 +58,8 @@ def extract_sorted_valid_runs_from_leaderboard(leaderboard: BasicJSONType) -> Li
     """
     wr = leaderboard["runs"][0]["run"]
     wr_time = wr["times"]["primary_t"]
-    if (not wr["level"] and wr_time < 60) \
-            or len(leaderboard["runs"]) < MIN_LEADERBOARD_SIZE:
+    # Note: If needed in the future, level_fraction could be extracted from the leaderboard data
+    if wr_time < 60 * level_fraction or len(leaderboard["runs"]) < MIN_LEADERBOARD_SIZE:
         return []
 
     is_board_known_speedrun = False
@@ -164,11 +166,17 @@ def keep_runs_before_soft_cutoff(runs: List[BasicJSONType], ):
 
 
 def extract_top_runs_and_score(runs: List[Run]) -> Tuple[List[Run], List[Run]]:
-    # def level_fraction(run: Run):
-    #     if run.level:
-    #         return ((run.level_count or 0) + 1) * run._points
-    #     return run._points
+    top_runs, lesser_runs = [], []
+    position = 0
 
-    # runs.sort(key=level_fraction, reverse=True)
-    # return runs[:MIN_SAMPLE_SIZE], runs[MIN_SAMPLE_SIZE:]
-    return runs, []
+    def is_top_run(run: Run):
+        nonlocal position
+        if position + run.level_fraction <= MIN_SAMPLE_SIZE:
+            position += run.level_fraction
+            return True
+
+    runs.sort(key=lambda r: r._points / r.level_fraction, reverse=True)
+    for run in runs:
+        (top_runs if is_top_run(run) else lesser_runs).append(run)
+
+    return top_runs, lesser_runs

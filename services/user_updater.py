@@ -11,6 +11,7 @@ from services.user_updater_helpers import BasicJSONType, extract_valid_personal_
     get_subcategory_variables, keep_runs_before_soft_cutoff, keep_last_full_game_runs, MIN_LEADERBOARD_SIZE, \
     extract_top_runs_and_score, extract_sorted_valid_runs_from_leaderboard
 from services.utils import map_to_dto, SpeedrunComError, start_and_wait_for_threads, UserUpdaterError
+from urllib.parse import unquote
 import configs
 import httplib2
 import json
@@ -169,9 +170,6 @@ def __set_user_points(user: User) -> None:
                            len(pb["game"]["data"]["levels"]["data"]))
             __set_run_points(run)
 
-            # Set game search data
-            run._platform = pb["system"]["platform"]
-
             # If a category has already been counted, only keep the one that's worth the most.
             # This can happen in leaderboards with coop runs or subcategories.
             if run._points > 0:
@@ -190,7 +188,7 @@ def __set_user_points(user: User) -> None:
                     run_id=run.id_,
                     game_id=run.game,
                     category_id=run.category,
-                    platform_id=run._platform,
+                    platform_id=pb["system"]["platform"],
                     wr_time=floor(run.primary_t),
                     wr_points=floor(run._points),
                     mean_time=floor(run._mean_time),
@@ -242,7 +240,7 @@ def __set_run_points(self) -> None:
         url += "&var-{id}={value}".format(id=var_id, value=var_value)
     leaderboard = SrcRequest.get_cached_response_or_new(url)
 
-    valid_runs = extract_sorted_valid_runs_from_leaderboard(leaderboard["data"])
+    valid_runs = extract_sorted_valid_runs_from_leaderboard(leaderboard["data"], self.level_fraction)
     original_population = len(valid_runs)
 
     # CHECK: Avoid useless computation and errors
@@ -302,14 +300,7 @@ def __set_run_points(self) -> None:
         .title()
     )
 
-    # If the run is an Individual Level and worth looking at, set the level count and name
-    if self.level and self._points > 0:
-        calc_level_count = (self.level_count or 0) + 1
-        # ILs leaderboards with WR under their fraction of a minute are ignored
-        if wr_time * calc_level_count < 60:
-            self._points = 0
-        else:
-            self._points /= calc_level_count
+    self._points *= self.level_fraction
 
     # Set game search data
     self._is_wr_time = wr_time == self.primary_t
