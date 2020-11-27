@@ -110,14 +110,6 @@ def get_subcategory_variables(run: BasicJSONType) -> Dict[str, Dict[str, str]]:
     }
 
 
-def keep_last_full_game_runs(runs: List[BasicJSONType], max: int):
-    return sorted(
-        [run for run in runs if not run["level"]["data"]],
-        key=lambda run: run["date"],
-        reverse=True
-    )[:max]
-
-
 def get_probability_terms(pbs: List[BasicJSONType]):
     mean: float = 0.0
     sigma: float = 0.0

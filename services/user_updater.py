@@ -8,7 +8,7 @@ from time import strftime
 from typing import Dict, List, Union
 from threading import Thread
 from services.user_updater_helpers import BasicJSONType, extract_valid_personal_bests, get_probability_terms, \
-    get_subcategory_variables, keep_runs_before_soft_cutoff, keep_last_full_game_runs, MIN_LEADERBOARD_SIZE, \
+    get_subcategory_variables, keep_runs_before_soft_cutoff, MIN_LEADERBOARD_SIZE, \
     extract_top_runs_and_score, extract_sorted_valid_runs_from_leaderboard
 from services.utils import map_to_dto, SpeedrunComError, start_and_wait_for_threads, UserUpdaterError
 from urllib.parse import unquote
@@ -20,7 +20,6 @@ import requests
 import traceback
 
 TIME_BONUS_DIVISOR = 3600 * 12  # 12h (1/2 day) for +100%
-MAX_RUNS_COUNT = 1000
 SEPARATOR = "-" * 64
 
 
@@ -208,14 +207,6 @@ def __set_user_points(user: User) -> None:
         .format(user=user._id, pagesize=200)
     runs: List[BasicJSONType] = SrcRequest.get_paginated_response(url)["data"]
     runs = extract_valid_personal_bests(runs)
-
-    original_runs_count = len(runs)
-    if original_runs_count >= MAX_RUNS_COUNT:
-        runs = keep_last_full_game_runs(runs, MAX_RUNS_COUNT)
-
-        user._point_distribution_str = f"\nOnly kept the last {len(runs)} runs (out of {original_runs_count})." \
-            "\nDue to current limitations with PythonAnywhere and the speedrun.com api, " \
-            "fully updating such a user is nearly impossible."
 
     threads = [Thread(target=set_points_thread, args=(run,))
                for run in runs]
