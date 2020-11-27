@@ -45,6 +45,10 @@ tbody>tr.highlight-current-user:nth-of-type(odd){
   background-color: #d3e7f1;
 }
 
+/*-------------------*\
+| Score Preview Table |
+\*-------------------*/
+
 td:first-child{
   font-weight:bold;
 }
@@ -63,6 +67,11 @@ table.scoreDetailsTable td:last-child {
 table.scoreDetailsTable th {
   border-bottom: 1px solid;
 }
+table.scoreDetailsTable td,
+table.scoreDetailsTable th {
+  padding: 1px 5px;
+}
+
 
 /*-----------------------*\
 | Bootstrap redifinitions |
@@ -79,4 +88,8 @@ table.scoreDetailsTable th {
 /* This is only to show the results */
 .alert.alert-success {
   font-family: monospace;
+}
+
+.progress-bar {
+  transition: none;
 }
