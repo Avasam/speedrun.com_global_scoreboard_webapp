@@ -294,12 +294,11 @@ def __set_run_points(self) -> None:
     self._points = min(exp(e_exponent) * 10 * length_bonus, 999.99)
     # Set category name
     self.category_name = re.sub(
-        r"((\d\d)$|Any)",
+        r"((\d\d)$|Any)(?!%)",
         r"\1%",
-        leaderboard["data"]["weblink"]
-        .split('#')[1]
+        unquote(leaderboard["data"]["weblink"].split('#')[1])
+        .rstrip('1')
         .replace("_", " ")
-        .replace("%2B", "+")
         .title()
     )
 
