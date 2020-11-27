@@ -32,8 +32,9 @@ The score is calculated by summing up every valid PB of a user according to a fo
 2. Due to current limitations with PythonAnywhere and the speedrun.com api, only up to the last 1000 runs will be kept.
 3. All runs not considered valid (w/o video/image verification or banned user) are removed from the leaderboard and can be considered as non-existant from now on.
 4. Remove the last 5% of the leaderboard
-5. 80th percentile soft cutoff: Find the time that's most often repeated in the leaderboard (at least thrice, after the 80th percentile) and cut off everything after that. This is for runs where there's a lot of similar times near the end of the leaderboard. We consider such times to be a "soft maximum limit". (Either because it's impossible to do worse, or because you may have to intentionally go slow)  
-From this step onward, the amount of runners in the leaderboard will be reffered to as the "population". Except for step #6.3 where the lowest deviation is be taken from before the cutoff.
+5. 80th percentile soft cutoff: Find the time that's most often repeated in the leaderboard (at least thrice, after the 80th percentile) and cut off everything after that. This is for runs where there's a lot of similar times near the end of the leaderboard. We consider such times to be a "soft maximum limit". (Either because it's impossible to do worse, or because you may have to intentionally go slow)
+From this step onward, the amount of runners in the leaderboard will be reffered to as the "population". Except for step #6.3 where the lowest deviation is be taken from before the cutoff.  
+Note: The soft cutoff works great on games such as Barney. But is too punishing on games such as Mario 1. To be improved.
 6. Generate a logaritmic curve that looks somewhat like below. Where the average time = 1 and the last run is worth 0  
 ![Curve Example](/assets/images/Curve%20example.jpg)
     - 6.1. A signed standart deviation is obtained for all the runs
