@@ -8,7 +8,7 @@ from time import strftime
 from typing import Dict, List, Union
 from threading import Thread
 from services.user_updater_helpers import BasicJSONType, extract_valid_personal_bests, get_probability_terms, \
-    get_subcategory_variables, keep_runs_before_soft_cutoff, MIN_LEADERBOARD_SIZE, \
+    get_subcategory_variables, keep_runs_before_soft_cutoff, MIN_LEADERBOARD_SIZE, update_runner_in_database, \
     extract_top_runs_and_score, extract_sorted_valid_runs_from_leaderboard
 from services.utils import map_to_dto, SpeedrunComError, start_and_wait_for_threads, UserUpdaterError
 from urllib.parse import unquote
@@ -64,39 +64,8 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
                 __set_user_points(user)
                 if not threads_exceptions:
                     print(f"\nLooking for {user._id}")
-                    timestamp = strftime("%Y-%m-%d %H:%M")
-
-                    # If user already exists, update the database entry
-                    if player:
-                        text_output = f"{user} found. Updated their entry."
-                        result_state = "success"
-                        Player \
-                            .query \
-                            .filter(Player.user_id == user._id) \
-                            .update({"user_id": user._id,
-                                     "name": user._name,
-                                     "country_code": user._country_code,
-                                     "score": floor(user._points),
-                                     "score_details": user._point_distribution_str,
-                                     "last_update": timestamp})
-                        db.session.commit()
-
-                    # If user not found and has points, add it to the database
-                    elif user._points >= 1:
-                        text_output = "{} not found. Added a new row.".format(user)
-                        result_state = "success"
-                        Player.create(user._id,
-                                      user._name,
-                                      country_code=user._country_code,
-                                      score=user._points,
-                                      score_details=user._point_distribution_str,
-                                      last_update=timestamp)
-                    else:
-                        text_output = f"Not inserting new data as {user} " \
-                                      f"{'is banned' if user._banned else 'has a score lower than 1.'}."
-                        result_state = "warning"
+                    text_output, result_state = update_runner_in_database(player, user)
                     text_output += user._point_distribution_str
-
                 else:
                     error_str_list: List[str] = []
                     for e in threads_exceptions:
@@ -258,7 +227,7 @@ def __set_run_points(self) -> None:
     # Get the deviation from the mean of the worse time as a positive number
     worst_time = valid_runs[-1]["run"]["times"]["primary_t"]
     lowest_deviation = worst_time - mean
-    # These three shift the deviations up so that the worse time is now 0
+    # Shift the deviations up so that the worse time is now 0
     adjusted_deviation = signed_deviation + lowest_deviation
 
     # CHECK: The last counted run isn't worth any points
@@ -280,8 +249,7 @@ def __set_run_points(self) -> None:
     length_bonus = 1 + (wr_time / TIME_BONUS_DIVISOR)
 
     # Give points, hard cap to 6 character
-    self._points = min((exp(e_exponent) - 1) * 10 * length_bonus, 999.99)
-    self._points *= self.level_fraction
+    self._points = (exp(e_exponent) - 1) * 10 * length_bonus * self.level_fraction
 
     # Set category name
     self.category_name = re.sub(
