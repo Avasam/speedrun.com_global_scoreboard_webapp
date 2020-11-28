@@ -68,7 +68,7 @@ class GameValues(db.Model):
         except orm.exc.NoResultFound:
             return None
 
-    def to_dto(self) -> dict[str, Union[str, int]]:
+    def to_dto(self) -> dict[str, Union[str, int, None]]:
         return {
             'gameId': self.game_id,
             'categoryId': self.category_id,

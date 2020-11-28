@@ -45,25 +45,51 @@ tbody>tr.highlight-current-user:nth-of-type(odd){
   background-color: #d3e7f1;
 }
 
+/*-------------------*\
+| Score Preview Table |
+\*-------------------*/
+
 td:first-child{
   font-weight:bold;
 }
+
+table.scoreDetailsTable {
+  margin: auto;
+  border: 1px solid;
+  text-align: left;
+}
+table.scoreDetailsTable td {
+  border-bottom: 1px dotted;
+}
+table.scoreDetailsTable td:last-child {
+  text-align: right;
+}
+table.scoreDetailsTable th {
+  border-bottom: 1px solid;
+}
+table.scoreDetailsTable td,
+table.scoreDetailsTable th {
+  padding: 1px 5px;
+}
+
 
 /*-----------------------*\
 | Bootstrap redifinitions |
 \*-----------------------*/
 .alert {
   text-align: center;
+  white-space: pre-wrap;
 }
 
 .row {
   margin: 0;
 }
 
-.alert {
-  white-space: pre-wrap;
-}
 /* This is only to show the results */
 .alert.alert-success {
   font-family: monospace;
+}
+
+.progress-bar {
+  transition: none;
 }

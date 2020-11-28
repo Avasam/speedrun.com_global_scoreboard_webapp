@@ -1,22 +1,19 @@
 import './Dashboard.css'
-import { Alert, Col, Container, ProgressBar, Row } from 'react-bootstrap'
+import { Col, Container, Row } from 'react-bootstrap'
 import React, { useEffect, useRef, useState } from 'react'
 import Scoreboard, { ScoreboardRef } from './Scoreboard'
+import UpdateMessage, { renderScoreTable } from './UpdateMessage'
 import { apiDelete, apiGet, apiPost, apiPut } from '../fetchers/api'
 import { AlertProps } from 'react-bootstrap/Alert'
 import Configs from '../models/Configs'
 import Player from '../models/Player'
-import QuickView from './QuickView'
+import QuickView from './QuickView/QuickView'
 import UpdateRunnerForm from './UpdateRunnerForm'
 import UpdateRunnerResult from '../models/UpdateRunnerResult'
 
 type DashboardProps = {
   currentUser: Player | null | undefined
 }
-
-const progressBarTickInterval = 50
-const minutes5 = 5 * 600
-let progressTimer: NodeJS.Timeout
 
 const getFriends = () => apiGet('players/current/friends').then<Player[]>(res => res.json())
 const getAllPlayers = () => apiGet('players')
@@ -40,13 +37,13 @@ const buildFriendsList = (friends: Player[], allPlayers: Player[]) =>
 const inferRank = (players: Player[], score: number) => {
   const sortedPlayers = [...players].sort((a, b) => b.score - a.score)
   const lowerOrEqualPlayerFoundIndex = sortedPlayers.findIndex(player => player.score <= score)
-  if (lowerOrEqualPlayerFoundIndex <= 0) return players.length
   if (lowerOrEqualPlayerFoundIndex === 0) return 1
+  if (lowerOrEqualPlayerFoundIndex < 0) return players.length
 
   const lowerOrEqualPlayerFound = sortedPlayers[lowerOrEqualPlayerFoundIndex]
-  if (lowerOrEqualPlayerFound.rank == null) return undefined
-  if (lowerOrEqualPlayerFound.score === score) return lowerOrEqualPlayerFound.rank
-  return lowerOrEqualPlayerFoundIndex + .5
+  return (lowerOrEqualPlayerFound.score === score && lowerOrEqualPlayerFound.rank)
+    ? lowerOrEqualPlayerFound.rank
+    : lowerOrEqualPlayerFoundIndex + 1
 }
 
 // Let's cheat! This is much simpler and more effective
@@ -58,17 +55,7 @@ const Dashboard = (props: DashboardProps) => {
   const [players, setPlayers] = useState<Player[]>([])
   const [alertVariant, setAlertVariant] = useState<AlertProps['variant']>('info')
   const [alertMessage, setAlertMessage] = useState<JSX.Element | string>('Building the Scoreboard. Please wait...')
-  const [progress, setProgress] = useState<number | null>(null)
-  const startLoading = () => {
-    setProgress(100)
-    progressTimer = setInterval(
-      () => setProgress(progress => progress && progress - (progressBarTickInterval / minutes5)),
-      progressBarTickInterval)
-  }
-  const stopLoading = () => {
-    setProgress(null)
-    clearInterval(progressTimer)
-  }
+  const [updateStartTime, setUpdateStartTime] = useState<number | null>(null)
 
   useEffect(() => {
     // Note: Waiting to obtain both friends and players if both calls are needed
@@ -98,9 +85,6 @@ const Dashboard = (props: DashboardProps) => {
       }
     }
 
-    // Clear timer to prevent leaks
-    return () => clearInterval(progressTimer)
-
     // Note: I don't actually care about players dependency and don't want to rerun this code on players change
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.currentUser])
@@ -109,7 +93,7 @@ const Dashboard = (props: DashboardProps) => {
 
   const handleOnUpdateRunner = (runnerNameOrId: string) => {
     setAlertVariant('info')
-    setAlertMessage(`Updating "${runnerNameOrId}". This may take up to 5 mintues, depending on the amount of runs to analyse. Please Wait...`)
+    setAlertMessage(`Updating "${runnerNameOrId}". This may take up to 5 minutes, depending on the amount of runs to analyse. Please Wait...`)
     if (window.process.env.REACT_APP_BYPASS_UPDATE_RESTRICTIONS !== 'true' &&
       !validateRunnerNotRecentlyUpdated(runnerNameOrId, players)) {
       setAlertVariant('warning')
@@ -117,7 +101,7 @@ const Dashboard = (props: DashboardProps) => {
       setAlertMessage(`Runner ${runnerNameOrId} has already been updated in the past ${cantUpdateTime} day${cantUpdateTime === 1 ? '' : 's'}`)
       return
     }
-    startLoading()
+    setUpdateStartTime(new Date().getTime())
     apiPost(`players/${runnerNameOrId}/update`)
       .then<UpdateRunnerResult>(res => res.json())
       .then(playerResult => {
@@ -126,7 +110,7 @@ const Dashboard = (props: DashboardProps) => {
       })
       .then(result => {
         setAlertVariant(result.state)
-        setAlertMessage(result.message)
+        setAlertMessage(renderScoreTable(result.message))
         const newPlayers = [...players]
         const existingPlayerIndex = newPlayers.findIndex(player => player.userId === result.userId)
         const inferedRank = inferRank(newPlayers, result.score)
@@ -207,7 +191,7 @@ const Dashboard = (props: DashboardProps) => {
           })
         }
       })
-      .finally(stopLoading)
+      .finally(() => setUpdateStartTime(null))
   }
 
   const handleJumpToPlayer = (playerId: string) => scoreboardRef.current?.jumpToPlayer(playerId)
@@ -229,19 +213,17 @@ const Dashboard = (props: DashboardProps) => {
   }
 
   return <Container className="dashboard-container">
-    <Alert
+    <UpdateMessage
       variant={alertVariant}
-      style={{ visibility: alertMessage ? 'visible' : 'hidden' }}
-    >
-      {alertMessage || '&nbsp;'}
-      {progress != null && <ProgressBar animated variant="info" now={progress} />}
-    </Alert>
+      message={alertMessage}
+      updateStartTime={updateStartTime}
+    />
     <Row>
       <Col md={4}>
         <Row>
           <UpdateRunnerForm
             onUpdate={handleOnUpdateRunner}
-            updating={progress != null}
+            updating={updateStartTime != null}
             currentUser={currentPlayer}
           />
         </Row>

@@ -2,7 +2,7 @@ from __future__ import annotations
 from models.core_models import Player
 from datetime import datetime
 from models.core_models import db
-from models.models_utils import map_to_dto
+from services.utils import map_to_dto
 from sqlalchemy import orm
 from typing import Dict, List, Optional, Union
 

@@ -26,23 +26,27 @@ The score is calculated by summing up every valid PB of a user according to a fo
     - Has video/image verification
     - The leaderboard (for the current sub-category) has at least 3 runs
     - Is part of a speedrun leaderboard, not a scoreboard
+    - The WR time is not under a minute
+        - ILs' WR should not be under their fraction of a minute (see step #7)
     - After step #4, not all runs have the same time
-    - After step #4, the average time is not under a minute
-        - ILs' average should not be under their fraction of a minute (see step #7)
-2. All runs not considered valid (w/o video/image verification or banned user) runs are removed from the leaderboard and can be considered as non-existant from now on.
+2. All runs not considered valid (w/o video/image verification or banned user) are removed from the leaderboard and can be considered as non-existant from now on.
 3. Remove the last 5% of the leaderboard
-4. <TODO: 80th percentile soft cutoff> From this step onward, the amount of runners in the leaderboard will be reffered to as the "population".
-5. Generate a logaritmic curve that looks somewhat like below. Where the average time = 1 and the last run is worth 0  
+4. 80th percentile soft cutoff: Find the time that's most often repeated in the leaderboard (at least thrice, after the 80th percentile) and cut off everything after that. This is for runs where there's a lot of similar times near the end of the leaderboard. We consider such times to be a "soft maximum limit". (Either because it's impossible to do worse, or because you may have to intentionally go slow)
+From this step onward, the amount of runners in the leaderboard will be reffered to as the "population". Except for step #5.3 where the lowest deviation is be taken from before the cutoff.  
+Note: The soft cutoff works great on games such as Barney. But is too punishing on games such as Mario 1. To be improved.
+5. Generate a logaritmic curve that looks somewhat like below. Where the average time ≤ e-1 and the last run is worth 0  
 ![Curve Example](/assets/images/Curve%20example.jpg)
-    - 5.1. A signed standart deviation is obtained for all the runs
+    - 5.1. A signed deviation is obtained for all the runs
     - 5.2. The deviation is adjusted so that the last run is worth 0 points. By adding the lowest (unsigned) deviation to the signed deviation
     - 5.3. The deviation is then normalized so that the average time is worth 1 point and the last run is still worth 0 points. By dividing the adjusted deviation with the adjusted lowest deviation. Capped at π.
-    - 5.5. Points for a run are equal to: `e^(normalized_deviation * certainty_adjustment)`
+    - 5.4. Points for a run are equal to: `e^(normalized_deviation * certainty_adjustment) -1` which creates the logarithmic curve that starts at 0
         - `certainty_adjustment = 1 - 1 / (population - 1)`
-6. The points for a run are then multiplied by a "length bonus", the decimal point is shifted to the right by 1 and is capped at 999.99
+6. The points for a run are then multiplied by a "length bonus" and the decimal point is shifted to the right by 1.
     - `length_bonus = 1 + (wr_time / TIME_BONUS_DIVISOR)`. This is to slightly bonify longuer runs which which usually require more time put in the game to achieve a similar level of execution
         - `TIME_BONUS_DIVISOR = 3600 * 12`: 12h (1/2 day) for +100%
-7. Finally, if the run is an IL (Individual Level), the points are divided by "the quantity of ILs for the game + 1"
+7. If the run is an IL (Individual Level), the points are divided by "the quantity of ILs for the game + 1" (`points / (level_count + 1)`)
+8. Finally, while all currently valid personal bests will be shown, only the top 60 will be counted in order to help reduce the "quantity over quality" game.
+    - Since Ils are only worth a fraction, they are also weighted a fraction of the top 60. Full Games are always 1 spot.
 
 ---
 

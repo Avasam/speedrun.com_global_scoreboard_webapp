@@ -6,7 +6,7 @@ from api.api_wrappers import authentication_required
 from flask import Blueprint, jsonify
 from models.core_models import Player
 from models.game_search_models import GameValues
-from models.models_utils import map_to_dto
+from services.utils import map_to_dto
 
 api = Blueprint('game_search_api', __name__)
 

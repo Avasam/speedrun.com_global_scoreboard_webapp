@@ -105,6 +105,19 @@ class Player(db.Model):
 
         return player
 
+    def update(self, **kwargs: Dict[str, Union[str, float, datetime]]) -> Player:
+        player = Player \
+            .query \
+            .filter(Player.user_id == self.user_id) \
+            .update(kwargs)
+        db.session.commit()
+        return player
+
+    def delete(self) -> bool:
+        db.session.delete(self)
+        db.session.commit()
+        return True
+
     def get_friends(self) -> List[Player]:
         sql = text("SELECT f.friend_id, p.name, p.country_code, p.score, p.last_update FROM friend f "
                    "JOIN player p ON p.user_id = f.friend_id "
@@ -158,7 +171,7 @@ class Player(db.Model):
         db.session.commit()
         return new_schedule.schedule_id
 
-    def update_schedule(self, schedule_id: int, name: str, is_active: bool, time_slots: List[Dict[str, Any]]) -> int:
+    def update_schedule(self, schedule_id: int, name: str, is_active: bool, time_slots: List[Dict[str, Any]]) -> bool:
         try:
             schedule_to_update = Schedule \
                 .query \
@@ -275,7 +288,7 @@ class Player(db.Model):
     def get_id(self):
         return self.user_id
 
-    def to_dto(self) -> dict[str, Union[str, int, datetime]]:
+    def to_dto(self) -> dict[str, Union[str, int, datetime, None]]:
         return {
             'userId': self.user_id,
             'name': self.name,
