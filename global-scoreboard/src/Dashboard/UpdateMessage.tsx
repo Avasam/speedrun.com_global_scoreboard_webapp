@@ -16,11 +16,16 @@ const minutes5 = 5_000 * 60
 let progressTimer: NodeJS.Timeout
 let position: number
 
+const updateRunPosition = (levelFraction: number) => {
+  const precision = levelFraction < 0.1 ? 100 : 10
+  return Math.round((position += levelFraction) * precision) / precision
+}
+
 const renderRow = (rows: RunResult[]) => {
   return rows.map((row, rowi) =>
     <tr key={`row${rowi}`}>
       <td>
-        {Math.round((position += row.levelFraction) * 10) / 10}
+        {updateRunPosition(row.levelFraction)}
       </td>
       <td>
         {row.gameName} - {row.categoryName}{row.levelName ? ` (${row.levelName})` : ''}
