@@ -1,10 +1,13 @@
-from typing import Any, Dict, List, Tuple
+from math import floor
+from models.core_models import Player
 from models.global_scoreboard_models import Run
+from time import strftime
+from typing import Any, Dict, List, Tuple
 
 GAMETYPE_MULTI_GAME = "rj1dy1o8"
 BasicJSONType = Dict[str, Any]
 MIN_LEADERBOARD_SIZE = 3  # This is just to optimize as the formula gives 0 points to leaderboards size < 3
-MIN_SAMPLE_SIZE = 100
+MIN_SAMPLE_SIZE = 60
 
 
 def extract_valid_personal_bests(runs: List[BasicJSONType]) -> List[BasicJSONType]:
@@ -110,14 +113,6 @@ def get_subcategory_variables(run: BasicJSONType) -> Dict[str, Dict[str, str]]:
     }
 
 
-def keep_last_full_game_runs(runs: List[BasicJSONType], max: int):
-    return sorted(
-        [run for run in runs if not run["level"]["data"]],
-        key=lambda run: run["date"],
-        reverse=True
-    )[:max]
-
-
 def get_probability_terms(pbs: List[BasicJSONType]):
     mean: float = 0.0
     sigma: float = 0.0
@@ -175,8 +170,46 @@ def extract_top_runs_and_score(runs: List[Run]) -> Tuple[List[Run], List[Run]]:
             position += run.level_fraction
             return True
 
-    runs.sort(key=lambda r: r._points / r.level_fraction, reverse=True)
-    for run in runs:
+    for run in sorted(runs, key=lambda r: r._points / r.level_fraction, reverse=True):
         (top_runs if is_top_run(run) else lesser_runs).append(run)
 
     return top_runs, lesser_runs
+
+
+def update_runner_in_database(player, user):
+    timestamp = strftime("%Y-%m-%d %H:%M")
+    text_output = ""
+    result_state = ""
+
+    # If User exists
+    if player:
+        # User is not banned: update the database entry
+        if not user._banned:
+            text_output = f"{user} found. Updated their entry."
+            result_state = "success"
+            player.update(name=user._name,
+                          country_code=user._country_code,
+                          score=floor(user._points),
+                          score_details=user._point_distribution_str,
+                          last_update=timestamp)
+        # User is banned: remove the database entry
+        else:
+            result_state = "warning"
+            text_output = f"{user} found. Removed their entry as they are banned."
+            player.delete()
+    # If user not found and has points, add it to the database
+    elif user._points >= 1:
+        text_output = "{} not found. Added a new row.".format(user)
+        result_state = "success"
+        Player.create(user._id,
+                      name=user._name,
+                      country_code=user._country_code,
+                      score=user._points,
+                      score_details=user._point_distribution_str,
+                      last_update=timestamp)
+    else:
+        text_output = f"Not inserting new data as {user} " \
+            f"{'is banned' if user._banned else 'has a score lower than 1'}."
+        result_state = "warning"
+
+    return text_output, result_state

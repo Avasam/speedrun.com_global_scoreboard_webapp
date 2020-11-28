@@ -8,7 +8,7 @@ from time import strftime
 from typing import Dict, List, Union
 from threading import Thread
 from services.user_updater_helpers import BasicJSONType, extract_valid_personal_bests, get_probability_terms, \
-    get_subcategory_variables, keep_runs_before_soft_cutoff, keep_last_full_game_runs, MIN_LEADERBOARD_SIZE, \
+    get_subcategory_variables, keep_runs_before_soft_cutoff, MIN_LEADERBOARD_SIZE, update_runner_in_database, \
     extract_top_runs_and_score, extract_sorted_valid_runs_from_leaderboard
 from services.utils import map_to_dto, SpeedrunComError, start_and_wait_for_threads, UserUpdaterError
 from urllib.parse import unquote
@@ -20,8 +20,6 @@ import requests
 import traceback
 
 TIME_BONUS_DIVISOR = 3600 * 12  # 12h (1/2 day) for +100%
-MAX_RUNS_COUNT = 1000
-SEPARATOR = "-" * 64
 
 
 def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
@@ -33,7 +31,7 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
 
     try:
         user = User(p_user_id)
-        print(f"{SEPARATOR}\n{user._name}")
+        print("Update request for: {user._name}")
 
         try:
             __set_user_code_and_name(user)
@@ -63,54 +61,28 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
                     configs.bypass_update_restrictions:
 
                 __set_user_points(user)
+
                 if not threads_exceptions:
                     print(f"\nLooking for {user._id}")
-                    timestamp = strftime("%Y-%m-%d %H:%M")
-
-                    # If user already exists, update the database entry
-                    if player:
-                        text_output = f"{user} found. Updated their entry."
-                        result_state = "success"
-                        Player \
-                            .query \
-                            .filter(Player.user_id == user._id) \
-                            .update({"user_id": user._id,
-                                     "name": user._name,
-                                     "country_code": user._country_code,
-                                     "score": floor(user._points),
-                                     "score_details": user._point_distribution_str,
-                                     "last_update": timestamp})
-                        db.session.commit()
-
-                    # If user not found and has points, add it to the database
-                    elif user._points >= 1:
-                        text_output = "{} not found. Added a new row.".format(user)
-                        result_state = "success"
-                        Player.create(user._id,
-                                      user._name,
-                                      country_code=user._country_code,
-                                      score=user._points,
-                                      score_details=user._point_distribution_str,
-                                      last_update=timestamp)
-                    else:
-                        text_output = f"Not inserting new data as {user} " \
-                                      f"{'is banned' if user._banned else 'has a score lower than 1.'}."
-                        result_state = "warning"
+                    text_output, result_state = update_runner_in_database(player, user)
                     text_output += user._point_distribution_str
-
                 else:
-                    error_str_list: List[str] = []
-                    for e in threads_exceptions:
-                        error_str_list.append("Error: {}\n{}".format(e["error"], e["details"]))
-                    error_str_counter = Counter(error_str_list)
-                    errors_str = "{0}" \
-                                 "\nhttps://github.com/Avasam/Global_Speedrunning_Scoreboard/issues" \
-                                 "\nNot uploading data as some errors were caught during execution:" \
-                                 "\n{0}\n".format(SEPARATOR)
-                    for error, count in error_str_counter.items():
-                        errors_str += f"[x{count}] {error}\n"
-                    text_output += ("\n" if text_output else "") + errors_str
-                    result_state = "danger"
+                    errors_str = "Please report to: https://github.com/Avasam/Global_Speedrunning_Scoreboard/issues\n" \
+                        "\nNot uploading data as some errors were caught during execution:\n"
+                    if len(threads_exceptions) == 1:
+                        raise UserUpdaterError({
+                            "error": threads_exceptions[0]["error"],
+                            "details": errors_str + threads_exceptions[0]["details"]})
+                    else:
+                        error_str_items = Counter(
+                            [f"Error: {e['error']}\n{e['details']}"
+                             for e in threads_exceptions]) \
+                            .items()
+                        for error, count in error_str_items:
+                            errors_str += f"[x{count}] {error}\n"
+                        raise UserUpdaterError({
+                            "error": "Multiple Unhandled Exceptions",
+                            "details": errors_str})
             else:
                 cant_update_time = configs.last_updated_days[0]
                 text_output = f"This user has already been updated in the past {cant_update_time} day" \
@@ -155,6 +127,10 @@ def __set_user_points(user: User) -> None:
 
     def set_points_thread(pb: BasicJSONType) -> None:
         try:
+            if threads_exceptions:
+                # Don't keep going if previous threads already threw something
+                print("Aborted thread due to previous thread exceptions")
+                return
             pb_subcategory_variables = get_subcategory_variables(pb)
 
             pb_level_id = pb["level"]["data"]["id"] if pb["level"]["data"] else ""
@@ -209,19 +185,11 @@ def __set_user_points(user: User) -> None:
     runs: List[BasicJSONType] = SrcRequest.get_paginated_response(url)["data"]
     runs = extract_valid_personal_bests(runs)
 
-    original_runs_count = len(runs)
-    if original_runs_count >= MAX_RUNS_COUNT:
-        runs = keep_last_full_game_runs(runs, MAX_RUNS_COUNT)
-
-        user._point_distribution_str = f"\nOnly kept the last {len(runs)} runs (out of {original_runs_count})." \
-            "\nDue to current limitations with PythonAnywhere and the speedrun.com api, " \
-            "fully updating such a user is nearly impossible."
-
     threads = [Thread(target=set_points_thread, args=(run,))
                for run in runs]
     start_and_wait_for_threads(threads)
 
-    # Sum up the runs' score, only the top 100 will end up giving points
+    # Sum up the runs' score, only the top 60 will end up giving points
     top_runs, lower_runs = extract_top_runs_and_score(counted_runs)
     user._points = sum(run._points for run in top_runs)
     user._point_distribution_str = "\n" + json.dumps([map_to_dto(top_runs), map_to_dto(lower_runs)])
@@ -267,15 +235,15 @@ def __set_run_points(self) -> None:
     # Get the deviation from the mean of the worse time as a positive number
     worst_time = valid_runs[-1]["run"]["times"]["primary_t"]
     lowest_deviation = worst_time - mean
-    # These three shift the deviations up so that the worse time is now 0
+    # Shift the deviations up so that the worse time is now 0
     adjusted_deviation = signed_deviation + lowest_deviation
 
-    # CHECK: The last counted run isn't worth any points
+    # CHECK: The last counted run isn't worth any points, if this is 0 the rest of the formula will return 0
     if adjusted_deviation <= 0:
         return
 
     # Scale all the adjusted deviations so that the mean is worth 1 but the worse stays 0...
-    # using the lowest time's deviation from before the "similar times" fix!
+    # using the lowest time's deviation from before the "repeated times" fix!
     # (runs not affected by the prior fix won't see any difference)
     adjusted_lowest_deviation = pre_cutoff_worst_time - mean
     normalized_deviation = adjusted_deviation / adjusted_lowest_deviation
@@ -283,13 +251,14 @@ def __set_run_points(self) -> None:
     # More people means more accurate relative time and more optimised/hard to reach low times
     # This function would equal 0 if population = MIN_LEADERBOARD_SIZE - 1
     certainty_adjustment = 1 - 1 / (population - MIN_LEADERBOARD_SIZE + 2)
-    # Cap the exponent to π
+    # Cap the deviation to π
     e_exponent = min(normalized_deviation, pi) * certainty_adjustment
     # Bonus points for long games
     length_bonus = 1 + (wr_time / TIME_BONUS_DIVISOR)
 
     # Give points, hard cap to 6 character
-    self._points = min(exp(e_exponent) * 10 * length_bonus, 999.99)
+    self._points = (exp(e_exponent) - 1) * 10 * length_bonus * self.level_fraction
+
     # Set category name
     self.category_name = re.sub(
         r"((\d\d)$|Any)(?!%)",
@@ -299,8 +268,6 @@ def __set_run_points(self) -> None:
         .replace("_", " ")
         .title()
     )
-
-    self._points *= self.level_fraction
 
     # Set game search data
     self._is_wr_time = wr_time == self.primary_t
