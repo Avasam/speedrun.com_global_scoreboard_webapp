@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Tuple
 GAMETYPE_MULTI_GAME = "rj1dy1o8"
 BasicJSONType = Dict[str, Any]
 MIN_LEADERBOARD_SIZE = 3  # This is just to optimize as the formula gives 0 points to leaderboards size < 3
-MIN_SAMPLE_SIZE = 100
+MIN_SAMPLE_SIZE = 60
 
 
 def extract_valid_personal_bests(runs: List[BasicJSONType]) -> List[BasicJSONType]:

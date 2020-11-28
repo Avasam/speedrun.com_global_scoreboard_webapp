@@ -189,7 +189,7 @@ def __set_user_points(user: User) -> None:
                for run in runs]
     start_and_wait_for_threads(threads)
 
-    # Sum up the runs' score, only the top 100 will end up giving points
+    # Sum up the runs' score, only the top 60 will end up giving points
     top_runs, lower_runs = extract_top_runs_and_score(counted_runs)
     user._points = sum(run._points for run in top_runs)
     user._point_distribution_str = "\n" + json.dumps([map_to_dto(top_runs), map_to_dto(lower_runs)])
@@ -238,7 +238,7 @@ def __set_run_points(self) -> None:
     # Shift the deviations up so that the worse time is now 0
     adjusted_deviation = signed_deviation + lowest_deviation
 
-    # CHECK: The last counted run isn't worth any points
+    # CHECK: The last counted run isn't worth any points, if this is 0 the rest of the formula will return 0
     if adjusted_deviation <= 0:
         return
 

@@ -34,7 +34,7 @@ The score is calculated by summing up every valid PB of a user according to a fo
 4. 80th percentile soft cutoff: Find the time that's most often repeated in the leaderboard (at least thrice, after the 80th percentile) and cut off everything after that. This is for runs where there's a lot of similar times near the end of the leaderboard. We consider such times to be a "soft maximum limit". (Either because it's impossible to do worse, or because you may have to intentionally go slow)
 From this step onward, the amount of runners in the leaderboard will be reffered to as the "population". Except for step #5.3 where the lowest deviation is be taken from before the cutoff.  
 Note: The soft cutoff works great on games such as Barney. But is too punishing on games such as Mario 1. To be improved.
-5. Generate a logaritmic curve that looks somewhat like below. Where the average time = e-1 and the last run is worth 0  
+5. Generate a logaritmic curve that looks somewhat like below. Where the average time ≤ e-1 and the last run is worth 0  
 ![Curve Example](/assets/images/Curve%20example.jpg)
     - 5.1. A signed deviation is obtained for all the runs
     - 5.2. The deviation is adjusted so that the last run is worth 0 points. By adding the lowest (unsigned) deviation to the signed deviation
@@ -45,8 +45,8 @@ Note: The soft cutoff works great on games such as Barney. But is too punishing 
     - `length_bonus = 1 + (wr_time / TIME_BONUS_DIVISOR)`. This is to slightly bonify longuer runs which which usually require more time put in the game to achieve a similar level of execution
         - `TIME_BONUS_DIVISOR = 3600 * 12`: 12h (1/2 day) for +100%
 7. If the run is an IL (Individual Level), the points are divided by "the quantity of ILs for the game + 1" (`points / (level_count + 1)`)
-8. Finally, while all currently valid personal bests will be shown, only the top 100 will be counted in order to help reduce the "quantity over quality" game.
-    - Since Ils are only worth a fraction, they are also weighted a fraction of the top 100. Full Games are always 1 spot.
+8. Finally, while all currently valid personal bests will be shown, only the top 60 will be counted in order to help reduce the "quantity over quality" game.
+    - Since Ils are only worth a fraction, they are also weighted a fraction of the top 60. Full Games are always 1 spot.
 
 ---
 

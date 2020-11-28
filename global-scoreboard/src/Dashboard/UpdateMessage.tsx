@@ -71,7 +71,7 @@ export const renderScoreTable = (baseString: string) => {
 
   return <>
     <div>{topMessage}</div>
-    {topRuns.length > 0 && <label>Top 100 runs:</label>}
+    {topRuns.length > 0 && <label>Top 60 runs:</label>}
     {(topRuns.length > 0 || tableElements.slice(2).length > 0) &&
       <table className="scoreDetailsTable">
         <thead>
