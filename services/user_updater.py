@@ -20,7 +20,6 @@ import requests
 import traceback
 
 TIME_BONUS_DIVISOR = 3600 * 12  # 12h (1/2 day) for +100%
-SEPARATOR = "-" * 64
 
 
 def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
@@ -32,7 +31,7 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
 
     try:
         user = User(p_user_id)
-        print(f"{SEPARATOR}\n{user._name}")
+        print("Update request for: {user._name}")
 
         try:
             __set_user_code_and_name(user)
@@ -62,23 +61,28 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
                     configs.bypass_update_restrictions:
 
                 __set_user_points(user)
+
                 if not threads_exceptions:
                     print(f"\nLooking for {user._id}")
                     text_output, result_state = update_runner_in_database(player, user)
                     text_output += user._point_distribution_str
                 else:
-                    error_str_list: List[str] = []
-                    for e in threads_exceptions:
-                        error_str_list.append("Error: {}\n{}".format(e["error"], e["details"]))
-                    error_str_counter = Counter(error_str_list)
-                    errors_str = "{0}" \
-                                 "\nhttps://github.com/Avasam/Global_Speedrunning_Scoreboard/issues" \
-                                 "\nNot uploading data as some errors were caught during execution:" \
-                                 "\n{0}\n".format(SEPARATOR)
-                    for error, count in error_str_counter.items():
-                        errors_str += f"[x{count}] {error}\n"
-                    text_output += ("\n" if text_output else "") + errors_str
-                    result_state = "danger"
+                    errors_str = "Please report to: https://github.com/Avasam/Global_Speedrunning_Scoreboard/issues\n" \
+                        "\nNot uploading data as some errors were caught during execution:\n"
+                    if len(threads_exceptions) == 1:
+                        raise UserUpdaterError({
+                            "error": threads_exceptions[0]["error"],
+                            "details": errors_str + threads_exceptions[0]["details"]})
+                    else:
+                        error_str_items = Counter(
+                            [f"Error: {e['error']}\n{e['details']}"
+                             for e in threads_exceptions]) \
+                            .items()
+                        for error, count in error_str_items:
+                            errors_str += f"[x{count}] {error}\n"
+                        raise UserUpdaterError({
+                            "error": "Multiple Unhandled Exceptions",
+                            "details": errors_str})
             else:
                 cant_update_time = configs.last_updated_days[0]
                 text_output = f"This user has already been updated in the past {cant_update_time} day" \
@@ -123,6 +127,10 @@ def __set_user_points(user: User) -> None:
 
     def set_points_thread(pb: BasicJSONType) -> None:
         try:
+            if threads_exceptions:
+                # Don't keep going if previous threads already threw something
+                print("Aborted thread due to previous thread exceptions")
+                return
             pb_subcategory_variables = get_subcategory_variables(pb)
 
             pb_level_id = pb["level"]["data"]["id"] if pb["level"]["data"] else ""
