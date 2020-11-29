@@ -100,3 +100,9 @@ table.scoreDetailsTable th {
     max-width: 990px;
   }
 }
+/* Fix tablet size loosing ou on a lot of space */
+@media (min-width: 768px) and (max-width: 991px) {
+  .container, .container-sm, .container-md {
+      max-width: 990px;
+  }
+}

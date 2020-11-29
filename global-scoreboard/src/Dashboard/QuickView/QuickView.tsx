@@ -35,7 +35,7 @@ const QuickView = (props: QuickViewProps) =>
           <tr>
             <th>Rank</th>
             <th>Name</th>
-            <th colSpan={2}><ScoreTitle /></th>
+            <th><ScoreTitle /></th>
           </tr>
         </thead>
         <tbody>
@@ -59,8 +59,8 @@ const QuickView = (props: QuickViewProps) =>
                         handleOnBefriend={props.onUnfriend}
                       />
                     </td>
-                    <td><PlayerScoreCell player={player} /></td>
                     <td>
+                      <PlayerScoreCell player={player} />
                       <Button
                         variant="link"
                         onClick={() => props.currentUser && props.onJumpToPlayer(player.userId)}
@@ -71,8 +71,8 @@ const QuickView = (props: QuickViewProps) =>
                   </tr>
                 )
               : <>
-                <tr className="highlight-current-user" id="preview-0"><td colSpan={4}></td></tr>
-                <tr className="highlight-friend" id="preview-1"><td colSpan={4}></td></tr>
+                <tr className="highlight-current-user" id="preview-0"><td colSpan={3}></td></tr>
+                <tr className="highlight-friend" id="preview-1"><td colSpan={3}></td></tr>
               </>
           }
         </tbody>
