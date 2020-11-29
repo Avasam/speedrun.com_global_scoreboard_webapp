@@ -29,7 +29,7 @@ type QuickViewProps = {
 const QuickView = (props: QuickViewProps) =>
   <>
     <label>Quick view:</label>
-    <div className="table-responsive-lg">
+    <div className="table-responsive-lg quick-view">
       <Table striped>
         <thead>
           <tr>

@@ -94,15 +94,17 @@ table.scoreDetailsTable th {
   transition: none;
 }
 
-/* Fixes Table overlap  */
+/* TODO: Helps with Table overlap, but this is not enough in extreme cases.
+ * Right now the longest name is "TheTrashmanMossman69" */
 @media (min-width: 992px) and (max-width: 1199px) {
   .container, .container-sm, .container-md, .container-lg {
     max-width: 990px;
   }
 }
-/* Fix tablet size loosing ou on a lot of space */
-@media (min-width: 768px) and (max-width: 991px) {
-  .container, .container-sm, .container-md {
-      max-width: 990px;
+/* TODO: Helps with Scoreboard having a horizontal scrollbar
+ * Right now the longest name is "TheTrashmanMossman69" */
+@media (min-width: 576px) and (max-width: 767px){
+  div.container, div.container-sm {
+    max-width: 566px;
   }
 }
