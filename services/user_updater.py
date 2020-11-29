@@ -72,7 +72,7 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
                     if len(threads_exceptions) == 1:
                         raise UserUpdaterError({
                             "error": threads_exceptions[0]["error"],
-                            "details": errors_str + threads_exceptions[0]["details"]})
+                            "details": errors_str + str(threads_exceptions[0]["details"])})
                     else:
                         error_str_items = Counter(
                             [f"Error: {e['error']}\n{e['details']}"
