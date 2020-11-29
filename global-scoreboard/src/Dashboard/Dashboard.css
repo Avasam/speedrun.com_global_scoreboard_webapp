@@ -2,6 +2,16 @@
   padding-top: 15px;
 }
 
+/*-------------*\
+| Update Runner |
+\*-------------*/
+label[for="update-user"]+.input-group {
+  flex-wrap: nowrap;
+}
+#update-user {
+  width: 100%;
+}
+
 /*--------*\
 | Coloring |
 \*--------*/
