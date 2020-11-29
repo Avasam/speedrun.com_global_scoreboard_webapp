@@ -93,3 +93,10 @@ table.scoreDetailsTable th {
 .progress-bar {
   transition: none;
 }
+
+/* Fixes Table overlap  */
+@media (min-width: 992px) and (max-width: 1199px) {
+  .container, .container-sm, .container-md, .container-lg {
+    max-width: 990px;
+  }
+}
