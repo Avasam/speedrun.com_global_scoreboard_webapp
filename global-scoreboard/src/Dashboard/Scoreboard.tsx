@@ -20,7 +20,6 @@ const { SearchBar } = Search
 let getSortOrder: () => SortOrder | undefined
 
 const currentTimeOnLoad = new Date()
-
 const columnClass = (cell: Date | undefined) => {
   if (!cell) return 'daysSince0'
   // TODO: This probably doesn't take daylight savings and other weird shenanigans into account
