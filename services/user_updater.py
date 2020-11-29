@@ -160,6 +160,9 @@ def __set_user_points(user: User) -> None:
             # Used to allow searching for games by their worth
             # Run should be worth more than 1 point, not be a level and be made by WR holder
             if run._points >= 1 and not run.level and run._is_wr_time:
+                # TODO : Current issues with subcategories where they try to create at the same time bc in two threads
+                # Solution 1: Include subcategories as part of PRIMARY key
+                # Solution 2: Batch create/update AFTER all threads are done running
                 GameValues.create_or_update(
                     run_id=run.id_,
                     game_id=run.game,
