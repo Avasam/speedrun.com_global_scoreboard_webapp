@@ -46,6 +46,9 @@ const ScoreboardNavBar = (props: LoginInfoProps) =>
             target="about"
           >About</Nav.Link>
           <Nav.Link
+            href="/global-scoreboard/game-search"
+          >Game Search</Nav.Link>
+          <Nav.Link
             href="https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/issues"
             target="about"
           >Report a bug, issue or suggestion</Nav.Link>
