@@ -9,7 +9,7 @@ from models.core_models import Player
 from sqlalchemy import exc
 from typing import cast, Dict, Optional
 from services.user_updater import get_updated_user
-from services.utils import map_to_dto, UnderALotOfPressure, UserUpdaterError
+from services.utils import UnhandledThreadException, map_to_dto, UnderALotOfPressure, UserUpdaterError
 import configs
 import traceback
 
@@ -38,10 +38,13 @@ def update_player(name_or_id: str):
         else:
             return __do_update_player(name_or_id)
     except UserUpdaterError as exception:
-        error_message = "Error: {}\n{}".format(exception.args[0]["error"], exception.args[0]["details"])
+        error_message = f"Error: {exception.args[0]['error']}\n{exception.args[0]['details']}"
         return error_message, 424
+    except UnhandledThreadException as exception:
+        error_message = f"{type(exception).__name__}: {exception.args[0]}"
+        return error_message, 500
     except Exception:
-        error_message = "Error: Unknown\n{}".format(traceback.format_exc())
+        error_message = f"Error: Unknown\n{traceback.format_exc()}"
         return error_message, 500
 
 

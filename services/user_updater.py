@@ -10,7 +10,8 @@ from threading import Thread
 from services.user_updater_helpers import BasicJSONType, extract_valid_personal_bests, get_probability_terms, \
     get_subcategory_variables, keep_runs_before_soft_cutoff, MIN_LEADERBOARD_SIZE, update_runner_in_database, \
     extract_top_runs_and_score, extract_sorted_valid_runs_from_leaderboard
-from services.utils import map_to_dto, SpeedrunComError, start_and_wait_for_threads, UserUpdaterError
+from services.utils import map_to_dto, start_and_wait_for_threads, \
+    SpeedrunComError, UnhandledThreadException, UserUpdaterError
 from urllib.parse import unquote
 import configs
 import httplib2
@@ -25,6 +26,7 @@ TIME_BONUS_DIVISOR = 3600 * 12  # 12h (1/2 day) for +100%
 def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
     """Called from flask_app and AutoUpdateUsers.run()"""
     global threads_exceptions
+    # threads_exceptions: List[Exception] = []
     threads_exceptions = []
     text_output: str = p_user_id
     result_state: str = "info"
@@ -70,9 +72,10 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
                     errors_str = "Please report to: https://github.com/Avasam/Global_Speedrunning_Scoreboard/issues\n" \
                         "\nNot uploading data as some errors were caught during execution:\n"
                     if len(threads_exceptions) == 1:
-                        raise UserUpdaterError({
-                            "error": threads_exceptions[0]["error"],
-                            "details": errors_str + str(threads_exceptions[0]["details"])})
+                        raise UnhandledThreadException(threads_exceptions[0]["error"] +
+                                                       "\n" +
+                                                       errors_str +
+                                                       str(threads_exceptions[0]["details"]))
                     else:
                         error_str_items = Counter(
                             [f"Error: {e['error']}\n{e['details']}"
@@ -80,9 +83,7 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
                             .items()
                         for error, count in error_str_items:
                             errors_str += f"[x{count}] {error}\n"
-                        raise UserUpdaterError({
-                            "error": "Multiple Unhandled Exceptions",
-                            "details": errors_str})
+                        raise UnhandledThreadException(f"Multiple Unhandled Exceptions in threads\n{errors_str}")
             else:
                 cant_update_time = configs.last_updated_days[0]
                 text_output = f"This user has already been updated in the past {cant_update_time} day" \
@@ -176,7 +177,7 @@ def __set_user_points(user: User) -> None:
         except UserUpdaterError as exception:
             threads_exceptions.append(exception.args[0])
         except Exception:
-            threads_exceptions.append({"error": "Unhandled", "details": traceback.format_exc()})
+            threads_exceptions.append({"error": "Unhandled exception in thread", "details": traceback.format_exc()})
 
     if user._banned:
         user._points = 0
