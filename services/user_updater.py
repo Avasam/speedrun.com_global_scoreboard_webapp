@@ -31,7 +31,7 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
 
     try:
         user = User(p_user_id)
-        print("Update request for: {user._name}")
+        print(f"Update request for: {user._name}")
 
         try:
             __set_user_code_and_name(user)
