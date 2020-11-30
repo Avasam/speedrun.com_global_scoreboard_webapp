@@ -59,10 +59,12 @@ def extract_sorted_valid_runs_from_leaderboard(
 
     Returns the sorted valid runs from a leaderboard. Or empty list if the leaderboard is invalid.
     """
+    # Note: If needed in the future, level_fraction could be extracted from the leaderboard data
+    if len(leaderboard["runs"]) < MIN_LEADERBOARD_SIZE:
+        return []
     wr = leaderboard["runs"][0]["run"]
     wr_time = wr["times"]["primary_t"]
-    # Note: If needed in the future, level_fraction could be extracted from the leaderboard data
-    if wr_time < 60 * level_fraction or len(leaderboard["runs"]) < MIN_LEADERBOARD_SIZE:
+    if wr_time < 60 * level_fraction:
         return []
 
     is_board_known_speedrun = False
