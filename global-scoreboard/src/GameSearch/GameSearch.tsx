@@ -12,6 +12,7 @@ import paginationFactory, { PaginationListStandalone, PaginationProvider, Pagina
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import GameCategorySearch from './GameCategorySearchBar'
 import { Picky } from 'react-picky'
+import ScoreDropCalculator from './ScoreDropCalculator'
 import { apiGet } from '../fetchers/api'
 import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
 import { faLongArrowAltDown } from '@fortawesome/free-solid-svg-icons'
@@ -425,6 +426,7 @@ const GameSearch = () => {
         </PaginationProvider>
       }
     </ToolkitProvider>
+    <ScoreDropCalculator />
   </Container >
 }
 
