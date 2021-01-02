@@ -31,7 +31,7 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-optional-chaining": "^7.12.7",
-    "@types/jest": "^24.9.1",
+    "@types/jest": "^26.0.0",
     "@types/node": "^13.13.38",
     "@types/react": "^16.14.2",
     "@types/react-add-to-calendar": "^0.1.0",
