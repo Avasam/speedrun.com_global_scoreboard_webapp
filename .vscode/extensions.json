@@ -8,6 +8,7 @@
     "ms-vscode.vscode-typescript-tslint-plugin",
     "davidanson.vscode-markdownlint",
     "eamodio.gitlens",
-    "meganrogge.template-string-converter"
+    "meganrogge.template-string-converter",
+    "hookyqr.minify"
   ]
 }

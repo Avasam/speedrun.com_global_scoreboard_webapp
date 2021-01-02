@@ -1,4 +1,4 @@
-import 'react-add-to-calendar/dist/react-add-to-calendar.css'
+import 'react-add-to-calendar/dist/react-add-to-calendar.min.css'
 import { Container, List, ListItem, ListItemText, createStyles, makeStyles, Button, Select } from '@material-ui/core'
 import React, { FC, useEffect, useState } from 'react'
 import { Schedule, ScheduleDto } from '../models/Schedule'
@@ -7,8 +7,6 @@ import { TimeSlot } from '../models/TimeSlot'
 import { apiGet } from '../fetchers/Api'
 import moment from 'moment'
 import AddToCalendar from 'react-add-to-calendar'
-// import AddToCalendarHOC from 'react-add-to-calendar-hoc'
-// const AddToCalendarDropdown = AddToCalendarHOC(Button, Select)
 
 interface ScheduleRegistrationProps {
   scheduleId: number
@@ -91,31 +89,16 @@ const ScheduleViewer: FC<ScheduleRegistrationProps> = (props: ScheduleRegistrati
                   primary={<>
                     {moment(timeSlot.dateTime).format(`ddd ${new DateFnsUtils().dateTime24hFormat}`)}
                     <div className={classes.addToCalendar}>
-
                       <AddToCalendar
                         event={{
                           title: scheduleState.name,
                           description: window.location.href,
                           location: '',
                           startTime: timeSlot.dateTime,
-                          endTime: (timeSlot.dateTime.setHours(timeSlot.dateTime.getHours() + 1), timeSlot.dateTime),
+                          endTime: moment(timeSlot.dateTime).add(1, 'h').toDate(),
                         }}
                         buttonLabel='Add to calendar'
                       />
-                      {/* <AddToCalendarDropdown
-                        // className={componentStyles}
-                        // linkProps={{
-                        //   className: linkStyles,
-                        // }}
-                        event={{
-                          description: window.location.href,
-                          duration: 1,
-                          // endDatetime: endDatetime.format('YYYYMMDDTHHmmssZ'),
-                          location: '',
-                          startDatetime: moment(timeSlot.dateTime).format('YYYYMMDDTHHmmssZ'),
-                          title: scheduleState.name,
-                        }}
-                      /> */}
                     </div>
                   </>}
                   secondary={
