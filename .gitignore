@@ -51,6 +51,7 @@ coverage.xml
 *.cover
 .hypothesis/
 coverage/
+.eslintcache
 
 # Translations
 *.mo

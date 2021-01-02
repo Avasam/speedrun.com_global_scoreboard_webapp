@@ -1,16 +1,23 @@
 {
   "plugins": [
     "@typescript-eslint",
-    "react"
+    "react",
+    "sonarjs",
+    "switch-case",
+    "unicorn",
+    "extra-rules"
   ],
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
-    "plugin:react/recommended"
+    "plugin:react/recommended",
+    "plugin:sonarjs/recommended",
+    "plugin:switch-case/recommended",
+    "plugin:unicorn/recommended"
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "ecmaVersion": 2020,
+    "ecmaVersion": 2021,
     "sourceType": "module",
     "ecmaFeatures": {
       "jsx": true
@@ -30,19 +37,124 @@
       "typescript": {}
     }
   },
+  "overrides": [
+    {
+      "files": [
+        "*.config.js",
+        "*-test.js",
+        "*.test.tsx",
+        "*.spec.js",
+        "environment.*",
+        "*.d.ts"
+      ],
+      "env": {
+        "browser": false,
+        "node": true,
+        "jest": true
+      },
+      "rules": {
+        "unicorn/filename-case": "off"
+      }
+    },
+    {
+      "files": [
+        "serviceWorker.ts"
+      ],
+      "rules": {
+        "unicorn/filename-case": "off"
+      }
+    }
+  ],
   "rules": {
-    "operator-assignment": [
+    // react overrides
+    "react/prop-types": "off",
+    // sonarjs/recommended overrides
+    "sonarjs/no-duplicate-string": "error",
+    // This rule does not correctly treat react's function components. See https://github.com/SonarSource/SonarJS/issues/2238
+    // Also react-app service workers template are at 22
+    "sonarjs/cognitive-complexity": [
       "error",
-      "always"
+      50
     ],
-    "semi": [
+    // unicorn/recommended overrides
+    "unicorn/catch-error-name": [
       "error",
-      "never"
+      {
+        "ignore": [
+          "^(err(ors)?|_)$"
+        ]
+      }
     ],
-    "quotes": [
+    "unicorn/consistent-function-scoping": "error",
+    "unicorn/custom-error-definition": "error",
+    "unicorn/empty-brace-spaces": "off",
+    "unicorn/filename-case": [
       "error",
-      "single"
+      {
+        "case": "pascalCase"
+      }
     ],
+    "unicorn/no-array-reduce": "warn",
+    "unicorn/no-keyword-prefix": [
+      "error",
+      {
+        "blacklist": [
+          "class",
+          "for",
+          "of"
+        ]
+      }
+    ],
+    "unicorn/no-nested-ternary": "off",
+    "unicorn/no-null": "off",
+    "unicorn/no-unsafe-regex": "warn",
+    "unicorn/no-unused-properties": "error",
+    "unicorn/no-useless-undefined": [
+      "error",
+      {
+        "checkArguments": false
+      }
+    ],
+    "unicorn/prefer-add-event-listener": "error",
+    "unicorn/prefer-query-selector": 0,
+    "unicorn/prefer-text-content": "error",
+    "unicorn/prevent-abbreviations": [
+      "error",
+      {
+        "checkDefaultAndNamespaceImports": false,
+        "checkShorthandImports": false,
+        "whitelist": {
+          "fn": true,
+          "args": true,
+          // environment config
+          "env": true,
+          // speedrun.com
+          "src": true,
+          "Src": true,
+          "SRC": true,
+          // fetch
+          "err": true,
+          "res": true,
+          // Query/URL params
+          "params": true,
+          "Params": true,
+          "param": true,
+          "Param": true,
+          // React props
+          "props": true,
+          "Props": true,
+          "ref": true,
+          "Ref": true
+        }
+      }
+    ],
+    // Bahmutov's extra-rules
+    "extra-rules/no-commented-out-code": "warn",
+    "extra-rules/potential-point-free": "error",
+    // Custom rules and  @typescript-eslint/recommended overrides (https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/src/configs/recommended.ts)
+    // Automatically deactivates ESLint rules (configured below) that are taken care of by TypeScript (https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/src/configs/eslint-recommended.ts)
+    // explicit types rules complicates things uselessly
+    "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/member-delimiter-style": [
       "error",
@@ -55,8 +167,205 @@
         }
       }
     ],
-    "sort-imports": "error",
-    // False positives should be infered from Typescript
-    "react/prop-types": "off"
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/no-extra-parens": [
+      "error",
+      "all",
+      {
+        "nestedBinaryExpressions": false
+      }
+    ],
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ],
+    // TODO: Check later if some "no-unnecessary-type-annotation" has been implemented
+    // see https://github.com/typescript-eslint/typescript-eslint/issues/295
+    // Custom rules and eslint:recommended overrides (https://eslint.org/docs/rules/)
+    "accessor-pairs": [
+      "error",
+      {
+        "enforceForClassMembers": true
+      }
+    ],
+    "array-callback-return": "error",
+    "block-scoped-var": "error",
+    "complexity": "error",
+    "default-case": "error",
+    "dot-location": [
+      "error",
+      "property"
+    ],
+    "eqeqeq": [
+      "error",
+      "smart"
+    ],
+    "func-name-matching": "error",
+    "func-names": [
+      "error",
+      "never"
+    ],
+    "function-paren-newline": [
+      "error",
+      "consistent"
+    ],
+    "grouped-accessor-pairs": [
+      "error",
+      "getBeforeSet"
+    ],
+    "id-length": [
+      "error",
+      {
+        "min": 3,
+        "max": 32,
+        "exceptions": [
+          "id",
+          "fn",
+          "fs",
+          // Unused result
+          "_",
+          "__",
+          // Iterations
+          "i",
+          "j",
+          "k",
+          // Comparison
+          "a",
+          "b",
+          // Date formats
+          "dd",
+          "mm",
+          "yy"
+        ]
+      }
+    ],
+    "indent": [
+      "error",
+      2,
+      {
+        "SwitchCase": 1
+      }
+    ],
+    "jsx-quotes": [
+      "error",
+      "prefer-single"
+    ],
+    "quotes": [
+      "error",
+      "single"
+    ],
+    // These rule does not correctly treat react's function components. See https://github.com/SonarSource/SonarJS/issues/2238
+    // Max very high as most of the react code lives in functions.
+    "max-lines": [
+      "error",
+      {
+        "max": 500,
+        "skipComments": true,
+        "skipBlankLines": true
+      }
+    ],
+    "max-lines-per-function": [
+      "error",
+      {
+        "max": 500,
+        "skipComments": true,
+        "skipBlankLines": true
+      }
+    ],
+    "no-alert": "error",
+    "no-await-in-loop": "error",
+    "no-console": [
+      "warn",
+      {
+        "allow": [
+          "error",
+          "warn",
+          "info"
+        ]
+      }
+    ],
+    "no-constructor-return": "error",
+    "no-dupe-else-if": "error",
+    "no-implied-eval": "error",
+    "no-inner-declarations": "error",
+    "no-lonely-if": "error",
+    "no-shadow": "error",
+    "no-unneeded-ternary": "error",
+    "no-warning-comments": [
+      "warn",
+      {
+        "terms": [
+          "TODO",
+          "FIX",
+          "XXX",
+          "FIXME"
+        ]
+      }
+    ],
+    "operator-assignment": [
+      "error",
+      "always"
+    ],
+    "operator-linebreak": [
+      "error",
+      "after",
+      {
+        "overrides": {
+          "?": "before",
+          ":": "before"
+        }
+      }
+    ],
+    "semi-style": "error",
+    "semi": [
+      "error",
+      "never"
+    ],
+    "space-before-function-paren": [
+      "error",
+      {
+        "anonymous": "always",
+        "named": "never"
+      }
+    ],
+    "space-infix-ops": [
+      "error",
+      {
+        "int32Hint": true
+      }
+    ],
+    "space-in-parens": "error",
+    "space-unary-ops": "error",
+    "wrap-regex": "error",
+    // [ES6] Custom rules and eslint:recommended overrides (https://eslint.org/docs/rules/#ecmascript-6)
+    "arrow-body-style": "error",
+    "arrow-parens": [
+      "error",
+      "as-needed"
+    ],
+    "arrow-spacing": "error",
+    "generator-star-spacing": "error",
+    "no-class-assign": "error",
+    "no-duplicate-imports": "error",
+    // TODO: Check for new 7.0.0-alpha.0 rules once it's no longuer in alpha
+    // "no-restricted-exports": "error",
+    "no-restricted-imports": "error",
+    "no-useless-computed-key": "error",
+    "no-useless-constructor": "error",
+    "no-useless-rename": "error",
+    "object-shorthand": "error",
+    "prefer-arrow-callback": "error",
+    "prefer-numeric-literals": "error",
+    "prefer-template": "error",
+    "require-yield": "error",
+    "rest-spread-spacing": "error",
+    // TODO: use better sort import
+    "sort-imports": "warn",
+    "symbol-description": "error",
+    "template-curly-spacing": "error",
+    "yield-star-spacing": "error"
   }
 }

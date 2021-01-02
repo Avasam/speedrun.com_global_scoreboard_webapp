@@ -9,7 +9,7 @@ const SrcApiKeyLink: FC = () => {
 
   return <span className='src-api-key-link'>
     <Link
-      className={srcNameInput.length ? '' : 'disabled'}
+      className={srcNameInput.length > 0 ? '' : 'disabled'}
       href={`https://www.speedrun.com/${srcNameInput}/settings/api`}
       target='src'
       rel='noopener'
@@ -17,11 +17,11 @@ const SrcApiKeyLink: FC = () => {
     <TextField
       name='src-name'
       placeholder='SRC name'
-      style={{ width: `${srcNameInput.length ? srcNameInput.length + 1 : 9}ch` }}
+      style={{ width: `${srcNameInput.length > 0 ? srcNameInput.length + 1 : 9}ch` }}
       onChange={handleNameChange}
     />
     <Link
-      className={srcNameInput.length ? '' : 'disabled'}
+      className={srcNameInput.length > 0 ? '' : 'disabled'}
       href={`https://www.speedrun.com/${srcNameInput}/settings/api`}
       target='src'
       rel='noopener'

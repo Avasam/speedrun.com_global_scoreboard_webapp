@@ -1,5 +1,3 @@
-/* eslint-disable react/display-name */
-/* eslint-disable react/prop-types */
 import 'react-bootstrap-table2-paginator/dist/react-bootstrap-table2-paginator.min.css'
 import './Scoreboard.css'
 import BootstrapTable, { Column } from 'react-bootstrap-table-next'
@@ -9,18 +7,14 @@ import React, { Component, MutableRefObject, forwardRef, useRef, useState } from
 import ToolkitProvider, { Search, SearchProps, ToolkitProviderProps } from 'react-bootstrap-table2-toolkit'
 import paginationFactory, { PaginationListStandalone, PaginationProvider, PaginationTotalStandalone, SizePerPageDropdownStandalone } from 'react-bootstrap-table2-paginator'
 import Configs from '../models/Configs'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import PlayerNameCell from './TableElements/PlayerNameCell'
 import PlayerScoreCell from './TableElements/PlayerScoreCell'
 import ScoreTitle from './TableElements/ScoreTitle'
-import { faLongArrowAltDown } from '@fortawesome/free-solid-svg-icons'
-import { faLongArrowAltUp } from '@fortawesome/free-solid-svg-icons'
+import sortCaret from './TableElements/SortCarret'
 const { SearchBar } = Search
 
 let getSortOrder: () => SortOrder | undefined
-
 const currentTimeOnLoad = new Date()
-
 const columnClass = (cell: Date | undefined) => {
   if (!cell) return 'daysSince0'
   // TODO: This probably doesn't take daylight savings and other weird shenanigans into account
@@ -31,15 +25,6 @@ const columnClass = (cell: Date | undefined) => {
   return 'daysSince0'
 }
 
-const sortCaret = (order?: SortOrder | null) =>
-  <>
-    {' '}
-    <span className="sortCarrets">
-      <FontAwesomeIcon className={order === 'asc' ? 'active' : ''} icon={faLongArrowAltDown} />
-      <FontAwesomeIcon className={order === 'desc' ? 'active' : ''} icon={faLongArrowAltUp} />
-    </span>
-  </>
-
 type FormatExtraDataProps = {
   currentUser: Player | null
   friends: Player[]
@@ -48,6 +33,27 @@ type FormatExtraDataProps = {
 }
 
 const dateFormat = { year: 'numeric', month: 'long', day: 'numeric' }
+
+const nameFormatter = (_cell: unknown, row: Player | undefined, _rowIndex: number, formatExtraData?: FormatExtraDataProps) =>
+  row &&
+  formatExtraData &&
+  <PlayerNameCell
+    player={row}
+    isFriend={formatExtraData.friends.some(friend => friend.userId === row.userId) || false}
+    isCurrentUser={formatExtraData.currentUser?.userId === row.userId}
+    handleOnUnfriend={formatExtraData.handleOnUnfriend}
+    handleOnBefriend={formatExtraData.handleOnBefriend}
+  />
+
+const scoreHeaderFormatter = () =>
+  <>
+    <ScoreTitle />
+    {sortCaret(getSortOrder())}
+  </>
+
+const scoreFormatter = (_cell: unknown, row: Player | undefined) =>
+  row &&
+  <PlayerScoreCell player={row} />
 
 const columns: Column[] = [
   {
@@ -58,30 +64,15 @@ const columns: Column[] = [
   {
     dataField: 'name',
     text: 'Name',
-    formatter: (_, row: Player | undefined, __, formatExtraData?: FormatExtraDataProps) =>
-      row &&
-      formatExtraData &&
-      <PlayerNameCell
-        player={row}
-        isFriend={formatExtraData.friends.some(friend => friend.userId === row.userId) || false}
-        isCurrentUser={formatExtraData.currentUser?.userId === row.userId}
-        handleOnUnfriend={formatExtraData.handleOnUnfriend}
-        handleOnBefriend={formatExtraData.handleOnBefriend}
-      />,
+    formatter: nameFormatter,
     sort: true,
   },
   {
     dataField: 'score',
     text: 'Score',
-    headerFormatter: (column, _, components) =>
-      <>
-        <ScoreTitle />
-        {sortCaret(getSortOrder())}
-      </>,
+    headerFormatter: scoreHeaderFormatter,
     searchable: false,
-    formatter: (_, row: Player | undefined) =>
-      row &&
-      <PlayerScoreCell player={row} />,
+    formatter: scoreFormatter,
     sort: true,
   },
   {
@@ -117,32 +108,30 @@ const sizePerPageRenderer: PaginationProps['sizePerPageRenderer'] = ({
   options,
   currSizePerPage,
   onSizePerPageChange,
-}) => (
-    <span className="react-bs-table-sizePerPage-dropdown float-right">
-      {'Show '}
-      <DropdownButton
-        id="pageDropDown"
-        variant="outline-primary"
-        alignRight
-        title={currSizePerPage}
-        style={{ display: 'inline-block' }}
-      >
-        {
-          options.map(option => {
-            return <Dropdown.Item
-              key={`data-page-${option.page}`}
-              href="#"
-              active={currSizePerPage === `${option.page}`}
-              onClick={() => onSizePerPageChange(option.page)}
-            >
-              {option.text}
-            </Dropdown.Item>
-          })
-        }
-      </DropdownButton>
-      {' entries'}
-    </span>
-  )
+}) =>
+  <span className='react-bs-table-sizePerPage-dropdown float-right'>
+    {'Show '}
+    <DropdownButton
+      id='pageDropDown'
+      variant='outline-primary'
+      alignRight
+      title={currSizePerPage}
+      style={{ display: 'inline-block' }}
+    >
+      {
+        options.map(option =>
+          <Dropdown.Item
+            key={`data-page-${option.page}`}
+            href='#'
+            active={currSizePerPage === `${option.page}`}
+            onClick={() => onSizePerPageChange(option.page)}
+          >
+            {option.text}
+          </Dropdown.Item>)
+      }
+    </DropdownButton>
+    {' entries'}
+  </span>
 
 const paginationOptions: PaginationProps = {
   custom: true,
@@ -155,14 +144,15 @@ const paginationOptions: PaginationProps = {
   sizePerPageRenderer,
 }
 
-const Legend = () => <span className="legend">
-  <br />
-  <label>Updated:</label>{' '}
-  <span className="daysSince0">This&nbsp;week</span>{', '}
-  <span className="daysSince1">This&nbsp;month</span>{', '}
-  <span className="daysSince2">In&nbsp;the&nbsp;last&nbsp;3&nbsp;months</span>{', '}
-  <span className="daysSince">Over&nbsp;3&nbsp;months&nbsp;ago</span>
-</span>
+const Legend = () =>
+  <span className='legend'>
+    <br />
+    <label>Updated:</label>{' '}
+    <span className='daysSince0'>This&nbsp;week</span>{', '}
+    <span className='daysSince1'>This&nbsp;month</span>{', '}
+    <span className='daysSince2'>In&nbsp;the&nbsp;last&nbsp;3&nbsp;months</span>{', '}
+    <span className='daysSince'>Over&nbsp;3&nbsp;months&nbsp;ago</span>
+  </span>
 
 type ScoreboardProps = {
   currentUser: Player | null
@@ -190,15 +180,15 @@ const buildSortFunction = (boostrapTable: BootstrapTable) => {
   }
 }
 
-const Scoreboard = forwardRef((props: ScoreboardProps, ref) => {
+const Scoreboard = forwardRef<ScoreboardRef, ScoreboardProps>((props, ref) => {
   (ref as MutableRefObject<ScoreboardRef>).current = {
     jumpToPlayer: (playerId: string) => {
       if (boostrapTableRef.current == null) throw new TypeError('boostrapTableRef.current is null or undefined')
       if (searchBarRef.current == null) throw new TypeError('searchBarRef.current is null or undefined')
       const sortedPlayers = [...props.players].sort(buildSortFunction(boostrapTableRef.current))
       const playerIndex = sortedPlayers.findIndex(player => player.userId === playerId)
-      const currSizePerPage = boostrapTableRef.current.paginationContext.currSizePerPage
-      const jumpToPage = Math.floor(playerIndex / Number(currSizePerPage)) + 1
+      const currentSizePerPage = boostrapTableRef.current.paginationContext.currSizePerPage
+      const jumpToPage = Math.floor(playerIndex / Number(currentSizePerPage)) + 1
 
       // Note: setState is used to ensure the table had time to update before jumping
       searchBarRef.current.props.onClear?.()
@@ -208,7 +198,7 @@ const Scoreboard = forwardRef((props: ScoreboardProps, ref) => {
 
   const searchBarRef = useRef<Component<SearchProps>>(null)
   const boostrapTableRef = useRef<BootstrapTable>(null)
-  const [page, goToPage] = useState<number | undefined>()
+  const [pageState, goToPage] = useState<number | undefined>()
 
   getSortOrder = () => boostrapTableRef.current?.sortContext.state.sortOrder
 
@@ -237,7 +227,7 @@ const Scoreboard = forwardRef((props: ScoreboardProps, ref) => {
             // HACK: Required to keep the state in sync. Will not cause rerenders
             onPageChange: goToPage,
             onSizePerPageChange: (_, page) => goToPage(page),
-            page,
+            page: pageState,
           })}
         >
           {(({ paginationProps, paginationTableProps }) =>
@@ -246,15 +236,15 @@ const Scoreboard = forwardRef((props: ScoreboardProps, ref) => {
               <SizePerPageDropdownStandalone {...paginationProps} />
               <BootstrapTable
                 ref={boostrapTableRef}
-                wrapperClasses="table-responsive"
+                wrapperClasses='table-responsive'
                 striped
                 rowClasses={(row?: Player) => rowClasses(row, props.currentUser, props.friends)}
                 {...toolkitprops.baseProps}
                 {...paginationTableProps}
                 noDataIndication={() =>
                   props.players.length === 0
-                    ? <Spinner animation="border" role="scoreboard">
-                      <span className="sr-only">Building the Scoreboard. Please wait...</span>
+                    ? <Spinner animation='border' role='scoreboard'>
+                      <span className='sr-only'>Building the Scoreboard. Please wait...</span>
                     </Spinner>
                     : <span>No matching records found</span>
                 }
@@ -275,5 +265,6 @@ const Scoreboard = forwardRef((props: ScoreboardProps, ref) => {
     </ToolkitProvider>
   </>
 })
+Scoreboard.displayName = 'Scoreboad'
 
 export default Scoreboard

@@ -1,2 +1,2 @@
 DELETE FROM game_values
-WHERE mean_time < 60;
+WHERE wr_time < 60;

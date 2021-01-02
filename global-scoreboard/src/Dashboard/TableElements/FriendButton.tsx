@@ -20,7 +20,7 @@ const FriendButton = (props: FriendButtonProps) => {
       : props.onBefriend(props.playerId)
 
   return <Button
-    variant="link"
+    variant='link'
     onClick={handleBefriendUnfriend}
     onMouseEnter={() => setIsHovered(true)}
     onMouseLeave={() => setIsHovered(false)}
@@ -28,11 +28,11 @@ const FriendButton = (props: FriendButtonProps) => {
     {
       props.isFriend
         ? isHovered
-          ? <FontAwesomeIcon className="fa-fw" color="crimson" icon={faTimes} />
-          : <FontAwesomeIcon className="fa-fw" color="crimson" icon={faHeartSolid} />
+          ? <FontAwesomeIcon className='fa-fw' color='crimson' icon={faTimes} />
+          : <FontAwesomeIcon className='fa-fw' color='crimson' icon={faHeartSolid} />
         : isHovered
-          ? <FontAwesomeIcon className="fa-fw" color="green" icon={faPlus} />
-          : <FontAwesomeIcon className="fa-fw" color="green" icon={faHeartEmpty} />
+          ? <FontAwesomeIcon className='fa-fw' color='green' icon={faPlus} />
+          : <FontAwesomeIcon className='fa-fw' color='green' icon={faHeartEmpty} />
     }
   </Button>
 }

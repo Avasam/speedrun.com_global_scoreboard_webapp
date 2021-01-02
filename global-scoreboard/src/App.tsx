@@ -7,7 +7,7 @@ import Dashboard from './Dashboard/Dashboard'
 import GameSearch from './GameSearch/GameSearch'
 import Player from './models/Player'
 import ScoreboardNavBar from './NavBar/ScoreboardNavBar'
-import { apiGet } from './fetchers/api'
+import { apiGet } from './fetchers/Api'
 
 const getCurrentUser = () => apiGet('users/current').then<{ user: Player | undefined }>(res => res.json())
 const getConfigs = () => apiGet('configs').then<ServerConfigs>(res => res.json())
@@ -18,7 +18,7 @@ const logout = (setCurrentUser: (user: null) => void) => {
 }
 
 const App: FC = () => {
-  const [currentUser, setCurrentUser] = useState<Player | undefined | null>(undefined)
+  const [currentUser, setCurrentUser] = useState<Player | undefined | null>()
 
   useEffect(() => {
     Promise
@@ -46,31 +46,31 @@ const App: FC = () => {
         onLogout={() => logout(setCurrentUser)}
       />
 
-      {window.location.pathname === '/global-scoreboard/game-search' && currentUser
+      {window.location.pathname === '/global-scoreboard/game-search'
         ? <GameSearch />
         : <Dashboard currentUser={currentUser} />
       }
       <footer>
         &copy; <a
-          href="https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/master/LICENSE"
-          target="about"
+          href='https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/master/LICENSE'
+          target='about'
         >Copyright</a> {new Date().getFullYear()} by <a
-          href="https://github.com/Avasam/"
-          target="about"
+          href='https://github.com/Avasam/'
+          target='about'
         >Samuel Therrien</a> (
-        <a href="https://www.twitch.tv/Avasam" target="about">
+        <a href='https://www.twitch.tv/Avasam' target='about'>
           Avasam<img
-            height="14"
-            alt="Twitch"
-            src="https://static.twitchcdn.net/assets/favicon-32-d6025c14e900565d6177.png"
+            height='14'
+            alt='Twitch'
+            src='https://static.twitchcdn.net/assets/favicon-32-d6025c14e900565d6177.png'
           ></img>
         </a>).
         Powered by <a
-          href="https://www.speedrun.com/"
-          target="src"
+          href='https://www.speedrun.com/'
+          target='src'
         >speedrun.com</a> and <a
-          href="https://www.pythonanywhere.com/"
-          target="about"
+          href='https://www.pythonanywhere.com/'
+          target='about'
         >PythonAnywhere</a>
       </footer>
     </div>

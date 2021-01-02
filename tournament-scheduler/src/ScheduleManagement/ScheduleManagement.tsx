@@ -1,11 +1,12 @@
 import { Button, Card, CardActions, CardContent, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Theme, makeStyles } from '@material-ui/core'
 import React, { FC, useEffect, useState } from 'react'
 import { Schedule, ScheduleDto, createDefaultSchedule } from '../models/Schedule'
-import { apiDelete, apiGet, apiPost, apiPut } from '../fetchers/api'
+import { apiDelete, apiGet, apiPost, apiPut } from '../fetchers/Api'
 import DeleteForever from '@material-ui/icons/DeleteForever'
 import { ScheduleWizard } from './ScheduleWizard'
 import { Styles } from '@material-ui/core/styles/withStyles'
 import User from '../models/User'
+import copyToClipboard from '../utils/Clipboard'
 
 const getSchedules = () =>
   apiGet('schedules')
@@ -40,8 +41,8 @@ const styles = {
 }
 
 const ScheduleManagement: FC<ScheduleManagementProps> = (props: ScheduleManagementProps) => {
-  const [schedules, setSchedules] = useState<Schedule[] | undefined>(undefined)
-  const [currentSchedule, setCurrentSchedule] = useState<Schedule | undefined>(undefined)
+  const [schedules, setSchedules] = useState<Schedule[] | undefined>()
+  const [currentSchedule, setCurrentSchedule] = useState<Schedule | undefined>()
 
   const handleEdit = (schedule?: Schedule) =>
     setCurrentSchedule(schedule)
@@ -84,20 +85,19 @@ const ScheduleManagement: FC<ScheduleManagementProps> = (props: ScheduleManageme
 
       <Button
         style={{ marginTop: styles.card.marginTop, width: styles.card.width }}
-        variant="contained"
-        color="primary"
+        variant='contained'
+        color='primary'
         onClick={() => handleEdit(createDefaultSchedule())}
       >
         Create new Schedule
       </Button>
-      {schedules && schedules.map(schedule =>
+      {schedules && schedules.reverse().map(schedule =>
         <ScheduleCard
           key={schedule.id}
           onDelete={handleDelete}
           onEdit={handleEdit}
           schedule={schedule}
-        />
-      )}
+        />)}
     </Container>
 }
 
@@ -108,7 +108,9 @@ type ScheduleCardProps = {
 }
 
 const ScheduleCard: FC<ScheduleCardProps> = (props: ScheduleCardProps) => {
-  const classes = makeStyles((styles as Styles<Theme, {}, 'card' | 'cardActions'>))()
+  // FIXME: Probably have to use types correctly
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  const classes = makeStyles(styles as Styles<Theme, {}, 'card' | 'cardActions'>)()
   const [open, setOpen] = React.useState(false)
 
   const handleClose = (confirmed: boolean) => {
@@ -116,62 +118,26 @@ const ScheduleCard: FC<ScheduleCardProps> = (props: ScheduleCardProps) => {
     setOpen(false)
   }
 
-  const oldCopyToClipboard = (text: string) => {
-    const textArea = document.createElement('textarea')
-    textArea.value = text
-    textArea.style.position = 'fixed'  // Avoid scrolling to bottom
-    document.body.appendChild(textArea)
-    textArea.focus()
-    textArea.select()
-    textArea.setSelectionRange(0, 99999) // For mobile devices
-
-    try {
-      const successful = document.execCommand('copy')
-      if (!successful) throw new Error('execCommand failed')
-      console.info('text copied to clipboard successfully using textarea')
-    } catch (err) {
-      alert(`Could not copy text: ${err}`)
-      console.error('Could not copy text using textarea: ', err)
-    }
-
-    document.body.removeChild(textArea)
-  }
-
-  const copyToClipboard = (text: string) => {
-    if (!navigator.clipboard) {
-      oldCopyToClipboard(text)
-      return
-    }
-
-    navigator.clipboard.writeText(text).then(
-      () => console.info('text copied to clipboard successfully'),
-      (err) => {
-        alert(`Could not copy text: ${err}`)
-        console.error('Could not copy text: ', err)
-      },
-    )
-  }
-
   return <Card className={classes.card}>
     <CardContent>
       <span>{props.schedule.name}</span>
       <IconButton
         style={{ color: 'red' }}
-        color="secondary"
-        aria-label="delete schedule"
-        component="button"
+        color='secondary'
+        aria-label='delete schedule'
+        component='button'
         onClick={() => setOpen(true)}
       ><DeleteForever /></IconButton>
 
       <Dialog
         open={open}
         onClose={handleClose}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
+        aria-labelledby='alert-dialog-title'
+        aria-describedby='alert-dialog-description'
       >
-        <DialogTitle id="alert-dialog-title">Permanently delete this schedule?</DialogTitle>
+        <DialogTitle id='alert-dialog-title'>Permanently delete this schedule?</DialogTitle>
         <DialogContent>
-          <DialogContentText id="alert-dialog-description">
+          <DialogContentText id='alert-dialog-description'>
             Are you sure that you want to delete &quot;{props.schedule.name}&quot; forever?
             This action will take effect immediatly and is irreversible.
             <strong><i> You will not be able to retrieve this schedule after this point!</i></strong>
@@ -183,8 +149,8 @@ const ScheduleCard: FC<ScheduleCardProps> = (props: ScheduleCardProps) => {
           </Button>
           <Button
             onClick={() => handleClose(true)}
-            variant="outlined"
-            color="secondary"
+            variant='outlined'
+            color='secondary'
             style={{ color: 'red' }}
           >
             <strong>Yes, delete this schedule</strong>
@@ -195,13 +161,13 @@ const ScheduleCard: FC<ScheduleCardProps> = (props: ScheduleCardProps) => {
     </CardContent>
     <CardActions className={classes.cardActions}>
       <Button
-        size="small"
+        size='small'
         onClick={() => props.onEdit(props.schedule)}
       >
         Edit
       </Button>
       <Button
-        size="small"
+        size='small'
         onClick={() => {
           localStorage.removeItem('register')
           window.location.href = `${window.location.pathname}?view=${props.schedule.id}`
@@ -210,7 +176,7 @@ const ScheduleCard: FC<ScheduleCardProps> = (props: ScheduleCardProps) => {
         Open public page
       </Button>
       <Button
-        size="small"
+        size='small'
         onClick={() => copyToClipboard(`${props.schedule.registrationLink}`)}
       >
         Copy registration link

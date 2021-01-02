@@ -1,5 +1,11 @@
+
+/* Buttons' text in nav-bar should not wrap */
+.navbar .btn {
+  white-space: nowrap;
+}
+
+.navbar-nav,
 .navbar-text {
-  padding-left: 0.5em;
   padding-right: 0.5em;
 }
 
@@ -21,6 +27,7 @@
   border-top-right-radius: 0.25rem;
   border-bottom-right-radius: 0.25rem;
 }
+
 /* Mobile */
 @media screen and (max-width: 382px) {
   .input-group-prepend > .input-group-text{

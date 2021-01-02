@@ -10,7 +10,8 @@ from threading import Thread
 from services.user_updater_helpers import BasicJSONType, extract_valid_personal_bests, get_probability_terms, \
     get_subcategory_variables, keep_runs_before_soft_cutoff, MIN_LEADERBOARD_SIZE, update_runner_in_database, \
     extract_top_runs_and_score, extract_sorted_valid_runs_from_leaderboard
-from services.utils import map_to_dto, SpeedrunComError, start_and_wait_for_threads, UserUpdaterError
+from services.utils import map_to_dto, start_and_wait_for_threads, \
+    SpeedrunComError, UnhandledThreadException, UserUpdaterError
 from urllib.parse import unquote
 import configs
 import httplib2
@@ -25,13 +26,14 @@ TIME_BONUS_DIVISOR = 3600 * 12  # 12h (1/2 day) for +100%
 def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
     """Called from flask_app and AutoUpdateUsers.run()"""
     global threads_exceptions
+    # threads_exceptions: List[Exception] = []
     threads_exceptions = []
     text_output: str = p_user_id
     result_state: str = "info"
 
     try:
         user = User(p_user_id)
-        print("Update request for: {user._name}")
+        print(f"Update request for: {user._name}")
 
         try:
             __set_user_code_and_name(user)
@@ -70,9 +72,10 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
                     errors_str = "Please report to: https://github.com/Avasam/Global_Speedrunning_Scoreboard/issues\n" \
                         "\nNot uploading data as some errors were caught during execution:\n"
                     if len(threads_exceptions) == 1:
-                        raise UserUpdaterError({
-                            "error": threads_exceptions[0]["error"],
-                            "details": errors_str + threads_exceptions[0]["details"]})
+                        raise UnhandledThreadException(threads_exceptions[0]["error"] +
+                                                       "\n" +
+                                                       errors_str +
+                                                       str(threads_exceptions[0]["details"]))
                     else:
                         error_str_items = Counter(
                             [f"Error: {e['error']}\n{e['details']}"
@@ -80,9 +83,7 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
                             .items()
                         for error, count in error_str_items:
                             errors_str += f"[x{count}] {error}\n"
-                        raise UserUpdaterError({
-                            "error": "Multiple Unhandled Exceptions",
-                            "details": errors_str})
+                        raise UnhandledThreadException(f"Multiple Unhandled Exceptions in threads\n{errors_str}")
             else:
                 cant_update_time = configs.last_updated_days[0]
                 text_output = f"This user has already been updated in the past {cant_update_time} day" \
@@ -160,6 +161,9 @@ def __set_user_points(user: User) -> None:
             # Used to allow searching for games by their worth
             # Run should be worth more than 1 point, not be a level and be made by WR holder
             if run._points >= 1 and not run.level and run._is_wr_time:
+                # TODO : Current issues with subcategories where they try to create at the same time bc in two threads
+                # Solution 1: Include subcategories as part of PRIMARY key
+                # Solution 2: Batch create/update AFTER all threads are done running
                 GameValues.create_or_update(
                     run_id=run.id_,
                     game_id=run.game,
@@ -173,7 +177,7 @@ def __set_user_points(user: User) -> None:
         except UserUpdaterError as exception:
             threads_exceptions.append(exception.args[0])
         except Exception:
-            threads_exceptions.append({"error": "Unhandled", "details": traceback.format_exc()})
+            threads_exceptions.append({"error": "Unhandled exception in thread", "details": traceback.format_exc()})
 
     if user._banned:
         user._points = 0
@@ -195,28 +199,28 @@ def __set_user_points(user: User) -> None:
     user._point_distribution_str = "\n" + json.dumps([map_to_dto(top_runs), map_to_dto(lower_runs)])
 
 
-def __set_run_points(self) -> None:
-    self._points = 0
+def __set_run_points(run: Run) -> None:
+    run._points = 0
     # If the run is an Individual Level, adapt the request url
-    lvl_cat_str = "level/{level}/".format(level=self.level) if self.level else "category/"
+    lvl_cat_str = "level/{level}/".format(level=run.level) if run.level else "category/"
     url = "https://www.speedrun.com/api/v1/leaderboards/{game}/" \
         "{lvl_cat_str}{category}?video-only=true&embed=players".format(
-            game=self.game,
+            game=run.game,
             lvl_cat_str=lvl_cat_str,
-            category=self.category)
-    for var_id, var_value in self.variables.items():
+            category=run.category)
+    for var_id, var_value in run.variables.items():
         url += "&var-{id}={value}".format(id=var_id, value=var_value)
     leaderboard = SrcRequest.get_cached_response_or_new(url)
 
-    valid_runs = extract_sorted_valid_runs_from_leaderboard(leaderboard["data"], self.level_fraction)
-    original_population = len(valid_runs)
+    valid_runs = extract_sorted_valid_runs_from_leaderboard(leaderboard["data"], run.level_fraction)
+    len_valid_runs = len(valid_runs)
 
     # CHECK: Avoid useless computation and errors
-    if original_population < MIN_LEADERBOARD_SIZE:
+    if len_valid_runs < MIN_LEADERBOARD_SIZE:
         return
 
     # Remove last 5%
-    valid_runs = valid_runs[:int(original_population * 0.95) or None]
+    valid_runs = valid_runs[:int(len_valid_runs * 0.95) or None]
 
     # Find the time that's most often repeated in the leaderboard
     # (after the 80th percentile) and cut off everything after that
@@ -231,7 +235,7 @@ def __set_run_points(self) -> None:
         return
 
     # Get the +- deviation from the mean
-    signed_deviation = mean - self.primary_t
+    signed_deviation = mean - run.primary_t
     # Get the deviation from the mean of the worse time as a positive number
     worst_time = valid_runs[-1]["run"]["times"]["primary_t"]
     lowest_deviation = worst_time - mean
@@ -257,10 +261,10 @@ def __set_run_points(self) -> None:
     length_bonus = 1 + (wr_time / TIME_BONUS_DIVISOR)
 
     # Give points, hard cap to 6 character
-    self._points = (exp(e_exponent) - 1) * 10 * length_bonus * self.level_fraction
+    run._points = (exp(e_exponent) - 1) * 10 * length_bonus * run.level_fraction
 
     # Set category name
-    self.category_name = re.sub(
+    run.category_name = re.sub(
         r"((\d\d)$|Any)(?!%)",
         r"\1%",
         unquote(leaderboard["data"]["weblink"].split('#')[1])
@@ -270,5 +274,5 @@ def __set_run_points(self) -> None:
     )
 
     # Set game search data
-    self._is_wr_time = wr_time == self.primary_t
-    self._mean_time = mean
+    run._is_wr_time = wr_time == run.primary_t
+    run._mean_time = mean

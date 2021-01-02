@@ -3,7 +3,7 @@ from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import orm, text
 from typing import Any, Dict, List, Optional, Tuple, Union
-from services.utils import get_file, SpeedrunComError
+from services.utils import get_file, SpeedrunComError, UserUpdaterError
 import sys
 import traceback
 import uuid
@@ -44,14 +44,16 @@ class Player(db.Model):
                 {"X-API-Key": api_key}
             )["data"]
         except SpeedrunComError:
-            return None, 'Invalid API key.'
+            return None, 'Invalid SRC API key'
+        except UserUpdaterError as exception:
+            return None, f"Error: {exception.args[0]['error']}\n{exception.args[0]['details']}"
         except Exception:
             print("\nError: Unknown\n{}".format(traceback.format_exc()))
             return None, traceback.format_exc()
 
         user_id: Optional[str] = data["id"]
         if not user_id:  # Confirms wether the API key is valid
-            return None, 'Invalid API key.'
+            return None, 'Invalid SRC API key'
 
         user_name: str = data["names"]["international"]
         print(f"Logging in '{user_id}' ({user_name})")
