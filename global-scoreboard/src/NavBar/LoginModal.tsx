@@ -32,9 +32,11 @@ const LoginModal = (props: LoginModalProps) => {
       })
       .catch((err: Response) => {
         if (err.status === 401) {
-          setLoginErrorMessage('Invalid SRC API key')
+          err.json()
+            .then(data => data.message)
+            .then(setLoginErrorMessage)
         } else {
-          setLoginErrorMessage('Unknown error')
+          setLoginErrorMessage('Something went wrong')
           console.error(err)
         }
       })
