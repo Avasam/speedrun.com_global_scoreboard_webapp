@@ -20,7 +20,6 @@ or just add negative padding on Collapse, thought that feels hacky */
 }
 
 .time-slot-row.time-slot-row .MuiFormControl-root {
-  min-width: 1px;
   margin: 12px 0 0;
 }
 
@@ -30,7 +29,8 @@ or just add negative padding on Collapse, thought that feels hacky */
 
 .MuiFormControlLabel-root.MuiFormControlLabel-root {
   width: fit-content;
-  margin: 12px -8px;
+  margin: 12px;
+  margin-left: -8px;
   padding-right: 6px;
 }
 

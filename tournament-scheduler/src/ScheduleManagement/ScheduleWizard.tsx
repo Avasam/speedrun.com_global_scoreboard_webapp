@@ -1,6 +1,6 @@
 import './ScheduleWizard.css'
 import { Button, ButtonGroup, Card, CardActions, CardContent, Checkbox, Collapse, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormControlLabel, FormGroup, IconButton, Input, InputAdornment, InputBaseComponentProps, InputLabel, List, ListItem, ListItemText, TextField } from '@material-ui/core'
-import { DateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
+import { DatePicker, DateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
 import React, { FC, useState } from 'react'
 import { TimeSlot, createDefaultTimeSlot, minutesStep } from '../models/TimeSlot'
 import { apiDelete, apiPut } from '../fetchers/Api'
@@ -15,6 +15,7 @@ import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date'
 import { Moment } from 'moment'
 import Registration from '../models/Registration'
 import { Schedule } from '../models/Schedule'
+import { tomorrowFlat } from '../utils/Date'
 
 // TODO: Extract TimeSlot / RegistrationList
 
@@ -57,10 +58,11 @@ const NonZeroNumberInput = (props: NonZeroNumberInputProps) => {
 
 export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardProps) => {
   const [schedule, setSchedule] = useState(props.schedule)
+  const [scheduleDeadline, setScheduleDeadline] = useState<Date | undefined>(tomorrowFlat())
 
-  const editTimeSlotDateTime = (moment: Moment | null, index: number) => {
-    if (!moment) return
-    const date = moment.toDate()
+  const editTimeSlotDateTime = (momentDate: Moment | null, index: number) => {
+    if (!momentDate) return
+    const date = momentDate.toDate()
     schedule.timeSlots[index].dateTime = date
     schedule.timeSlots.sort(TimeSlot.compareFn)
     setSchedule({
@@ -125,19 +127,42 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
               name: event.target.value,
             })}
           />
-          <FormControlLabel
-            label='Active'
-            control={
-              <Checkbox
-                checked={schedule.active}
-                onChange={event => setSchedule({
-                  ...schedule,
-                  registrationLink: schedule.registrationLink,
-                  active: event.target.checked,
-                })}
-                color='primary' />
-            }
-          />
+          <div style={{ display: 'flex', margin: '12px 0' }}>
+            <FormControlLabel
+              label='Active'
+              control={
+                <Checkbox
+                  checked={schedule.active}
+                  onChange={event => setSchedule({
+                    ...schedule,
+                    registrationLink: schedule.registrationLink,
+                    active: event.target.checked,
+                  })}
+                  color='primary' />
+              }
+            />
+
+            <MuiPickersUtilsProvider utils={DateFnsUtils}>
+              <DatePicker
+                id='schedule-deadline'
+                label='Registration deadline'
+                value={scheduleDeadline}
+                onChange={momentDate => setScheduleDeadline(momentDate?.toDate())}
+                // TODO: minDate should be replaced by maxDate where it's the earliest timeslot
+                minDate={tomorrowFlat()}
+                disablePast={true}
+                InputProps={{
+                  endAdornment:
+                    <InputAdornment position='end'>
+                      <IconButton>
+                        <Event />
+                      </IconButton>
+                    </InputAdornment>
+                  ,
+                }}
+              />
+            </MuiPickersUtilsProvider>
+          </div>
 
           <Button style={{ width: 'fit-content' }} variant='contained' color='primary' onClick={addNewTimeSlot}>
             Add a time slot

@@ -108,7 +108,7 @@ type ScheduleCardProps = {
 }
 
 const ScheduleCard: FC<ScheduleCardProps> = (props: ScheduleCardProps) => {
-  // FIXME: Probably have to use types correctly
+  // FIXME: Probably have to use styles correctly
   // eslint-disable-next-line @typescript-eslint/ban-types
   const classes = makeStyles(styles as Styles<Theme, {}, 'card' | 'cardActions'>)()
   const [open, setOpen] = React.useState(false)
