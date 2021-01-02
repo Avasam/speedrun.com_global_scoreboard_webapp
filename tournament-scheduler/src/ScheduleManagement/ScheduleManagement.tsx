@@ -91,7 +91,7 @@ const ScheduleManagement: FC<ScheduleManagementProps> = (props: ScheduleManageme
       >
         Create new Schedule
       </Button>
-      {schedules && schedules.map(schedule =>
+      {schedules && schedules.reverse().map(schedule =>
         <ScheduleCard
           key={schedule.id}
           onDelete={handleDelete}
