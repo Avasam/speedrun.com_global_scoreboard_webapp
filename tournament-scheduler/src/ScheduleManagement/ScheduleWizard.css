@@ -37,3 +37,7 @@ or just add negative padding on Collapse, thought that feels hacky */
 .time-slot-row .number-input-container .MuiFormControl-root {
   width: 64px;
 }
+
+#schedule-deadline-helper-text {
+  width: max-content; /* Ensures error text does not wrap uselessly */
+}

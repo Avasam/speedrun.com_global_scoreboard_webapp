@@ -41,7 +41,7 @@ const styles = {
 }
 
 const ScheduleManagement: FC<ScheduleManagementProps> = (props: ScheduleManagementProps) => {
-  const [schedules, setSchedules] = useState<Schedule[] | undefined>()
+  const [schedules, setSchedules] = useState<Schedule[]>([])
   const [currentSchedule, setCurrentSchedule] = useState<Schedule | undefined>()
 
   const handleEdit = (schedule?: Schedule) =>
@@ -49,7 +49,7 @@ const ScheduleManagement: FC<ScheduleManagementProps> = (props: ScheduleManageme
 
   const handleDelete = (scheduleId: number) =>
     deleteSchedule(scheduleId)
-      .then(() => setSchedules(schedules?.filter(schedule => schedule.id !== scheduleId)))
+      .then(() => setSchedules(schedules.filter(schedule => schedule.id !== scheduleId)))
       .catch(console.error)
 
   const handleSave = (schedule: ScheduleDto) => {
@@ -59,7 +59,7 @@ const ScheduleManagement: FC<ScheduleManagementProps> = (props: ScheduleManageme
     savePromise
       .then(() => {
         getSchedules()
-          .then(setSchedules)
+          .then(res => setSchedules(res?.reverse() || []))
           .catch(console.error)
         setCurrentSchedule(undefined)
       })
@@ -68,7 +68,7 @@ const ScheduleManagement: FC<ScheduleManagementProps> = (props: ScheduleManageme
 
   useEffect(() => {
     getSchedules()
-      .then(setSchedules)
+      .then(res => setSchedules(res?.reverse() || []))
       .catch(console.error)
   }, [])
 
@@ -91,7 +91,7 @@ const ScheduleManagement: FC<ScheduleManagementProps> = (props: ScheduleManageme
       >
         Create new Schedule
       </Button>
-      {schedules && schedules.reverse().map(schedule =>
+      {schedules.map(schedule =>
         <ScheduleCard
           key={schedule.id}
           onDelete={handleDelete}

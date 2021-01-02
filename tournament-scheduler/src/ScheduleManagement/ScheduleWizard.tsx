@@ -58,7 +58,7 @@ const NonZeroNumberInput = (props: NonZeroNumberInputProps) => {
 
 export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardProps) => {
   const [schedule, setSchedule] = useState(props.schedule)
-  const [scheduleDeadline, setScheduleDeadline] = useState<Date | undefined>(tomorrowFlat())
+  const [scheduleDeadline, setScheduleDeadline] = useState<Date>(tomorrowFlat())
 
   const editTimeSlotDateTime = (momentDate: Moment | null, index: number) => {
     if (!momentDate) return
@@ -114,6 +114,8 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
     })
   }
 
+  const earliestTimeslotDate = schedule.timeSlots.map(timeSlot => timeSlot.dateTime)[0]
+
   return <Container>
     <Card>
       <CardContent>
@@ -147,10 +149,10 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
                 id='schedule-deadline'
                 label='Registration deadline'
                 value={scheduleDeadline}
-                onChange={momentDate => setScheduleDeadline(momentDate?.toDate())}
-                // TODO: minDate should be replaced by maxDate where it's the earliest timeslot
-                minDate={tomorrowFlat()}
-                disablePast={true}
+                onChange={momentDate => setScheduleDeadline(momentDate?.toDate() || tomorrowFlat())}
+                maxDate={earliestTimeslotDate}
+                maxDateMessage='Registrations should close at most the day of the earliest time slot'
+                disablePast={earliestTimeslotDate > new Date()}
                 InputProps={{
                   endAdornment:
                     <InputAdornment position='end'>

@@ -1,3 +1,5 @@
+// Note: Let's stay as close to the original types as possible, even if they're vague
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-duplicate-imports */
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable unicorn/no-keyword-prefix */
@@ -38,6 +40,8 @@
 type RowFieldValue = ReactText | Date | TODO
 type TODO = any
 type Pagination = TODO
+// Note: Not my TODO
+// eslint-disable-next-line no-warning-comments
 // TODO: check missings : https://react-bootstrap-table.github.io/react-bootstrap-table2/docs/pagination-props.html
 interface PaginationProps {
   custom?: boolean
