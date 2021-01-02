@@ -63,3 +63,16 @@ p, .paragraph {
   height: 40px;
   max-width: 90px; /* Enough to fit title at minimum supported width */
 }
+
+.react-add-to-calendar,
+.react-add-to-calendar .react-add-to-calendar__button,
+.react-add-to-calendar .react-add-to-calendar__dropdown,
+.react-add-to-calendar .react-add-to-calendar__dropdown ul li a {
+  z-index: 1;
+  color: inherit;
+  background-color: inherit;
+}
+
+.react-add-to-calendar ul {
+  padding: 0;
+}

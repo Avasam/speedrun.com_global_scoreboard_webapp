@@ -1,10 +1,14 @@
-import { Container, List, ListItem, ListItemText, createStyles, makeStyles } from '@material-ui/core'
+import 'react-add-to-calendar/dist/react-add-to-calendar.css'
+import { Container, List, ListItem, ListItemText, createStyles, makeStyles, Button, Select } from '@material-ui/core'
 import React, { FC, useEffect, useState } from 'react'
 import { Schedule, ScheduleDto } from '../models/Schedule'
 import DateFnsUtils from '@date-io/moment'
 import { TimeSlot } from '../models/TimeSlot'
 import { apiGet } from '../fetchers/Api'
 import moment from 'moment'
+import AddToCalendar from 'react-add-to-calendar'
+// import AddToCalendarHOC from 'react-add-to-calendar-hoc'
+// const AddToCalendarDropdown = AddToCalendarHOC(Button, Select)
 
 interface ScheduleRegistrationProps {
   scheduleId: number
@@ -33,6 +37,14 @@ const useStyles = makeStyles(theme =>
       paddingTop: 0,
       paddingBottom: 0,
     },
+    addToCalendar: {
+      marginTop: theme.spacing(1.25),
+      marginLeft: theme.spacing(2),
+      marginBottom: 10,
+      display: 'inline-block',
+      color: theme.palette.text.primary,
+      backgroundColor: theme.palette.background.default,
+    }
   }))
 
 const getSchedule = (id: number) =>
@@ -40,7 +52,7 @@ const getSchedule = (id: number) =>
     .then(res =>
       res.json().then((scheduleDto: ScheduleDto) => new Schedule(scheduleDto)))
 
-const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegistrationProps) => {
+const ScheduleViewer: FC<ScheduleRegistrationProps> = (props: ScheduleRegistrationProps) => {
   const [scheduleState, setScheduleState] = useState<Schedule | null | undefined>()
   const classes = useStyles()
 
@@ -76,7 +88,36 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
               subheader={
                 <ListItemText
                   className={classes.rootHeader}
-                  primary={moment(timeSlot.dateTime).format(`ddd ${new DateFnsUtils().dateTime24hFormat}`)}
+                  primary={<>
+                    {moment(timeSlot.dateTime).format(`ddd ${new DateFnsUtils().dateTime24hFormat}`)}
+                    <div className={classes.addToCalendar}>
+
+                      <AddToCalendar
+                        event={{
+                          title: scheduleState.name,
+                          description: window.location.href,
+                          location: '',
+                          startTime: timeSlot.dateTime,
+                          endTime: (timeSlot.dateTime.setHours(timeSlot.dateTime.getHours() + 1), timeSlot.dateTime),
+                        }}
+                        buttonLabel='Add to calendar'
+                      />
+                      {/* <AddToCalendarDropdown
+                        // className={componentStyles}
+                        // linkProps={{
+                        //   className: linkStyles,
+                        // }}
+                        event={{
+                          description: window.location.href,
+                          duration: 1,
+                          // endDatetime: endDatetime.format('YYYYMMDDTHHmmssZ'),
+                          location: '',
+                          startDatetime: moment(timeSlot.dateTime).format('YYYYMMDDTHHmmssZ'),
+                          title: scheduleState.name,
+                        }}
+                      /> */}
+                    </div>
+                  </>}
                   secondary={
                     `(${timeSlot.registrations.length} / ${timeSlot.maximumEntries}` +
                     ` entr${timeSlot.registrations.length === 1 ? 'y' : 'ies'})`
@@ -120,4 +161,4 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
   </Container>
 }
 
-export default ScheduleRegistration
+export default ScheduleViewer

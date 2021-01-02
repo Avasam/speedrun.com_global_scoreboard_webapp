@@ -149,7 +149,7 @@
       }
     ],
     // Bahmutov's extra-rules
-    "extra-rules/no-commented-out-code": "error",
+    "extra-rules/no-commented-out-code": "warn",
     "extra-rules/potential-point-free": "error",
     // Custom rules and  @typescript-eslint/recommended overrides (https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/src/configs/recommended.ts)
     // Automatically deactivates ESLint rules (configured below) that are taken care of by TypeScript (https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/src/configs/eslint-recommended.ts)
