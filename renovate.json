@@ -1,0 +1,9 @@
+{
+  "extends": [
+    "config:base",
+    ":preserveSemverRanges",
+    ":respectLatest"
+  ],
+  "baseBranches": ["develop"],
+  "ignorePaths": ["dependencies"]
+}
