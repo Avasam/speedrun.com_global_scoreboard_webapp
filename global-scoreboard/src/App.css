@@ -1,5 +1,7 @@
 footer {
   text-align: center;
+  width: max-content;
+  margin: auto;
 }
 
 /* Fix close button appearing squished by landing in-between pixels */

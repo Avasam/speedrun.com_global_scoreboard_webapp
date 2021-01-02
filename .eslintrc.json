@@ -278,7 +278,7 @@
     "no-alert": "error",
     "no-await-in-loop": "error",
     "no-console": [
-      "error",
+      "warn",
       {
         "allow": [
           "error",

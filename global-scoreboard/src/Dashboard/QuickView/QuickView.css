@@ -1,3 +1,7 @@
+.quick-view {
+  width: 100%;
+}
+
 .quick-view th:nth-child(3) {
   min-width: 76px; /* Score (i) */
 }
