@@ -130,7 +130,7 @@ def get_probability_terms(pbs: List[BasicJSONType]):
     return mean, standard_deviation, population
 
 
-def keep_runs_before_soft_cutoff(runs: List[BasicJSONType], ):
+def keep_runs_before_soft_cutoff(runs: List[BasicJSONType]):
     i: int = len(runs)
     cut_off_80th_percentile: int = runs[int(i*0.8)]["run"]["times"]["primary_t"]
     count: int = 0

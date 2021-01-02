@@ -3,7 +3,7 @@ import { Button, ButtonGroup, Card, CardActions, CardContent, Checkbox, Collapse
 import { DateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
 import React, { FC, useState } from 'react'
 import { TimeSlot, createDefaultTimeSlot, minutesStep } from '../models/TimeSlot'
-import { apiDelete, apiPut } from '../fetchers/api'
+import { apiDelete, apiPut } from '../fetchers/Api'
 import DateFnsUtils from '@date-io/moment'
 import DeleteForever from '@material-ui/icons/DeleteForever'
 import Event from '@material-ui/icons/Event'
@@ -126,7 +126,7 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
             })}
           />
           <FormControlLabel
-            label="Active"
+            label='Active'
             control={
               <Checkbox
                 checked={schedule.active}
@@ -135,11 +135,11 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
                   registrationLink: schedule.registrationLink,
                   active: event.target.checked,
                 })}
-                color="primary" />
+                color='primary' />
             }
           />
 
-          <Button style={{ width: 'fit-content' }} variant="contained" color='primary' onClick={addNewTimeSlot}>
+          <Button style={{ width: 'fit-content' }} variant='contained' color='primary' onClick={addNewTimeSlot}>
             Add a time slot
           </Button>
           {schedule.timeSlots.map((timeSlot: TimeSlot, index) =>
@@ -151,26 +151,25 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
               onEditTimeSlotDateTime={date => editTimeSlotDateTime(date, index)}
               onDuplicateTimeSlot={() => duplicateTimeSlot(index)}
               onRemoveTimeSlot={() => removeTimeSlot(index)}
-              onEditTimeSlotMaximumEntries={(maximumEntries) => editTimeSlotMaximumEntries(maximumEntries, index)}
+              onEditTimeSlotMaximumEntries={maximumEntries => editTimeSlotMaximumEntries(maximumEntries, index)}
               onEditTimeSlotparticipantsPerEntry={participantsPerEntry =>
                 editTimeSlotparticipantsPerEntry(participantsPerEntry, index)}
-            />
-          )}
+            />)}
         </FormGroup>
       </CardContent>
       <CardActions>
         <Button
-          size="small"
+          size='small'
           onClick={props.onCancel}
         >
           Cancel
         </Button>
         <Button
-          size="small"
+          size='small'
           onClick={() => props.onSave(schedule)}
         >
           Save
-      </Button>
+        </Button>
       </CardActions>
     </Card>
   </Container>
@@ -190,7 +189,8 @@ interface RegistrationProxy extends Registration {
 const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
   const [open, setOpen] = useState(false)
   const [registrationsProxy, setRegistrationsProxy] = useState<RegistrationProxy[]>(
-    JSON.parse(JSON.stringify(props.timeSlot.registrations)))
+    JSON.parse(JSON.stringify(props.timeSlot.registrations))
+  )
 
   const handleParticipantNameChange = (registration: RegistrationProxy, participantIndex: number, name: string) => {
     registration.hasChanged = true
@@ -229,12 +229,12 @@ const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
       })
       .catch(console.error)
 
-  return <Card raised={true} className="time-slot-row">
+  return <Card raised={true} className='time-slot-row'>
     <CardContent>
       <MuiPickersUtilsProvider utils={DateFnsUtils}>
         <DateTimePicker
           id={`time-slot-date-${props.id}`}
-          label="Date and time"
+          label='Date and time'
           value={props.timeSlot.dateTime}
           onChange={date => props.onEditTimeSlotDateTime(date)}
           minDate={new Date(2020, 0)}
@@ -242,17 +242,17 @@ const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
           ampm={false}
           minutesStep={minutesStep}
           InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
+            endAdornment:
+              <InputAdornment position='end'>
                 <IconButton>
                   <Event />
                 </IconButton>
               </InputAdornment>
-            ),
+            ,
           }}
         />
       </MuiPickersUtilsProvider>
-      <div className="number-input-container">
+      <div className='number-input-container'>
         <FormControl>
           <InputLabel htmlFor={`maximum-entries-${props.id}`}>Maximum entries</InputLabel>
           <Input
@@ -261,7 +261,7 @@ const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
             inputProps={{ min: '1' }}
             onFocus={event => event.target.select()}
             value={props.timeSlot.maximumEntries}
-            onChange={event => props.onEditTimeSlotMaximumEntries(parseInt(event.target.value, 10) || 1)}
+            onChange={event => props.onEditTimeSlotMaximumEntries(Number.parseInt(event.target.value, 10) || 1)}
             inputComponent={NonZeroNumberInput as FC<InputBaseComponentProps>}
           />
         </FormControl>
@@ -273,14 +273,14 @@ const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
             inputProps={{ min: '1' }}
             onFocus={event => event.target.select()}
             value={props.timeSlot.participantsPerEntry}
-            onChange={event => props.onEditTimeSlotparticipantsPerEntry(parseInt(event.target.value, 10) || 1)}
+            onChange={event => props.onEditTimeSlotparticipantsPerEntry(Number.parseInt(event.target.value, 10) || 1)}
             inputComponent={NonZeroNumberInput as FC<InputBaseComponentProps>}
           />
         </FormControl>
         <IconButton
-          color="primary"
-          aria-label="duplicate time slot"
-          component="button"
+          color='primary'
+          aria-label='duplicate time slot'
+          component='button'
           onClick={() => props.onDuplicateTimeSlot()}
         >
           <FileCopy />
@@ -288,9 +288,9 @@ const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
         {props.schedule.timeSlots.length > 1 &&
           <IconButton
             style={{ color: 'red' }}
-            color="secondary"
-            aria-label="remove time slot"
-            component="button"
+            color='secondary'
+            aria-label='remove time slot'
+            component='button'
             onClick={() => props.onRemoveTimeSlot()}
           >&times;</IconButton>
         }
@@ -311,7 +311,7 @@ const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
           />
           {open ? <ExpandLess /> : <ExpandMore />}
         </ListItem>
-        <Collapse in={open} timeout="auto" unmountOnExit style={{ paddingLeft: '16px' }}>
+        <Collapse in={open} timeout='auto' unmountOnExit style={{ paddingLeft: '16px' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap' }}>
             {props.timeSlot.registrations.length === 0
               ? <div>No one registered for this time slot yet.</div>
@@ -325,8 +325,7 @@ const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
                   onSave={handleSaveRegistrations}
                   onReset={handleResetRegistrations}
                   onParticipantNameChange={handleParticipantNameChange}
-                />
-              )}
+                />)}
           </div>
         </Collapse>
       </div>
@@ -353,7 +352,7 @@ const RegistrationList: FC<RegistrationListProps> = (props: RegistrationListProp
   }
 
   return <List
-    component="div"
+    component='div'
     dense={true}
     disablePadding
     subheader={
@@ -368,30 +367,30 @@ const RegistrationList: FC<RegistrationListProps> = (props: RegistrationListProp
         />
         <ButtonGroup
           style={{ marginLeft: '16px' }}
-          color="primary"
-          size="small"
+          color='primary'
+          size='small'
           disabled={!props.registration.hasChanged}
         >
-          <Button color="primary" onClick={() => props.onSave(props.registration)}>Save</Button>
-          <Button color="secondary" onClick={() => props.onReset(props.index)}>Reset</Button>
+          <Button color='primary' onClick={() => props.onSave(props.registration)}>Save</Button>
+          <Button color='secondary' onClick={() => props.onReset(props.index)}>Reset</Button>
         </ButtonGroup>
         <IconButton
           style={{ color: 'red' }}
-          color="secondary"
-          aria-label="remove time slot"
-          component="button"
+          color='secondary'
+          aria-label='remove time slot'
+          component='button'
           onClick={() => setOpen(true)}
         ><DeleteForever /></IconButton>
 
         <Dialog
           open={open}
           onClose={handleClose}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
+          aria-labelledby='alert-dialog-title'
+          aria-describedby='alert-dialog-description'
         >
-          <DialogTitle id="alert-dialog-title">Permanently delete this entry?</DialogTitle>
+          <DialogTitle id='alert-dialog-title'>Permanently delete this entry?</DialogTitle>
           <DialogContent>
-            <DialogContentText id="alert-dialog-description">
+            <DialogContentText id='alert-dialog-description'>
               Are you sure that you want to delete entry #{props.index + 1} of this time slot forever?
               This action will take effect immediatly and is irreversible.
               <strong><i> Make sure you have noticed the participants as you will not be able to retrieve this entry after this point!</i></strong>
@@ -403,8 +402,8 @@ const RegistrationList: FC<RegistrationListProps> = (props: RegistrationListProp
             </Button>
             <Button
               onClick={() => handleClose(true)}
-              variant="outlined"
-              color="secondary"
+              variant='outlined'
+              color='secondary'
               style={{ color: 'red' }}
             >
               <strong>Yes, delete this entry</strong>
@@ -417,7 +416,7 @@ const RegistrationList: FC<RegistrationListProps> = (props: RegistrationListProp
     {props.registration
       .participants
       .concat(
-        Array(Math.max(0, props.participantsPerEntry - props.registration.participants.length))
+        new Array(Math.max(0, props.participantsPerEntry - props.registration.participants.length))
           .fill('')
       )
       .map((participant: string, index) =>
@@ -439,7 +438,6 @@ const RegistrationList: FC<RegistrationListProps> = (props: RegistrationListProp
               event.target.value,
             )}
           />
-        </ListItem>
-      )}
+        </ListItem>)}
   </List>
 }

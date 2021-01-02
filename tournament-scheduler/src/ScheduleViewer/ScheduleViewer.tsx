@@ -3,7 +3,7 @@ import React, { FC, useEffect, useState } from 'react'
 import { Schedule, ScheduleDto } from '../models/Schedule'
 import DateFnsUtils from '@date-io/moment'
 import { TimeSlot } from '../models/TimeSlot'
-import { apiGet } from '../fetchers/api'
+import { apiGet } from '../fetchers/Api'
 import moment from 'moment'
 
 interface ScheduleRegistrationProps {
@@ -33,8 +33,7 @@ const useStyles = makeStyles(theme =>
       paddingTop: 0,
       paddingBottom: 0,
     },
-  }),
-)
+  }))
 
 const getSchedule = (id: number) =>
   apiGet(`schedules/${id}`)
@@ -42,18 +41,18 @@ const getSchedule = (id: number) =>
       res.json().then((scheduleDto: ScheduleDto) => new Schedule(scheduleDto)))
 
 const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegistrationProps) => {
-  const [schedule, setSchedule] = useState<Schedule | null | undefined>()
+  const [scheduleState, setScheduleState] = useState<Schedule | null | undefined>()
   const classes = useStyles()
 
   useEffect(() => {
     getSchedule(props.scheduleId)
       .then((schedule: Schedule) => {
         schedule.timeSlots.sort(TimeSlot.compareFn)
-        setSchedule(schedule)
+        setScheduleState(schedule)
       })
       .catch(err => {
         if (err.status === 404) {
-          setSchedule(null)
+          setScheduleState(null)
         } else {
           console.error(err)
         }
@@ -61,13 +60,13 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
   }, [props.scheduleId])
 
   return <Container>
-    {!schedule
-      ? schedule === null && <div>Sorry. `<code>{props.scheduleId}</code>` is not a valid schedule id.</div>
+    {!scheduleState
+      ? scheduleState === null && <div>Sorry. `<code>{props.scheduleId}</code>` is not a valid scheduleState id.</div>
       : <div style={{ textAlign: 'left', width: 'fit-content', margin: 'auto' }}>
-        <label>Schedule for: {schedule.name}</label>
+        <label>Schedule for: {scheduleState.name}</label>
         <span style={{ display: 'block' }}>All dates and times are given in your local timezone.</span>
-        {!schedule.active && <div><br />This schedule is currently inactive and registration is closed.</div>}
-        {schedule
+        {!scheduleState.active && <div><br />This scheduleState is currently inactive and registration is closed.</div>}
+        {scheduleState
           .timeSlots
           .filter(timeSlot => timeSlot.registrations.length > 0)
           .map(timeSlot =>
@@ -86,17 +85,17 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
               }
             >
               {timeSlot.participantsPerEntry <= 1 &&
-                <ListItemText secondary="Participants" className={classes.nested} />
+                <ListItemText secondary='Participants' className={classes.nested} />
               }
               <div style={{ display: 'flex', flexWrap: 'wrap' }}>
                 {timeSlot.registrations.map((registration, registrationIndex) =>
                   <List
                     key={`registration-${registration.id}`}
-                    component="div"
+                    component='div'
                     disablePadding
                     subheader={
                       timeSlot.participantsPerEntry > 1
-                        ? <ListItemText secondary="Participants" />
+                        ? <ListItemText secondary='Participants' />
                         : undefined
                     }
                     className={classes.nested}
@@ -104,19 +103,17 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
                     {registration.participants.map((participant, participantIndex) =>
                       <ListItem key={`participant-${participantIndex}`} className={classes.item}>
                         <ListItemText
-                          primary={`${
-                            (timeSlot.participantsPerEntry > 1
+                          primary={
+                            `${(timeSlot.participantsPerEntry > 1
                               ? participantIndex
                               : registrationIndex) + 1
-                            }. ${participant}`}
+                            }. ${participant}`
+                          }
                         />
-                      </ListItem>
-                    )}
-                  </List>
-                )}
+                      </ListItem>)}
+                  </List>)}
               </div>
-            </List>
-          )}
+            </List>)}
       </div>
     }
 

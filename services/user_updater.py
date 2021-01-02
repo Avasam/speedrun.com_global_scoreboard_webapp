@@ -199,28 +199,28 @@ def __set_user_points(user: User) -> None:
     user._point_distribution_str = "\n" + json.dumps([map_to_dto(top_runs), map_to_dto(lower_runs)])
 
 
-def __set_run_points(self) -> None:
-    self._points = 0
+def __set_run_points(run: Run) -> None:
+    run._points = 0
     # If the run is an Individual Level, adapt the request url
-    lvl_cat_str = "level/{level}/".format(level=self.level) if self.level else "category/"
+    lvl_cat_str = "level/{level}/".format(level=run.level) if run.level else "category/"
     url = "https://www.speedrun.com/api/v1/leaderboards/{game}/" \
         "{lvl_cat_str}{category}?video-only=true&embed=players".format(
-            game=self.game,
+            game=run.game,
             lvl_cat_str=lvl_cat_str,
-            category=self.category)
-    for var_id, var_value in self.variables.items():
+            category=run.category)
+    for var_id, var_value in run.variables.items():
         url += "&var-{id}={value}".format(id=var_id, value=var_value)
     leaderboard = SrcRequest.get_cached_response_or_new(url)
 
-    valid_runs = extract_sorted_valid_runs_from_leaderboard(leaderboard["data"], self.level_fraction)
-    original_population = len(valid_runs)
+    valid_runs = extract_sorted_valid_runs_from_leaderboard(leaderboard["data"], run.level_fraction)
+    len_valid_runs = len(valid_runs)
 
     # CHECK: Avoid useless computation and errors
-    if original_population < MIN_LEADERBOARD_SIZE:
+    if len_valid_runs < MIN_LEADERBOARD_SIZE:
         return
 
     # Remove last 5%
-    valid_runs = valid_runs[:int(original_population * 0.95) or None]
+    valid_runs = valid_runs[:int(len_valid_runs * 0.95) or None]
 
     # Find the time that's most often repeated in the leaderboard
     # (after the 80th percentile) and cut off everything after that
@@ -235,7 +235,7 @@ def __set_run_points(self) -> None:
         return
 
     # Get the +- deviation from the mean
-    signed_deviation = mean - self.primary_t
+    signed_deviation = mean - run.primary_t
     # Get the deviation from the mean of the worse time as a positive number
     worst_time = valid_runs[-1]["run"]["times"]["primary_t"]
     lowest_deviation = worst_time - mean
@@ -261,10 +261,10 @@ def __set_run_points(self) -> None:
     length_bonus = 1 + (wr_time / TIME_BONUS_DIVISOR)
 
     # Give points, hard cap to 6 character
-    self._points = (exp(e_exponent) - 1) * 10 * length_bonus * self.level_fraction
+    run._points = (exp(e_exponent) - 1) * 10 * length_bonus * run.level_fraction
 
     # Set category name
-    self.category_name = re.sub(
+    run.category_name = re.sub(
         r"((\d\d)$|Any)(?!%)",
         r"\1%",
         unquote(leaderboard["data"]["weblink"].split('#')[1])
@@ -274,5 +274,5 @@ def __set_run_points(self) -> None:
     )
 
     # Set game search data
-    self._is_wr_time = wr_time == self.primary_t
-    self._mean_time = mean
+    run._is_wr_time = wr_time == run.primary_t
+    run._mean_time = mean

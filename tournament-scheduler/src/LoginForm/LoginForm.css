@@ -1,4 +1,4 @@
-.login-form-container {
+.login-form-container.MuiContainer-root {
   height: 100%;
   display: flex;
   flex-direction: column;

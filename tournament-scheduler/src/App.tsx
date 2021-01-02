@@ -7,7 +7,7 @@ import ScheduleManagement from './ScheduleManagement/ScheduleManagement'
 import ScheduleRegistration from './ScheduleRegistration/ScheduleRegistration'
 import ScheduleViewer from './ScheduleViewer/ScheduleViewer'
 import User from './models/User'
-import { apiGet } from './fetchers/api'
+import { apiGet } from './fetchers/Api'
 import { teal } from '@material-ui/core/colors'
 import useMediaQuery from '@material-ui/core/useMediaQuery'
 
@@ -26,9 +26,9 @@ const logout = (setCurrentUser: (user: null) => void) => {
 }
 
 const App: FC = () => {
-  const [currentUser, setCurrentUser] = useState<User | undefined | null>(undefined)
+  const [currentUser, setCurrentUser] = useState<User | undefined | null>()
   const viewScheduleIdFromUrl = new URLSearchParams(window.location.search).get('view')
-  const [viewScheduleId] = useState<number | null>((viewScheduleIdFromUrl && parseInt(viewScheduleIdFromUrl)) || null)
+  const [viewScheduleId] = useState<number | null>((viewScheduleIdFromUrl && Number.parseInt(viewScheduleIdFromUrl)) || null)
 
   // Take registrationLink from the URL if present,
   // otherwise from the localStorage if there are no other searchParam
@@ -65,7 +65,7 @@ const App: FC = () => {
 
   return <Div100vh className='App'>
     <ThemeProvider theme={darkTheme}>
-      <AppBar position="static">
+      <AppBar position='static'>
         <Toolbar>
           {(currentUser || scheduleRegistrationLink || viewScheduleId || isMobileSize) &&
             <IconButton
@@ -77,7 +77,7 @@ const App: FC = () => {
             >
               <img
                 className='logo'
-                style={{ height: (!currentUser && isMobileSize) ? 'auto' : undefined }}
+                style={{ height: !currentUser && isMobileSize ? 'auto' : undefined }}
                 alt='logo'
                 src={`${window.process.env.REACT_APP_BASE_URL}/assets/images/favicon.webp`}
               />
@@ -102,8 +102,8 @@ const App: FC = () => {
       </div>
 
       <footer>
-        &copy; <a href="https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/master/LICENSE" target="about">Copyright</a> {new Date().getFullYear()} by <a href="https://github.com/Avasam/" target="about">Samuel Therrien</a>.
-        Powered by <a href="https://www.speedrun.com/" target="src">speedrun.com</a> and <a href="https://www.pythonanywhere.com/" target="about">PythonAnywhere</a>
+        &copy; <a href='https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/master/LICENSE' target='about'>Copyright</a> {new Date().getFullYear()} by <a href='https://github.com/Avasam/' target='about'>Samuel Therrien</a>.
+        Powered by <a href='https://www.speedrun.com/' target='src'>speedrun.com</a> and <a href='https://www.pythonanywhere.com/' target='about'>PythonAnywhere</a>
       </footer>
     </ThemeProvider>
   </Div100vh>

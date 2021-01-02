@@ -7,10 +7,10 @@ const ScoreTitle = () => <>
   {'Score '}
   <span onClick={event => event.stopPropagation()}>
     <OverlayTrigger
-      placement="bottom"
+      placement='bottom'
       overlay={
         <Tooltip
-          id="rankInfo"
+          id='rankInfo'
         >Click on a blue score for a detailed view</Tooltip>
       }
     >

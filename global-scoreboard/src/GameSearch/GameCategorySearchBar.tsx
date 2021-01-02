@@ -1,7 +1,7 @@
 import { FormControl, FormLabel } from 'react-bootstrap'
 import { SearchFieldProps, SearchProps } from 'react-bootstrap-table2-toolkit'
 import React from 'react'
-import { apiGet } from '../fetchers/api'
+import { apiGet } from '../fetchers/Api'
 
 type IdToNameMap = { [key: string]: string }
 
@@ -36,21 +36,22 @@ const GameCategorySearch = (props: GameCategorySearchProps) => {
           .then<{ id: string, names: { international: string } }[]>(res => res.data)
           .then<IdToNameMap>(games => Object.fromEntries(games.map(game => [game.id, game.names.international])))
           .then(games => {
-            props.setGameMap(prevGames => {
-              const newGames = { ...prevGames, ...games }
+            props.setGameMap(previousGames => {
+              const newGames = { ...previousGames, ...games }
               localStorage.setItem('games', JSON.stringify(newGames))
               return newGames
             })
             props.onSearch?.(searchText)
           }),
     // Note: 500 is double the default table update
-    500)
+    500
+  )
 
   return <FormLabel>
     <FormControl
       className={props.className}
       placeholder={props.placeholder}
-      onChange={e => handleOnChange(e.currentTarget.value)}
+      onChange={event => handleOnChange(event.currentTarget.value)}
     />
   </FormLabel>
 

@@ -12,15 +12,15 @@ type PlayerNameCellProps = {
 }
 
 const PlayerNameCell = (props: PlayerNameCellProps) =>
-  <span className="name-cell">
+  <span className='name-cell'>
     <a
       href={`https://www.speedrun.com/user/${props.player.name}`}
-      target="_blank"
-      rel="noopener noreferrer"
+      target='_blank'
+      rel='noopener noreferrer'
     >{props.player.countryCode &&
       <img
-        alt=""
-        className="flagicon"
+        alt=''
+        className='flagicon'
         src={`https://www.speedrun.com/images/flags/${props.player.countryCode}.png`}
       />}{props.player.name}</a>
     {

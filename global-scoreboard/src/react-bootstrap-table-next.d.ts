@@ -1,6 +1,12 @@
+/* eslint-disable no-duplicate-imports */
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable unicorn/no-keyword-prefix */
+/* eslint-disable unicorn/prevent-abbreviations */
+/* eslint-disable extra-rules/no-commented-out-code */
 /* eslint-disable sort-imports */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// Origin: https://gitlab.com/fluidattacks/integrates/-/blob/master/front/src/typings/react-bootstrap-table-2/index.d.ts
+
+// Origin: https://gitlab.com/fluidattacks/integrates/-/blob/master/integrates/front/src/typings/react-bootstrap-table-2/index.d.ts
 // Modified:
 // - rowClasses and classes: added function definition
 // - totalSize supports numbers and is required because of 'Warning: Failed prop type: The prop `dataSize` is marked as required in `PaginationTotal`, but its value is `undefined`.'
@@ -153,6 +159,7 @@ interface ComparatorTypes {
   LT: '<'
   LE: '<='
 }
+// eslint-disable-next-line no-shadow
 declare enum PredefinedComparatorTypes { LIKE = 'LIKE', EQ = '=', NE = '!=', GT = '>', GE = '>=', LT = '<', LE = '<=' }
 type PredefinedComparators = typeof PredefinedComparatorTypes
 // EDITOR

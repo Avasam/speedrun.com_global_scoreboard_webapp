@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import GenericModal from '../GenericModal'
 import Player from '../models/Player'
 import SrcApiKeyLink from './SrcApiKeyLink'
-import { apiPost } from '../fetchers/api'
+import { apiPost } from '../fetchers/Api'
 import { faLink } from '@fortawesome/free-solid-svg-icons'
 
 type LoginModalProps = {
@@ -44,31 +44,31 @@ const LoginModal = (props: LoginModalProps) => {
     setSrcApiKeyInput(event.currentTarget.value)
 
   return (
-    <GenericModal show={props.show} onHide={props.onClose} title="Enter your API key" >
+    <GenericModal show={props.show} onHide={props.onClose} title='Enter your API key' >
       <Form onSubmit={(event: React.FormEvent<HTMLFormElement>) => event.preventDefault()}>
-        <Form.Group controlId="src-api-key">
+        <Form.Group controlId='src-api-key'>
           <Form.Label>Enter your API key</Form.Label>
           <InputGroup>
             <InputGroup.Prepend>
               <InputGroup.Text><FontAwesomeIcon icon={faLink} /></InputGroup.Text>
             </InputGroup.Prepend>
             <Form.Control
-              type="password"
-              placeholder="API key"
-              aria-describedby="api key"
+              type='password'
+              placeholder='API key'
+              aria-describedby='api key'
               required
               onChange={handleSrcApiKeyChange}
               isInvalid={!!loginErrorMessage}
             />
             <InputGroup.Append>
               <Button
-                as="a"
-                variant="outline-secondary"
-                href="https://www.speedrun.com/api/auth"
-                target="src"
+                as='a'
+                variant='outline-secondary'
+                href='https://www.speedrun.com/api/auth'
+                target='src'
               >What&apos;s my key?</Button>
             </InputGroup.Append>
-            <Form.Control.Feedback type="invalid">
+            <Form.Control.Feedback type='invalid'>
               {loginErrorMessage}
             </Form.Control.Feedback>
           </InputGroup>
@@ -76,12 +76,12 @@ const LoginModal = (props: LoginModalProps) => {
 
         <Form.Group>
           <Col xs={{ span: 6, offset: 3 }}>
-            <Button type="submit" variant="success" block onClick={() => attemptLogin()}>Log in</Button>
+            <Button type='submit' variant='success' block onClick={() => attemptLogin()}>Log in</Button>
           </Col>
         </Form.Group>
 
         <Form.Group>
-          <span className="paragraph">
+          <span className='paragraph'>
             If you don&apos;t trust the above link because SRC&apos;s api portal
             looks sketchy, you can also access your api key through:
             <SrcApiKeyLink />

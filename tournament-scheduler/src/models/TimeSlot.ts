@@ -30,7 +30,7 @@ const coefficient = 1000 * 60 * minutesStep
 export const createDefaultTimeSlot = () =>
   new TimeSlot({
     id: -1,
-    dateTime: new Date(Math.ceil(new Date().getTime() / coefficient) * coefficient),
+    dateTime: new Date(Math.ceil(Date.now() / coefficient) * coefficient),
     maximumEntries: 1,
     participantsPerEntry: 1,
     registrations: [],

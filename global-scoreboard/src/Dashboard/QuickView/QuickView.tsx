@@ -29,7 +29,7 @@ type QuickViewProps = {
 const QuickView = (props: QuickViewProps) =>
   <>
     <label>Quick view:</label>
-    <div className="table-responsive-lg quick-view">
+    <div className='table-responsive-lg quick-view'>
       <Table striped>
         <thead>
           <tr>
@@ -62,17 +62,16 @@ const QuickView = (props: QuickViewProps) =>
                     <td>
                       <PlayerScoreCell player={player} />
                       <Button
-                        variant="link"
+                        variant='link'
                         onClick={() => props.currentUser && props.onJumpToPlayer(player.userId)}
                       >
                         <FontAwesomeIcon icon={faArrowAltCircleRight} />
                       </Button>
                     </td>
-                  </tr>
-                )
+                  </tr>)
               : <>
-                <tr className="highlight-current-user" id="preview-0"><td colSpan={3}></td></tr>
-                <tr className="highlight-friend" id="preview-1"><td colSpan={3}></td></tr>
+                <tr className='highlight-current-user' id='preview-0'><td colSpan={3}></td></tr>
+                <tr className='highlight-friend' id='preview-1'><td colSpan={3}></td></tr>
               </>
           }
         </tbody>
