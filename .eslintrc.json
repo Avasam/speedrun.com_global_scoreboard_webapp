@@ -80,9 +80,10 @@
     "sonarjs/no-duplicate-string": "error",
     // This rule does not correctly treat react's function components. See https://github.com/SonarSource/SonarJS/issues/2238
     // Also react-app service workers template are at 22
+    // Set back to error with appropriate number if ever fixed
     "sonarjs/cognitive-complexity": [
-      "error",
-      50
+      "warn",
+      64
     ],
     // unicorn/recommended overrides
     "unicorn/catch-error-name": [
