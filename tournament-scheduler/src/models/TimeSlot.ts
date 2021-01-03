@@ -1,4 +1,4 @@
-import { getNowInMinutesStep } from '../utils/Date'
+import { floorToMinutesStep, tomorrow } from '../utils/Date'
 import Registration from './Registration'
 
 export interface TimeSlotDto {
@@ -30,7 +30,7 @@ export const minutesStep = 5
 export const createDefaultTimeSlot = () =>
   new TimeSlot({
     id: -1,
-    dateTime: getNowInMinutesStep(minutesStep),
+    dateTime: floorToMinutesStep(tomorrow(), minutesStep),
     maximumEntries: 1,
     participantsPerEntry: 1,
     registrations: [],

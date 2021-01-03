@@ -1,3 +1,4 @@
+import { tomorrow } from '../utils/Date'
 import { createDefaultTimeSlot, TimeSlot, TimeSlotDto } from './TimeSlot'
 
 export interface ScheduleDto {
@@ -25,7 +26,7 @@ export class Schedule {
     this.name = dto.name
     this.active = dto.active
     this.registrationKey = dto.registrationKey
-    this.deadline = dto.deadline != null ? new Date(dto.deadline) : new Date()
+    this.deadline = dto.deadline != null ? new Date(dto.deadline) : tomorrow()
     this.timeSlots = (dto.timeSlots || []).map(timeSlotDto => new TimeSlot(timeSlotDto))
   }
 }
@@ -36,6 +37,6 @@ export const createDefaultSchedule = () =>
     name: 'New Schedule',
     active: false,
     registrationKey: '',
-    deadline: new Date(),
+    deadline: tomorrow(),
     timeSlots: [createDefaultTimeSlot()],
   })
