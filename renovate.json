@@ -6,5 +6,6 @@
     ":prHourlyLimitNone"
   ],
   "baseBranches": ["develop"],
+  "ignoreDeps": ["eslint-plugin-extra-rules"],
   "ignorePaths": ["dependencies"]
 }
