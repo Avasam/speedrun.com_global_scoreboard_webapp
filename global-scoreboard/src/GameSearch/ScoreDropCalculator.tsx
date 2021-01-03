@@ -1,5 +1,6 @@
+import { ChangeEventHandler, FormEvent, useState } from 'react'
 import { Button, Form, InputGroup } from 'react-bootstrap'
-import React, { useState } from 'react'
+
 import { apiGet } from '../fetchers/Api'
 import math from '../utils/Math'
 
@@ -55,7 +56,7 @@ const ScoreDropCalculator = () => {
   const [calculatedRunScore, setCalculatedRunScore] = useState(0)
   const [calculatedRunId, setCalculatedRunId] = useState('')
 
-  const handleOnChange: React.ChangeEventHandler<HTMLInputElement> = event =>
+  const handleOnChange: ChangeEventHandler<HTMLInputElement> = event =>
     setRunId(event.currentTarget.value)
 
   const onCalculate = () => {
@@ -104,7 +105,7 @@ const ScoreDropCalculator = () => {
 
 
   return <div style={{ marginTop: '1rem', marginBottom: '1rem' }}>
-    <Form onSubmit={(event: React.FormEvent<HTMLFormElement>) => event.preventDefault()}>
+    <Form onSubmit={(event: FormEvent<HTMLFormElement>) => event.preventDefault()}>
       <Form.Group controlId='calculate-score-drop'>
         <Form.Label>Enter a run&apos;s ID to calculate the required time, for a new player, to drop the score value of said run:</Form.Label>
         <InputGroup>

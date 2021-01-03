@@ -1,20 +1,22 @@
-import '../Dashboard/Scoreboard.css'
 import 'react-bootstrap-table2-paginator/dist/react-bootstrap-table2-paginator.min.css'
+import '../Dashboard/Scoreboard.css'
 import './GameSearch.css'
-import BootstrapTable, { Column } from 'react-bootstrap-table-next'
+
+import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { ChangeEventHandler, Dispatch, SetStateAction, useEffect, useState } from 'react'
 import { Container, Dropdown, DropdownButton, FormControl, InputGroup, Spinner } from 'react-bootstrap'
-import React, { useEffect, useState } from 'react'
-import ToolkitProvider, { ToolkitProviderProps } from 'react-bootstrap-table2-toolkit'
+import BootstrapTable, { Column } from 'react-bootstrap-table-next'
 import filterFactory, { Comparator, multiSelectFilter, numberFilter } from 'react-bootstrap-table2-filter'
 import paginationFactory, { PaginationListStandalone, PaginationProvider, PaginationTotalStandalone, SizePerPageDropdownStandalone } from 'react-bootstrap-table2-paginator'
-import { secondsToTimeString, timeStringToSeconds } from '../utils/Time'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import GameCategorySearch from './GameCategorySearchBar'
+import ToolkitProvider, { ToolkitProviderProps } from 'react-bootstrap-table2-toolkit'
 import { Picky } from 'react-picky'
-import ScoreDropCalculator from './ScoreDropCalculator'
-import { apiGet } from '../fetchers/Api'
-import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
+
 import sortCaret from '../Dashboard/TableElements/SortCarret'
+import { apiGet } from '../fetchers/Api'
+import { secondsToTimeString, timeStringToSeconds } from '../utils/Time'
+import GameCategorySearch from './GameCategorySearchBar'
+import ScoreDropCalculator from './ScoreDropCalculator'
 
 interface PlatformDto {
   id: string
@@ -46,9 +48,9 @@ interface PlatformSelectOption {
 type FormatExtraDataProps = {
   platforms: IdToNameMap
   gameMap: IdToNameMap
-  setGameMap: React.Dispatch<React.SetStateAction<IdToNameMap>>
+  setGameMap: Dispatch<SetStateAction<IdToNameMap>>
   categoryMap: IdToNameMap
-  setCategoryMap: React.Dispatch<React.SetStateAction<IdToNameMap>>
+  setCategoryMap: Dispatch<SetStateAction<IdToNameMap>>
 }
 
 let platformFilter: FilterFunction<string[]>
@@ -270,7 +272,7 @@ const GameSearch = () => {
       comparator: Comparator.GE,
     })
   }
-  const handleMinTimeChange: React.ChangeEventHandler<HTMLInputElement> = event => {
+  const handleMinTimeChange: ChangeEventHandler<HTMLInputElement> = event => {
     if (!event.currentTarget.value.match(/^[1-9]?[\d:]{0,7}\d?$/)) return
     doMinTimeChange(event.currentTarget.value)
     localStorage.setItem('selectedMinTime', JSON.stringify(event.currentTarget.value))
@@ -283,7 +285,7 @@ const GameSearch = () => {
       comparator: Comparator.LE,
     })
   }
-  const handleMaxTimeChange: React.ChangeEventHandler<HTMLInputElement> = event => {
+  const handleMaxTimeChange: ChangeEventHandler<HTMLInputElement> = event => {
     if (!event.currentTarget.value.match(/^[1-9]?[\d:]{0,7}\d?$/)) return
     doMaxTimeChange(event.currentTarget.value)
     localStorage.setItem('selectedMaxTime', JSON.stringify(event.currentTarget.value))

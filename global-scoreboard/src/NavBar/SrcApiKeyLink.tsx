@@ -1,10 +1,10 @@
+import { ChangeEventHandler, FC, useState } from 'react'
 import { Button, Form, InputGroup } from 'react-bootstrap'
-import React, { FC, useState } from 'react'
 
 const SrcApiKeyLink: FC = () => {
   const [srcNameInput, setSrcNameInput] = useState('')
 
-  const handleNameChange: React.ChangeEventHandler<HTMLInputElement> = event =>
+  const handleNameChange: ChangeEventHandler<HTMLInputElement> = event =>
     setSrcNameInput(event.currentTarget.value)
 
   return <span className='src-api-key-link'>

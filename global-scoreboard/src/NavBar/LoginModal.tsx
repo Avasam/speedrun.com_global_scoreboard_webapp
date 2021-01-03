@@ -1,11 +1,12 @@
-import { Button, Col, Form, InputGroup } from 'react-bootstrap'
-import React, { useState } from 'react'
+import { faLink } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { ChangeEventHandler, FormEvent, useState } from 'react'
+import { Button, Col, Form, InputGroup } from 'react-bootstrap'
+
+import { apiPost } from '../fetchers/Api'
 import GenericModal from '../GenericModal'
 import Player from '../models/Player'
 import SrcApiKeyLink from './SrcApiKeyLink'
-import { apiPost } from '../fetchers/Api'
-import { faLink } from '@fortawesome/free-solid-svg-icons'
 
 type LoginModalProps = {
   show: boolean
@@ -42,12 +43,12 @@ const LoginModal = (props: LoginModalProps) => {
       })
   }
 
-  const handleSrcApiKeyChange: React.ChangeEventHandler<HTMLInputElement> = event =>
+  const handleSrcApiKeyChange: ChangeEventHandler<HTMLInputElement> = event =>
     setSrcApiKeyInput(event.currentTarget.value)
 
   return (
     <GenericModal show={props.show} onHide={props.onClose} title='Enter your API key' >
-      <Form onSubmit={(event: React.FormEvent<HTMLFormElement>) => event.preventDefault()}>
+      <Form onSubmit={(event: FormEvent<HTMLFormElement>) => event.preventDefault()}>
         <Form.Group controlId='src-api-key'>
           <Form.Label>Enter your API key</Form.Label>
           <InputGroup>

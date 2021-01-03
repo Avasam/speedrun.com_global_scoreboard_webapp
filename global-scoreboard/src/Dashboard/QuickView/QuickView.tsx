@@ -1,13 +1,14 @@
 import './QuickView.css'
-import { Button, Table } from 'react-bootstrap'
-import Configs from '../../models/Configs'
+
+import { faArrowAltCircleRight } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { Button, Table } from 'react-bootstrap'
+
 import Player from '../..//models/Player'
+import Configs from '../../models/Configs'
 import PlayerNameCell from '../TableElements/PlayerNameCell'
 import PlayerScoreCell from '../TableElements/PlayerScoreCell'
-import React from 'react'
 import ScoreTitle from '../TableElements/ScoreTitle'
-import { faArrowAltCircleRight } from '@fortawesome/free-solid-svg-icons'
 
 const currentTimeOnLoad = new Date()
 const columnClass = (lastUpdate: Date) => {
