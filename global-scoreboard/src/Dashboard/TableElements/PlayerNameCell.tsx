@@ -1,7 +1,6 @@
 import './PlayerNameCell.css'
 import FriendButton from './FriendButton'
 import Player from '../../models/Player'
-import React from 'react'
 
 type PlayerNameCellProps = {
   player: Player

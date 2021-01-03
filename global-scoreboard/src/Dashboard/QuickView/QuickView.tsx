@@ -5,7 +5,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Player from '../..//models/Player'
 import PlayerNameCell from '../TableElements/PlayerNameCell'
 import PlayerScoreCell from '../TableElements/PlayerScoreCell'
-import React from 'react'
 import ScoreTitle from '../TableElements/ScoreTitle'
 import { faArrowAltCircleRight } from '@fortawesome/free-solid-svg-icons'
 

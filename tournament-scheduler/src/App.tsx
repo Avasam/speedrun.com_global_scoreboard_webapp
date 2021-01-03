@@ -1,6 +1,6 @@
 import './App.css'
 import { AppBar, Button, IconButton, ThemeProvider, Toolbar, Typography, createMuiTheme } from '@material-ui/core'
-import React, { FC, useEffect, useState } from 'react'
+import { FC, useEffect, useState } from 'react'
 import Div100vh from 'react-div-100vh'
 import LoginForm from './LoginForm/LoginForm'
 import ScheduleManagement from './ScheduleManagement/ScheduleManagement'

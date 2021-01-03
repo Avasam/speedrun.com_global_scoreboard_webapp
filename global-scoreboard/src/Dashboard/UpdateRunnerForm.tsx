@@ -1,6 +1,6 @@
 
 import { Button, Form, InputGroup } from 'react-bootstrap'
-import React, { useState } from 'react'
+import { ChangeEventHandler, FormEvent, useState } from 'react'
 import Player from '../models/Player'
 
 type UpdateRunnerFormProps = {
@@ -12,11 +12,11 @@ type UpdateRunnerFormProps = {
 const UpdateRunnerForm = (props: UpdateRunnerFormProps) => {
   const [updateUserNameOrId, setUpdateUserNameOrId] = useState('')
 
-  const handleOnChange: React.ChangeEventHandler<HTMLInputElement> = event =>
+  const handleOnChange: ChangeEventHandler<HTMLInputElement> = event =>
     setUpdateUserNameOrId(event.currentTarget.value)
 
   return (
-    <Form onSubmit={(event: React.FormEvent<HTMLFormElement>) => event.preventDefault()}>
+    <Form onSubmit={(event: FormEvent<HTMLFormElement>) => event.preventDefault()}>
       <Form.Group controlId='update-user'>
         <Form.Label>Update runner:</Form.Label>
         <InputGroup>

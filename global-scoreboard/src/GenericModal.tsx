@@ -1,5 +1,5 @@
-import React, { ReactNode } from 'react'
 import { Modal } from 'react-bootstrap'
+import { ReactNode } from 'react'
 
 type GenericModalProps = {
   show: boolean

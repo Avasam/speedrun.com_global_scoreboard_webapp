@@ -1,6 +1,6 @@
+import { Dispatch, SetStateAction } from 'react'
 import { FormControl, FormLabel } from 'react-bootstrap'
 import { SearchFieldProps, SearchProps } from 'react-bootstrap-table2-toolkit'
-import React from 'react'
 import { apiGet } from '../fetchers/Api'
 
 type IdToNameMap = { [key: string]: string }
@@ -9,7 +9,7 @@ type GameCategorySearchProps =
   SearchProps
   & SearchFieldProps
   & {
-    setGameMap: React.Dispatch<React.SetStateAction<IdToNameMap>>
+    setGameMap: Dispatch<SetStateAction<IdToNameMap>>
   }
 
 function debounce<T>(fn: (...args: T[]) => void, time: number) {

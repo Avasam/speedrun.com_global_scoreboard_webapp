@@ -1,5 +1,5 @@
 import { Alert, OverlayTrigger, ProgressBar, Tooltip } from 'react-bootstrap'
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AlertProps } from 'react-bootstrap/Alert'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { RunResult } from '../models/UpdateRunnerResult'

@@ -1,7 +1,7 @@
 import './ScheduleWizard.css'
 import { Button, ButtonGroup, Card, CardActions, CardContent, Checkbox, Collapse, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormControlLabel, FormGroup, IconButton, Input, InputAdornment, InputBaseComponentProps, InputLabel, List, ListItem, ListItemText, TextField } from '@material-ui/core'
 import { DateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
-import React, { FC, useState } from 'react'
+import { FC, useState } from 'react'
 import { TimeSlot, createDefaultTimeSlot, minutesStep } from '../models/TimeSlot'
 import { apiDelete, apiPut } from '../fetchers/Api'
 import DateFnsUtils from '@date-io/moment'
@@ -344,7 +344,7 @@ type RegistrationListProps = {
 }
 
 const RegistrationList: FC<RegistrationListProps> = (props: RegistrationListProps) => {
-  const [open, setOpen] = React.useState(false)
+  const [open, setOpen] = useState(false)
 
   const handleClose = (confirmed: boolean) => {
     confirmed && props.onDelete(props.index)

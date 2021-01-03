@@ -2,6 +2,8 @@
   "plugins": [
     "@typescript-eslint",
     "react",
+    "react-hooks",
+    "jsx-a11y",
     "sonarjs",
     "switch-case",
     "unicorn",
@@ -11,6 +13,10 @@
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:react/recommended",
+    "plugin:react-hooks/recommended",
+    //"plugin:jsx-a11y/recommended",
+    //"react-app",
+    //"plugin:import/errors",
     "plugin:sonarjs/recommended",
     "plugin:switch-case/recommended",
     "plugin:unicorn/recommended"
@@ -67,7 +73,9 @@
   ],
   "rules": {
     // react overrides
+    "react/jsx-uses-react": "off",
     "react/prop-types": "off",
+    "react/react-in-jsx-scope": "off",
     // sonarjs/recommended overrides
     "sonarjs/no-duplicate-string": "error",
     // This rule does not correctly treat react's function components. See https://github.com/SonarSource/SonarJS/issues/2238
@@ -363,7 +371,7 @@
     "require-yield": "error",
     "rest-spread-spacing": "error",
     // TODO: use better sort import
-    "sort-imports": "warn",
+    "sort-imports": "error",
     "symbol-description": "error",
     "template-curly-spacing": "error",
     "yield-star-spacing": "error"
