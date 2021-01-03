@@ -1,11 +1,12 @@
-import { Button, Col, Form, InputGroup } from 'react-bootstrap'
-import { ChangeEventHandler, FormEvent, useState } from 'react'
+import { faLink } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { ChangeEventHandler, FormEvent, useState } from 'react'
+import { Button, Col, Form, InputGroup } from 'react-bootstrap'
+
+import { apiPost } from '../fetchers/Api'
 import GenericModal from '../GenericModal'
 import Player from '../models/Player'
 import SrcApiKeyLink from './SrcApiKeyLink'
-import { apiPost } from '../fetchers/Api'
-import { faLink } from '@fortawesome/free-solid-svg-icons'
 
 type LoginModalProps = {
   show: boolean

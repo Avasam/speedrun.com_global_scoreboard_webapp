@@ -1,5 +1,6 @@
-import { Button, Form, InputGroup } from 'react-bootstrap'
 import { ChangeEventHandler, FormEvent, useState } from 'react'
+import { Button, Form, InputGroup } from 'react-bootstrap'
+
 import { apiGet } from '../fetchers/Api'
 import math from '../utils/Math'
 

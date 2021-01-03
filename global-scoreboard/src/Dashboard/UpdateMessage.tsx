@@ -1,9 +1,10 @@
-import { Alert, OverlayTrigger, ProgressBar, Tooltip } from 'react-bootstrap'
-import { useEffect, useState } from 'react'
-import { AlertProps } from 'react-bootstrap/Alert'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { RunResult } from '../models/UpdateRunnerResult'
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { useEffect, useState } from 'react'
+import { Alert, OverlayTrigger, ProgressBar, Tooltip } from 'react-bootstrap'
+import { AlertProps } from 'react-bootstrap/Alert'
+
+import { RunResult } from '../models/UpdateRunnerResult'
 
 type UpdateMessageProps = {
   variant: AlertProps['variant']

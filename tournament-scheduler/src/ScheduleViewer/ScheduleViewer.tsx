@@ -1,12 +1,14 @@
 import 'react-add-to-calendar/dist/react-add-to-calendar.min.css'
-import { Container, List, ListItem, ListItemText, createStyles, makeStyles } from '@material-ui/core'
-import { FC, useEffect, useState } from 'react'
-import { Schedule, ScheduleDto } from '../models/Schedule'
-import AddToCalendar from 'react-add-to-calendar'
+
 import DateFnsUtils from '@date-io/moment'
-import { TimeSlot } from '../models/TimeSlot'
-import { apiGet } from '../fetchers/Api'
+import { Container, createStyles, List, ListItem, ListItemText, makeStyles } from '@material-ui/core'
 import moment from 'moment'
+import { FC, useEffect, useState } from 'react'
+import AddToCalendar from 'react-add-to-calendar'
+
+import { apiGet } from '../fetchers/Api'
+import { Schedule, ScheduleDto } from '../models/Schedule'
+import { TimeSlot } from '../models/TimeSlot'
 
 interface ScheduleRegistrationProps {
   scheduleId: number

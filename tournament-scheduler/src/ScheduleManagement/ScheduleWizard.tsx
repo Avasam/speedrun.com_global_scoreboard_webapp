@@ -1,20 +1,22 @@
 import './ScheduleWizard.css'
-import { Button, ButtonGroup, Card, CardActions, CardContent, Checkbox, Collapse, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormControlLabel, FormGroup, IconButton, Input, InputAdornment, InputBaseComponentProps, InputLabel, List, ListItem, ListItemText, TextField } from '@material-ui/core'
-import { DateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
-import { FC, useState } from 'react'
-import { TimeSlot, createDefaultTimeSlot, minutesStep } from '../models/TimeSlot'
-import { apiDelete, apiPut } from '../fetchers/Api'
+
 import DateFnsUtils from '@date-io/moment'
+import { Button, ButtonGroup, Card, CardActions, CardContent, Checkbox, Collapse, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormControlLabel, FormGroup, IconButton, Input, InputAdornment, InputBaseComponentProps, InputLabel, List, ListItem, ListItemText, TextField } from '@material-ui/core'
 import DeleteForever from '@material-ui/icons/DeleteForever'
 import Event from '@material-ui/icons/Event'
 import ExpandLess from '@material-ui/icons/ExpandLess'
 import ExpandMore from '@material-ui/icons/ExpandMore'
 import FileCopy from '@material-ui/icons/FileCopy'
-import MaskedInput from 'react-text-mask'
+import { DateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
 import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date'
 import { Moment } from 'moment'
+import { FC, useState } from 'react'
+import MaskedInput from 'react-text-mask'
+
+import { apiDelete, apiPut } from '../fetchers/Api'
 import Registration from '../models/Registration'
 import { Schedule } from '../models/Schedule'
+import { createDefaultTimeSlot, minutesStep, TimeSlot } from '../models/TimeSlot'
 
 // TODO: Extract TimeSlot / RegistrationList
 

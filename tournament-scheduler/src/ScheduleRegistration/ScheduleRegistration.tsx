@@ -1,11 +1,12 @@
-import { Button, Card, CardActions, CardContent, Container, FormControl, FormGroup, FormLabel, InputLabel, Link, MenuItem, Select, TextField } from '@material-ui/core'
-import { FC, useEffect, useRef, useState } from 'react'
-import { Schedule, ScheduleDto } from '../models/Schedule'
-import { apiGet, apiPost } from '../fetchers/Api'
 import DateFnsUtils from '@date-io/moment'
+import { Button, Card, CardActions, CardContent, Container, FormControl, FormGroup, FormLabel, InputLabel, Link, MenuItem, Select, TextField } from '@material-ui/core'
 import { SelectInputProps } from '@material-ui/core/Select/SelectInput'
-import { TimeSlot } from '../models/TimeSlot'
 import moment from 'moment'
+import { FC, useEffect, useRef, useState } from 'react'
+
+import { apiGet, apiPost } from '../fetchers/Api'
+import { Schedule, ScheduleDto } from '../models/Schedule'
+import { TimeSlot } from '../models/TimeSlot'
 
 interface ScheduleRegistrationProps {
   registrationLink: string

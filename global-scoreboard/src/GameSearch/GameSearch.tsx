@@ -1,20 +1,22 @@
-import '../Dashboard/Scoreboard.css'
 import 'react-bootstrap-table2-paginator/dist/react-bootstrap-table2-paginator.min.css'
+import '../Dashboard/Scoreboard.css'
 import './GameSearch.css'
-import BootstrapTable, { Column } from 'react-bootstrap-table-next'
+
+import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { ChangeEventHandler, Dispatch, SetStateAction, useEffect, useState } from 'react'
 import { Container, Dropdown, DropdownButton, FormControl, InputGroup, Spinner } from 'react-bootstrap'
-import ToolkitProvider, { ToolkitProviderProps } from 'react-bootstrap-table2-toolkit'
+import BootstrapTable, { Column } from 'react-bootstrap-table-next'
 import filterFactory, { Comparator, multiSelectFilter, numberFilter } from 'react-bootstrap-table2-filter'
 import paginationFactory, { PaginationListStandalone, PaginationProvider, PaginationTotalStandalone, SizePerPageDropdownStandalone } from 'react-bootstrap-table2-paginator'
-import { secondsToTimeString, timeStringToSeconds } from '../utils/Time'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import GameCategorySearch from './GameCategorySearchBar'
+import ToolkitProvider, { ToolkitProviderProps } from 'react-bootstrap-table2-toolkit'
 import { Picky } from 'react-picky'
-import ScoreDropCalculator from './ScoreDropCalculator'
-import { apiGet } from '../fetchers/Api'
-import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
+
 import sortCaret from '../Dashboard/TableElements/SortCarret'
+import { apiGet } from '../fetchers/Api'
+import { secondsToTimeString, timeStringToSeconds } from '../utils/Time'
+import GameCategorySearch from './GameCategorySearchBar'
+import ScoreDropCalculator from './ScoreDropCalculator'
 
 interface PlatformDto {
   id: string

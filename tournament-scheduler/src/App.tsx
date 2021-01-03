@@ -1,15 +1,17 @@
 import './App.css'
-import { AppBar, Button, IconButton, ThemeProvider, Toolbar, Typography, createMuiTheme } from '@material-ui/core'
+
+import { AppBar, Button, createMuiTheme,IconButton, ThemeProvider, Toolbar, Typography } from '@material-ui/core'
+import { teal } from '@material-ui/core/colors'
+import useMediaQuery from '@material-ui/core/useMediaQuery'
 import { FC, useEffect, useState } from 'react'
 import Div100vh from 'react-div-100vh'
+
+import { apiGet } from './fetchers/Api'
 import LoginForm from './LoginForm/LoginForm'
+import User from './models/User'
 import ScheduleManagement from './ScheduleManagement/ScheduleManagement'
 import ScheduleRegistration from './ScheduleRegistration/ScheduleRegistration'
 import ScheduleViewer from './ScheduleViewer/ScheduleViewer'
-import User from './models/User'
-import { apiGet } from './fetchers/Api'
-import { teal } from '@material-ui/core/colors'
-import useMediaQuery from '@material-ui/core/useMediaQuery'
 
 const darkTheme = createMuiTheme({
   palette: {

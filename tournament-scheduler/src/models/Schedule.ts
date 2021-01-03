@@ -1,4 +1,4 @@
-import { TimeSlot, TimeSlotDto, createDefaultTimeSlot } from './TimeSlot'
+import { createDefaultTimeSlot, TimeSlot, TimeSlotDto } from './TimeSlot'
 
 export interface ScheduleDto {
   id: number

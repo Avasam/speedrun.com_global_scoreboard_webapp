@@ -1,5 +1,5 @@
-import { Button, Form, InputGroup } from 'react-bootstrap'
 import { ChangeEventHandler, FC, useState } from 'react'
+import { Button, Form, InputGroup } from 'react-bootstrap'
 
 const SrcApiKeyLink: FC = () => {
   const [srcNameInput, setSrcNameInput] = useState('')

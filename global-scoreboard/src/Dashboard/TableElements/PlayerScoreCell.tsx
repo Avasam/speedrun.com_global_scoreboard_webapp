@@ -1,10 +1,12 @@
 import './PlayerScoreCell.css'
+
+import { useState } from 'react'
 import { Button } from 'react-bootstrap'
+
+import { apiGet } from '../../fetchers/Api'
 import GenericModal from '../../GenericModal'
 import Player from '../../models/Player'
-import { apiGet } from '../../fetchers/Api'
 import { renderScoreTable } from '../UpdateMessage'
-import { useState } from 'react'
 
 type PlayerScoreCellProps = {
   player: Player

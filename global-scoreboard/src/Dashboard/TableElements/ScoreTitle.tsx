@@ -1,6 +1,6 @@
-import { OverlayTrigger, Tooltip } from 'react-bootstrap'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { OverlayTrigger, Tooltip } from 'react-bootstrap'
 
 const ScoreTitle = () => <>
   {'Score '}
