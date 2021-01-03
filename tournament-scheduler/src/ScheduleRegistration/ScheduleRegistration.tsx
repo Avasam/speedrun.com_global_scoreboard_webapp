@@ -12,9 +12,12 @@ interface ScheduleRegistrationProps {
   registrationLink: string
 }
 
-const entriesLeft = (timeSlot: TimeSlot) => timeSlot.maximumEntries - timeSlot.registrations.length
-
 const timeSlotLabelPaddingRight = 40
+
+const fancyFormat = (date: Date) =>
+  moment(date).format(`ddd ${new DateFnsUtils().dateTime24hFormat}`)
+
+const entriesLeft = (timeSlot: TimeSlot) => timeSlot.maximumEntries - timeSlot.registrations.length
 
 const getSchedule = (id: number, registrationKey: string) =>
   apiGet(`schedules/${id}`, { registrationKey })
@@ -34,6 +37,7 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
   const [errorMessage, setErrorMessage] = useState('')
 
   const timeSlotInputLabel = useRef<HTMLLabelElement>(null)
+  const deadlineDaysLeft = moment(scheduleState?.deadline).diff(Date.now(), 'days')
 
   const checkFormValidity = () => {
     const participantCount = selectedTimeSlot?.participantsPerEntry
@@ -108,56 +112,64 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
             Click here to view the current registrations in a new tab
           </Link>
           <span style={{ display: 'block' }}>All dates and times are given in your local timezone.</span>
+
           {!scheduleState.active
             ? <div><br />Sorry. This schedule is currently inactive and registration is closed.</div>
-            : <FormGroup>
-              <FormControl variant='outlined' style={{ margin: '16px 0' }}>
-                <InputLabel
-                  ref={timeSlotInputLabel}
-                  id='time-slot-select-label'
-                  style={{ paddingRight: `${timeSlotLabelPaddingRight}px` }}
-                >
-                  Choose your time slot amongst the following
-                </InputLabel>
-                <Select
-                  labelId='time-slot-select-label'
-                  id='time-slot-select'
-                  value={selectedTimeSlot?.id || ''}
-                  onChange={selectTimeSlot}
-                  labelWidth={timeSlotLabelWidth}
-                >
-                  {scheduleState.timeSlots.map(timeSlot =>
-                    <MenuItem
-                      key={`timeslot-${timeSlot.id}`}
-                      value={timeSlot.id}
-                      disabled={entriesLeft(timeSlot) <= 0 || timeSlot.dateTime <= new Date()}
-                    >{
-                        `${moment(timeSlot.dateTime).format(`ddd ${new DateFnsUtils().dateTime24hFormat}`)
-                        } (${timeSlot.dateTime <= new Date()
-                          ? 'past deadline'
-                          : entriesLeft(timeSlot) <= 0
-                            ? 'full'
-                            : `${entriesLeft(timeSlot)} / ${timeSlot.maximumEntries}` +
-                            ` entr${entriesLeft(timeSlot) === 1 ? 'y' : 'ies'} left`
-                        })`
-                      }</MenuItem>)}
-                </Select>
-              </FormControl>
-              {selectedTimeSlot && entriesLeft(selectedTimeSlot) > 0 &&
-                <>
-                  <FormLabel>
-                    Please write down your name
-                    {selectedTimeSlot.participantsPerEntry > 1 &&
-                      ' as well as all other participants playing with or against you in the same match'}
-                  </FormLabel>
-                  {new Array(...new Array(selectedTimeSlot.participantsPerEntry)).map((_, index) =>
-                    <TextField
-                      key={`participant-${index}`}
-                      label={`Participant${selectedTimeSlot.participantsPerEntry > 1 ? ` ${index + 1}` : ''}'s name`}
-                      onChange={event => handleParticipantChange(index, event.target.value)}
-                    />)}
-                </>}
-            </FormGroup>
+            : deadlineDaysLeft < 1
+              ? <div><br />Sorry. Registrations for this schedule are over (past deadline).</div>
+              : <FormGroup>
+                <div><br />{
+                  `Registration deadline: ${fancyFormat(scheduleState.deadline)
+                  } (${deadlineDaysLeft} day${deadlineDaysLeft === 1 ? '' : 's'
+                  } left)`}
+                </div>
+                <FormControl variant='outlined' style={{ margin: '16px 0' }}>
+                  <InputLabel
+                    ref={timeSlotInputLabel}
+                    id='time-slot-select-label'
+                    style={{ paddingRight: `${timeSlotLabelPaddingRight}px` }}
+                  >
+                    Choose your time slot amongst the following
+                  </InputLabel>
+                  <Select
+                    labelId='time-slot-select-label'
+                    id='time-slot-select'
+                    value={selectedTimeSlot?.id || ''}
+                    onChange={selectTimeSlot}
+                    labelWidth={timeSlotLabelWidth}
+                  >
+                    {scheduleState.timeSlots.map(timeSlot =>
+                      <MenuItem
+                        key={`timeslot-${timeSlot.id}`}
+                        value={timeSlot.id}
+                        disabled={entriesLeft(timeSlot) <= 0 || timeSlot.dateTime <= new Date()}
+                      >{
+                          `${fancyFormat(timeSlot.dateTime)
+                          } (${timeSlot.dateTime <= new Date()
+                            ? 'past deadline'
+                            : entriesLeft(timeSlot) <= 0
+                              ? 'full'
+                              : `${entriesLeft(timeSlot)} / ${timeSlot.maximumEntries}` +
+                              ` entr${entriesLeft(timeSlot) === 1 ? 'y' : 'ies'} left`
+                          })`
+                        }</MenuItem>)}
+                  </Select>
+                </FormControl>
+                {selectedTimeSlot && entriesLeft(selectedTimeSlot) > 0 &&
+                  <>
+                    <FormLabel>
+                      Please write down your name
+                      {selectedTimeSlot.participantsPerEntry > 1 &&
+                        ' as well as all other participants playing with or against you in the same match'}
+                    </FormLabel>
+                    {new Array(...new Array(selectedTimeSlot.participantsPerEntry)).map((_, index) =>
+                      <TextField
+                        key={`participant-${index}`}
+                        label={`Participant${selectedTimeSlot.participantsPerEntry > 1 ? ` ${index + 1}` : ''}'s name`}
+                        onChange={event => handleParticipantChange(index, event.target.value)}
+                      />)}
+                  </>}
+              </FormGroup>
           }
         </CardContent>
         <CardActions>

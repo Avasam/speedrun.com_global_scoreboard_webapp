@@ -5,6 +5,7 @@ export interface ScheduleDto {
   name: string
   active: boolean
   registrationKey: string
+  deadline: Date | null
   timeSlots: TimeSlotDto[]
 }
 
@@ -16,6 +17,7 @@ export class Schedule {
   get registrationLink(): string {
     return `${window.location.origin}${window.location.pathname}?register=${this.id}-${this.registrationKey}`
   }
+  deadline: Date
   timeSlots: TimeSlot[]
 
   constructor(dto: ScheduleDto) {
@@ -23,6 +25,7 @@ export class Schedule {
     this.name = dto.name
     this.active = dto.active
     this.registrationKey = dto.registrationKey
+    this.deadline = dto.deadline != null ? new Date(dto.deadline) : new Date()
     this.timeSlots = (dto.timeSlots || []).map(timeSlotDto => new TimeSlot(timeSlotDto))
   }
 }
@@ -33,5 +36,6 @@ export const createDefaultSchedule = () =>
     name: 'New Schedule',
     active: false,
     registrationKey: '',
+    deadline: new Date(),
     timeSlots: [createDefaultTimeSlot()],
   })

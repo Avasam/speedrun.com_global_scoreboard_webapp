@@ -1,3 +1,4 @@
+// Note: Let's stay as close to the original types as possible, even if they're vague
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-duplicate-imports */
 /* eslint-disable @typescript-eslint/ban-types */

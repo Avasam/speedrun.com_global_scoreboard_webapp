@@ -12,7 +12,7 @@ import ScoreTitle from '../TableElements/ScoreTitle'
 
 const currentTimeOnLoad = new Date()
 const columnClass = (lastUpdate: Date) => {
-  // TODO: This probably doesn't take daylight savings and other weird shenanigans into account
+  // FIXME: This probably doesn't take daylight savings and other weird shenanigans into account
   const daysSince = Math.floor((currentTimeOnLoad.getTime() - lastUpdate.getTime()) / 86400000)
   if (daysSince >= Configs.lastUpdatedDays[2]) return 'daysSince'
   if (daysSince >= Configs.lastUpdatedDays[1]) return 'daysSince2'
