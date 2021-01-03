@@ -1,5 +1,5 @@
-import Registration from './Registration'
 import { getNowInMinutesStep } from '../utils/Date'
+import Registration from './Registration'
 
 export interface TimeSlotDto {
   id: number

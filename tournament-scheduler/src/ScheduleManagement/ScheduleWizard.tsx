@@ -9,21 +9,21 @@ import ExpandMore from '@material-ui/icons/ExpandMore'
 import FileCopy from '@material-ui/icons/FileCopy'
 import { DatePicker, DateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
 import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date'
-import { Moment } from 'moment'
+import moment, { Moment } from 'moment'
 import { FC, useState } from 'react'
 import MaskedInput from 'react-text-mask'
 
 import { apiDelete, apiPut } from '../fetchers/Api'
 import Registration from '../models/Registration'
-import { Schedule } from '../models/Schedule'
+import { Schedule, ScheduleDto } from '../models/Schedule'
 import { createDefaultTimeSlot, minutesStep, TimeSlot } from '../models/TimeSlot'
-import { tomorrowFlat } from '../utils/Date'
+import { todayFlat } from '../utils/Date'
 
 // TODO: Extract TimeSlot / RegistrationList
 
 type ScheduleWizardProps = {
   schedule: Schedule
-  onSave: (schedule: Schedule) => void
+  onSave: (schedule: ScheduleDto) => void
   onCancel: () => void
 }
 
@@ -60,7 +60,6 @@ const NonZeroNumberInput = (props: NonZeroNumberInputProps) => {
 
 export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardProps) => {
   const [schedule, setSchedule] = useState(props.schedule)
-  const [scheduleDeadline, setScheduleDeadline] = useState<Date>(tomorrowFlat())
 
   const editTimeSlotDateTime = (momentDate: Moment | null, index: number) => {
     if (!momentDate) return
@@ -118,6 +117,10 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
 
   const earliestTimeslotDate = schedule.timeSlots.map(timeSlot => timeSlot.dateTime)[0]
 
+  const validateDeadline = () =>
+    schedule.deadline <= earliestTimeslotDate &&
+    (earliestTimeslotDate <= new Date() || schedule.deadline >= todayFlat())
+
   return <Container>
     <Card>
       <CardContent>
@@ -150,11 +153,16 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
               <DatePicker
                 id='schedule-deadline'
                 label='Registration deadline'
-                value={scheduleDeadline}
-                onChange={momentDate => setScheduleDeadline(momentDate?.toDate() || tomorrowFlat())}
+                value={schedule.deadline}
+                onChange={momentDate => setSchedule({
+                  ...schedule,
+                  registrationLink: schedule.registrationLink,
+                  deadline: momentDate?.toDate() || todayFlat(),
+                })}
                 maxDate={earliestTimeslotDate}
                 maxDateMessage='Registrations should close at most the day of the earliest time slot'
                 disablePast={earliestTimeslotDate > new Date()}
+                minDateMessage='Deadline should not be before today'
                 InputProps={{
                   endAdornment:
                     <InputAdornment position='end'>
@@ -195,7 +203,11 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
         </Button>
         <Button
           size='small'
-          onClick={() => props.onSave(schedule)}
+          disabled={!validateDeadline()}
+          onClick={() => props.onSave({
+            ...schedule,
+            deadline: moment(schedule.deadline).startOf('day').toDate()
+          })}
         >
           Save
         </Button>
