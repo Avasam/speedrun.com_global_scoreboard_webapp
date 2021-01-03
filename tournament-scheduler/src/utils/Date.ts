@@ -1,6 +1,6 @@
-export const getNowInMinutesStep = (minutesStep: number) => {
+export const floorToMinutesStep = (date: Date, minutesStep: number) => {
   const coefficient = 1000 * 60 * minutesStep
-  return new Date(Math.ceil(Date.now() / coefficient) * coefficient)
+  return new Date(Math.ceil(date.getTime() / coefficient) * coefficient)
 }
 
 export const tomorrow = () => {
