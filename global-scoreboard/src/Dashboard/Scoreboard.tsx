@@ -1,12 +1,14 @@
 import 'react-bootstrap-table2-paginator/dist/react-bootstrap-table2-paginator.min.css'
 import './Scoreboard.css'
-import BootstrapTable, { Column } from 'react-bootstrap-table-next'
+
+import { Component, forwardRef, MutableRefObject, useRef, useState } from 'react'
 import { Dropdown, DropdownButton, Spinner } from 'react-bootstrap'
-import Player, { PlayerField } from '../models/Player'
-import React, { Component, MutableRefObject, forwardRef, useRef, useState } from 'react'
-import ToolkitProvider, { Search, SearchProps, ToolkitProviderProps } from 'react-bootstrap-table2-toolkit'
+import BootstrapTable, { Column } from 'react-bootstrap-table-next'
 import paginationFactory, { PaginationListStandalone, PaginationProvider, PaginationTotalStandalone, SizePerPageDropdownStandalone } from 'react-bootstrap-table2-paginator'
+import ToolkitProvider, { Search, SearchProps, ToolkitProviderProps } from 'react-bootstrap-table2-toolkit'
+
 import Configs from '../models/Configs'
+import Player, { PlayerField } from '../models/Player'
 import PlayerNameCell from './TableElements/PlayerNameCell'
 import PlayerScoreCell from './TableElements/PlayerScoreCell'
 import ScoreTitle from './TableElements/ScoreTitle'

@@ -1,13 +1,15 @@
 import './App.css'
 import 'react-picky/dist/picky.css'
 import 'bootstrap/dist/css/bootstrap.css'
-import Configs, { ServerConfigs } from './models/Configs'
-import React, { FC, useEffect, useState } from 'react'
+
+import { FC, useEffect, useState } from 'react'
+
 import Dashboard from './Dashboard/Dashboard'
+import { apiGet } from './fetchers/Api'
 import GameSearch from './GameSearch/GameSearch'
+import Configs, { ServerConfigs } from './models/Configs'
 import Player from './models/Player'
 import ScoreboardNavBar from './NavBar/ScoreboardNavBar'
-import { apiGet } from './fetchers/Api'
 
 const getCurrentUser = () => apiGet('users/current').then<{ user: Player | undefined }>(res => res.json())
 const getConfigs = () => apiGet('configs').then<ServerConfigs>(res => res.json())

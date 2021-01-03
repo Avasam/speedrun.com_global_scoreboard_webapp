@@ -1,12 +1,13 @@
-import { Button, Card, CardActions, CardContent, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Theme, makeStyles } from '@material-ui/core'
-import React, { FC, useEffect, useState } from 'react'
-import { Schedule, ScheduleDto, createDefaultSchedule } from '../models/Schedule'
-import { apiDelete, apiGet, apiPost, apiPut } from '../fetchers/Api'
-import DeleteForever from '@material-ui/icons/DeleteForever'
-import { ScheduleWizard } from './ScheduleWizard'
+import { Button, Card, CardActions, CardContent, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, makeStyles, Theme } from '@material-ui/core'
 import { Styles } from '@material-ui/core/styles/withStyles'
+import DeleteForever from '@material-ui/icons/DeleteForever'
+import { FC, useEffect, useState } from 'react'
+
+import { apiDelete, apiGet, apiPost, apiPut } from '../fetchers/Api'
+import { createDefaultSchedule, Schedule, ScheduleDto } from '../models/Schedule'
 import User from '../models/User'
 import copyToClipboard from '../utils/Clipboard'
+import { ScheduleWizard } from './ScheduleWizard'
 
 const getSchedules = () =>
   apiGet('schedules')
@@ -111,7 +112,7 @@ const ScheduleCard: FC<ScheduleCardProps> = (props: ScheduleCardProps) => {
   // FIXME: Probably have to use styles correctly
   // eslint-disable-next-line @typescript-eslint/ban-types
   const classes = makeStyles(styles as Styles<Theme, {}, 'card' | 'cardActions'>)()
-  const [open, setOpen] = React.useState(false)
+  const [open, setOpen] = useState(false)
 
   const handleClose = (confirmed: boolean) => {
     confirmed && props.onDelete(props.schedule.id)

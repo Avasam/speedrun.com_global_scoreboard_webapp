@@ -1,15 +1,17 @@
 import './Dashboard.css'
+
+import { useEffect, useRef, useState } from 'react'
 import { Col, Container, Row } from 'react-bootstrap'
-import React, { useEffect, useRef, useState } from 'react'
-import Scoreboard, { ScoreboardRef } from './Scoreboard'
-import UpdateMessage, { renderScoreTable } from './UpdateMessage'
-import { apiDelete, apiGet, apiPost, apiPut } from '../fetchers/Api'
 import { AlertProps } from 'react-bootstrap/Alert'
+
+import { apiDelete, apiGet, apiPost, apiPut } from '../fetchers/Api'
 import Configs from '../models/Configs'
 import Player from '../models/Player'
-import QuickView from './QuickView/QuickView'
-import UpdateRunnerForm from './UpdateRunnerForm'
 import UpdateRunnerResult from '../models/UpdateRunnerResult'
+import QuickView from './QuickView/QuickView'
+import Scoreboard, { ScoreboardRef } from './Scoreboard'
+import UpdateMessage, { renderScoreTable } from './UpdateMessage'
+import UpdateRunnerForm from './UpdateRunnerForm'
 
 type DashboardProps = {
   currentUser: Player | null | undefined

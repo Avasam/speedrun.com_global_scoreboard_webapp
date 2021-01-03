@@ -1,8 +1,10 @@
 import './ScoreboardNavBar.css'
+
+import { useState } from 'react'
 import { Button, Container, Nav, Navbar } from 'react-bootstrap'
-import React, { useState } from 'react'
-import LoginModal from './LoginModal'
+
 import Player from '../models/Player'
+import LoginModal from './LoginModal'
 
 type LoginInfoProps = {
   username: string | null | undefined
