@@ -3,7 +3,7 @@
     "@typescript-eslint",
     "react",
     "react-hooks",
-    "jsx-a11y",
+    // "jsx-a11y",
     "sonarjs",
     "switch-case",
     "unicorn",
@@ -85,7 +85,7 @@
       "warn",
       64
     ],
-    // unicorn/recommended overrides
+    // unicorn/recommended overrides (https://github.com/sindresorhus/eslint-plugin-unicorn/blob/master/index.js#L41)
     "unicorn/catch-error-name": [
       "error",
       {
