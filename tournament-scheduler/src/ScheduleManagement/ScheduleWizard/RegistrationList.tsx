@@ -88,8 +88,10 @@ const RegistrationList: FC<RegistrationListProps> = (props: RegistrationListProp
     {props.registration
       .participants
       .concat(
-        new Array(Math.max(0, props.participantsPerEntry - props.registration.participants.length))
-          .fill('')
+        Array.from(
+          { length: Math.max(0, props.participantsPerEntry - props.registration.participants.length) },
+          () => ''
+        )
       )
       .map((participant: string, index) =>
         <ListItem
