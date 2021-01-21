@@ -7,7 +7,7 @@ import { apiDelete, apiGet, apiPost, apiPut } from '../fetchers/Api'
 import { createDefaultSchedule, Schedule, ScheduleDto } from '../models/Schedule'
 import User from '../models/User'
 import copyToClipboard from '../utils/Clipboard'
-import { ScheduleWizard } from './ScheduleWizard'
+import { ScheduleWizard } from './ScheduleWizard/ScheduleWizard'
 
 const getSchedules = () =>
   apiGet('schedules')

@@ -52,6 +52,34 @@ const getSchedule = (id: number) =>
     .then(res =>
       res.json().then((scheduleDto: ScheduleDto) => new Schedule(scheduleDto)))
 
+const buildCalendarEventTitle = (timeSlot: TimeSlot, schedule: Schedule) =>
+  `${timeSlot
+    .registrations
+    .flatMap(registration => registration.participants)
+    .join(', ')} (${schedule.name})`
+
+const buildCalendarEventDescription = (timeSlot: TimeSlot, schedule: Schedule) => {
+  const url = window.location.href
+  const title = schedule.name
+  const players = timeSlot.registrations.length <= 1
+    ? `Participants:\n${timeSlot
+      .registrations
+      .flatMap(registration => registration.participants)
+      .map((participant, index) => `${index + 1}. ${participant}\n`)
+      .join('')}`
+    : timeSlot
+      .registrations
+      .map(registration => registration.participants)
+      .map((participants, entryIndex) =>
+        `Participants for entry #${entryIndex + 1}:\n${participants
+          .map((participant, index) =>
+            `${index + 1}. ${participant}`)
+          .join('\n')}`)
+      .join('\n\n')
+  return `${title}\n${url}\n\n${players}`
+}
+
+
 const ScheduleViewer: FC<ScheduleRegistrationProps> = (props: ScheduleRegistrationProps) => {
   const [scheduleState, setScheduleState] = useState<Schedule | null | undefined>()
   const classes = useStyles()
@@ -93,8 +121,8 @@ const ScheduleViewer: FC<ScheduleRegistrationProps> = (props: ScheduleRegistrati
                     <div className={classes.addToCalendar}>
                       <AddToCalendar
                         event={{
-                          title: scheduleState.name,
-                          description: window.location.href,
+                          title: buildCalendarEventTitle(timeSlot, scheduleState),
+                          description: buildCalendarEventDescription(timeSlot, scheduleState),
                           location: '',
                           startTime: timeSlot.dateTime,
                           endTime: moment(timeSlot.dateTime).add(1, 'h').toDate(),
