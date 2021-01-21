@@ -157,10 +157,10 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
                 onChange={momentDate => setSchedule({
                   ...schedule,
                   registrationLink: schedule.registrationLink,
-                  deadline: momentDate?.toDate() || todayFlat(),
+                  deadline: momentDate?.startOf('day').toDate() || todayFlat(),
                 })}
-                maxDate={earliestTimeslotDate}
-                maxDateMessage='Registrations should close at most the day of the earliest time slot'
+                error={!validateDeadline()}
+                helperText={!validateDeadline() && 'Registrations should close no later than the day of the earliest time slot'}
                 disablePast={earliestTimeslotDate > new Date()}
                 minDateMessage='Deadline should not be before today'
                 InputProps={{
@@ -278,6 +278,7 @@ const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
           label='Date and time'
           value={props.timeSlot.dateTime}
           onChange={date => props.onEditTimeSlotDateTime(date)}
+          error={props.timeSlot.dateTime < props.schedule.deadline}
           minDate={new Date(2020, 0)}
           disablePast={props.timeSlot.id <= -1}
           ampm={false}
