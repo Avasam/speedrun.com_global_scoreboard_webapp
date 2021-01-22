@@ -14,7 +14,8 @@ type PlayerNameCellProps = {
 const PlayerNameCell = (props: PlayerNameCellProps) =>
   <span className='name-cell'>
     <a
-      href={`https://www.speedrun.com/user/${props.player.name}`}
+      // HACK: This is an edge case which we believe exists only with the user HaruSama / Haru様
+      href={`https://www.speedrun.com/user/${props.player.name.replaceAll('様', 'Sama')}`}
       target='_blank'
       rel='noopener noreferrer'
     >{props.player.countryCode &&
