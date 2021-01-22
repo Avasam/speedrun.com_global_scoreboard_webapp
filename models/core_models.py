@@ -2,11 +2,13 @@ from __future__ import annotations
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import orm, text
-from typing import Any, Dict, List, Optional, Tuple, Union
-from services.utils import get_file, SpeedrunComError
+from typing import cast, Dict, List, Optional, Tuple, Union
+from services.utils import get_file, SpeedrunComError, UserUpdaterError
 import sys
 import traceback
 import uuid
+
+DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 db = SQLAlchemy()
 
@@ -44,14 +46,16 @@ class Player(db.Model):
                 {"X-API-Key": api_key}
             )["data"]
         except SpeedrunComError:
-            return None, 'Invalid API key.'
+            return None, 'Invalid SRC API key'
+        except UserUpdaterError as exception:
+            return None, f"Error: {exception.args[0]['error']}\n{exception.args[0]['details']}"
         except Exception:
             print("\nError: Unknown\n{}".format(traceback.format_exc()))
             return None, traceback.format_exc()
 
         user_id: Optional[str] = data["id"]
         if not user_id:  # Confirms wether the API key is valid
-            return None, 'Invalid API key.'
+            return None, 'Invalid SRC API key'
 
         user_name: str = data["names"]["international"]
         print(f"Logging in '{user_id}' ({user_name})")
@@ -151,18 +155,20 @@ class Player(db.Model):
     def get_schedules(self) -> List[Schedule]:
         return Schedule.query.filter(Schedule.owner_id == self.user_id).all()
 
-    def create_schedule(self, name: str, is_active: bool, time_slots: List[Dict[str, Any]]) -> int:
+    def create_schedule(self, name: str, is_active: bool, deadline: str, time_slots: List[Dict[str, str]]) -> int:
+        print(type(deadline))
         new_schedule = Schedule(
             name=name,
             owner_id=self.user_id,
             registration_key=str(uuid.uuid4()),
-            is_active=is_active)
+            is_active=is_active,
+            deadline=datetime.strptime(deadline, DATETIME_FORMAT))
         db.session.add(new_schedule)
         db.session.flush()
 
         new_time_slots = [TimeSlot(
             schedule_id=new_schedule.schedule_id,
-            date_time=datetime.strptime(time_slot['dateTime'], "%Y-%m-%dT%H:%M:%S.%fZ"),
+            date_time=datetime.strptime(time_slot['dateTime'], DATETIME_FORMAT),
             maximum_entries=time_slot['maximumEntries'],
             participants_per_entry=time_slot['participantsPerEntry'])
             for time_slot in time_slots]
@@ -171,7 +177,14 @@ class Player(db.Model):
         db.session.commit()
         return new_schedule.schedule_id
 
-    def update_schedule(self, schedule_id: int, name: str, is_active: bool, time_slots: List[Dict[str, Any]]) -> bool:
+    def update_schedule(
+        self,
+        schedule_id: int,
+        name: str,
+        is_active: bool,
+        deadline: str,
+        time_slots: List[Dict[str, str]]
+    ) -> bool:
         try:
             schedule_to_update = Schedule \
                 .query \
@@ -183,6 +196,7 @@ class Player(db.Model):
 
         schedule_to_update.name = name
         schedule_to_update.is_active = is_active
+        schedule_to_update.deadline = datetime.strptime(deadline, DATETIME_FORMAT)
 
         # Manually take care of merging the time slots
         # since I can't figure out how to do it automatically within SQLAlchemy
@@ -199,9 +213,9 @@ class Player(db.Model):
                 new_time_slot = TimeSlot()
             # Do the necessary modifications
             new_time_slot.schedule_id = schedule_id
-            new_time_slot.date_time = datetime.strptime(time_slot_to_edit['dateTime'], "%Y-%m-%dT%H:%M:%S.%fZ")
-            new_time_slot.maximum_entries = time_slot_to_edit['maximumEntries']
-            new_time_slot.participants_per_entry = time_slot_to_edit['participantsPerEntry']
+            new_time_slot.date_time = datetime.strptime(time_slot_to_edit['dateTime'], DATETIME_FORMAT)
+            new_time_slot.maximum_entries = cast(int, time_slot_to_edit['maximumEntries'])
+            new_time_slot.participants_per_entry = cast(int, time_slot_to_edit['participantsPerEntry'])
 
             new_time_slots.append(new_time_slot)
 

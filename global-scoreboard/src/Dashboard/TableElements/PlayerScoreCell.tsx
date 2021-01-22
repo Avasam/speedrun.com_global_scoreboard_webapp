@@ -1,9 +1,11 @@
 import './PlayerScoreCell.css'
-import React, { useState } from 'react'
+
+import { useState } from 'react'
 import { Button } from 'react-bootstrap'
+
+import { apiGet } from '../../fetchers/Api'
 import GenericModal from '../../GenericModal'
 import Player from '../../models/Player'
-import { apiGet } from '../../fetchers/api'
 import { renderScoreTable } from '../UpdateMessage'
 
 type PlayerScoreCellProps = {
@@ -21,8 +23,7 @@ const PlayerScoreCell = (props: PlayerScoreCellProps) => {
           res.text().then(scoreDetails => {
             props.player.scoreDetails = scoreDetails
             setShow(true)
-          })
-        )
+          }))
       : setShow(true)
 
   // Date is last known update date for a user with details
@@ -30,7 +31,7 @@ const PlayerScoreCell = (props: PlayerScoreCellProps) => {
     ? <span>{props.player.score}</span>
     : <>
       <Button
-        variant="link"
+        variant='link'
         onClick={handleShow}
       >
         {props.player.score}
@@ -40,11 +41,11 @@ const PlayerScoreCell = (props: PlayerScoreCellProps) => {
         onHide={handleClose}
         title={`Runner: ${props.player.name} (${props.player.userId}), ${props.player.score} pts`}
       >
-        <div className="alert alert-success">
+        <div className='alert alert-success'>
           {props.player.scoreDetails
             ? renderScoreTable(props.player.scoreDetails)
-            : ('No details available. ' +
-              `You can update ${props.player.name} (${props.player.userId}) to get more details about their runs.`)
+            : 'No details available. ' +
+            `You can update ${props.player.name} (${props.player.userId}) to get more details about their runs.`
           }
         </div>
       </GenericModal>

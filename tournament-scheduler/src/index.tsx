@@ -1,16 +1,17 @@
 import './index.css'
-import * as serviceWorker from './serviceWorker'
-import App from './App'
-import React from 'react'
+
 import ReactDOM from 'react-dom'
+
+import App from './App'
+import * as serviceWorker from './serviceWorker'
 
 // Hack for local network testing
 window.process = {
   env: process.env
 } as NodeJS.Process
-if ((process.env.REACT_APP_BASE_URL?.includes('127.0.0.1') || process.env.REACT_APP_BASE_URL?.includes('localhost'))
-  && window.location.hostname !== 'localhost'
-  && window.location.hostname !== '127.0.0.1'
+if ((process.env.REACT_APP_BASE_URL?.includes('127.0.0.1') || process.env.REACT_APP_BASE_URL?.includes('localhost')) &&
+  window.location.hostname !== 'localhost' &&
+  window.location.hostname !== '127.0.0.1'
 ) {
   window.process.env.REACT_APP_BASE_URL = `${window.location.protocol}//${window.location.hostname}:5000`
   console.info(`REACT_APP_BASE_URL was changed from ${process.env.REACT_APP_BASE_URL} to ${window.process.env.REACT_APP_BASE_URL}`)

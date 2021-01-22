@@ -1,9 +1,10 @@
-import { Alert, OverlayTrigger, ProgressBar, Tooltip } from 'react-bootstrap'
-import React, { useEffect, useState } from 'react'
-import { AlertProps } from 'react-bootstrap/Alert'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { RunResult } from '../models/UpdateRunnerResult'
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { useEffect, useState } from 'react'
+import { Alert, OverlayTrigger, ProgressBar, Tooltip } from 'react-bootstrap'
+import { AlertProps } from 'react-bootstrap/Alert'
+
+import { RunResult } from '../models/UpdateRunnerResult'
 
 type UpdateMessageProps = {
   variant: AlertProps['variant']
@@ -16,21 +17,18 @@ const minutes5 = 5_000 * 60
 let progressTimer: NodeJS.Timeout
 let position: number
 
-const renderRow = (rows: RunResult[]) => {
-  return rows.map((row, rowi) =>
-    <tr key={`row${rowi}`}>
-      <td>
-        {Math.round(position += row.levelFraction * 100) / 100}
-      </td>
-      <td>
-        {row.gameName} - {row.categoryName}{row.levelName ? ` (${row.levelName})` : ''}
-      </td>
-      <td>
-        {row.points.toFixed(2)}
-      </td>
-    </tr>
-  )
-}
+const renderRow = (rows: RunResult[]) => rows.map((row, rowi) =>
+  <tr key={`row${rowi}`}>
+    <td>
+      {Math.round(position += row.levelFraction * 100) / 100}
+    </td>
+    <td>
+      {row.gameName} - {row.categoryName}{row.levelName ? ` (${row.levelName})` : ''}
+    </td>
+    <td>
+      {row.points.toFixed(2)}
+    </td>
+  </tr>)
 
 export const renderScoreTable = (baseString: string) => {
   position = 0
@@ -44,7 +42,9 @@ export const renderScoreTable = (baseString: string) => {
   const topMessage = firstTableElement > -1
     ? allElements
       .slice(0, firstTableElement > 0 ? firstTableElement : undefined)
-      .reduce((prev, curr) => prev + `${curr[0]}\n`, '')
+      // Note: join the first element of each array with a new
+      // eslint-disable-next-line unicorn/no-array-reduce
+      .reduce((previous, current) => `${previous}${current[0]}\n`, '')
       .trim()
     : allElements[0][0]
 
@@ -68,14 +68,14 @@ export const renderScoreTable = (baseString: string) => {
     <div>{topMessage}</div>
     {topRuns.length > 0 && <label>Top 60 runs:</label>}
     {(topRuns.length > 0 || tableElements.slice(2).length > 0) &&
-      <table className="scoreDetailsTable">
+      <table className='scoreDetailsTable'>
         <thead>
           <tr>
             <th># {topRuns.length > 0 && <OverlayTrigger
-              placement="bottom"
+              placement='bottom'
               overlay={
                 <Tooltip
-                  id="levelFractionInfo"
+                  id='levelFractionInfo'
                 >Individual Levels (IL) are weighted and scored to a fraction of a Full Game run. See the About page for a complete explanation.</Tooltip>
               }
             >
@@ -97,10 +97,8 @@ export const renderScoreTable = (baseString: string) => {
                 {row.map((element, elementi) =>
                   <td key={`element${elementi}`}>
                     {element}
-                  </td>
-                )}
-              </tr>
-            )}
+                  </td>)}
+              </tr>)}
           </tbody>
         }
       </table>
@@ -108,7 +106,7 @@ export const renderScoreTable = (baseString: string) => {
     {lesserRuns.length > 0 && <>
       <br />
       <label>Other runs:</label>
-      <table className="scoreDetailsTable">
+      <table className='scoreDetailsTable'>
         <thead>
           <tr>
             <th>#</th>
@@ -125,13 +123,13 @@ export const renderScoreTable = (baseString: string) => {
 }
 
 const UpdateMessage = (props: UpdateMessageProps) => {
-  const [currentTime, setCurrentTime] = useState<number>(new Date().getTime())
+  const [currentTime, setCurrentTime] = useState<number>(Date.now())
 
   useEffect(() => {
     if (props.updateStartTime) {
-      setCurrentTime(new Date().getTime())
+      setCurrentTime(Date.now())
       progressTimer = setInterval(
-        () => setCurrentTime(new Date().getTime()),
+        () => setCurrentTime(Date.now()),
         progressBarTickInterval,
       )
     } else {
@@ -153,7 +151,7 @@ const UpdateMessage = (props: UpdateMessageProps) => {
     {props.updateStartTime != null &&
       <ProgressBar
         animated
-        variant="info"
+        variant='info'
         now={(1 - (currentTime - props.updateStartTime) / minutes5) * 100}
       />}
   </Alert>

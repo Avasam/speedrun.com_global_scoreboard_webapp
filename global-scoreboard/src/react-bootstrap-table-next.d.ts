@@ -1,6 +1,14 @@
+// Note: Let's stay as close to the original types as possible, even if they're vague
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable no-duplicate-imports */
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable unicorn/no-keyword-prefix */
+/* eslint-disable unicorn/prevent-abbreviations */
+/* eslint-disable extra-rules/no-commented-out-code */
 /* eslint-disable sort-imports */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// Origin: https://gitlab.com/fluidattacks/integrates/-/blob/master/front/src/typings/react-bootstrap-table-2/index.d.ts
+
+// Origin: https://gitlab.com/fluidattacks/integrates/-/blob/master/integrates/front/src/typings/react-bootstrap-table-2/index.d.ts
 // Modified:
 // - rowClasses and classes: added function definition
 // - totalSize supports numbers and is required because of 'Warning: Failed prop type: The prop `dataSize` is marked as required in `PaginationTotal`, but its value is `undefined`.'
@@ -32,6 +40,8 @@
 type RowFieldValue = ReactText | Date | TODO
 type TODO = any
 type Pagination = TODO
+// Note: Not my TODO
+// eslint-disable-next-line no-warning-comments
 // TODO: check missings : https://react-bootstrap-table.github.io/react-bootstrap-table2/docs/pagination-props.html
 interface PaginationProps {
   custom?: boolean
@@ -153,6 +163,7 @@ interface ComparatorTypes {
   LT: '<'
   LE: '<='
 }
+// eslint-disable-next-line no-shadow
 declare enum PredefinedComparatorTypes { LIKE = 'LIKE', EQ = '=', NE = '!=', GT = '>', GE = '>=', LT = '<', LE = '<=' }
 type PredefinedComparators = typeof PredefinedComparatorTypes
 // EDITOR

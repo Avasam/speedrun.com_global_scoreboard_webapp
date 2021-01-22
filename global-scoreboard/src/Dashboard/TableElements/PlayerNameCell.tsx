@@ -1,7 +1,7 @@
 import './PlayerNameCell.css'
-import FriendButton from './FriendButton'
+
 import Player from '../../models/Player'
-import React from 'react'
+import FriendButton from './FriendButton'
 
 type PlayerNameCellProps = {
   player: Player
@@ -12,15 +12,16 @@ type PlayerNameCellProps = {
 }
 
 const PlayerNameCell = (props: PlayerNameCellProps) =>
-  <span className="name-cell">
+  <span className='name-cell'>
     <a
-      href={`https://www.speedrun.com/user/${props.player.name}`}
-      target="_blank"
-      rel="noopener noreferrer"
+      // HACK: This is an edge case which we believe exists only with the user HaruSama / Haru様
+      href={`https://www.speedrun.com/user/${props.player.name.replaceAll('様', 'Sama')}`}
+      target='_blank'
+      rel='noopener noreferrer'
     >{props.player.countryCode &&
       <img
-        alt=""
-        className="flagicon"
+        alt=''
+        className='flagicon'
         src={`https://www.speedrun.com/images/flags/${props.player.countryCode}.png`}
       />}{props.player.name}</a>
     {

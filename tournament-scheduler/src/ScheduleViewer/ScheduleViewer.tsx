@@ -1,10 +1,14 @@
-import { Container, List, ListItem, ListItemText, createStyles, makeStyles } from '@material-ui/core'
-import React, { FC, useEffect, useState } from 'react'
-import { Schedule, ScheduleDto } from '../models/Schedule'
+import 'react-add-to-calendar/dist/react-add-to-calendar.min.css'
+
 import DateFnsUtils from '@date-io/moment'
-import { TimeSlot } from '../models/TimeSlot'
-import { apiGet } from '../fetchers/api'
+import { Container, createStyles, List, ListItem, ListItemText, makeStyles } from '@material-ui/core'
 import moment from 'moment'
+import { FC, useEffect, useState } from 'react'
+import AddToCalendar from 'react-add-to-calendar'
+
+import { apiGet } from '../fetchers/Api'
+import { Schedule, ScheduleDto } from '../models/Schedule'
+import { TimeSlot } from '../models/TimeSlot'
 
 interface ScheduleRegistrationProps {
   scheduleId: number
@@ -33,27 +37,62 @@ const useStyles = makeStyles(theme =>
       paddingTop: 0,
       paddingBottom: 0,
     },
-  }),
-)
+    addToCalendar: {
+      marginTop: theme.spacing(1.25),
+      marginLeft: theme.spacing(2),
+      marginBottom: 10,
+      display: 'inline-block',
+      color: theme.palette.text.primary,
+      backgroundColor: theme.palette.background.default,
+    }
+  }))
 
 const getSchedule = (id: number) =>
   apiGet(`schedules/${id}`)
     .then(res =>
       res.json().then((scheduleDto: ScheduleDto) => new Schedule(scheduleDto)))
 
-const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegistrationProps) => {
-  const [schedule, setSchedule] = useState<Schedule | null | undefined>()
+const buildCalendarEventTitle = (timeSlot: TimeSlot, schedule: Schedule) =>
+  `${timeSlot
+    .registrations
+    .flatMap(registration => registration.participants)
+    .join(', ')} (${schedule.name})`
+
+const buildCalendarEventDescription = (timeSlot: TimeSlot, schedule: Schedule) => {
+  const url = window.location.href
+  const title = schedule.name
+  const players = timeSlot.registrations.length <= 1
+    ? `Participants:\n${timeSlot
+      .registrations
+      .flatMap(registration => registration.participants)
+      .map((participant, index) => `${index + 1}. ${participant}\n`)
+      .join('')}`
+    : timeSlot
+      .registrations
+      .map(registration => registration.participants)
+      .map((participants, entryIndex) =>
+        `Participants for entry #${entryIndex + 1}:\n${participants
+          .map((participant, index) =>
+            `${index + 1}. ${participant}`)
+          .join('\n')}`)
+      .join('\n\n')
+  return `${title}\n${url}\n\n${players}`
+}
+
+
+const ScheduleViewer: FC<ScheduleRegistrationProps> = (props: ScheduleRegistrationProps) => {
+  const [scheduleState, setScheduleState] = useState<Schedule | null | undefined>()
   const classes = useStyles()
 
   useEffect(() => {
     getSchedule(props.scheduleId)
       .then((schedule: Schedule) => {
         schedule.timeSlots.sort(TimeSlot.compareFn)
-        setSchedule(schedule)
+        setScheduleState(schedule)
       })
       .catch(err => {
         if (err.status === 404) {
-          setSchedule(null)
+          setScheduleState(null)
         } else {
           console.error(err)
         }
@@ -61,13 +100,13 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
   }, [props.scheduleId])
 
   return <Container>
-    {!schedule
-      ? schedule === null && <div>Sorry. `<code>{props.scheduleId}</code>` is not a valid schedule id.</div>
+    {!scheduleState
+      ? scheduleState === null && <div>Sorry. `<code>{props.scheduleId}</code>` is not a valid scheduleState id.</div>
       : <div style={{ textAlign: 'left', width: 'fit-content', margin: 'auto' }}>
-        <label>Schedule for: {schedule.name}</label>
+        <label>Schedule for: {scheduleState.name}</label>
         <span style={{ display: 'block' }}>All dates and times are given in your local timezone.</span>
-        {!schedule.active && <div><br />This schedule is currently inactive and registration is closed.</div>}
-        {schedule
+        {!scheduleState.active && <div><br />This scheduleState is currently inactive and registration is closed.</div>}
+        {scheduleState
           .timeSlots
           .filter(timeSlot => timeSlot.registrations.length > 0)
           .map(timeSlot =>
@@ -77,7 +116,21 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
               subheader={
                 <ListItemText
                   className={classes.rootHeader}
-                  primary={moment(timeSlot.dateTime).format(`ddd ${new DateFnsUtils().dateTime24hFormat}`)}
+                  primary={<>
+                    {moment(timeSlot.dateTime).format(`ddd ${new DateFnsUtils().dateTime24hFormat}`)}
+                    <div className={classes.addToCalendar}>
+                      <AddToCalendar
+                        event={{
+                          title: buildCalendarEventTitle(timeSlot, scheduleState),
+                          description: buildCalendarEventDescription(timeSlot, scheduleState),
+                          location: '',
+                          startTime: timeSlot.dateTime,
+                          endTime: moment(timeSlot.dateTime).add(1, 'h').toDate(),
+                        }}
+                        buttonLabel='Add to calendar'
+                      />
+                    </div>
+                  </>}
                   secondary={
                     `(${timeSlot.registrations.length} / ${timeSlot.maximumEntries}` +
                     ` entr${timeSlot.registrations.length === 1 ? 'y' : 'ies'})`
@@ -86,17 +139,17 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
               }
             >
               {timeSlot.participantsPerEntry <= 1 &&
-                <ListItemText secondary="Participants" className={classes.nested} />
+                <ListItemText secondary='Participants' className={classes.nested} />
               }
               <div style={{ display: 'flex', flexWrap: 'wrap' }}>
                 {timeSlot.registrations.map((registration, registrationIndex) =>
                   <List
                     key={`registration-${registration.id}`}
-                    component="div"
+                    component='div'
                     disablePadding
                     subheader={
                       timeSlot.participantsPerEntry > 1
-                        ? <ListItemText secondary="Participants" />
+                        ? <ListItemText secondary='Participants' />
                         : undefined
                     }
                     className={classes.nested}
@@ -104,23 +157,21 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
                     {registration.participants.map((participant, participantIndex) =>
                       <ListItem key={`participant-${participantIndex}`} className={classes.item}>
                         <ListItemText
-                          primary={`${
-                            (timeSlot.participantsPerEntry > 1
+                          primary={
+                            `${(timeSlot.participantsPerEntry > 1
                               ? participantIndex
                               : registrationIndex) + 1
-                            }. ${participant}`}
+                            }. ${participant}`
+                          }
                         />
-                      </ListItem>
-                    )}
-                  </List>
-                )}
+                      </ListItem>)}
+                  </List>)}
               </div>
-            </List>
-          )}
+            </List>)}
       </div>
     }
 
   </Container>
 }
 
-export default ScheduleRegistration
+export default ScheduleViewer

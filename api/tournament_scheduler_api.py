@@ -38,11 +38,11 @@ def get_schedule(id: str):
 def post_schedule(current_user: Player):
     data: Dict[str, ] = request.get_json()
 
-    error_message, name, is_active, time_slots = __validate_create_schedule(data)
+    error_message, name, is_active, deadline, time_slots = __validate_create_schedule(data)
     if error_message is not None:
         return jsonify({'message': error_message, 'authenticated': True}), 400
 
-    return str(current_user.create_schedule(name, is_active, time_slots)), 201
+    return str(current_user.create_schedule(name, is_active, deadline, time_slots)), 201
 
 
 @api.route('/schedules/<id>', methods=('PUT',))
@@ -53,11 +53,11 @@ def put_schedule(current_user: Player, id: str):
         schedule_id = int(id)
     except ValueError:
         return jsonify({'message': '/id is not a valid number', 'authenticated': True}), 400
-    error_message, name, is_active, time_slots = __validate_create_schedule(data)
+    error_message, name, is_active, deadline, time_slots = __validate_create_schedule(data)
     if error_message is not None:
         return jsonify({'message': error_message, 'authenticated': True}), 400
 
-    update_success = current_user.update_schedule(schedule_id, name, is_active, time_slots)
+    update_success = current_user.update_schedule(schedule_id, name, is_active, deadline, time_slots)
     return "", 201 if update_success else 404
 
 
@@ -139,34 +139,42 @@ def __validate_create_registration(
     return None, registration_key, participants
 
 
-def __validate_create_schedule(data: Dict[str, Any]) -> Tuple[Optional[str], str, bool, List[Dict]]:
-    name = ""
+def __validate_create_schedule(data: Dict[str, Any]) -> Tuple[Optional[str], str, bool, str, List[Dict]]:
+    error_message = ''
+    name = ''
     is_active = False
+    deadline = ''
+    time_slots = []
     time_slot = []
     try:
         name = data['name']
     except KeyError:
-        return 'name has to be defined', name, is_active, time_slot
+        error_message += 'name has to be defined'
     try:
         is_active = data['active'] is True
     except KeyError:
-        return 'active has to be defined', name, is_active, time_slot
+        error_message += 'active has to be defined'
+    try:
+        deadline = data['deadline']
+    except KeyError:
+        error_message += 'deadline has to be defined'
     try:
         time_slots = data['timeSlots']
     except KeyError:
-        return 'timeSlots has to be defined', name, is_active, time_slot
+
+        error_message += 'timeSlots has to be defined'
     for time_slot in time_slots:
         try:
             time_slot['dateTime']
         except KeyError:
-            return 'timeSlots.dateTime has to be defined', name, is_active, time_slot
+            error_message += 'timeSlots.dateTime has to be defined'
         try:
             time_slot['maximumEntries']
         except KeyError:
-            return 'timeSlots.maximumEntries has to be defined', name, is_active, time_slot
+            error_message += 'timeSlots.maximumEntries has to be defined'
         try:
             time_slot['participantsPerEntry']
         except KeyError:
-            return 'timeSlots.participantsPerEntry has to be defined', name, is_active, time_slot
+            error_message += 'timeSlots.participantsPerEntry has to be defined'
 
-    return None, name, is_active, time_slots
+    return None if error_message == '' else error_message, name, is_active, deadline, time_slots

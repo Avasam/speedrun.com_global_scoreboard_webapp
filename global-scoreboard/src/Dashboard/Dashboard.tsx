@@ -1,15 +1,17 @@
 import './Dashboard.css'
+
+import { useEffect, useRef, useState } from 'react'
 import { Col, Container, Row } from 'react-bootstrap'
-import React, { useEffect, useRef, useState } from 'react'
-import Scoreboard, { ScoreboardRef } from './Scoreboard'
-import UpdateMessage, { renderScoreTable } from './UpdateMessage'
-import { apiDelete, apiGet, apiPost, apiPut } from '../fetchers/api'
 import { AlertProps } from 'react-bootstrap/Alert'
+
+import { apiDelete, apiGet, apiPost, apiPut } from '../fetchers/Api'
 import Configs from '../models/Configs'
 import Player from '../models/Player'
-import QuickView from './QuickView/QuickView'
-import UpdateRunnerForm from './UpdateRunnerForm'
 import UpdateRunnerResult from '../models/UpdateRunnerResult'
+import QuickView from './QuickView/QuickView'
+import Scoreboard, { ScoreboardRef } from './Scoreboard'
+import UpdateMessage, { renderScoreTable } from './UpdateMessage'
+import UpdateRunnerForm from './UpdateRunnerForm'
 
 type DashboardProps = {
   currentUser: Player | null | undefined
@@ -27,8 +29,7 @@ const validateRunnerNotRecentlyUpdated = (runnerNameOrId: string, players: Playe
   const yesterday = new Date()
   yesterday.setDate(yesterday.getDate() - 1)
   return !players.some(player =>
-    (player.name === runnerNameOrId || player.userId === runnerNameOrId) && player.lastUpdate >= yesterday
-  )
+    (player.name === runnerNameOrId || player.userId === runnerNameOrId) && player.lastUpdate >= yesterday)
 }
 
 const buildFriendsList = (friends: Player[], allPlayers: Player[]) =>
@@ -41,7 +42,7 @@ const inferRank = (players: Player[], score: number) => {
   if (lowerOrEqualPlayerFoundIndex < 0) return players.length
 
   const lowerOrEqualPlayerFound = sortedPlayers[lowerOrEqualPlayerFoundIndex]
-  return (lowerOrEqualPlayerFound.score === score && lowerOrEqualPlayerFound.rank)
+  return lowerOrEqualPlayerFound.score === score && lowerOrEqualPlayerFound.rank
     ? lowerOrEqualPlayerFound.rank
     : lowerOrEqualPlayerFoundIndex + 1
 }
@@ -51,8 +52,8 @@ const openLoginModal = () => document.getElementById('open-login-modal-button')?
 
 const Dashboard = (props: DashboardProps) => {
   const [currentPlayer, setCurrentPlayer] = useState<Player | null>(props.currentUser || null)
-  const [friends, setFriends] = useState<Player[]>([])
-  const [players, setPlayers] = useState<Player[]>([])
+  const [friendsState, setFriendsState] = useState<Player[]>([])
+  const [playersState, setPlayersState] = useState<Player[]>([])
   const [alertVariant, setAlertVariant] = useState<AlertProps['variant']>('info')
   const [alertMessage, setAlertMessage] = useState<JSX.Element | string>('Building the Scoreboard. Please wait...')
   const [updateStartTime, setUpdateStartTime] = useState<number | null>(null)
@@ -60,26 +61,26 @@ const Dashboard = (props: DashboardProps) => {
   useEffect(() => {
     // Note: Waiting to obtain both friends and players if both calls are needed
     // to set it all at once and avoid unneeded re-rerenders
-    if (props.currentUser && players.length === 0) {
+    if (props.currentUser && playersState.length === 0) {
       Promise
         .all([getAllPlayers(), getFriends()])
         .then(([allPlayers, friends]) => {
           setCurrentPlayer(allPlayers.find(player => player.userId === props.currentUser?.userId) || null)
-          setFriends(buildFriendsList(friends, allPlayers))
-          setPlayers(allPlayers)
+          setFriendsState(buildFriendsList(friends, allPlayers))
+          setPlayersState(allPlayers)
           setAlertMessage('')
         })
-    } else if (props.currentUser && players.length > 0) {
-      setCurrentPlayer(players.find(player => player.userId === props.currentUser?.userId) || null)
-      getFriends().then(friends => setFriends(buildFriendsList(friends, players)))
+    } else if (props.currentUser && playersState.length > 0) {
+      setCurrentPlayer(playersState.find(player => player.userId === props.currentUser?.userId) || null)
+      getFriends().then(friends => setFriendsState(buildFriendsList(friends, playersState)))
     } else {
       setCurrentPlayer(null)
-      setFriends([])
+      setFriendsState([])
       // Note: Loading the page already logged in starts the currentUser at undefined then quickly changes again
       // Also don't re-fetch players upon login out
-      if (props.currentUser !== undefined && players.length === 0) {
+      if (props.currentUser !== undefined && playersState.length === 0) {
         getAllPlayers().then(players => {
-          setPlayers(players)
+          setPlayersState(players)
           setAlertMessage('')
         })
       }
@@ -95,13 +96,13 @@ const Dashboard = (props: DashboardProps) => {
     setAlertVariant('info')
     setAlertMessage(`Updating "${runnerNameOrId}". This may take up to 5 minutes, depending on the amount of runs to analyse. Please Wait...`)
     if (window.process.env.REACT_APP_BYPASS_UPDATE_RESTRICTIONS !== 'true' &&
-      !validateRunnerNotRecentlyUpdated(runnerNameOrId, players)) {
+      !validateRunnerNotRecentlyUpdated(runnerNameOrId, playersState)) {
       setAlertVariant('warning')
       const cantUpdateTime = Configs.lastUpdatedDays[0]
       setAlertMessage(`Runner ${runnerNameOrId} has already been updated in the past ${cantUpdateTime} day${cantUpdateTime === 1 ? '' : 's'}`)
       return
     }
-    setUpdateStartTime(new Date().getTime())
+    setUpdateStartTime(Date.now())
     apiPost(`players/${runnerNameOrId}/update`)
       .then<UpdateRunnerResult>(res => res.json())
       .then(playerResult => {
@@ -111,7 +112,7 @@ const Dashboard = (props: DashboardProps) => {
       .then(result => {
         setAlertVariant(result.state)
         setAlertMessage(renderScoreTable(result.message))
-        const newPlayers = [...players]
+        const newPlayers = [...playersState]
         const existingPlayerIndex = newPlayers.findIndex(player => player.userId === result.userId)
         const inferedRank = inferRank(newPlayers, result.score)
         const playerModifications = {
@@ -127,15 +128,17 @@ const Dashboard = (props: DashboardProps) => {
             userId: result.userId,
           })
         } else {
-          newPlayers[existingPlayerIndex] = Object.assign({
-            userId: players[existingPlayerIndex].userId,
-          },
-            playerModifications)
+          newPlayers[existingPlayerIndex] = Object.assign(
+            {
+              userId: playersState[existingPlayerIndex].userId,
+            },
+            playerModifications
+          )
         }
 
-        setPlayers(newPlayers)
-        if (friends.some(friend => friend.userId === result.userId)) {
-          setFriends(buildFriendsList(friends, newPlayers))
+        setPlayersState(newPlayers)
+        if (friendsState.some(friend => friend.userId === result.userId)) {
+          setFriendsState(buildFriendsList(friendsState, newPlayers))
         }
         if (currentPlayer?.userId === result.userId) {
           setCurrentPlayer({ ...currentPlayer, ...result, rank: inferedRank })
@@ -152,12 +155,12 @@ const Dashboard = (props: DashboardProps) => {
           setAlertMessage(<div>
             <p>You know the drill...</p>
             <p>
-              <img src="https://speedrun.com/themes/Default/1st.png" alt="" />
+              <img src='https://speedrun.com/themes/Default/1st.png' alt='' />
               <br />
-              <img src="https://speedrun.com/themes/Default/logo.png" alt="speedrun.com" style={{ width: 384 }} />
+              <img src='https://speedrun.com/themes/Default/logo.png' alt='speedrun.com' style={{ width: 384 }} />
             </p>
             <p>Oops! The site&apos;s under a lot of pressure right now. Please try again in a minute.</p>
-            <img src="https://brand.twitch.tv/assets/emotes/lib/kappa.png" alt="Kappa" />
+            <img src='https://brand.twitch.tv/assets/emotes/lib/kappa.png' alt='Kappa' />
           </div>)
         } else if (err.status === 504) {
           setAlertVariant('warning')
@@ -185,6 +188,9 @@ const Dashboard = (props: DashboardProps) => {
               const result: UpdateRunnerResult = JSON.parse(errorString)
               setAlertVariant(result.state || 'danger')
               setAlertMessage(result.message)
+              if (err.status === 400 && result.score != null && result.score < 1) {
+                setPlayersState(playersState.filter(player => player.userId !== result.userId))
+              }
             } catch {
               setAlertMessage(errorString)
             }
@@ -197,22 +203,22 @@ const Dashboard = (props: DashboardProps) => {
   const handleJumpToPlayer = (playerId: string) => scoreboardRef.current?.jumpToPlayer(playerId)
   const handleUnfriend = (playerId: string) =>
     apiDelete(`players/current/friends/${playerId}`)
-      .then(() => setFriends(friends.filter(friend => friend.userId !== playerId)))
+      .then(() => setFriendsState(friendsState.filter(friend => friend.userId !== playerId)))
       .catch(console.error)
   const handleBefriend = (playerId: string) => {
     if (!currentPlayer) return openLoginModal()
     apiPut(`players/current/friends/${playerId}`)
       .then(() => {
-        const newFriend = players.find(player => player.userId === playerId)
+        const newFriend = playersState.find(player => player.userId === playerId)
         if (!newFriend) {
           return console.error(`Couldn't add friend id ${playerId} as it was not found in existing players table`)
         }
-        setFriends([...friends, newFriend])
+        setFriendsState([...friendsState, newFriend])
       })
       .catch(console.error)
   }
 
-  return <Container className="dashboard-container">
+  return <Container className='dashboard-container'>
     <UpdateMessage
       variant={alertVariant}
       message={alertMessage}
@@ -230,7 +236,7 @@ const Dashboard = (props: DashboardProps) => {
 
         <Row>
           <QuickView
-            friends={friends}
+            friends={friendsState}
             currentUser={currentPlayer}
             onJumpToPlayer={handleJumpToPlayer}
             onUnfriend={handleUnfriend}
@@ -243,8 +249,8 @@ const Dashboard = (props: DashboardProps) => {
         <Scoreboard
           ref={scoreboardRef}
           currentUser={currentPlayer}
-          players={players}
-          friends={friends}
+          players={playersState}
+          friends={friendsState}
           onUnfriend={handleUnfriend}
           onBefriend={handleBefriend}
         />

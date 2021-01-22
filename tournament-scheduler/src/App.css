@@ -21,7 +21,17 @@
 }
 
 .App .MuiTextField-root {
-  min-width: 210px;
+  min-width: 214px; /* Enough to fit September 22nd 22:22 */
+}
+
+.MuiFormControl-root.MuiTextField-root[format] {
+  min-width: 1px;
+}
+.MuiFormControl-root.MuiTextField-root[format="MMMM Do HH:mm"] {
+  width: 214px; /* Enough to fit September 22nd 22:20*/
+}
+.MuiFormControl-root.MuiTextField-root[format="MMMM Do"] {
+  width: 168px; /* Enough to fit September 22nd*/
 }
 
 .MuiIconButton-root > .MuiIconButton-label {
@@ -62,4 +72,17 @@ p, .paragraph {
 .logo {
   height: 40px;
   max-width: 90px; /* Enough to fit title at minimum supported width */
+}
+
+.react-add-to-calendar,
+.react-add-to-calendar .react-add-to-calendar__button,
+.react-add-to-calendar .react-add-to-calendar__dropdown,
+.react-add-to-calendar .react-add-to-calendar__dropdown ul li a {
+  z-index: 1;
+  color: inherit;
+  background-color: inherit;
+}
+
+.react-add-to-calendar ul {
+  padding: 0;
 }

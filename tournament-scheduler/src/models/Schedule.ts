@@ -1,10 +1,12 @@
-import { TimeSlot, TimeSlotDto, createDefaultTimeSlot } from './TimeSlot'
+import { tomorrowFlat } from '../utils/Date'
+import { createDefaultTimeSlot, TimeSlot, TimeSlotDto } from './TimeSlot'
 
 export interface ScheduleDto {
   id: number
   name: string
   active: boolean
   registrationKey: string
+  deadline: Date | null
   timeSlots: TimeSlotDto[]
 }
 
@@ -16,6 +18,7 @@ export class Schedule {
   get registrationLink(): string {
     return `${window.location.origin}${window.location.pathname}?register=${this.id}-${this.registrationKey}`
   }
+  deadline: Date
   timeSlots: TimeSlot[]
 
   constructor(dto: ScheduleDto) {
@@ -23,6 +26,7 @@ export class Schedule {
     this.name = dto.name
     this.active = dto.active
     this.registrationKey = dto.registrationKey
+    this.deadline = dto.deadline != null ? new Date(dto.deadline) : tomorrowFlat()
     this.timeSlots = (dto.timeSlots || []).map(timeSlotDto => new TimeSlot(timeSlotDto))
   }
 }
@@ -33,5 +37,6 @@ export const createDefaultSchedule = () =>
     name: 'New Schedule',
     active: false,
     registrationKey: '',
+    deadline: tomorrowFlat(),
     timeSlots: [createDefaultTimeSlot()],
   })

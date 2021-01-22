@@ -59,10 +59,12 @@ def extract_sorted_valid_runs_from_leaderboard(
 
     Returns the sorted valid runs from a leaderboard. Or empty list if the leaderboard is invalid.
     """
+    # Note: If needed in the future, level_fraction could be extracted from the leaderboard data
+    if len(leaderboard["runs"]) < MIN_LEADERBOARD_SIZE:
+        return []
     wr = leaderboard["runs"][0]["run"]
     wr_time = wr["times"]["primary_t"]
-    # Note: If needed in the future, level_fraction could be extracted from the leaderboard data
-    if wr_time < 60 * level_fraction or len(leaderboard["runs"]) < MIN_LEADERBOARD_SIZE:
+    if wr_time < 60 * level_fraction:
         return []
 
     is_board_known_speedrun = False
@@ -128,7 +130,7 @@ def get_probability_terms(pbs: List[BasicJSONType]):
     return mean, standard_deviation, population
 
 
-def keep_runs_before_soft_cutoff(runs: List[BasicJSONType], ):
+def keep_runs_before_soft_cutoff(runs: List[BasicJSONType]):
     i: int = len(runs)
     cut_off_80th_percentile: int = runs[int(i*0.8)]["run"]["times"]["primary_t"]
     count: int = 0
@@ -164,6 +166,7 @@ def extract_top_runs_and_score(runs: List[Run]) -> Tuple[List[Run], List[Run]]:
     top_runs, lesser_runs = [], []
     position = 0
 
+    # Split the list of runs into 2: "Top 60 (by weight)" and "Other lesser runs"
     def is_top_run(run: Run):
         nonlocal position
         if position + run.level_fraction <= MIN_SAMPLE_SIZE:
@@ -172,6 +175,27 @@ def extract_top_runs_and_score(runs: List[Run]) -> Tuple[List[Run], List[Run]]:
 
     for run in sorted(runs, key=lambda r: r._points / r.level_fraction, reverse=True):
         (top_runs if is_top_run(run) else lesser_runs).append(run)
+
+    # Check if it's possible to replace a handful of ILs by a full run, starting backward.
+    # This can happen when there's not enough ILs to fill in for the weight of a full run.
+    # See: https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/issues/174
+    first_lesser_full_game = next(filter(lambda run: run.level_fraction == 1, lesser_runs), None)
+    if first_lesser_full_game is not None and position < MIN_SAMPLE_SIZE:
+        runs_to_transfer_weight = MIN_SAMPLE_SIZE - position
+        runs_to_transfer_reversed = []
+        for run in runs[::-1]:
+            if (runs_to_transfer_weight >= 1):
+                break
+            next_weight = runs_to_transfer_weight + run.level_fraction
+            if (next_weight > 1):
+                continue
+            runs_to_transfer_reversed.append(run)
+
+        if sum(run._points for run in runs_to_transfer_reversed) < first_lesser_full_game._points:
+            for run in runs_to_transfer_reversed:
+                top_runs.remove(run)
+                lesser_runs.insert(0, run)
+            top_runs.append(first_lesser_full_game)
 
     return top_runs, lesser_runs
 
@@ -185,8 +209,12 @@ def update_runner_in_database(player, user):
     if player:
         # User is not banned: update the database entry
         if not user._banned:
-            text_output = f"{user} found. Updated their entry."
-            result_state = "success"
+            if user._points < 1:
+                text_output = f"{user} found. Removed their entry as they have a score lower than 1."
+                result_state = "warning"
+            else:
+                text_output = f"{user} found. Updated their entry."
+                result_state = "success"
             player.update(name=user._name,
                           country_code=user._country_code,
                           score=floor(user._points),

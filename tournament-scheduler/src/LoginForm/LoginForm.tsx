@@ -1,10 +1,12 @@
 import './LoginForm.css'
+
 import { Button, Container, Link, TextField } from '@material-ui/core'
-import React, { FC, useState } from 'react'
-import SrcApiKeyLink from './SrcApiKeyLink'
-import User from '../models/User'
-import { apiPost } from '../fetchers/api'
 import useMediaQuery from '@material-ui/core/useMediaQuery'
+import { FC, useState } from 'react'
+
+import { apiPost } from '../fetchers/Api'
+import User from '../models/User'
+import SrcApiKeyLink from './SrcApiKeyLink'
 
 type loginFormProps = {
   onLogin: (currentUser: User) => void
@@ -38,7 +40,7 @@ const LoginForm: FC<loginFormProps> = (props: loginFormProps) => {
       <TextField
         id='src-api-key'
         name='src-api-key'
-        margin="normal"
+        margin='normal'
         type='password'
         label='Enter your SRC API key'
         onChange={event => setSrcApiKeyInput(event.currentTarget.value)}
@@ -54,7 +56,7 @@ const LoginForm: FC<loginFormProps> = (props: loginFormProps) => {
       color='primary'
       onClick={() => login(srcApiKeyInput, props.onLogin)}
     >Access my schedules</Button>
-    <span className="paragraph">
+    <span className='paragraph'>
       If you don&apos;t trust the above link because SRC&apos;s api portal looks sketchy, you can also access your api key through
       <br /> <SrcApiKeyLink></SrcApiKeyLink>
     </span>

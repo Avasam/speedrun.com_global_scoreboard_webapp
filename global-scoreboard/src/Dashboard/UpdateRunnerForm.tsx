@@ -1,6 +1,7 @@
 
+import { ChangeEventHandler, FormEvent, useState } from 'react'
 import { Button, Form, InputGroup } from 'react-bootstrap'
-import React, { useState } from 'react'
+
 import Player from '../models/Player'
 
 type UpdateRunnerFormProps = {
@@ -12,12 +13,12 @@ type UpdateRunnerFormProps = {
 const UpdateRunnerForm = (props: UpdateRunnerFormProps) => {
   const [updateUserNameOrId, setUpdateUserNameOrId] = useState('')
 
-  const handleOnChange: React.ChangeEventHandler<HTMLInputElement> = event =>
+  const handleOnChange: ChangeEventHandler<HTMLInputElement> = event =>
     setUpdateUserNameOrId(event.currentTarget.value)
 
   return (
-    <Form onSubmit={(event: React.FormEvent<HTMLFormElement>) => event.preventDefault()}>
-      <Form.Group controlId="update-user">
+    <Form onSubmit={(event: FormEvent<HTMLFormElement>) => event.preventDefault()}>
+      <Form.Group controlId='update-user'>
         <Form.Label>Update runner:</Form.Label>
         <InputGroup>
           <Form.Control
@@ -26,12 +27,12 @@ const UpdateRunnerForm = (props: UpdateRunnerFormProps) => {
             onChange={handleOnChange}
             disabled={window.process.env.REACT_APP_BYPASS_UPDATE_RESTRICTIONS !== 'true' &&
               (props.updating || !props.currentUser)}
-            aria-describedby="update user name or id"
+            aria-describedby='update user name or id'
           />
           <InputGroup.Append>
             <Button
-              id="update-runner-button"
-              type="submit"
+              id='update-runner-button'
+              type='submit'
               disabled={window.process.env.REACT_APP_BYPASS_UPDATE_RESTRICTIONS !== 'true' &&
                 (props.updating || !props.currentUser || !updateUserNameOrId)}
               onClick={() => props.onUpdate(updateUserNameOrId.trim())}

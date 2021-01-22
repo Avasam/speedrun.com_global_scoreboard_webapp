@@ -47,15 +47,19 @@ class SrcRequest():
                 try:
                     result = get_file(next_url)
                     break
-                # If it failed, try again with a smaller page
+                # If it failed, try again with a smaller page.
+                # The usual suspects:
+                # - Otterstone_Gamer, qjn1wzw8 --> /6 (400-433) still fails
+                # - Cmdr, 48g5vo7j
+                # - SRGTsilent, v8l3eq48
                 except UserUpdaterError as exception:
                     if exception.args[0]['error'] != "HTTPError 500" or results_per_page < 20:
                         raise exception
-                    halved_results_per_page = floor(results_per_page / 2)
+                    reduced_results_per_page = floor(results_per_page / 7)
                     print("SRC returned 500 for a paginated request. "
-                          f"Halving the max results per page from {results_per_page} to {halved_results_per_page}")
-                    next_url = next_url.replace(f"max={results_per_page}", f"max={halved_results_per_page}")
-                    results_per_page = halved_results_per_page
+                          f"Reducing the max results per page from {results_per_page} to {reduced_results_per_page}")
+                    next_url = next_url.replace(f"max={results_per_page}", f"max={reduced_results_per_page}")
+                    results_per_page = reduced_results_per_page
 
             # ... and combine it with previous ones
             next_url = next((link["uri"] for link in result["pagination"]["links"] if link["rel"] == "next"), None)

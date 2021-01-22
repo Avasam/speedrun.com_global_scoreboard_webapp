@@ -1,8 +1,8 @@
-import React, { useState } from 'react'
-import { faHeart as faHeartSolid, faPlus, faTimes } from '@fortawesome/free-solid-svg-icons'
-import { Button } from 'react-bootstrap'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHeart as faHeartEmpty } from '@fortawesome/free-regular-svg-icons'
+import { faHeart as faHeartSolid, faPlus, faTimes } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { useState } from 'react'
+import { Button } from 'react-bootstrap'
 
 type FriendButtonProps = {
   isFriend: boolean
@@ -20,7 +20,7 @@ const FriendButton = (props: FriendButtonProps) => {
       : props.onBefriend(props.playerId)
 
   return <Button
-    variant="link"
+    variant='link'
     onClick={handleBefriendUnfriend}
     onMouseEnter={() => setIsHovered(true)}
     onMouseLeave={() => setIsHovered(false)}
@@ -28,11 +28,11 @@ const FriendButton = (props: FriendButtonProps) => {
     {
       props.isFriend
         ? isHovered
-          ? <FontAwesomeIcon className="fa-fw" color="crimson" icon={faTimes} />
-          : <FontAwesomeIcon className="fa-fw" color="crimson" icon={faHeartSolid} />
+          ? <FontAwesomeIcon className='fa-fw' color='crimson' icon={faTimes} />
+          : <FontAwesomeIcon className='fa-fw' color='crimson' icon={faHeartSolid} />
         : isHovered
-          ? <FontAwesomeIcon className="fa-fw" color="green" icon={faPlus} />
-          : <FontAwesomeIcon className="fa-fw" color="green" icon={faHeartEmpty} />
+          ? <FontAwesomeIcon className='fa-fw' color='green' icon={faPlus} />
+          : <FontAwesomeIcon className='fa-fw' color='green' icon={faHeartEmpty} />
     }
   </Button>
 }

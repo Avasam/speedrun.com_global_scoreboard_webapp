@@ -15,6 +15,7 @@ class Schedule(db.Model):
     owner_id: int = db.Column(db.String(8), db.ForeignKey('player.user_id'), nullable=False)
     registration_key: str = db.Column(db.String(36), nullable=False)
     is_active: bool = db.Column(db.Boolean, nullable=False, default=True)
+    deadline: datetime = db.Column(db.DateTime, nullable=False)
 
     owner: Player = db.relationship("Player", back_populates="schedules")
     time_slots: List[TimeSlot] = db.relationship(
@@ -37,12 +38,13 @@ class Schedule(db.Model):
         except orm.exc.NoResultFound:
             return None
 
-    def to_dto(self) -> dict[str, Union[str, int, bool, List[Dict[str, Union[str, int, bool]]]]]:
+    def to_dto(self) -> dict[str, Union[str, int, bool, datetime, List[Dict[str, Union[str, int, bool]]]]]:
         return {
             'id': self.schedule_id,
             'name': self.name,
             'active': self.is_active,
             'registrationKey': self.registration_key,
+            'deadline': self.deadline,
             'timeSlots': map_to_dto(self.time_slots),
         }
 

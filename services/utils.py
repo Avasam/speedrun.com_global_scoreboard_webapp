@@ -27,6 +27,10 @@ class UnderALotOfPressure(SpeedrunComError):
     pass
 
 
+class UnhandledThreadException(Exception):
+    pass
+
+
 session: Session = Session()
 
 

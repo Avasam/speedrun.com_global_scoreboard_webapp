@@ -27,10 +27,10 @@ const apiFetch = (method: RequestInit['method'], url: string, body?: RequestInit
 export const apiGet = (location: string, queryParams?: QueryParams, customHeaders = true) =>
   apiFetch('GET', makeUrl(location, queryParams), undefined, customHeaders)
 
-export const apiPost = (location: string, body?: object) =>
+export const apiPost = (location: string, body?: Record<string, unknown>) =>
   apiFetch('POST', makeUrl(location), JSON.stringify(body))
 
-export const apiPut = (location: string, body?: object) =>
+export const apiPut = (location: string, body?: Record<string, unknown>) =>
   apiFetch('PUT', makeUrl(location), JSON.stringify(body))
 
 export const apiDelete = (location: string) =>
