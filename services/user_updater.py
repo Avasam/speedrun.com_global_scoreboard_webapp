@@ -210,7 +210,14 @@ def __set_run_points(run: Run) -> None:
             category=run.category)
     for var_id, var_value in run.variables.items():
         url += "&var-{id}={value}".format(id=var_id, value=var_value)
-    leaderboard = SrcRequest.get_cached_response_or_new(url)
+    try:
+        leaderboard = SrcRequest.get_cached_response_or_new(url)
+    # If SRC returns 404 here, most likely the run references a category or level that does not exist anymore
+    except SpeedrunComError as exception:
+        if exception.args[0]['error'] == "404 (speedrun.com)":
+            return
+        else:
+            raise
 
     valid_runs = extract_sorted_valid_runs_from_leaderboard(leaderboard["data"], run.level_fraction)
     len_valid_runs = len(valid_runs)
