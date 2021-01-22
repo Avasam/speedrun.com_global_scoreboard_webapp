@@ -64,43 +64,46 @@ const ScoreDropCalculator = () => {
     setUpdating(true)
     setCalculatedRunId(runId)
 
-    getRunDetails(runId).then(run =>
-      getLeaderboardRuns(run.game, run.category, run.values).then(records => {
-        /* eslint-disable extra-rules/no-commented-out-code */
-        /* eslint-disable id-length */
-        const primaryTimes = records
-          .slice(0, Math.floor(records.length * 0.95))
-          .map(record => record.times.primary_t)
+    getRunDetails(runId)
+      .then(run =>
+        getLeaderboardRuns(run.game, run.category, run.values).then(records => {
+          /* eslint-disable extra-rules/no-commented-out-code */
+          /* eslint-disable id-length */
+          const primaryTimes = records
+            .slice(0, Math.floor(records.length * 0.95))
+            .map(record => record.times.primary_t)
 
-        const m = math.mean(primaryTimes)
-        const t = run.times.primary_t
-        const w = primaryTimes[primaryTimes.length - 1]
-        const N = primaryTimes.length
+          const m = math.mean(primaryTimes)
+          const t = run.times.primary_t
+          const w = primaryTimes[primaryTimes.length - 1]
+          const N = primaryTimes.length
 
-        // Original algorithm (https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/master/README.md)
-        // (e ^ (Min[pi, (w - t) / (w - m)] * (1 - 1 / (N - 1))) - 1) * 10 * (1 + (t / 43200)) = p; N = <population>; t = <time>; w = <worst time>; m = <mean>
-        let p = (Math.exp(Math.min(Math.PI, (w - t) / (w - m)) * (1 - 1 / (N - 1))) - 1) * 10 * (1 + t / TIME_BONUS_DIVISOR)
-        p = Math.floor(p)
-        setCalculatedRunScore(p)
+          // Original algorithm (https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/master/README.md)
+          // (e ^ (Min[pi, (w - t) / (w - m)] * (1 - 1 / (N - 1))) - 1) * 10 * (1 + (t / 43200)) = p; N = <population>; t = <time>; w = <worst time>; m = <mean>
+          let p = (Math.exp(Math.min(Math.PI, (w - t) / (w - m)) * (1 - 1 / (N - 1))) - 1) * 10 * (1 + t / TIME_BONUS_DIVISOR)
+          p = Math.floor(p)
+          setCalculatedRunScore(p)
 
-        // Looking for the mean (x) with added run when we know the score
-        // (e ^ ((w - t) / (w - x) * (1 - 1 / N)) - 1) * 10 * (1 + (t / 43200)) < p; N = <original population>; t = <time>; w = <worst time>; p = <final  score>
-        // when solving for x, becomes
-        // -((w-t) / (Log(p / (1 + (t / 43200)) / 10 + 1) / (1-1/N)) - w) < x
-        const x = -((w - t) / (Math.log(p / (1 + t / TIME_BONUS_DIVISOR) / 10 + 1) / (1 - 1 / N)) - w)
+          // Looking for the mean (x) with added run when we know the score
+          // (e ^ ((w - t) / (w - x) * (1 - 1 / N)) - 1) * 10 * (1 + (t / 43200)) < p; N = <original population>; t = <time>; w = <worst time>; p = <final  score>
+          // when solving for x, becomes
+          // -((w-t) / (Log(p / (1 + (t / 43200)) / 10 + 1) / (1-1/N)) - w) < x
+          const x = -((w - t) / (Math.log(p / (1 + t / TIME_BONUS_DIVISOR) / 10 + 1) / (1 - 1 / N)) - w)
 
-        // Find the required time (n)
-        // (m * N + n) / (N + 1) = x; N = <original population>; m = <mean>; x = <targetted mean>
-        // when solving for n, becomes
-        // x * (N + 1) - m * N = n
-        const n = x * (N + 1) - m * N
+          // Find the required time (n)
+          // (m * N + n) / (N + 1) = x; N = <original population>; m = <mean>; x = <targetted mean>
+          // when solving for n, becomes
+          // x * (N + 1) - m * N = n
+          const n = x * (N + 1) - m * N
 
-        // Round down to the nearest second
-        setRequiredTime(Math.floor(n))
-        setUpdating(false)
-        /* eslint-enable extra-rules/no-commented-out-code */
-        /* eslint-enable id-length */
-      }))
+          // Round down to the nearest second
+          setRequiredTime(Math.floor(n))
+          setUpdating(false)
+          /* eslint-enable extra-rules/no-commented-out-code */
+          /* eslint-enable id-length */
+        }))
+      .catch(() => setRequiredTime(Number.NaN))
+      .finally(() => setUpdating(false))
   }
 
 
@@ -127,12 +130,16 @@ const ScoreDropCalculator = () => {
         </InputGroup>
       </Form.Group>
     </Form>
-    {requiredTime &&
-      <span>
+    {requiredTime !== null && (Number.isFinite(requiredTime)
+      ? <span>
         The run &apos;{calculatedRunId}&apos; is currently worth {calculatedRunScore} points.
         To reduce it, a new run would need a time of
         <strong> {new Date(requiredTime * 1000).toISOString().slice(11, 19)}</strong> or less.
-      </span>}
+      </span>
+      : <span>
+        The required time to reduce the points of the run &apos;{calculatedRunId}&apos; could not be calculated.
+        Either because the leaderboard has less than 4 runners, it is an individual level, or something just went wrong.
+      </span>)}
   </div>
 }
 
