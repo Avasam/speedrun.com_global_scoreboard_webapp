@@ -188,6 +188,9 @@ const Dashboard = (props: DashboardProps) => {
               const result: UpdateRunnerResult = JSON.parse(errorString)
               setAlertVariant(result.state || 'danger')
               setAlertMessage(result.message)
+              if (err.status === 400 && result.score != null && result.score < 1) {
+                setPlayersState(playersState.filter(player => player.userId !== result.userId))
+              }
             } catch {
               setAlertMessage(errorString)
             }

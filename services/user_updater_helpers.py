@@ -209,8 +209,12 @@ def update_runner_in_database(player, user):
     if player:
         # User is not banned: update the database entry
         if not user._banned:
-            text_output = f"{user} found. Updated their entry."
-            result_state = "success"
+            if user._points < 1:
+                text_output = f"{user} found. Removed their entry as they have a score lower than 1."
+                result_state = "warning"
+            else:
+                text_output = f"{user} found. Updated their entry."
+                result_state = "success"
             player.update(name=user._name,
                           country_code=user._country_code,
                           score=floor(user._points),
