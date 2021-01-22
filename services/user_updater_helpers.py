@@ -166,6 +166,7 @@ def extract_top_runs_and_score(runs: List[Run]) -> Tuple[List[Run], List[Run]]:
     top_runs, lesser_runs = [], []
     position = 0
 
+    # Split the list of runs into 2: "Top 60 (by weight)" and "Other lesser runs"
     def is_top_run(run: Run):
         nonlocal position
         if position + run.level_fraction <= MIN_SAMPLE_SIZE:
@@ -174,6 +175,27 @@ def extract_top_runs_and_score(runs: List[Run]) -> Tuple[List[Run], List[Run]]:
 
     for run in sorted(runs, key=lambda r: r._points / r.level_fraction, reverse=True):
         (top_runs if is_top_run(run) else lesser_runs).append(run)
+
+    # Check if it's possible to replace a handful of ILs by a full run, starting backward.
+    # This can happen when there's not enough ILs to fill in for the weight of a full run.
+    # See: https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/issues/174
+    first_lesser_full_game = next(filter(lambda run: run.level_fraction == 1, lesser_runs), None)
+    if first_lesser_full_game is not None and position < MIN_SAMPLE_SIZE:
+        runs_to_transfer_weight = MIN_SAMPLE_SIZE - position
+        runs_to_transfer_reversed = []
+        for run in runs[::-1]:
+            if (runs_to_transfer_weight >= 1):
+                break
+            next_weight = runs_to_transfer_weight + run.level_fraction
+            if (next_weight > 1):
+                continue
+            runs_to_transfer_reversed.append(run)
+
+        if sum(run._points for run in runs_to_transfer_reversed) < first_lesser_full_game._points:
+            for run in runs_to_transfer_reversed:
+                top_runs.remove(run)
+                lesser_runs.insert(0, run)
+            top_runs.append(first_lesser_full_game)
 
     return top_runs, lesser_runs
 
