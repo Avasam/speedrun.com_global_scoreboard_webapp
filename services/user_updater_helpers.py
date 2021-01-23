@@ -227,7 +227,7 @@ def update_runner_in_database(player, user):
             player.delete()
     # If user not found and has points, add it to the database
     elif user._points >= 1:
-        text_output = "{} not found. Added a new row.".format(user)
+        text_output = f"{user} not found. Added a new row."
         result_state = "success"
         Player.create(user._id,
                       name=user._name,

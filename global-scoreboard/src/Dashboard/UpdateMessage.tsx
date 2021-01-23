@@ -30,79 +30,47 @@ const renderRow = (rows: RunResult[]) => rows.map((row, rowi) =>
     </td>
   </tr>)
 
+const renderTable = ()
+
 export const renderScoreTable = (baseString: string) => {
   position = 0
-  const allElements = baseString
-    .split('\n')
-    .map(row =>
-      row.split('|')
-        .map(rowItem =>
-          rowItem.trim()))
-  const firstTableElement = allElements.findIndex(element => element.length === 2)
-  const topMessage = firstTableElement > -1
-    ? allElements
-      .slice(0, firstTableElement > 0 ? firstTableElement : undefined)
-      // Note: join the first element of each array with a new
-      // eslint-disable-next-line unicorn/no-array-reduce
-      .reduce((previous, current) => `${previous}${current[0]}\n`, '')
-      .trim()
-    : allElements[0][0]
-
-  // Note: TableElements is used for rendering old string formatted table
-  const tableElements = allElements.slice(firstTableElement)
-
+  const [topMessage, tableElements] = baseString.split('\n')
   let topRuns: RunResult[] = []
   let lesserRuns: RunResult[] = []
-
-  if (tableElements.length === 1 && tableElements[0].length === 1) {
-    try {
-      const scoreDetails = JSON.parse(tableElements[0][0])
-      topRuns = scoreDetails[0]
-      lesserRuns = scoreDetails[1]
-    } catch {
-      // suppress
-    }
+  try {
+    [topRuns, lesserRuns] = JSON.parse(tableElements)
+  } catch {
+    // suppress
   }
 
   return <>
     <div>{topMessage}</div>
-    {topRuns.length > 0 && <label>Top 60 runs:</label>}
-    {(topRuns.length > 0 || tableElements.slice(2).length > 0) &&
+    {topRuns.length > 0 && <>
+      <label>Top 60 runs:</label>
       <table className='scoreDetailsTable'>
         <thead>
           <tr>
-            <th># {topRuns.length > 0 && <OverlayTrigger
-              placement='bottom'
-              overlay={
-                <Tooltip
-                  id='levelFractionInfo'
-                >Individual Levels (IL) are weighted and scored to a fraction of a Full Game run. See the About page for a complete explanation.</Tooltip>
-              }
-            >
-              <FontAwesomeIcon icon={faInfoCircle} />
-            </OverlayTrigger>}</th>
+            <th>
+              #<OverlayTrigger
+                placement='bottom'
+                overlay={
+                  <Tooltip id='levelFractionInfo'>
+                    Individual Levels (IL) are weighted and scored to a fraction of a Full Game run.
+                    See the About page for a complete explanation.
+                  </Tooltip>
+                }
+              ><FontAwesomeIcon icon={faInfoCircle} />
+              </OverlayTrigger>
+            </th>
             <th>Game - Category (Level)</th>
             <th>Points</th>
           </tr>
         </thead>
-        {topRuns.length > 0
-          ? <tbody>
-            {renderRow(topRuns)}
-          </tbody>
-          : <tbody>
-            {/* Note: TableElements is used for rendering old string formatted table */}
-            {tableElements.slice(2).map((row, rowi) =>
-              <tr key={`row${rowi}`}>
-                <td>{rowi + 1}</td>
-                {row.map((element, elementi) =>
-                  <td key={`element${elementi}`}>
-                    {element}
-                  </td>)}
-              </tr>)}
-          </tbody>
-        }
+        <tbody>
+          {renderRow(topRuns)}
+        </tbody>
       </table>
-    }
+    </>}
     {lesserRuns.length > 0 && <>
       <br />
       <label>Other runs:</label>

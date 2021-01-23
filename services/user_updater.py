@@ -67,7 +67,7 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
                 if not threads_exceptions:
                     print(f"\nLooking for {user._id}")
                     text_output, result_state = update_runner_in_database(player, user)
-                    text_output += user._point_distribution_str
+                    text_output += f"\n{user._point_distribution_str}"
                 else:
                     errors_str = "Please report to: https://github.com/Avasam/Global_Speedrunning_Scoreboard/issues\n" \
                         "\nNot uploading data as some errors were caught during execution:\n"
@@ -196,7 +196,8 @@ def __set_user_points(user: User) -> None:
     # Sum up the runs' score, only the top 60 will end up giving points
     top_runs, lower_runs = extract_top_runs_and_score(counted_runs)
     user._points = sum(run._points for run in top_runs)
-    user._point_distribution_str = "\n" + json.dumps([map_to_dto(top_runs), map_to_dto(lower_runs)])
+    if len(top_runs) > 0:
+        user._point_distribution_str = json.dumps([map_to_dto(top_runs), map_to_dto(lower_runs)])
 
 
 def __set_run_points(run: Run) -> None:
