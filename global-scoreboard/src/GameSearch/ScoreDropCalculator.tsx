@@ -121,7 +121,6 @@ const ScoreDropCalculator = () => {
           />
           <InputGroup.Append>
             <Button
-              id='calculate-score-drop'
               type='submit'
               disabled={updating || !runId}
               onClick={onCalculate}

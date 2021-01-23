@@ -78,8 +78,9 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
   const earliestTimeslotDate = schedule.timeSlots.map(timeSlot => timeSlot.dateTime)[0]
 
   const validateDeadline = () =>
-    schedule.deadline <= earliestTimeslotDate &&
-    (earliestTimeslotDate <= new Date() || schedule.deadline >= todayFlat())
+    schedule.deadline &&
+    (schedule.deadline <= earliestTimeslotDate &&
+      (earliestTimeslotDate <= new Date() || schedule.deadline >= todayFlat()))
 
   return <Container>
     <Card>
