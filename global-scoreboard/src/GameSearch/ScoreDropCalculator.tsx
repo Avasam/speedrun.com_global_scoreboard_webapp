@@ -3,26 +3,15 @@ import { useState } from 'react'
 import { Button, Form, InputGroup } from 'react-bootstrap'
 
 import { apiGet } from '../fetchers/Api'
+import type { SrcLeaderboard, SrcRun } from '../models/SrcResponse'
 import math from '../utils/Math'
 
 const TIME_BONUS_DIVISOR = 3600 * 12 // 12h (1/2 day) for +100%
 
-interface RunDto {
-  game: string
-  category: string
-  times: {
-    primary_t: number
-  }
-  values: Record<string, string>
-}
-
-interface LeaderboardDto {
-  runs: { run: RunDto }[]
-}
 
 // eslint-disable-next-line unicorn/prevent-abbreviations
-const addVarToValuesKeys = (values: RunDto['values']) => {
-  const newDict: RunDto['values'] = {}
+const addVarToValuesKeys = (values: SrcRun['data']['values']) => {
+  const newDict: SrcRun['data']['values'] = {}
   for (const key in values) {
     newDict[`var-${key}`] = values[key]
   }
@@ -36,17 +25,17 @@ const getRunDetails = (runId: string) =>
     {},
     false
   )
-    .then<{ data: RunDto }>(res => res.json())
-    .then<RunDto>(res => res.data)
+    .then<SrcRun>(res => res.json())
+    .then(res => res.data)
 
-const getLeaderboardRuns = (gameId: string, categoryId: string, subCategories: RunDto['values']) =>
+const getLeaderboardRuns = (gameId: string, categoryId: string, subCategories: SrcRun['data']['values']) =>
   apiGet(
     `https://www.speedrun.com/api/v1/leaderboards/${gameId}/category/${categoryId}`,
     { 'video-only': true, ...addVarToValuesKeys(subCategories) },
     false
   )
-    .then<{ data: LeaderboardDto }>(res => res.json())
-    .then<RunDto[]>(res => res.data.runs.map(run => run.run))
+    .then<SrcLeaderboard>(res => res.json())
+    .then(res => res.data.runs.map(run => run.run))
 
 const ScoreDropCalculator = () => {
   const [runId, setRunId] = useState('')

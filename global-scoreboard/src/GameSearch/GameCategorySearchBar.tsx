@@ -3,6 +3,7 @@ import { FormControl, FormLabel } from 'react-bootstrap'
 import type { SearchFieldProps, SearchProps } from 'react-bootstrap-table2-toolkit'
 
 import { apiGet } from '../fetchers/Api'
+import type { DataArray, SrcGame } from '../models/SrcResponse'
 
 type IdToNameMap = Record<string, string>
 
@@ -31,8 +32,8 @@ const GameCategorySearch = (props: GameCategorySearchProps) => {
       !searchText
         ? props.onClear?.()
         : apiGet('https://www.speedrun.com/api/v1/games', { name: searchText, max: 200 }, false)
-          .then(res => res.json())
-          .then<{ id: string, names: { international: string } }[]>(res => res.data)
+          .then<DataArray<SrcGame>>(res => res.json())
+          .then(res => res.data)
           .then<IdToNameMap>(games => Object.fromEntries(games.map(game => [game.id, game.names.international])))
           .then(games => {
             props.setGameMap(previousGames => {

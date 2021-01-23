@@ -36,7 +36,7 @@ const LoginModal = (props: LoginModalProps) => {
       })
       .catch((err: Response) => {
         if (err.status === 401) {
-          err.json()
+          void err.json()
             .then((data: UpdateRunnerResult) => data.message)
             .then(setLoginErrorMessage)
         } else {

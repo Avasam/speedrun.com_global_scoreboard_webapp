@@ -1,6 +1,6 @@
 import type { RunResult } from './UpdateRunnerResult'
 
-export default interface Player {
+type Player = {
   rank: number | undefined
   name: string
   countryCode: string | null
@@ -9,5 +9,6 @@ export default interface Player {
   lastUpdate: Date
   userId: string
 }
+export default Player
 
 export type PlayerField = keyof Player

@@ -47,7 +47,7 @@ export function register(config?: Config) {
 
         // Add some additional logging to localhost, pointing developers to the
         // service worker/PWA documentation.
-        navigator.serviceWorker.ready.then(() => {
+        void navigator.serviceWorker.ready.then(() => {
           console.info(
             'This web app is being served cache-first by a service ' +
             'worker. To learn more, visit https://bit.ly/CRA-PWA'
@@ -116,11 +116,10 @@ function checkValidServiceWorker(swUrl: string, config?: Config) {
         (contentType != null && !contentType.includes('javascript'))
       ) {
         // No service worker found. Probably a different app. Reload the page.
-        navigator.serviceWorker.ready.then(registration => {
-          registration.unregister().then(() => {
+        void navigator.serviceWorker.ready.then(registration =>
+          void registration.unregister().then(() => {
             window.location.reload()
-          })
-        })
+          }))
       } else {
         // Service worker found. Proceed as normal.
         registerValidSW(swUrl, config)
@@ -135,8 +134,7 @@ function checkValidServiceWorker(swUrl: string, config?: Config) {
 
 export function unregister() {
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.ready.then(registration => {
-      registration.unregister()
-    })
+    void navigator.serviceWorker.ready.then(registration =>
+      void registration.unregister())
   }
 }

@@ -12,7 +12,7 @@ import type { ScheduleDto } from '../models/Schedule'
 import { Schedule } from '../models/Schedule'
 import { TimeSlot } from '../models/TimeSlot'
 
-interface ScheduleRegistrationProps {
+type ScheduleRegistrationProps = {
   scheduleId: number
 }
 

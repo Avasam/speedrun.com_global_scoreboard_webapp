@@ -1,15 +1,17 @@
-export interface ServerConfigs {
+export type ServerConfigs = {
   bypassUpdateRestrictions: boolean
   lastUpdatedDays: number[]
 }
 
-export default class Configs {
-  static bypassUpdateRestrictions: boolean
-  static lastUpdatedDays: number[]
+const Configs: (ServerConfigs & { setConfigs: (configs: ServerConfigs) => void }) = {
+  bypassUpdateRestrictions: false,
+  lastUpdatedDays: [],
 
-  static setConfigs = (configs: ServerConfigs) => {
+  setConfigs: configs => {
     Configs.bypassUpdateRestrictions = configs.bypassUpdateRestrictions
     Configs.lastUpdatedDays = configs.lastUpdatedDays
-  }
+  },
 }
 
+
+export default Configs

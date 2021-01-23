@@ -17,7 +17,6 @@ import PlayerNameCell from './TableElements/PlayerNameCell'
 import PlayerScoreCell from './TableElements/PlayerScoreCell'
 import ScoreTitle from './TableElements/ScoreTitle'
 import sortCaret from './TableElements/SortCarret'
-// eslint-disable-next-line @typescript-eslint/unbound-method
 const { SearchBar } = Search
 
 let getSortOrder: () => SortOrder | undefined

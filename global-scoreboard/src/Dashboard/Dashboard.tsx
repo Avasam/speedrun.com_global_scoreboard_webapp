@@ -64,7 +64,7 @@ const Dashboard = (props: DashboardProps) => {
     // Note: Waiting to obtain both friends and players if both calls are needed
     // to set it all at once and avoid unneeded re-rerenders
     if (props.currentUser && playersState.length === 0) {
-      Promise
+      void Promise
         .all([getAllPlayers(), getFriends()])
         .then(([allPlayers, friends]) => {
           setCurrentPlayer(allPlayers.find(player => player.userId === props.currentUser?.userId) ?? null)
@@ -74,14 +74,14 @@ const Dashboard = (props: DashboardProps) => {
         })
     } else if (props.currentUser && playersState.length > 0) {
       setCurrentPlayer(playersState.find(player => player.userId === props.currentUser?.userId) ?? null)
-      getFriends().then(friends => setFriendsState(buildFriendsList(friends, playersState)))
+      void getFriends().then(friends => setFriendsState(buildFriendsList(friends, playersState)))
     } else {
       setCurrentPlayer(null)
       setFriendsState([])
       // Note: Loading the page already logged in starts the currentUser at undefined then quickly changes again
       // Also don't re-fetch players upon login out
       if (props.currentUser !== undefined && playersState.length === 0) {
-        getAllPlayers().then(players => {
+        void getAllPlayers().then(players => {
           setPlayersState(players)
           setAlertMessage('')
         })
@@ -171,7 +171,7 @@ const Dashboard = (props: DashboardProps) => {
             'Please try again as next attempt should take less time since ' +
             'all calls to speedrun.com are cached for a day or until server restart.')
         } else if (err.status === 409) {
-          err.text().then(errorString => {
+          void err.text().then(errorString => {
             setAlertVariant('warning')
             switch (errorString) {
               case 'current_user':
@@ -185,7 +185,7 @@ const Dashboard = (props: DashboardProps) => {
             }
           })
         } else {
-          err.text().then(errorString => {
+          void err.text().then(errorString => {
             try {
               const result = JSON.parse(errorString) as UpdateRunnerResult
               setAlertVariant(result.state ?? 'danger')

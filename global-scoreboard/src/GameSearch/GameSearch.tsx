@@ -17,18 +17,19 @@ import { Picky } from 'react-picky'
 
 import sortCaret from '../Dashboard/TableElements/SortCarret'
 import { apiGet } from '../fetchers/Api'
+import type { EmbeddedSrcRun } from '../models/SrcResponse'
 import { secondsToTimeString, timeStringToSeconds } from '../utils/Time'
 import GameCategorySearch from './GameCategorySearchBar'
 import ScoreDropCalculator from './ScoreDropCalculator'
 
-interface PlatformDto {
+type PlatformDto = {
   id: string
   name: string
 }
 
 type IdToNameMap = Record<string, string>
 
-interface GameValue {
+type GameValue = {
   gameId: string
   categoryId: string
   platformId: string | null
@@ -38,12 +39,12 @@ interface GameValue {
   wrTime: number
 }
 
-interface GameValueRow extends GameValue {
+type GameValueRow = GameValue & {
   wrPointsPerSecond: number
   meanPointsPerSecond: number
 }
 
-interface PlatformSelectOption {
+type PlatformSelectOption = {
   id: string
   name: string
 }
@@ -56,14 +57,14 @@ type FormatExtraDataProps = {
   setCategoryMap: Dispatch<SetStateAction<IdToNameMap>>
 }
 
-let platformFilter: FilterFunction<string[]>
+let platformFilter: SelectFilterFunction
 let minTimeFilter: NumberFilterFunction
 let maxTimeFilter: NumberFilterFunction
 
 const runIdFormatter = (_cell: unknown, row: GameValueRow | undefined, _rowIndex: number, formatExtraData?: FormatExtraDataProps) => {
   if (!row || !formatExtraData) return ''
   if (!formatExtraData.gameMap[row.gameId] || !formatExtraData.categoryMap[row.categoryId]) {
-    fetchValueNamesForRun(row.runId)
+    void fetchValueNamesForRun(row.runId)
       .then(results => {
         if (!results) return
         const [game, category] = results
@@ -232,12 +233,14 @@ const fetchValueNamesForRun = async (runId: string) => {
   if (requestsStartedForRun.get(runId)) return
   requestsStartedForRun.set(runId, true)
   return apiGet(`https://www.speedrun.com/api/v1/runs/${runId}?embed=game,category`, undefined, false)
-    .then(res => res.json())
+    .then<EmbeddedSrcRun>(res => res.json())
     .then<[IdToNameMap, IdToNameMap]>(res => [
       { [res.data.game.data.id]: res.data.game.data.names.international },
       { [res.data.category.data.id]: res.data.category.data.name },
     ])
-    .catch(() => requestsStartedForRun.delete(runId))
+    .catch(() => {
+      requestsStartedForRun.delete(runId)
+    })
 }
 
 const GameSearch = () => {
@@ -255,8 +258,8 @@ const GameSearch = () => {
     doPlatformSelection(JSON.parse(localStorage.getItem('selectedPlatforms') ?? '[]'))
     doMinTimeChange(JSON.parse(localStorage.getItem('selectedMinTime') ?? '""'))
     doMaxTimeChange(JSON.parse(localStorage.getItem('selectedMaxTime') ?? '""'))
-    getAllGameValues().then(setGameValues)
-    getAllPlatforms().then(setPlatforms)
+    void getAllGameValues().then(setGameValues)
+    void getAllPlatforms().then(setPlatforms)
   }, [])
 
   const doPlatformSelection = (selectedPlatformOptions: PlatformSelectOption[]) => {

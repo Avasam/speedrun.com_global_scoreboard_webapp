@@ -24,23 +24,25 @@ const logout = (setCurrentUser: (user: null) => void) => {
 const App: FC = () => {
   const [currentUser, setCurrentUser] = useState<Player | null | undefined>()
 
-  useEffect(() => {
-    Promise
-      .all([getConfigs(), getCurrentUser])
-      .then(([serverConfigs, resPromise]) => {
-        Configs.setConfigs(serverConfigs)
-        resPromise()
-          .then((res: { user: Player | undefined }) => res.user)
-          .then(setCurrentUser)
-          .catch((err: Response) => {
-            if (err.status === 401) {
-              setCurrentUser(null)
-            } else {
-              console.error(err)
-            }
-          })
-      })
-  }, [])
+  useEffect(
+    () =>
+      void Promise
+        .all([getConfigs(), getCurrentUser])
+        .then(([serverConfigs, resPromise]) => {
+          Configs.setConfigs(serverConfigs)
+          resPromise()
+            .then((res: { user: Player | undefined }) => res.user)
+            .then(setCurrentUser)
+            .catch((err: Response) => {
+              if (err.status === 401) {
+                setCurrentUser(null)
+              } else {
+                console.error(err)
+              }
+            })
+        }),
+    []
+  )
 
   return (
     <div>

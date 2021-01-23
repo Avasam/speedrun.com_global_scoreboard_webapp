@@ -1,3 +1,6 @@
+// Note: Acceptable with clipboard actions as it's for unknown devices that work differently. Likely mobile.
+/* eslint-disable no-alert */
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
 const oldCopyToClipboard = (text: string) => {
   const textArea = document.createElement('textarea')
   textArea.value = text
@@ -11,13 +14,9 @@ const oldCopyToClipboard = (text: string) => {
     const successful = document.execCommand('copy')
     if (!successful) throw new Error('execCommand failed')
     console.info('text copied to clipboard successfully using textarea')
-  } catch (err: unknown) {
-    // Note: Acceptable with clipboard actions as it's for unknown devices that work differently. Likely mobile.
-    // eslint-disable-next-line no-alert
-    alert(
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      `Could not copy text: ${err}`
-    )
+    // @ts-expect-error TypeScript should allow error type on catch https://github.com/Microsoft/TypeScript/issues/20024
+  } catch (err: Error) {
+    alert(`Could not copy text: ${err}`)
     console.error('Could not copy text using textarea:', err)
   }
 
@@ -35,12 +34,7 @@ const copyToClipboard = (text: string) => {
   navigator.clipboard.writeText(text).then(
     () => console.info('text copied to clipboard successfully'),
     err => {
-      // Note: Acceptable with clipboard actions as it's for unknown devices that work differently. Likely mobile.
-      // eslint-disable-next-line no-alert
-      alert(
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        `Could not copy text: ${err}`
-      )
+      alert(`Could not copy text: ${err}`)
       console.error('Could not copy text:', err)
     }
   )

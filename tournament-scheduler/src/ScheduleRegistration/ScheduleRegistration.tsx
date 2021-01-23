@@ -10,7 +10,7 @@ import type { ScheduleDto } from '../models/Schedule'
 import { Schedule } from '../models/Schedule'
 import { TimeSlot } from '../models/TimeSlot'
 
-interface ScheduleRegistrationProps {
+type ScheduleRegistrationProps = {
   registrationLink: string
 }
 
@@ -99,7 +99,8 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
             registrationLink: scheduleState.registrationLink,
           })
           setSelectedTimeSlot(scheduleState.timeSlots[index])
-          err.json().then((response: { message: string, authenticated: boolean }) => setErrorMessage(response.message))
+          void err.json().then((response: { message: string, authenticated: boolean }) =>
+            setErrorMessage(response.message))
         } else {
           console.error(err)
         }

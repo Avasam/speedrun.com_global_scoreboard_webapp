@@ -177,6 +177,10 @@
         "functions": "never"
       }
     ],
+    "@typescript-eslint/consistent-type-definitions": [
+      "error",
+      "type"
+    ],
     // explicit types rules complicates things uselessly
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/explicit-function-return-type": "off",
@@ -191,6 +195,14 @@
     // Doesn't allow `let myVar: Type | undefined`
     "@typescript-eslint/init-declarations": "off",
     "@typescript-eslint/lines-between-class-members": "off",
+    // TODO: Would accept this if it had autofixes, otherwise this is too tedious to use. Check again later
+    "@typescript-eslint/prefer-readonly-parameter-types": "off",
+    "@typescript-eslint/promise-function-async": [
+      "error",
+      {
+        "checkArrowFunctions": false
+      }
+    ],
     "@typescript-eslint/object-curly-spacing": [
       "error",
       "always"
@@ -228,6 +240,8 @@
         }
       }
     ],
+    // Doesn't work well with Function Components. Maybe could be configured?
+    "@typescript-eslint/naming-convention": "off",
     "@typescript-eslint/no-confusing-void-expression": [
       "error",
       {
@@ -241,6 +255,13 @@
         "nestedBinaryExpressions": false
       }
     ],
+    "@typescript-eslint/no-misused-promises": [
+      "error",
+      {
+        "checksVoidReturn": false
+      }
+    ],
+    "@typescript-eslint/no-type-alias": "off",
     "@typescript-eslint/no-unused-vars": [
       "error",
       {
@@ -256,15 +277,8 @@
       }
     ],
     // TODO: temporary disabled until I figure these rules out
-    "@typescript-eslint/member-ordering": "off",
-    "@typescript-eslint/no-extraneous-class": "off",
-    "@typescript-eslint/consistent-type-definitions": "off",
-    "@typescript-eslint/prefer-readonly-parameter-types": "off",
-    "@typescript-eslint/no-floating-promises": "off",
     "@typescript-eslint/no-magic-numbers": "off",
-    "@typescript-eslint/no-type-alias": "off",
     "@typescript-eslint/naming-convention": "off",
-    "@typescript-eslint/promise-function-async": "off",
     // TODO: Check later if some "no-unnecessary-type-annotation" has been implemented
     // see https://github.com/typescript-eslint/typescript-eslint/issues/295
     // Custom rules and eslint:recommended overrides (https://eslint.org/docs/rules/)

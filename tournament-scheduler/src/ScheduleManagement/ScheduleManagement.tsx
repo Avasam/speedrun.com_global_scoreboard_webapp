@@ -16,7 +16,7 @@ const getSchedules = () =>
   apiGet('schedules')
     .then(res =>
       res.json().then((scheduleDtos: ScheduleDto[] | undefined) =>
-        scheduleDtos?.map(scheduleDto => new Schedule(scheduleDto))))
+        scheduleDtos?.map(scheduleDto => new Schedule(scheduleDto)) ?? []))
 
 const postSchedules = (schedule: ScheduleDto) =>
   apiPost('schedules', schedule)
@@ -63,7 +63,7 @@ const ScheduleManagement: FC<ScheduleManagementProps> = (props: ScheduleManageme
     savePromise
       .then(() => {
         getSchedules()
-          .then(res => setSchedules(res?.reverse() || []))
+          .then(res => setSchedules(res.reverse()))
           .catch(console.error)
         setCurrentSchedule(undefined)
       })
@@ -72,7 +72,7 @@ const ScheduleManagement: FC<ScheduleManagementProps> = (props: ScheduleManageme
 
   useEffect(() => {
     getSchedules()
-      .then(res => setSchedules(res?.reverse() || []))
+      .then(res => setSchedules(res.reverse()))
       .catch(console.error)
   }, [])
 

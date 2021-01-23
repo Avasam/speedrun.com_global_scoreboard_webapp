@@ -2,7 +2,7 @@ import { tomorrowFlat } from '../utils/Date'
 import type { TimeSlotDto } from './TimeSlot'
 import { createDefaultTimeSlot, TimeSlot } from './TimeSlot'
 
-export interface ScheduleDto {
+export type ScheduleDto = {
   id: number
   name: string
   active: boolean

@@ -4,6 +4,8 @@
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/consistent-type-definitions */
+/* eslint-disable @typescript-eslint/no-extraneous-class */
 /* eslint-disable unicorn/no-keyword-prefix */
 /* eslint-disable unicorn/prevent-abbreviations */
 /* eslint-disable extra-rules/no-commented-out-code */
@@ -30,16 +32,20 @@
 // - Extends FilterProps and all optionnal
 // - Column.filter as component with FilterProps
 // - Column.filterRenderer exists
-// - Column.filter type is React.Component<FilterProps>
+// - Column.filter type is React.FC<FilterProps>
 // - CustomFilterProps extends
 // - NumberFIlterFunction
 // - FilterProps.getFilter exists
 // - export SearchFieldProps and SearchProps
 // - onSearch has first parameter searchText: string
+// - Pagination is a React Component
+// - Added SelectFilterFunction and getFilter to SelectFilterProps
+// - Shorthand method signature is forbidden. Use a function property instead.eslint@typescript-eslint/method-signature-style
 
 type RowFieldValue = ReactText | Date | TODO
 type TODO = any
-type Pagination = TODO
+
+type Pagination = React.FC<PaginationProps>
 // Note: Not my TODO
 // eslint-disable-next-line no-warning-comments
 // TODO: check missings : https://react-bootstrap-table.github.io/react-bootstrap-table2/docs/pagination-props.html
@@ -127,6 +133,7 @@ interface DateFilterProps extends FilterProps<TODO> {
   defaultValue?: { date: Date, comparator: PredefinedComparatorTypes }
 }
 interface SelectFilterProps extends FilterProps<TODO> {
+  getFilter?: (filter: SelectFilterFunction) => TODO
   options: Record<ReactText, string>
   withoutEmptyOption?: boolean
 }
@@ -152,6 +159,7 @@ interface CustomFilterProps extends FilterProps<TODO> {
 }
 type FilterFunction<Type extends TODO> = (val: Type) => TODO
 type NumberFilterFunction = (val: { number: number | '', comparator: PredefinedComparatorTypes }) => TODO
+type SelectFilterFunction = FilterFunction<string[]>
 type FilterVal = string | TODO
 type FilterType = 'TEXT' | TODO
 interface ComparatorTypes {
@@ -192,7 +200,7 @@ interface ExpandRowOptions {
   showExpandColumn?: boolean
 }
 declare module 'react-bootstrap-table-next' {
-  import type { ReactElement } from 'react'
+  import type { ReactElement, FC } from 'react'
   import { Component } from 'react'
   export default class BootstrapTable extends Component<BootstrapTableProps, TODO> {
     table: {
@@ -264,7 +272,7 @@ declare module 'react-bootstrap-table-next' {
     isDummyField?: boolean
     sort?: boolean
     searchable?: boolean
-    filter?: React.Component<FilterProps>
+    filter?: FC<FilterProps>
     formatExtraData?: TODO
     formatter?: (cell: TODO, row: TODO, rowIndex: number, formatExtraData: any) => ReactNode
     headerFormatter?: (column: Column, colIndex: number, components: any) => ReactNode
@@ -282,17 +290,18 @@ type RowT<Type extends TODO = TODO, FieldId extends string = string> = {
   [fieldName in FieldId]: RowFieldValue
 }
 declare module 'react-bootstrap-table2-filter' {
+  import type { FC } from 'react'
   export default function filterFactory<Type extends TODO>(options?: FilterOptions): FilterProps<Type>
-  function textFilter(props?: TextFilterProps): TODO
-  function dateFilter(props?: DateFilterProps): TODO
-  function selectFilter(props?: SelectFilterProps): TODO
-  function multiSelectFilter(props?: SelectFilterProps): TODO
-  function numberFilter(props?: NumberFilterProps): TODO
-  function customFilter(props?: CustomFilterProps): TODO
+  function textFilter(props?: TextFilterProps): FC<TextFilterProps>
+  function dateFilter(props?: DateFilterProps): FC<DateFilterProps>
+  function selectFilter(props?: SelectFilterProps): FC<SelectFilterProps>
+  function multiSelectFilter(props?: SelectFilterProps): FC<SelectFilterProps>
+  function numberFilter(props?: NumberFilterProps): FC<NumberFilterProps>
+  function customFilter(props?: CustomFilterProps): FC<CustomFilterProps>
   const Comparator: PredefinedComparators
 }
 declare module 'react-bootstrap-table2-paginator' {
-  import type { FunctionComponent } from 'react'
+  import type { FC } from 'react'
   import { Component } from 'react'
   export default function paginationFactory(options?: PaginationProps): Pagination
   export type PaginationProviderProps = {
@@ -301,7 +310,7 @@ declare module 'react-bootstrap-table2-paginator' {
   }
   export class PaginationProvider extends Component<{
     pagination: Pagination
-    children: FunctionComponent<PaginationProviderProps>
+    children: FC<PaginationProviderProps>
   }>{ }
   export class PaginationListStandalone extends Component<PaginationProps, TODO>{ }
   export class SizePerPageDropdownStandalone extends Component<PaginationProps, TODO>{ }
@@ -356,13 +365,13 @@ declare module 'react-bootstrap-table2-toolkit' {
     onSearch?: (searchText: string) => void
   }
   export class ColumnToggle {
-    static ToggleList(props: ColumnToggleProps): ReactElement
+    static ToggleList: (props: ColumnToggleProps) => ReactElement
   }
   export class Search {
-    static SearchBar(props: SearchProps | SearchFieldProps): ReactElement
+    static SearchBar: (props: SearchProps | SearchFieldProps) => ReactElement
   }
   export class CSVExport {
-    static ExportCSVButton(props: CSVExportProps | CsvProps): ReactElement
+    static ExportCSVButton: (props: CSVExportProps | CsvProps) => ReactElement
   }
   export default class ToolkitProvider extends Component<TODO, TODO> { }
 }
