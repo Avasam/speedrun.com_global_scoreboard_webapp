@@ -20,10 +20,11 @@ type DashboardProps = {
 const getFriends = () => apiGet('players/current/friends').then<Player[]>(res => res.json())
 const getAllPlayers = () => apiGet('players')
   .then<Player[]>(res => res.json())
-  .then(players => {
-    players.forEach(player => player.lastUpdate = new Date(player.lastUpdate))
-    return players
-  })
+  .then(players =>
+    players.map(player => ({
+      ...player,
+      lastUpdate: new Date(player.lastUpdate),
+    })))
 
 const validateRunnerNotRecentlyUpdated = (runnerNameOrId: string, players: Player[]) => {
   const yesterday = new Date()
