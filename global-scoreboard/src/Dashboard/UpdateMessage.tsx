@@ -13,7 +13,7 @@ type UpdateMessageProps = {
 }
 
 const progressBarTickInterval = 16 // 60 FPS
-const minutes5 = 5_000 * 60
+const minutes5 = 5000 * 60
 let progressTimer: NodeJS.Timeout
 let position: number
 
