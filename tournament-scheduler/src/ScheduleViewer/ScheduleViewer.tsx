@@ -3,11 +3,13 @@ import 'react-add-to-calendar/dist/react-add-to-calendar.min.css'
 import DateFnsUtils from '@date-io/moment'
 import { Container, createStyles, List, ListItem, ListItemText, makeStyles } from '@material-ui/core'
 import moment from 'moment'
-import { FC, useEffect, useState } from 'react'
+import type { FC } from 'react'
+import { useEffect, useState } from 'react'
 import AddToCalendar from 'react-add-to-calendar'
 
 import { apiGet } from '../fetchers/Api'
-import { Schedule, ScheduleDto } from '../models/Schedule'
+import type { ScheduleDto } from '../models/Schedule'
+import { Schedule } from '../models/Schedule'
 import { TimeSlot } from '../models/TimeSlot'
 
 interface ScheduleRegistrationProps {
@@ -44,7 +46,7 @@ const useStyles = makeStyles(theme =>
       display: 'inline-block',
       color: theme.palette.text.primary,
       backgroundColor: theme.palette.background.default,
-    }
+    },
   }))
 
 const getSchedule = (id: number) =>
@@ -90,7 +92,7 @@ const ScheduleViewer: FC<ScheduleRegistrationProps> = (props: ScheduleRegistrati
         schedule.timeSlots.sort(TimeSlot.compareFn)
         setScheduleState(schedule)
       })
-      .catch(err => {
+      .catch((err: Response) => {
         if (err.status === 404) {
           setScheduleState(null)
         } else {

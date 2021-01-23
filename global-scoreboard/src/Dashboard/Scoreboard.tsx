@@ -1,18 +1,23 @@
 import 'react-bootstrap-table2-paginator/dist/react-bootstrap-table2-paginator.min.css'
 import './Scoreboard.css'
 
-import { Component, forwardRef, MutableRefObject, useRef, useState } from 'react'
+import type { Component, MutableRefObject } from 'react'
+import { forwardRef, useRef, useState } from 'react'
 import { Dropdown, DropdownButton, Spinner } from 'react-bootstrap'
-import BootstrapTable, { Column } from 'react-bootstrap-table-next'
+import type { Column } from 'react-bootstrap-table-next'
+import BootstrapTable from 'react-bootstrap-table-next'
 import paginationFactory, { PaginationListStandalone, PaginationProvider, PaginationTotalStandalone, SizePerPageDropdownStandalone } from 'react-bootstrap-table2-paginator'
-import ToolkitProvider, { Search, SearchProps, ToolkitProviderProps } from 'react-bootstrap-table2-toolkit'
+import type { SearchProps, ToolkitProviderProps } from 'react-bootstrap-table2-toolkit'
+import ToolkitProvider, { Search } from 'react-bootstrap-table2-toolkit'
 
 import Configs from '../models/Configs'
-import Player, { PlayerField } from '../models/Player'
+import type { PlayerField } from '../models/Player'
+import type Player from '../models/Player'
 import PlayerNameCell from './TableElements/PlayerNameCell'
 import PlayerScoreCell from './TableElements/PlayerScoreCell'
 import ScoreTitle from './TableElements/ScoreTitle'
 import sortCaret from './TableElements/SortCarret'
+// eslint-disable-next-line @typescript-eslint/unbound-method
 const { SearchBar } = Search
 
 let getSortOrder: () => SortOrder | undefined
@@ -80,7 +85,7 @@ const columns: Column[] = [
   {
     dataField: 'lastUpdate',
     text: 'Last Updated',
-    formatter: (cell: Date | undefined) => cell && cell.toLocaleDateString('en-us', dateFormat),
+    formatter: (cell: Date | undefined) => cell?.toLocaleDateString('en-us', dateFormat),
     classes: columnClass,
     searchable: false,
     sort: true,
@@ -172,8 +177,8 @@ const buildSortFunction = (boostrapTable: BootstrapTable) => {
   const sortOrder = boostrapTable.sortContext.state.sortOrder === 'asc' ? 1 : -1
   const sortKey = boostrapTable.sortContext.state.sortColumn.dataField as PlayerField
   return (a: Player, b: Player) => {
-    const sortItemA = a[sortKey] || 0
-    const sortItemB = b[sortKey] || 0
+    const sortItemA = a[sortKey] ?? 0
+    const sortItemB = b[sortKey] ?? 0
 
     const comparison = typeof sortItemA === 'string'
       ? sortItemA.localeCompare(sortItemB as string)
@@ -195,7 +200,7 @@ const Scoreboard = forwardRef<ScoreboardRef, ScoreboardProps>((props, ref) => {
       // Note: setState is used to ensure the table had time to update before jumping
       searchBarRef.current.props.onClear?.()
       searchBarRef.current.setState({ value: '' }, () => goToPage(jumpToPage))
-    }
+    },
   }
 
   const searchBarRef = useRef<Component<SearchProps>>(null)

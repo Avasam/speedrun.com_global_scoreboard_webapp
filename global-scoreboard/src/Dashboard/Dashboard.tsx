@@ -2,14 +2,15 @@ import './Dashboard.css'
 
 import { useEffect, useRef, useState } from 'react'
 import { Col, Container, Row } from 'react-bootstrap'
-import { AlertProps } from 'react-bootstrap/Alert'
+import type { AlertProps } from 'react-bootstrap/Alert'
 
 import { apiDelete, apiGet, apiPost, apiPut } from '../fetchers/Api'
 import Configs from '../models/Configs'
-import Player from '../models/Player'
-import UpdateRunnerResult from '../models/UpdateRunnerResult'
+import type Player from '../models/Player'
+import type UpdateRunnerResult from '../models/UpdateRunnerResult'
 import QuickView from './QuickView/QuickView'
-import Scoreboard, { ScoreboardRef } from './Scoreboard'
+import type { ScoreboardRef } from './Scoreboard'
+import Scoreboard from './Scoreboard'
 import UpdateMessage, { renderScoreTable } from './UpdateMessage'
 import UpdateRunnerForm from './UpdateRunnerForm'
 
@@ -52,7 +53,7 @@ const inferRank = (players: Player[], score: number) => {
 const openLoginModal = () => document.getElementById('open-login-modal-button')?.click()
 
 const Dashboard = (props: DashboardProps) => {
-  const [currentPlayer, setCurrentPlayer] = useState<Player | null>(props.currentUser || null)
+  const [currentPlayer, setCurrentPlayer] = useState<Player | null>(props.currentUser ?? null)
   const [friendsState, setFriendsState] = useState<Player[]>([])
   const [playersState, setPlayersState] = useState<Player[]>([])
   const [alertVariant, setAlertVariant] = useState<AlertProps['variant']>('info')
@@ -66,13 +67,13 @@ const Dashboard = (props: DashboardProps) => {
       Promise
         .all([getAllPlayers(), getFriends()])
         .then(([allPlayers, friends]) => {
-          setCurrentPlayer(allPlayers.find(player => player.userId === props.currentUser?.userId) || null)
+          setCurrentPlayer(allPlayers.find(player => player.userId === props.currentUser?.userId) ?? null)
           setFriendsState(buildFriendsList(friends, allPlayers))
           setPlayersState(allPlayers)
           setAlertMessage('')
         })
     } else if (props.currentUser && playersState.length > 0) {
-      setCurrentPlayer(playersState.find(player => player.userId === props.currentUser?.userId) || null)
+      setCurrentPlayer(playersState.find(player => player.userId === props.currentUser?.userId) ?? null)
       getFriends().then(friends => setFriendsState(buildFriendsList(friends, playersState)))
     } else {
       setCurrentPlayer(null)
@@ -112,7 +113,7 @@ const Dashboard = (props: DashboardProps) => {
       })
       .then(result => {
         setAlertVariant(result.state)
-        setAlertMessage(renderScoreTable(result.scoreDetails || [[], []], result.message))
+        setAlertMessage(renderScoreTable(result.scoreDetails ?? [[], []], result.message))
         const newPlayers = [...playersState]
         const existingPlayerIndex = newPlayers.findIndex(player => player.userId === result.userId)
         const inferedRank = inferRank(newPlayers, result.score)
@@ -147,7 +148,7 @@ const Dashboard = (props: DashboardProps) => {
 
         handleJumpToPlayer(result.userId)
       })
-      .catch((err: Response | Error) => {
+      .catch((err: Error | Response) => {
         setAlertVariant('danger')
         if (err instanceof Error) {
           setAlertMessage(`${err.name}: ${err.message}`)
@@ -186,10 +187,10 @@ const Dashboard = (props: DashboardProps) => {
         } else {
           err.text().then(errorString => {
             try {
-              const result: UpdateRunnerResult = JSON.parse(errorString)
-              setAlertVariant(result.state || 'danger')
+              const result = JSON.parse(errorString) as UpdateRunnerResult
+              setAlertVariant(result.state ?? 'danger')
               setAlertMessage(result.message)
-              if (err.status === 400 && result.score != null && result.score < 1) {
+              if (err.status === 400 && result.score < 1) {
                 setPlayersState(playersState.filter(player => player.userId !== result.userId))
               }
             } catch {
@@ -212,7 +213,8 @@ const Dashboard = (props: DashboardProps) => {
       .then(() => {
         const newFriend = playersState.find(player => player.userId === playerId)
         if (!newFriend) {
-          return console.error(`Couldn't add friend id ${playerId} as it was not found in existing players table`)
+          console.error(`Couldn't add friend id ${playerId} as it was not found in existing players table`)
+          return
         }
         setFriendsState([...friendsState, newFriend])
       })

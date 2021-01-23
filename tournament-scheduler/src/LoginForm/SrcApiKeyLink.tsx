@@ -1,5 +1,6 @@
 import { Link, TextField } from '@material-ui/core'
-import { ChangeEvent, FC, useState } from 'react'
+import type { ChangeEvent, FC } from 'react'
+import { useState } from 'react'
 
 const SrcApiKeyLink: FC = () => {
   const [srcNameInput, setSrcNameInput] = useState('')

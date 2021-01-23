@@ -1,4 +1,4 @@
-import { RunResult } from './UpdateRunnerResult'
+import type { RunResult } from './UpdateRunnerResult'
 
 export default interface Player {
   rank: number | undefined

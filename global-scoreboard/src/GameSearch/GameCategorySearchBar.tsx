@@ -1,27 +1,25 @@
-import { Dispatch, SetStateAction } from 'react'
+import type { Dispatch, SetStateAction } from 'react'
 import { FormControl, FormLabel } from 'react-bootstrap'
-import { SearchFieldProps, SearchProps } from 'react-bootstrap-table2-toolkit'
+import type { SearchFieldProps, SearchProps } from 'react-bootstrap-table2-toolkit'
 
 import { apiGet } from '../fetchers/Api'
 
-type IdToNameMap = { [key: string]: string }
+type IdToNameMap = Record<string, string>
 
 type GameCategorySearchProps =
-  SearchProps
-  & SearchFieldProps
-  & {
+  SearchFieldProps & SearchProps & {
     setGameMap: Dispatch<SetStateAction<IdToNameMap>>
   }
 
 function debounce<T>(fn: (...args: T[]) => void, time: number) {
-  let timeout: NodeJS.Timeout | null
+  let timeout: NodeJS.Timeout | undefined
   return wrapper
   function wrapper(...args: T[]) {
     if (timeout) {
       clearTimeout(timeout)
     }
     timeout = setTimeout(() => {
-      timeout = null
+      timeout = undefined
       fn(...args)
     }, time)
   }

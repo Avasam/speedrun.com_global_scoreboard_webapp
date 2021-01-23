@@ -7,7 +7,7 @@ import * as serviceWorker from './serviceWorker'
 
 // Hack for local network testing
 window.process = {
-  env: process.env
+  env: process.env,
 } as NodeJS.Process
 if ((process.env.REACT_APP_BASE_URL?.includes('127.0.0.1') || process.env.REACT_APP_BASE_URL?.includes('localhost')) &&
   window.location.hostname !== 'localhost' &&

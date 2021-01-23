@@ -3,6 +3,6 @@ const mean = (numbers: number[]) =>
   numbers.reduce((previous, current) => previous + current, 0) / numbers.length
 
 const math = {
-  mean
+  mean,
 }
 export default math

@@ -1,12 +1,14 @@
-type QueryParams = { [param: string]: string | number | boolean | null }
+type QueryParams = Record<string, boolean | number | string | null>
 
-const makeUrl = (location: string, queryParams?: QueryParams) =>
-  (location.indexOf('http') === 0
+const makeUrl = (location: string, queryParams?: QueryParams) => {
+  const targetUrl = location.startsWith('http')
     ? location
-    : `${window.process.env.REACT_APP_BASE_URL}/api/${location}`) +
-  (queryParams
-    ? `?${new URLSearchParams(queryParams as Record<string, string>)}`
-    : '')
+    : `${window.process.env.REACT_APP_BASE_URL}/api/${location}`
+  const query = new URLSearchParams(queryParams as Record<string, string>).toString()
+  return query
+    ? `${targetUrl}?${query}`
+    : targetUrl
+}
 
 const apiFetch = (method: RequestInit['method'], url: string, body?: RequestInit['body'], customHeaders = true) =>
   fetch(url, {

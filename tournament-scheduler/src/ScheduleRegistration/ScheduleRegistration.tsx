@@ -1,11 +1,13 @@
 import DateFnsUtils from '@date-io/moment'
 import { Button, Card, CardActions, CardContent, Container, FormControl, FormGroup, FormLabel, InputLabel, Link, MenuItem, Select, TextField } from '@material-ui/core'
-import { SelectInputProps } from '@material-ui/core/Select/SelectInput'
+import type { SelectInputProps } from '@material-ui/core/Select/SelectInput'
 import moment from 'moment'
-import { FC, useEffect, useRef, useState } from 'react'
+import type { FC } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { apiGet, apiPost } from '../fetchers/Api'
-import { Schedule, ScheduleDto } from '../models/Schedule'
+import type { ScheduleDto } from '../models/Schedule'
+import { Schedule } from '../models/Schedule'
 import { TimeSlot } from '../models/TimeSlot'
 
 interface ScheduleRegistrationProps {
@@ -57,9 +59,9 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
       .then((schedule: Schedule) => {
         schedule.timeSlots.sort(TimeSlot.compareFn)
         setScheduleState(schedule)
-        setTimeSlotLabelWidth((timeSlotInputLabel.current?.offsetWidth || 0) - timeSlotLabelPaddingRight)
+        setTimeSlotLabelWidth((timeSlotInputLabel.current?.offsetWidth ?? 0) - timeSlotLabelPaddingRight)
       })
-      .catch(err => {
+      .catch((err: Response) => {
         if (err.status === 404) {
           setScheduleState(null)
         } else {
@@ -85,9 +87,11 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
         localStorage.removeItem('register')
         window.location.href = `${window.location.pathname}?view=${scheduleState?.id}`
       })
-      .catch(err => {
+      .catch((err: Response) => {
         if (err.status === 507) {
-          if (!scheduleState) { return }
+          if (!scheduleState) {
+            return
+          }
           const index = scheduleState.timeSlots.findIndex(timeSlot => timeSlot.id === selectedTimeSlot.id)
           scheduleState.timeSlots[index].maximumEntries = 0
           setScheduleState({
@@ -134,7 +138,7 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
                   <Select
                     labelId='time-slot-select-label'
                     id='time-slot-select'
-                    value={selectedTimeSlot?.id || ''}
+                    value={selectedTimeSlot?.id ?? ''}
                     onChange={selectTimeSlot}
                     labelWidth={timeSlotLabelWidth}
                   >

@@ -1,9 +1,11 @@
-type QueryParams = { [param: string]: string | number | boolean | null }
+type QueryParams = Record<string, boolean | number | string | null>
 
 const makeUrl = (location: string, queryParams?: QueryParams) => {
-  const baseUrl = `${window.process.env.REACT_APP_BASE_URL}/api/${location}`
-  if (!queryParams || Object.keys(queryParams).length === 0) { return baseUrl }
-  return `${baseUrl}? ${new URLSearchParams(queryParams as Record<string, string>)}`
+  const targetUrl = `${window.process.env.REACT_APP_BASE_URL}/api/${location}`
+  const query = new URLSearchParams(queryParams as Record<string, string>).toString()
+  return query
+    ? `${targetUrl}?${query}`
+    : targetUrl
 }
 
 const apiFetch = (method: RequestInit['method'], url: string, body?: RequestInit['body']) =>

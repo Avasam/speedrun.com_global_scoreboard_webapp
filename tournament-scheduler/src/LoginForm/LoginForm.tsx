@@ -2,10 +2,11 @@ import './LoginForm.css'
 
 import { Button, Container, Link, TextField } from '@material-ui/core'
 import useMediaQuery from '@material-ui/core/useMediaQuery'
-import { FC, useState } from 'react'
+import type { FC } from 'react'
+import { useState } from 'react'
 
 import { apiPost } from '../fetchers/Api'
-import User from '../models/User'
+import type User from '../models/User'
 import SrcApiKeyLink from './SrcApiKeyLink'
 
 type loginFormProps = {

@@ -4,10 +4,10 @@ export interface ServerConfigs {
 }
 
 export default class Configs {
-  public static bypassUpdateRestrictions: boolean
-  public static lastUpdatedDays: number[]
+  static bypassUpdateRestrictions: boolean
+  static lastUpdatedDays: number[]
 
-  public static setConfigs = (configs: ServerConfigs) => {
+  static setConfigs = (configs: ServerConfigs) => {
     Configs.bypassUpdateRestrictions = configs.bypassUpdateRestrictions
     Configs.lastUpdatedDays = configs.lastUpdatedDays
   }

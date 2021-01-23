@@ -1,4 +1,5 @@
-import { ChangeEventHandler, FormEvent, useState } from 'react'
+import type { ChangeEventHandler, FormEvent } from 'react'
+import { useState } from 'react'
 import { Button, Form, InputGroup } from 'react-bootstrap'
 
 import { apiGet } from '../fetchers/Api'
@@ -12,9 +13,7 @@ interface RunDto {
   times: {
     primary_t: number
   }
-  values: {
-    [index: string]: string
-  }
+  values: Record<string, string>
 }
 
 interface LeaderboardDto {

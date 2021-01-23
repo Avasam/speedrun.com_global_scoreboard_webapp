@@ -2,9 +2,9 @@ import { faInfoCircle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useEffect, useState } from 'react'
 import { Alert, OverlayTrigger, ProgressBar, Tooltip } from 'react-bootstrap'
-import { AlertProps } from 'react-bootstrap/Alert'
+import type { AlertProps } from 'react-bootstrap/Alert'
 
-import { RunResult } from '../models/UpdateRunnerResult'
+import type { RunResult } from '../models/UpdateRunnerResult'
 
 type UpdateMessageProps = {
   variant: AlertProps['variant']
@@ -81,7 +81,7 @@ const UpdateMessage = (props: UpdateMessageProps) => {
       setCurrentTime(Date.now())
       progressTimer = setInterval(
         () => setCurrentTime(Date.now()),
-        progressBarTickInterval,
+        progressBarTickInterval
       )
     } else {
       clearInterval(progressTimer)

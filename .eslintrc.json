@@ -12,7 +12,7 @@
   ],
   "extends": [
     "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/all",
     "plugin:react/recommended",
     "plugin:react-hooks/recommended",
     // "plugin:jsx-a11y/strict",
@@ -27,7 +27,8 @@
     "sourceType": "module",
     "ecmaFeatures": {
       "jsx": true
-    }
+    },
+    "project": "./tsconfig.json"
   },
   "settings": {
     "react": {
@@ -164,11 +165,58 @@
     // Simple import rules
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
-    // Custom rules and @typescript-eslint/recommended overrides (https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/src/configs/recommended.ts)
+    // Custom rules and @typescript-eslint/all overrides (https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/src/configs/all.ts)
     // Automatically deactivates ESLint rules (configured below) that are taken care of by TypeScript (https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/src/configs/eslint-recommended.ts)
+    "@typescript-eslint/comma-dangle": [
+      "error",
+      {
+        "arrays": "always-multiline",
+        "objects": "always-multiline",
+        "imports": "never",
+        "exports": "never",
+        "functions": "never"
+      }
+    ],
     // explicit types rules complicates things uselessly
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/explicit-member-accessibility": [
+      "error",
+      {
+        "accessibility": "no-public"
+      }
+    ],
+    // Doesn't work great, see: https://github.com/typescript-eslint/typescript-eslint/issues/1824
+    "@typescript-eslint/indent": "off",
+    // Doesn't allow `let myVar: Type | undefined`
+    "@typescript-eslint/init-declarations": "off",
+    "@typescript-eslint/lines-between-class-members": "off",
+    "@typescript-eslint/object-curly-spacing": [
+      "error",
+      "always"
+    ],
+    "@typescript-eslint/quotes": [
+      "error",
+      "single"
+    ],
+    "@typescript-eslint/semi": [
+      "error",
+      "never"
+    ],
+    "@typescript-eslint/space-before-function-paren": [
+      "error",
+      {
+        "anonymous": "always",
+        "named": "never"
+      }
+    ],
+    "@typescript-eslint/space-infix-ops": [
+      "error",
+      {
+        "int32Hint": true
+      }
+    ],
+    "@typescript-eslint/strict-boolean-expressions": "off",
     "@typescript-eslint/member-delimiter-style": [
       "error",
       {
@@ -180,7 +228,12 @@
         }
       }
     ],
-    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/no-confusing-void-expression": [
+      "error",
+      {
+        "ignoreArrowShorthand": true
+      }
+    ],
     "@typescript-eslint/no-extra-parens": [
       "error",
       "all",
@@ -195,6 +248,23 @@
         "varsIgnorePattern": "^_"
       }
     ],
+    "@typescript-eslint/restrict-template-expressions": [
+      "error",
+      {
+        "allowBoolean": true,
+        "allowNullish": true
+      }
+    ],
+    // TODO: temporary disabled until I figure these rules out
+    "@typescript-eslint/member-ordering": "off",
+    "@typescript-eslint/no-extraneous-class": "off",
+    "@typescript-eslint/consistent-type-definitions": "off",
+    "@typescript-eslint/prefer-readonly-parameter-types": "off",
+    "@typescript-eslint/no-floating-promises": "off",
+    "@typescript-eslint/no-magic-numbers": "off",
+    "@typescript-eslint/no-type-alias": "off",
+    "@typescript-eslint/naming-convention": "off",
+    "@typescript-eslint/promise-function-async": "off",
     // TODO: Check later if some "no-unnecessary-type-annotation" has been implemented
     // see https://github.com/typescript-eslint/typescript-eslint/issues/295
     // Custom rules and eslint:recommended overrides (https://eslint.org/docs/rules/)
@@ -255,6 +325,7 @@
         ]
       }
     ],
+    // As mentionned above, the typescrpt version doesn't work great
     "indent": [
       "error",
       2,
@@ -265,10 +336,6 @@
     "jsx-quotes": [
       "error",
       "prefer-single"
-    ],
-    "quotes": [
-      "error",
-      "single"
     ],
     // These rule does not correctly treat react's function components. See https://github.com/SonarSource/SonarJS/issues/2238
     // Max very high as most of the react code lives in functions.
@@ -302,10 +369,8 @@
     ],
     "no-constructor-return": "error",
     "no-dupe-else-if": "error",
-    "no-implied-eval": "error",
     "no-inner-declarations": "error",
     "no-lonely-if": "error",
-    "no-shadow": "error",
     "no-unneeded-ternary": "error",
     "no-warning-comments": [
       "warn",
@@ -333,23 +398,6 @@
       }
     ],
     "semi-style": "error",
-    "semi": [
-      "error",
-      "never"
-    ],
-    "space-before-function-paren": [
-      "error",
-      {
-        "anonymous": "always",
-        "named": "never"
-      }
-    ],
-    "space-infix-ops": [
-      "error",
-      {
-        "int32Hint": true
-      }
-    ],
     "space-in-parens": "error",
     "space-unary-ops": "error",
     "wrap-regex": "error",
@@ -362,12 +410,10 @@
     "arrow-spacing": "error",
     "generator-star-spacing": "error",
     "no-class-assign": "error",
-    "no-duplicate-imports": "error",
     // TODO: Check for new 7.0.0-alpha.0 rules once it's no longuer in alpha
     // "no-restricted-exports": "error",
     "no-restricted-imports": "error",
     "no-useless-computed-key": "error",
-    "no-useless-constructor": "error",
     "no-useless-rename": "error",
     "object-shorthand": "error",
     "prefer-arrow-callback": "error",

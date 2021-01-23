@@ -4,7 +4,7 @@ import { faArrowAltCircleRight } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Button, Table } from 'react-bootstrap'
 
-import Player from '../..//models/Player'
+import type Player from '../..//models/Player'
 import Configs from '../../models/Configs'
 import PlayerNameCell from '../TableElements/PlayerNameCell'
 import PlayerScoreCell from '../TableElements/PlayerScoreCell'

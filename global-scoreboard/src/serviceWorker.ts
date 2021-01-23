@@ -16,12 +16,10 @@ const isLocalhost = Boolean(
   window.location.hostname === '[::1]' ||
   // 127.0.0.1/8 is considered localhost for IPv4.
   // eslint-disable-next-line unicorn/no-unsafe-regex
-  (/^127(?:\.(?:25[0-5]|2[0-4]\d|[01]?\d{1,2})){3}$/).test(
-    window.location.hostname
-  )
+  (/^127(?:\.(?:25[0-5]|2[0-4]\d|[01]?\d{1,2})){3}$/).test(window.location.hostname)
 )
 
-type Config = {
+interface Config {
   onSuccess?: (registration: ServiceWorkerRegistration) => void
   onUpdate?: (registration: ServiceWorkerRegistration) => void
 }
@@ -49,12 +47,11 @@ export function register(config?: Config) {
 
         // Add some additional logging to localhost, pointing developers to the
         // service worker/PWA documentation.
-        navigator.serviceWorker.ready.then(() => {
+        navigator.serviceWorker.ready.then(() =>
           console.info(
             'This web app is being served cache-first by a service ' +
             'worker. To learn more, visit https://bit.ly/CRA-PWA'
-          )
-        })
+          ))
       } else {
         // Is not localhost. Just register service worker
         registerValidSW(swUrl, config)
@@ -84,7 +81,7 @@ function registerValidSW(swUrl: string, config?: Config) {
               )
 
               // Execute callback
-              if (config && config.onUpdate) {
+              if (config?.onUpdate) {
                 config.onUpdate(registration)
               }
             } else {
@@ -94,7 +91,7 @@ function registerValidSW(swUrl: string, config?: Config) {
               console.info('Content is cached for offline use.')
 
               // Execute callback
-              if (config && config.onSuccess) {
+              if (config?.onSuccess) {
                 config.onSuccess(registration)
               }
             }

@@ -2,13 +2,15 @@ import './App.css'
 import 'react-picky/dist/picky.css'
 import 'bootstrap/dist/css/bootstrap.css'
 
-import { FC, useEffect, useState } from 'react'
+import type { FC } from 'react'
+import { useEffect, useState } from 'react'
 
 import Dashboard from './Dashboard/Dashboard'
 import { apiGet } from './fetchers/Api'
 import GameSearch from './GameSearch/GameSearch'
-import Configs, { ServerConfigs } from './models/Configs'
-import Player from './models/Player'
+import type { ServerConfigs } from './models/Configs'
+import Configs from './models/Configs'
+import type Player from './models/Player'
 import ScoreboardNavBar from './NavBar/ScoreboardNavBar'
 
 const getCurrentUser = () => apiGet('users/current').then<{ user: Player | undefined }>(res => res.json())
@@ -20,7 +22,7 @@ const logout = (setCurrentUser: (user: null) => void) => {
 }
 
 const App: FC = () => {
-  const [currentUser, setCurrentUser] = useState<Player | undefined | null>()
+  const [currentUser, setCurrentUser] = useState<Player | null | undefined>()
 
   useEffect(() => {
     Promise
@@ -30,7 +32,7 @@ const App: FC = () => {
         resPromise()
           .then((res: { user: Player | undefined }) => res.user)
           .then(setCurrentUser)
-          .catch(err => {
+          .catch((err: Response) => {
             if (err.status === 401) {
               setCurrentUser(null)
             } else {

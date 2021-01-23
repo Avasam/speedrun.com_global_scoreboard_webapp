@@ -1,11 +1,13 @@
 import { faLink } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { ChangeEventHandler, FormEvent, useState } from 'react'
+import type { ChangeEventHandler, FormEvent } from 'react'
+import { useState } from 'react'
 import { Button, Col, Form, InputGroup } from 'react-bootstrap'
 
 import { apiPost } from '../fetchers/Api'
 import GenericModal from '../GenericModal'
-import Player from '../models/Player'
+import type Player from '../models/Player'
+import type UpdateRunnerResult from '../models/UpdateRunnerResult'
 import SrcApiKeyLink from './SrcApiKeyLink'
 
 type LoginModalProps = {
@@ -20,8 +22,9 @@ const LoginModal = (props: LoginModalProps) => {
 
   const attemptLogin = () => {
     if (!srcApiKeyInput) {
-      return setLoginErrorMessage('You must specify an API key to log in! ' +
+      setLoginErrorMessage('You must specify an API key to log in! ' +
         '\nClick "What\'s my key?" or fill in the interactive link below to find your key.')
+      return
     }
     setLoginErrorMessage('')
     apiPost('login', { srcApiKey: srcApiKeyInput })
@@ -34,7 +37,7 @@ const LoginModal = (props: LoginModalProps) => {
       .catch((err: Response) => {
         if (err.status === 401) {
           err.json()
-            .then(data => data.message)
+            .then((data: UpdateRunnerResult) => data.message)
             .then(setLoginErrorMessage)
         } else {
           setLoginErrorMessage('Something went wrong')

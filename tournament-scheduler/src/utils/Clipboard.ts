@@ -11,10 +11,13 @@ const oldCopyToClipboard = (text: string) => {
     const successful = document.execCommand('copy')
     if (!successful) throw new Error('execCommand failed')
     console.info('text copied to clipboard successfully using textarea')
-  } catch (err) {
+  } catch (err: unknown) {
     // Note: Acceptable with clipboard actions as it's for unknown devices that work differently. Likely mobile.
     // eslint-disable-next-line no-alert
-    alert(`Could not copy text: ${err}`)
+    alert(
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      `Could not copy text: ${err}`
+    )
     console.error('Could not copy text using textarea:', err)
   }
 
@@ -22,6 +25,8 @@ const oldCopyToClipboard = (text: string) => {
 }
 
 const copyToClipboard = (text: string) => {
+  // Note: navigator.clipboard may not exist on some devices
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (!navigator.clipboard) {
     oldCopyToClipboard(text)
     return
@@ -32,9 +37,12 @@ const copyToClipboard = (text: string) => {
     err => {
       // Note: Acceptable with clipboard actions as it's for unknown devices that work differently. Likely mobile.
       // eslint-disable-next-line no-alert
-      alert(`Could not copy text: ${err}`)
+      alert(
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        `Could not copy text: ${err}`
+      )
       console.error('Could not copy text:', err)
-    },
+    }
   )
 }
 

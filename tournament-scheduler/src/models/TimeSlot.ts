@@ -1,9 +1,9 @@
 import { floorToMinutesStep, tomorrow } from '../utils/Date'
-import Registration from './Registration'
+import type Registration from './Registration'
 
 export interface TimeSlotDto {
   id: number
-  dateTime: Date
+  dateTime: Date | string
   maximumEntries: number
   participantsPerEntry: number
   registrations: Registration[]

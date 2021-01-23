@@ -1,14 +1,15 @@
 import './App.css'
 
-import { AppBar, Button, createMuiTheme,IconButton, ThemeProvider, Toolbar, Typography } from '@material-ui/core'
+import { AppBar, Button, createMuiTheme, IconButton, ThemeProvider, Toolbar, Typography } from '@material-ui/core'
 import { teal } from '@material-ui/core/colors'
 import useMediaQuery from '@material-ui/core/useMediaQuery'
-import { FC, useEffect, useState } from 'react'
+import type { FC } from 'react'
+import { useEffect, useState } from 'react'
 import Div100vh from 'react-div-100vh'
 
 import { apiGet } from './fetchers/Api'
 import LoginForm from './LoginForm/LoginForm'
-import User from './models/User'
+import type User from './models/User'
 import ScheduleManagement from './ScheduleManagement/ScheduleManagement'
 import ScheduleRegistration from './ScheduleRegistration/ScheduleRegistration'
 import ScheduleViewer from './ScheduleViewer/ScheduleViewer'
@@ -28,14 +29,14 @@ const logout = (setCurrentUser: (user: null) => void) => {
 }
 
 const App: FC = () => {
-  const [currentUser, setCurrentUser] = useState<User | undefined | null>()
+  const [currentUser, setCurrentUser] = useState<User | null | undefined>()
   const viewScheduleIdFromUrl = new URLSearchParams(window.location.search).get('view')
   const [viewScheduleId] = useState<number | null>((viewScheduleIdFromUrl && Number.parseInt(viewScheduleIdFromUrl)) || null)
 
   // Take registrationLink from the URL if present,
   // otherwise from the localStorage if there are no other searchParam
   const [scheduleRegistrationLink] = useState<string | null>(
-    new URLSearchParams(window.location.search).get('register') ||
+    new URLSearchParams(window.location.search).get('register') ??
     (window.location.search
       ? null
       : localStorage.getItem('register'))
@@ -54,7 +55,7 @@ const App: FC = () => {
     getCurrentUser()
       .then((res: { user: User | undefined }) => res.user)
       .then(setCurrentUser)
-      .catch(err => {
+      .catch((err: Response) => {
         if (err.status === 401) {
           setCurrentUser(null)
         } else {
