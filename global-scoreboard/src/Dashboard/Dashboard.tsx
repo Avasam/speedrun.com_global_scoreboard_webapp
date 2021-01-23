@@ -111,7 +111,7 @@ const Dashboard = (props: DashboardProps) => {
       })
       .then(result => {
         setAlertVariant(result.state)
-        setAlertMessage(renderScoreTable(result.message))
+        setAlertMessage(renderScoreTable(result.scoreDetails || [[], []], result.message))
         const newPlayers = [...playersState]
         const existingPlayerIndex = newPlayers.findIndex(player => player.userId === result.userId)
         const inferedRank = inferRank(newPlayers, result.score)

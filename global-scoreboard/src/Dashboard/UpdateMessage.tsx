@@ -17,75 +17,58 @@ const minutes5 = 5_000 * 60
 let progressTimer: NodeJS.Timeout
 let position: number
 
-const renderRow = (rows: RunResult[]) => rows.map((row, rowi) =>
-  <tr key={`row${rowi}`}>
-    <td>
-      {Math.round(position += row.levelFraction * 100) / 100}
-    </td>
-    <td>
-      {row.gameName} - {row.categoryName}{row.levelName ? ` (${row.levelName})` : ''}
-    </td>
-    <td>
-      {row.points.toFixed(2)}
-    </td>
-  </tr>)
+const renderRow = (rows: RunResult[]) =>
+  rows.map((row, rowi) =>
+    <tr key={`row${rowi}`}>
+      <td>
+        {Math.round(position += row.levelFraction * 100) / 100}
+      </td>
+      <td>
+        {row.gameName} - {row.categoryName}{row.levelName ? ` (${row.levelName})` : ''}
+      </td>
+      <td>
+        {row.points.toFixed(2)}
+      </td>
+    </tr>)
 
-const renderTable = ()
+const renderTable = (runs: RunResult[]) =>
+  <table className='scoreDetailsTable'>
+    <thead>
+      <tr>
+        <th>
+          #<OverlayTrigger
+            placement='bottom'
+            overlay={
+              <Tooltip id='levelFractionInfo'>
+                Individual Levels (IL) are weighted and scored to a fraction of a Full Game run.
+                See the About page for a complete explanation.
+              </Tooltip>
+            }
+          ><FontAwesomeIcon icon={faInfoCircle} />
+          </OverlayTrigger>
+        </th>
+        <th>Game - Category (Level)</th>
+        <th>Points</th>
+      </tr>
+    </thead>
+    <tbody>
+      {renderRow(runs)}
+    </tbody>
+  </table>
 
-export const renderScoreTable = (baseString: string) => {
+export const renderScoreTable = ([topRuns, lesserRuns]: RunResult[][], topMessage?: string) => {
   position = 0
-  const [topMessage, tableElements] = baseString.split('\n')
-  let topRuns: RunResult[] = []
-  let lesserRuns: RunResult[] = []
-  try {
-    [topRuns, lesserRuns] = JSON.parse(tableElements)
-  } catch {
-    // suppress
-  }
 
   return <>
     <div>{topMessage}</div>
     {topRuns.length > 0 && <>
       <label>Top 60 runs:</label>
-      <table className='scoreDetailsTable'>
-        <thead>
-          <tr>
-            <th>
-              #<OverlayTrigger
-                placement='bottom'
-                overlay={
-                  <Tooltip id='levelFractionInfo'>
-                    Individual Levels (IL) are weighted and scored to a fraction of a Full Game run.
-                    See the About page for a complete explanation.
-                  </Tooltip>
-                }
-              ><FontAwesomeIcon icon={faInfoCircle} />
-              </OverlayTrigger>
-            </th>
-            <th>Game - Category (Level)</th>
-            <th>Points</th>
-          </tr>
-        </thead>
-        <tbody>
-          {renderRow(topRuns)}
-        </tbody>
-      </table>
+      {renderTable(topRuns)}
     </>}
     {lesserRuns.length > 0 && <>
       <br />
       <label>Other runs:</label>
-      <table className='scoreDetailsTable'>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Game - Category (Level)</th>
-            <th>Points</th>
-          </tr>
-        </thead>
-        <tbody>
-          {renderRow(lesserRuns)}
-        </tbody>
-      </table>
+      {renderTable(lesserRuns)}
     </>}
   </>
 }

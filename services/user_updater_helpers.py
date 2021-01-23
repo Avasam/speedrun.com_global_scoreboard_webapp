@@ -1,8 +1,9 @@
 from math import floor
 from models.core_models import Player
-from models.global_scoreboard_models import Run
+from models.global_scoreboard_models import Run, User
 from time import strftime
 from typing import Any, Dict, List, Tuple
+import json
 
 GAMETYPE_MULTI_GAME = "rj1dy1o8"
 BasicJSONType = Dict[str, Any]
@@ -200,7 +201,7 @@ def extract_top_runs_and_score(runs: List[Run]) -> Tuple[List[Run], List[Run]]:
     return top_runs, lesser_runs
 
 
-def update_runner_in_database(player, user):
+def update_runner_in_database(player: Player, user: User):
     timestamp = strftime("%Y-%m-%d %H:%M")
     text_output = ""
     result_state = ""
@@ -218,7 +219,7 @@ def update_runner_in_database(player, user):
             player.update(name=user._name,
                           country_code=user._country_code,
                           score=floor(user._points),
-                          score_details=user._point_distribution_str,
+                          score_details=json.dumps(user.get_points_distribution_dto()),
                           last_update=timestamp)
         # User is banned: remove the database entry
         else:
@@ -233,7 +234,7 @@ def update_runner_in_database(player, user):
                       name=user._name,
                       country_code=user._country_code,
                       score=user._points,
-                      score_details=user._point_distribution_str,
+                      score_details=json.dumps(user.get_points_distribution_dto()),
                       last_update=timestamp)
     else:
         text_output = f"Not inserting new data as {user} " \

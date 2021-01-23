@@ -90,7 +90,7 @@ class Player(db.Model):
             rank=player[5]) for player in db.engine.execute(sql).fetchall()]
 
     @staticmethod
-    def create(user_id: str, name: str, **kwargs) -> Player:
+    def create(user_id: str, name: str, **kwargs: Union[Optional[str], float, datetime]) -> Player:
         """
         kwargs:
         - score: int
@@ -109,7 +109,7 @@ class Player(db.Model):
 
         return player
 
-    def update(self, **kwargs: Dict[str, Union[str, float, datetime]]) -> Player:
+    def update(self, **kwargs: Union[Optional[str], float, datetime]) -> Player:
         player = Player \
             .query \
             .filter(Player.user_id == self.user_id) \
@@ -156,7 +156,6 @@ class Player(db.Model):
         return Schedule.query.filter(Schedule.owner_id == self.user_id).all()
 
     def create_schedule(self, name: str, is_active: bool, deadline: str, time_slots: List[Dict[str, str]]) -> int:
-        print(type(deadline))
         new_schedule = Schedule(
             name=name,
             owner_id=self.user_id,
