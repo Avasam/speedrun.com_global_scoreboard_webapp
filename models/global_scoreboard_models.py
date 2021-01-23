@@ -1,8 +1,8 @@
 from __future__ import annotations
 from datetime import datetime, timedelta
 from math import ceil, floor
-from services.utils import get_file, UserUpdaterError
-from typing import Dict, Optional, Union
+from services.utils import get_file, map_to_dto, UserUpdaterError
+from typing import Dict, List, Optional, Union
 from urllib import parse
 import configs
 
@@ -136,13 +136,16 @@ class Run:
         }
 
 
+PointsDistributionDto = List[List[Dict[str, Union[str, int, bool]]]]
+
+
 class User:
     _points: float = 0
     _name: str = ""
     _id: str = ""
     _country_code: Optional[str] = None
     _banned: bool = False
-    _point_distribution_str: str = ""
+    _points_distribution: List[List[Run]] = [[], []]
 
     def __init__(self, id_or_name: str) -> None:
         self._id = id_or_name
@@ -150,3 +153,9 @@ class User:
 
     def __str__(self) -> str:
         return f"User: <{self._name}, {ceil(self._points * 100) / 100}, {self._id}{'(Banned)' if self._banned else ''}>"
+
+    def get_points_distribution_dto(self) -> PointsDistributionDto:
+        return [
+            map_to_dto(self._points_distribution[0]),
+            map_to_dto(self._points_distribution[1])
+        ]

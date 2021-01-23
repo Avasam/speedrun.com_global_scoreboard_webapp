@@ -5,7 +5,7 @@ const oldCopyToClipboard = (text: string) => {
   document.body.append(textArea)
   textArea.focus()
   textArea.select()
-  textArea.setSelectionRange(0, 99999) // For mobile devices
+  textArea.setSelectionRange(0, 99_999) // For mobile devices
 
   try {
     const successful = document.execCommand('copy')

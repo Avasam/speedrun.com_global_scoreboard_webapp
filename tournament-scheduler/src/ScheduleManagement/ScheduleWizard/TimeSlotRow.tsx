@@ -83,7 +83,7 @@ const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
           label='Date and time'
           value={props.timeSlot.dateTime}
           onChange={date => props.onEditTimeSlotDateTime(date)}
-          error={props.timeSlot.dateTime < props.schedule.deadline}
+          error={!!props.schedule.deadline && props.timeSlot.dateTime < props.schedule.deadline}
           minDate={new Date(2020, 0)}
           disablePast={props.timeSlot.id <= -1}
           ampm={false}

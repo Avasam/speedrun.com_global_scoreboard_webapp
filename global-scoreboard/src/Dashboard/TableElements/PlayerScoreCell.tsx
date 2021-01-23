@@ -6,6 +6,7 @@ import { Button } from 'react-bootstrap'
 import { apiGet } from '../../fetchers/Api'
 import GenericModal from '../../GenericModal'
 import Player from '../../models/Player'
+import { RunResult } from '../../models/UpdateRunnerResult'
 import { renderScoreTable } from '../UpdateMessage'
 
 type PlayerScoreCellProps = {
@@ -20,7 +21,7 @@ const PlayerScoreCell = (props: PlayerScoreCellProps) => {
     props.player.scoreDetails === undefined
       ? apiGet(`players/${props.player.userId}/score-details`)
         .then(res =>
-          res.text().then(scoreDetails => {
+          res.json().then((scoreDetails: RunResult[][]) => {
             props.player.scoreDetails = scoreDetails
             setShow(true)
           }))

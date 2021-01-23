@@ -3,19 +3,18 @@ from datetime import datetime
 from math import exp, floor, pi
 from models.game_search_models import GameValues
 from models.core_models import db, Player
-from models.global_scoreboard_models import Run, SrcRequest, User
+from models.global_scoreboard_models import PointsDistributionDto, Run, SrcRequest, User
 from time import strftime
 from typing import Dict, List, Union
 from threading import Thread
 from services.user_updater_helpers import BasicJSONType, extract_valid_personal_bests, get_probability_terms, \
     get_subcategory_variables, keep_runs_before_soft_cutoff, MIN_LEADERBOARD_SIZE, update_runner_in_database, \
     extract_top_runs_and_score, extract_sorted_valid_runs_from_leaderboard
-from services.utils import map_to_dto, start_and_wait_for_threads, \
+from services.utils import start_and_wait_for_threads, \
     SpeedrunComError, UnhandledThreadException, UserUpdaterError
 from urllib.parse import unquote
 import configs
 import httplib2
-import json
 import re
 import requests
 import traceback
@@ -23,7 +22,7 @@ import traceback
 TIME_BONUS_DIVISOR = 3600 * 12  # 12h (1/2 day) for +100%
 
 
-def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
+def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int, PointsDistributionDto]]:
     """Called from flask_app and AutoUpdateUsers.run()"""
     global threads_exceptions
     # threads_exceptions: List[Exception] = []
@@ -67,7 +66,6 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
                 if not threads_exceptions:
                     print(f"\nLooking for {user._id}")
                     text_output, result_state = update_runner_in_database(player, user)
-                    text_output += user._point_distribution_str
                 else:
                     errors_str = "Please report to: https://github.com/Avasam/Global_Speedrunning_Scoreboard/issues\n" \
                         "\nNot uploading data as some errors were caught during execution:\n"
@@ -90,14 +88,17 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int]]:
                     "s" if cant_update_time != 1 else ""
                 result_state = "warning"
 
-        return {'state': result_state,
-                'rank': None,
-                'name': user._name,
-                'countryCode': user._country_code,
-                'score': floor(user._points),
-                'lastUpdate': strftime("%Y-%m-%d %H:%M"),
-                'userId': user._id,
-                'message': text_output}
+        return {
+            'userId': user._id,
+            'name': user._name,
+            'countryCode': user._country_code,
+            'score': floor(user._points),
+            'lastUpdate': strftime("%Y-%m-%d %H:%M"),
+            'rank': None,
+            'scoreDetails': user.get_points_distribution_dto(),
+            'message': text_output,
+            'state': result_state,
+        }
 
     except httplib2.ServerNotFoundError as exception:
         raise UserUpdaterError({"error": "Server not found",
@@ -196,7 +197,7 @@ def __set_user_points(user: User) -> None:
     # Sum up the runs' score, only the top 60 will end up giving points
     top_runs, lower_runs = extract_top_runs_and_score(counted_runs)
     user._points = sum(run._points for run in top_runs)
-    user._point_distribution_str = "\n" + json.dumps([map_to_dto(top_runs), map_to_dto(lower_runs)])
+    user._points_distribution = [top_runs, lower_runs]
 
 
 def __set_run_points(run: Run) -> None:

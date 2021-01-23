@@ -20,7 +20,7 @@ const currentTimeOnLoad = new Date()
 const columnClass = (cell: Date | undefined) => {
   if (!cell) return 'daysSince0'
   // FIXME: This probably doesn't take daylight savings and other weird shenanigans into account
-  const daysSince = Math.floor((currentTimeOnLoad.getTime() - cell.getTime()) / 86400000)
+  const daysSince = Math.floor((currentTimeOnLoad.getTime() - cell.getTime()) / 86_400_000)
   if (daysSince >= Configs.lastUpdatedDays[2]) return 'daysSince'
   if (daysSince >= Configs.lastUpdatedDays[1]) return 'daysSince2'
   if (daysSince >= Configs.lastUpdatedDays[0]) return 'daysSince1'

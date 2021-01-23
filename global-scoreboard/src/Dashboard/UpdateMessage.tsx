@@ -13,111 +13,62 @@ type UpdateMessageProps = {
 }
 
 const progressBarTickInterval = 16 // 60 FPS
-const minutes5 = 5_000 * 60
+const minutes5 = 5000 * 60
 let progressTimer: NodeJS.Timeout
 let position: number
 
-const renderRow = (rows: RunResult[]) => rows.map((row, rowi) =>
-  <tr key={`row${rowi}`}>
-    <td>
-      {Math.round(position += row.levelFraction * 100) / 100}
-    </td>
-    <td>
-      {row.gameName} - {row.categoryName}{row.levelName ? ` (${row.levelName})` : ''}
-    </td>
-    <td>
-      {row.points.toFixed(2)}
-    </td>
-  </tr>)
+const renderRow = (rows: RunResult[]) =>
+  rows.map((row, rowi) =>
+    <tr key={`row${rowi}`}>
+      <td>
+        {Math.round(position += row.levelFraction * 100) / 100}
+      </td>
+      <td>
+        {row.gameName} - {row.categoryName}{row.levelName ? ` (${row.levelName})` : ''}
+      </td>
+      <td>
+        {row.points.toFixed(2)}
+      </td>
+    </tr>)
 
-export const renderScoreTable = (baseString: string) => {
+const renderTable = (runs: RunResult[]) =>
+  <table className='scoreDetailsTable'>
+    <thead>
+      <tr>
+        <th>
+          #<OverlayTrigger
+            placement='bottom'
+            overlay={
+              <Tooltip id='levelFractionInfo'>
+                Individual Levels (IL) are weighted and scored to a fraction of a Full Game run.
+                See the About page for a complete explanation.
+              </Tooltip>
+            }
+          ><FontAwesomeIcon icon={faInfoCircle} />
+          </OverlayTrigger>
+        </th>
+        <th>Game - Category (Level)</th>
+        <th>Points</th>
+      </tr>
+    </thead>
+    <tbody>
+      {renderRow(runs)}
+    </tbody>
+  </table>
+
+export const renderScoreTable = ([topRuns, lesserRuns]: RunResult[][], topMessage?: string) => {
   position = 0
-  const allElements = baseString
-    .split('\n')
-    .map(row =>
-      row.split('|')
-        .map(rowItem =>
-          rowItem.trim()))
-  const firstTableElement = allElements.findIndex(element => element.length === 2)
-  const topMessage = firstTableElement > -1
-    ? allElements
-      .slice(0, firstTableElement > 0 ? firstTableElement : undefined)
-      // Note: join the first element of each array with a new
-      // eslint-disable-next-line unicorn/no-array-reduce
-      .reduce((previous, current) => `${previous}${current[0]}\n`, '')
-      .trim()
-    : allElements[0][0]
-
-  // Note: TableElements is used for rendering old string formatted table
-  const tableElements = allElements.slice(firstTableElement)
-
-  let topRuns: RunResult[] = []
-  let lesserRuns: RunResult[] = []
-
-  if (tableElements.length === 1 && tableElements[0].length === 1) {
-    try {
-      const scoreDetails = JSON.parse(tableElements[0][0])
-      topRuns = scoreDetails[0]
-      lesserRuns = scoreDetails[1]
-    } catch {
-      // suppress
-    }
-  }
 
   return <>
     <div>{topMessage}</div>
-    {topRuns.length > 0 && <label>Top 60 runs:</label>}
-    {(topRuns.length > 0 || tableElements.slice(2).length > 0) &&
-      <table className='scoreDetailsTable'>
-        <thead>
-          <tr>
-            <th># {topRuns.length > 0 && <OverlayTrigger
-              placement='bottom'
-              overlay={
-                <Tooltip
-                  id='levelFractionInfo'
-                >Individual Levels (IL) are weighted and scored to a fraction of a Full Game run. See the About page for a complete explanation.</Tooltip>
-              }
-            >
-              <FontAwesomeIcon icon={faInfoCircle} />
-            </OverlayTrigger>}</th>
-            <th>Game - Category (Level)</th>
-            <th>Points</th>
-          </tr>
-        </thead>
-        {topRuns.length > 0
-          ? <tbody>
-            {renderRow(topRuns)}
-          </tbody>
-          : <tbody>
-            {/* Note: TableElements is used for rendering old string formatted table */}
-            {tableElements.slice(2).map((row, rowi) =>
-              <tr key={`row${rowi}`}>
-                <td>{rowi + 1}</td>
-                {row.map((element, elementi) =>
-                  <td key={`element${elementi}`}>
-                    {element}
-                  </td>)}
-              </tr>)}
-          </tbody>
-        }
-      </table>
-    }
+    {topRuns.length > 0 && <>
+      <label>Top 60 runs:</label>
+      {renderTable(topRuns)}
+    </>}
     {lesserRuns.length > 0 && <>
       <br />
       <label>Other runs:</label>
-      <table className='scoreDetailsTable'>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Game - Category (Level)</th>
-            <th>Points</th>
-          </tr>
-        </thead>
-        <tbody>
-          {renderRow(lesserRuns)}
-        </tbody>
-      </table>
+      {renderTable(lesserRuns)}
     </>}
   </>
 }

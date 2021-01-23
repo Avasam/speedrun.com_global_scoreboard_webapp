@@ -18,7 +18,7 @@ export class Schedule {
   get registrationLink(): string {
     return `${window.location.origin}${window.location.pathname}?register=${this.id}-${this.registrationKey}`
   }
-  deadline: Date
+  deadline: Date | null
   timeSlots: TimeSlot[]
 
   constructor(dto: ScheduleDto) {
@@ -26,7 +26,7 @@ export class Schedule {
     this.name = dto.name
     this.active = dto.active
     this.registrationKey = dto.registrationKey
-    this.deadline = dto.deadline != null ? new Date(dto.deadline) : tomorrowFlat()
+    this.deadline = dto.deadline != null ? new Date(dto.deadline) : null
     this.timeSlots = (dto.timeSlots || []).map(timeSlotDto => new TimeSlot(timeSlotDto))
   }
 }

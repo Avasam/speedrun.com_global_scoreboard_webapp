@@ -1,9 +1,11 @@
+import { RunResult } from './UpdateRunnerResult'
+
 export default interface Player {
   rank: number | undefined
   name: string
   countryCode: string | null
   score: number
-  scoreDetails?: string
+  scoreDetails?: RunResult[][]
   lastUpdate: Date
   userId: string
 }

@@ -115,14 +115,14 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
 
           {!scheduleState.active
             ? <div><br />Sorry. This schedule is currently inactive and registration is closed.</div>
-            : deadlineDaysLeft < 1
-              ? <div><br />Sorry. Registrations for this schedule are over (past deadline).</div>
+            : scheduleState.deadline && scheduleState.deadline < new Date()
+              ? <div><br />Sorry. Registrations for this schedule are over (Deadline: {fancyFormat(scheduleState.deadline)}).</div>
               : <FormGroup>
-                <div><br />{
+                {scheduleState.deadline && <div><br />{
                   `Registration deadline: ${fancyFormat(scheduleState.deadline)
                   } (${deadlineDaysLeft} day${deadlineDaysLeft === 1 ? '' : 's'
                   } left)`}
-                </div>
+                </div>}
                 <FormControl variant='outlined' style={{ margin: '16px 0' }}>
                   <InputLabel
                     ref={timeSlotInputLabel}
