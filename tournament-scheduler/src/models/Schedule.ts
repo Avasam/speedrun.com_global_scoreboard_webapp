@@ -1,12 +1,13 @@
 import { tomorrowFlat } from '../utils/Date'
-import { createDefaultTimeSlot, TimeSlot, TimeSlotDto } from './TimeSlot'
+import type { TimeSlotDto } from './TimeSlot'
+import { createDefaultTimeSlot, TimeSlot } from './TimeSlot'
 
-export interface ScheduleDto {
+export type ScheduleDto = {
   id: number
   name: string
   active: boolean
   registrationKey: string
-  deadline: Date | null
+  deadline: Date | string | null
   timeSlots: TimeSlotDto[]
 }
 
@@ -27,7 +28,7 @@ export class Schedule {
     this.active = dto.active
     this.registrationKey = dto.registrationKey
     this.deadline = dto.deadline != null ? new Date(dto.deadline) : null
-    this.timeSlots = (dto.timeSlots || []).map(timeSlotDto => new TimeSlot(timeSlotDto))
+    this.timeSlots = dto.timeSlots.map(timeSlotDto => new TimeSlot(timeSlotDto))
   }
 }
 

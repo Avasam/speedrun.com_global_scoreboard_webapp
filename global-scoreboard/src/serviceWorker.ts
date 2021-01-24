@@ -1,3 +1,4 @@
+import { StatusCodes } from 'http-status-codes'
 // This optional code is used to register a service worker.
 // register() is not called by default.
 
@@ -16,9 +17,7 @@ const isLocalhost = Boolean(
   window.location.hostname === '[::1]' ||
   // 127.0.0.1/8 is considered localhost for IPv4.
   // eslint-disable-next-line unicorn/no-unsafe-regex
-  (/^127(?:\.(?:25[0-5]|2[0-4]\d|[01]?\d{1,2})){3}$/).test(
-    window.location.hostname
-  )
+  (/^127(?:\.(?:25[0-5]|2[0-4]\d|[01]?\d{1,2})){3}$/).test(window.location.hostname)
 )
 
 type Config = {
@@ -49,12 +48,11 @@ export function register(config?: Config) {
 
         // Add some additional logging to localhost, pointing developers to the
         // service worker/PWA documentation.
-        navigator.serviceWorker.ready.then(() => {
+        void navigator.serviceWorker.ready.then(() =>
           console.info(
             'This web app is being served cache-first by a service ' +
             'worker. To learn more, visit https://bit.ly/CRA-PWA'
-          )
-        })
+          ))
       } else {
         // Is not localhost. Just register service worker
         registerValidSW(swUrl, config)
@@ -84,7 +82,7 @@ function registerValidSW(swUrl: string, config?: Config) {
               )
 
               // Execute callback
-              if (config && config.onUpdate) {
+              if (config?.onUpdate) {
                 config.onUpdate(registration)
               }
             } else {
@@ -94,7 +92,7 @@ function registerValidSW(swUrl: string, config?: Config) {
               console.info('Content is cached for offline use.')
 
               // Execute callback
-              if (config && config.onSuccess) {
+              if (config?.onSuccess) {
                 config.onSuccess(registration)
               }
             }
@@ -114,15 +112,14 @@ function checkValidServiceWorker(swUrl: string, config?: Config) {
       // Ensure service worker exists, and that we really are getting a JS file.
       const contentType = response.headers.get('content-type')
       if (
-        response.status === 404 ||
+        response.status === StatusCodes.NOT_FOUND ||
         (contentType != null && !contentType.includes('javascript'))
       ) {
         // No service worker found. Probably a different app. Reload the page.
-        navigator.serviceWorker.ready.then(registration => {
-          registration.unregister().then(() => {
+        void navigator.serviceWorker.ready.then(registration =>
+          void registration.unregister().then(() => {
             window.location.reload()
-          })
-        })
+          }))
       } else {
         // Service worker found. Proceed as normal.
         registerValidSW(swUrl, config)
@@ -137,8 +134,7 @@ function checkValidServiceWorker(swUrl: string, config?: Config) {
 
 export function unregister() {
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.ready.then(registration => {
-      registration.unregister()
-    })
+    void navigator.serviceWorker.ready.then(registration =>
+      void registration.unregister())
   }
 }

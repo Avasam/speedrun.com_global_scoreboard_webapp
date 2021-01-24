@@ -1,12 +1,18 @@
-type QueryParams = { [param: string]: string | number | boolean | null }
+type QueryParams = Record<string, boolean | number | string | null>
 
-const makeUrl = (location: string, queryParams?: QueryParams) =>
-  (location.indexOf('http') === 0
+const FIRST_HTTP_CODE = 400
+const LAST_HTTP_CODE = 599
+export const MAX_PAGINATION = 200
+
+const makeUrl = (location: string, queryParams?: QueryParams) => {
+  const targetUrl = location.startsWith('http')
     ? location
-    : `${window.process.env.REACT_APP_BASE_URL}/api/${location}`) +
-  (queryParams
-    ? `?${new URLSearchParams(queryParams as Record<string, string>)}`
-    : '')
+    : `${window.process.env.REACT_APP_BASE_URL}/api/${location}`
+  const query = new URLSearchParams(queryParams as Record<string, string>).toString()
+  return query
+    ? `${targetUrl}?${query}`
+    : targetUrl
+}
 
 const apiFetch = (method: RequestInit['method'], url: string, body?: RequestInit['body'], customHeaders = true) =>
   fetch(url, {
@@ -20,7 +26,7 @@ const apiFetch = (method: RequestInit['method'], url: string, body?: RequestInit
       : undefined,
     body,
   })
-    .then(res => res.status >= 400 && res.status < 600
+    .then(res => res.status >= FIRST_HTTP_CODE && res.status <= LAST_HTTP_CODE
       ? Promise.reject(res)
       : res)
 

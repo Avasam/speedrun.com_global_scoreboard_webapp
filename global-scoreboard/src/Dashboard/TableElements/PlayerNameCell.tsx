@@ -1,6 +1,6 @@
 import './PlayerNameCell.css'
 
-import Player from '../../models/Player'
+import type Player from '../../models/Player'
 import FriendButton from './FriendButton'
 
 type PlayerNameCellProps = {

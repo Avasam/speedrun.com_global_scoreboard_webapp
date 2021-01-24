@@ -1,5 +1,7 @@
+import math from './Math'
+
 export const floorToMinutesStep = (date: Date, minutesStep: number) => {
-  const coefficient = 1000 * 60 * minutesStep
+  const coefficient = math.MS_IN_MINUTE * minutesStep
   return new Date(Math.ceil(date.getTime() / coefficient) * coefficient)
 }
 

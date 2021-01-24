@@ -1,4 +1,5 @@
-import { ChangeEventHandler, FC, useState } from 'react'
+import type { ChangeEventHandler, FC } from 'react'
+import { useState } from 'react'
 import { Button, Form, InputGroup } from 'react-bootstrap'
 
 const SrcApiKeyLink: FC = () => {

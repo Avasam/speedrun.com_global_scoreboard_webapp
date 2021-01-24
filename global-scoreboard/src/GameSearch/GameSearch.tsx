@@ -4,28 +4,34 @@ import './GameSearch.css'
 
 import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { ChangeEventHandler, Dispatch, SetStateAction, useEffect, useState } from 'react'
-import { Container, Dropdown, DropdownButton, FormControl, InputGroup, Spinner } from 'react-bootstrap'
-import BootstrapTable, { Column } from 'react-bootstrap-table-next'
+import type { ChangeEventHandler, Dispatch, SetStateAction } from 'react'
+import { useEffect, useState } from 'react'
+import { Container, FormControl, InputGroup, Spinner } from 'react-bootstrap'
+import type { Column } from 'react-bootstrap-table-next'
+import BootstrapTable from 'react-bootstrap-table-next'
 import filterFactory, { Comparator, multiSelectFilter, numberFilter } from 'react-bootstrap-table2-filter'
 import paginationFactory, { PaginationListStandalone, PaginationProvider, PaginationTotalStandalone, SizePerPageDropdownStandalone } from 'react-bootstrap-table2-paginator'
-import ToolkitProvider, { ToolkitProviderProps } from 'react-bootstrap-table2-toolkit'
+import type { ToolkitProviderProps } from 'react-bootstrap-table2-toolkit'
+import ToolkitProvider from 'react-bootstrap-table2-toolkit'
 import { Picky } from 'react-picky'
 
+import defaultPaginationOptions from '../Dashboard/TableElements/PaginationProps'
 import sortCaret from '../Dashboard/TableElements/SortCarret'
-import { apiGet } from '../fetchers/Api'
+import { apiGet, MAX_PAGINATION } from '../fetchers/Api'
+import type { EmbeddedSrcRun } from '../models/SrcResponse'
+import math from '../utils/Math'
 import { secondsToTimeString, timeStringToSeconds } from '../utils/Time'
 import GameCategorySearch from './GameCategorySearchBar'
 import ScoreDropCalculator from './ScoreDropCalculator'
 
-interface PlatformDto {
+type PlatformDto = {
   id: string
   name: string
 }
 
-type IdToNameMap = { [key: string]: string }
+type IdToNameMap = Record<string, string>
 
-interface GameValue {
+type GameValue = {
   gameId: string
   categoryId: string
   platformId: string | null
@@ -35,12 +41,12 @@ interface GameValue {
   wrTime: number
 }
 
-interface GameValueRow extends GameValue {
+type GameValueRow = GameValue & {
   wrPointsPerSecond: number
   meanPointsPerSecond: number
 }
 
-interface PlatformSelectOption {
+type PlatformSelectOption = {
   id: string
   name: string
 }
@@ -53,14 +59,14 @@ type FormatExtraDataProps = {
   setCategoryMap: Dispatch<SetStateAction<IdToNameMap>>
 }
 
-let platformFilter: FilterFunction<string[]>
+let platformFilter: SelectFilterFunction
 let minTimeFilter: NumberFilterFunction
 let maxTimeFilter: NumberFilterFunction
 
 const runIdFormatter = (_cell: unknown, row: GameValueRow | undefined, _rowIndex: number, formatExtraData?: FormatExtraDataProps) => {
   if (!row || !formatExtraData) return ''
   if (!formatExtraData.gameMap[row.gameId] || !formatExtraData.categoryMap[row.categoryId]) {
-    fetchValueNamesForRun(row.runId)
+    void fetchValueNamesForRun(row.runId)
       .then(results => {
         if (!results) return
         const [game, category] = results
@@ -93,7 +99,7 @@ const columns: Column[] = [
       (row &&
         formatExtraData &&
         formatExtraData.gameMap[row.gameId]) ||
-      row?.gameId
+      row?.gameId,
   },
   {
     dataField: 'categoryId',
@@ -102,14 +108,13 @@ const columns: Column[] = [
       (row &&
         formatExtraData &&
         formatExtraData.categoryMap[row.categoryId]) ||
-      row?.categoryId
+      row?.categoryId,
   },
   {
     dataField: 'platformId',
     text: 'Platform',
     formatter: (_, row: GameValueRow | undefined, __, formatExtraData?: FormatExtraDataProps) =>
-      (row &&
-        row.platformId &&
+      (row?.platformId &&
         formatExtraData &&
         formatExtraData.platforms[row.platformId]) ||
       '-',
@@ -139,7 +144,7 @@ const columns: Column[] = [
     sort: true,
     formatter: (_, row: GameValueRow | undefined) =>
       row &&
-      `${Math.trunc(row.wrPointsPerSecond * 600) / 10} pt/m`,
+      `${math.perSecondToPerMinute(row.wrPointsPerSecond)} pt/m`,
   },
   {
     dataField: 'wrPoints',
@@ -154,7 +159,7 @@ const columns: Column[] = [
     sort: true,
     formatter: (_, row: GameValueRow | undefined) =>
       row &&
-      `${Math.trunc(row.meanPointsPerSecond * 600) / 10} pt/m`,
+      `${math.perSecondToPerMinute(row.meanPointsPerSecond)} pt/m`,
   },
   {
     dataField: 'meanTime',
@@ -171,55 +176,16 @@ const columns: Column[] = [
   },
 ]
 
-const sizePerPageRenderer: PaginationProps['sizePerPageRenderer'] = ({
-  options,
-  currSizePerPage,
-  onSizePerPageChange,
-}) =>
-  <span className='react-bs-table-sizePerPage-dropdown float-right'>
-    {'Show '}
-    <DropdownButton
-      id='pageDropDown'
-      variant='outline-primary'
-      alignRight
-      title={currSizePerPage}
-      style={{ display: 'inline-block' }}
-    >
-      {
-        options.map(option =>
-          <Dropdown.Item
-            key={`data-page-${option.page}`}
-            href='#'
-            active={currSizePerPage === `${option.page}`}
-            onClick={() => onSizePerPageChange(option.page)}
-          >
-            {option.text}
-          </Dropdown.Item>)
-      }
-    </DropdownButton>
-    {' entries'}
-  </span>
+const getAllGameValues = () =>
+  apiGet('game-values')
+    .then<GameValue[]>(res => res.json())
+    .then<GameValueRow[]>(gameValues => gameValues.map(gameValue => ({
+      ...gameValue,
+      wrPointsPerSecond: gameValue.wrPoints / gameValue.wrTime,
+      meanPointsPerSecond: gameValue.wrPoints / gameValue.meanTime,
+    })))
 
-const paginationOptions: PaginationProps = {
-  custom: true,
-  showTotal: true,
-  totalSize: -1,
-  prePageTitle: 'hidden',
-  nextPageTitle: 'hidden',
-  alwaysShowAllBtns: true,
-  sizePerPageList: [10, 25, 50, 100],
-  sizePerPageRenderer,
-}
-
-const getAllGameValues = () => apiGet('game-values')
-  .then<GameValue[]>(res => res.json())
-  .then<GameValueRow[]>(gameValues => gameValues.map(gameValue => ({
-    ...gameValue,
-    wrPointsPerSecond: gameValue.wrPoints / gameValue.wrTime,
-    meanPointsPerSecond: gameValue.wrPoints / gameValue.meanTime,
-  })))
-
-const getAllPlatforms = () => apiGet('https://www.speedrun.com/api/v1/platforms', { max: 200 }, false)
+const getAllPlatforms = () => apiGet('https://www.speedrun.com/api/v1/platforms', { max: MAX_PAGINATION }, false)
   .then<{ data: PlatformDto[] }>(res => res.json())
   .then<PlatformDto[]>(res => res.data)
   .then<IdToNameMap>(platforms => Object.fromEntries(platforms.map(platform => [platform.id, platform.name])))
@@ -229,12 +195,14 @@ const fetchValueNamesForRun = async (runId: string) => {
   if (requestsStartedForRun.get(runId)) return
   requestsStartedForRun.set(runId, true)
   return apiGet(`https://www.speedrun.com/api/v1/runs/${runId}?embed=game,category`, undefined, false)
-    .then(res => res.json())
+    .then<EmbeddedSrcRun>(res => res.json())
     .then<[IdToNameMap, IdToNameMap]>(res => [
       { [res.data.game.data.id]: res.data.game.data.names.international },
       { [res.data.category.data.id]: res.data.category.data.name },
     ])
-    .catch(() => { requestsStartedForRun.delete(runId) })
+    .catch(() => {
+      requestsStartedForRun.delete(runId)
+    })
 }
 
 const GameSearch = () => {
@@ -247,13 +215,13 @@ const GameSearch = () => {
   const [maxTimeText, setMaxTimeText] = useState('')
 
   useEffect(() => {
-    setGameMap(JSON.parse(localStorage.getItem('games') || '{}'))
-    setCategoryMap(JSON.parse(localStorage.getItem('categories') || '{}'))
-    doPlatformSelection(JSON.parse(localStorage.getItem('selectedPlatforms') || '[]'))
-    doMinTimeChange(JSON.parse(localStorage.getItem('selectedMinTime') || '""'))
-    doMaxTimeChange(JSON.parse(localStorage.getItem('selectedMaxTime') || '""'))
-    getAllGameValues().then(setGameValues)
-    getAllPlatforms().then(setPlatforms)
+    setGameMap(JSON.parse(localStorage.getItem('games') ?? '{}'))
+    setCategoryMap(JSON.parse(localStorage.getItem('categories') ?? '{}'))
+    doPlatformSelection(JSON.parse(localStorage.getItem('selectedPlatforms') ?? '[]'))
+    doMinTimeChange(JSON.parse(localStorage.getItem('selectedMinTime') ?? '""'))
+    doMaxTimeChange(JSON.parse(localStorage.getItem('selectedMaxTime') ?? '""'))
+    void getAllGameValues().then(setGameValues)
+    void getAllPlatforms().then(setPlatforms)
   }, [])
 
   const doPlatformSelection = (selectedPlatformOptions: PlatformSelectOption[]) => {
@@ -293,8 +261,8 @@ const GameSearch = () => {
 
   const buildPlatformsOptions = () =>
     Object
-      .entries(platforms || {})
-      .filter(([id, name]) => gameValues.some(gameValue => gameValue.platformId === id))
+      .entries(platforms ?? {})
+      .filter(([id]) => gameValues.some(gameValue => gameValue.platformId === id))
       .map(([id, name]) => ({ id, name } as PlatformSelectOption))
 
   return <Container>
@@ -315,7 +283,7 @@ const GameSearch = () => {
       {(toolkitprops: ToolkitProviderProps) =>
         <PaginationProvider
           pagination={paginationFactory({
-            ...paginationOptions,
+            ...defaultPaginationOptions,
             totalSize: gameValues.length,
           })}
         >

@@ -19,7 +19,6 @@ const math = {
   SECONDS_IN_HOUR: 3600,
   MS_IN_SECOND: 1000,
   MS_IN_MINUTE: 60_000,
-  MS_IN_DAY: 86_400_000,
   HALF: 0.5,
 }
 export default math

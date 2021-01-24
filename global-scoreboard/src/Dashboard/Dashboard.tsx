@@ -1,15 +1,17 @@
 import './Dashboard.css'
 
+import { ReasonPhrases, StatusCodes } from 'http-status-codes'
 import { useEffect, useRef, useState } from 'react'
 import { Col, Container, Row } from 'react-bootstrap'
-import { AlertProps } from 'react-bootstrap/Alert'
+import type { AlertProps } from 'react-bootstrap/Alert'
 
 import { apiDelete, apiGet, apiPost, apiPut } from '../fetchers/Api'
 import Configs from '../models/Configs'
-import Player from '../models/Player'
-import UpdateRunnerResult from '../models/UpdateRunnerResult'
+import type Player from '../models/Player'
+import type UpdateRunnerResult from '../models/UpdateRunnerResult'
 import QuickView from './QuickView/QuickView'
-import Scoreboard, { ScoreboardRef } from './Scoreboard'
+import type { ScoreboardRef } from './Scoreboard'
+import Scoreboard from './Scoreboard'
 import UpdateMessage, { renderScoreTable } from './UpdateMessage'
 import UpdateRunnerForm from './UpdateRunnerForm'
 
@@ -52,7 +54,7 @@ const inferRank = (players: Player[], score: number) => {
 const openLoginModal = () => document.getElementById('open-login-modal-button')?.click()
 
 const Dashboard = (props: DashboardProps) => {
-  const [currentPlayer, setCurrentPlayer] = useState<Player | null>(props.currentUser || null)
+  const [currentPlayer, setCurrentPlayer] = useState<Player | null>(props.currentUser ?? null)
   const [friendsState, setFriendsState] = useState<Player[]>([])
   const [playersState, setPlayersState] = useState<Player[]>([])
   const [alertVariant, setAlertVariant] = useState<AlertProps['variant']>('info')
@@ -63,24 +65,24 @@ const Dashboard = (props: DashboardProps) => {
     // Note: Waiting to obtain both friends and players if both calls are needed
     // to set it all at once and avoid unneeded re-rerenders
     if (props.currentUser && playersState.length === 0) {
-      Promise
+      void Promise
         .all([getAllPlayers(), getFriends()])
         .then(([allPlayers, friends]) => {
-          setCurrentPlayer(allPlayers.find(player => player.userId === props.currentUser?.userId) || null)
+          setCurrentPlayer(allPlayers.find(player => player.userId === props.currentUser?.userId) ?? null)
           setFriendsState(buildFriendsList(friends, allPlayers))
           setPlayersState(allPlayers)
           setAlertMessage('')
         })
     } else if (props.currentUser && playersState.length > 0) {
-      setCurrentPlayer(playersState.find(player => player.userId === props.currentUser?.userId) || null)
-      getFriends().then(friends => setFriendsState(buildFriendsList(friends, playersState)))
+      setCurrentPlayer(playersState.find(player => player.userId === props.currentUser?.userId) ?? null)
+      void getFriends().then(friends => setFriendsState(buildFriendsList(friends, playersState)))
     } else {
       setCurrentPlayer(null)
       setFriendsState([])
       // Note: Loading the page already logged in starts the currentUser at undefined then quickly changes again
       // Also don't re-fetch players upon login out
       if (props.currentUser !== undefined && playersState.length === 0) {
-        getAllPlayers().then(players => {
+        void getAllPlayers().then(players => {
           setPlayersState(players)
           setAlertMessage('')
         })
@@ -112,7 +114,7 @@ const Dashboard = (props: DashboardProps) => {
       })
       .then(result => {
         setAlertVariant(result.state)
-        setAlertMessage(renderScoreTable(result.scoreDetails || [[], []], result.message))
+        setAlertMessage(renderScoreTable(result.scoreDetails ?? [[], []], result.message))
         const newPlayers = [...playersState]
         const existingPlayerIndex = newPlayers.findIndex(player => player.userId === result.userId)
         const inferedRank = inferRank(newPlayers, result.score)
@@ -147,11 +149,11 @@ const Dashboard = (props: DashboardProps) => {
 
         handleJumpToPlayer(result.userId)
       })
-      .catch((err: Response | Error) => {
+      .catch((err: Error | Response) => {
         setAlertVariant('danger')
         if (err instanceof Error) {
           setAlertMessage(`${err.name}: ${err.message}`)
-        } else if (err.status === 418) {
+        } else if (err.status === StatusCodes.IM_A_TEAPOT) {
           setAlertVariant('warning')
           setAlertMessage(<div>
             <p>You know the drill...</p>
@@ -163,14 +165,14 @@ const Dashboard = (props: DashboardProps) => {
             <p>Oops! The site&apos;s under a lot of pressure right now. Please try again in a minute.</p>
             <img src='https://brand.twitch.tv/assets/emotes/lib/kappa.png' alt='Kappa' />
           </div>)
-        } else if (err.status === 504) {
+        } else if (err.status === StatusCodes.GATEWAY_TIMEOUT) {
           setAlertVariant('warning')
-          setAlertMessage('Error 504. The webworker probably timed out, ' +
+          setAlertMessage(`Error ${StatusCodes.GATEWAY_TIMEOUT}: ${ReasonPhrases.GATEWAY_TIMEOUT}. The webworker probably timed out, ` +
             'which can happen if updating takes more than 5 minutes. ' +
             'Please try again as next attempt should take less time since ' +
             'all calls to speedrun.com are cached for a day or until server restart.')
-        } else if (err.status === 409) {
-          err.text().then(errorString => {
+        } else if (err.status === StatusCodes.CONFLICT) {
+          void err.text().then(errorString => {
             setAlertVariant('warning')
             switch (errorString) {
               case 'current_user':
@@ -184,12 +186,12 @@ const Dashboard = (props: DashboardProps) => {
             }
           })
         } else {
-          err.text().then(errorString => {
+          void err.text().then(errorString => {
             try {
-              const result: UpdateRunnerResult = JSON.parse(errorString)
-              setAlertVariant(result.state || 'danger')
+              const result = JSON.parse(errorString) as UpdateRunnerResult
+              setAlertVariant(result.state ?? 'danger')
               setAlertMessage(result.message)
-              if (err.status === 400 && result.score != null && result.score < 1) {
+              if (err.status === StatusCodes.BAD_REQUEST && result.score < 1) {
                 setPlayersState(playersState.filter(player => player.userId !== result.userId))
               }
             } catch {
@@ -212,7 +214,8 @@ const Dashboard = (props: DashboardProps) => {
       .then(() => {
         const newFriend = playersState.find(player => player.userId === playerId)
         if (!newFriend) {
-          return console.error(`Couldn't add friend id ${playerId} as it was not found in existing players table`)
+          console.error(`Couldn't add friend id ${playerId} as it was not found in existing players table`)
+          return
         }
         setFriendsState([...friendsState, newFriend])
       })

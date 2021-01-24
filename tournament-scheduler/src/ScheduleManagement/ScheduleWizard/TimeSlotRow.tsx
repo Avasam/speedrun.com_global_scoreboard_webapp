@@ -1,17 +1,21 @@
 import DateFnsUtils from '@date-io/moment'
-import { Card, CardContent, Collapse, FormControl, IconButton, Input, InputAdornment, InputBaseComponentProps, InputLabel, ListItem, ListItemText } from '@material-ui/core'
+import type { InputBaseComponentProps } from '@material-ui/core'
+import { Card, CardContent, Collapse, FormControl, IconButton, Input, InputAdornment, InputLabel, ListItem, ListItemText } from '@material-ui/core'
 import Event from '@material-ui/icons/Event'
 import ExpandLess from '@material-ui/icons/ExpandLess'
 import ExpandMore from '@material-ui/icons/ExpandMore'
 import FileCopy from '@material-ui/icons/FileCopy'
 import { DateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
-import { MaterialUiPickersDate } from '@material-ui/pickers/typings/date'
-import { FC, useState } from 'react'
+import type { MaterialUiPickersDate } from '@material-ui/pickers/typings/date'
+import type { FC } from 'react'
+import { useState } from 'react'
 
 import { apiDelete, apiPut } from '../../fetchers/Api'
-import Registration, { RegistrationProxy } from '../../models/Registration'
-import { Schedule } from '../../models/Schedule'
-import { minutesStep, TimeSlot } from '../../models/TimeSlot'
+import type { RegistrationProxy } from '../../models/Registration'
+import type Registration from '../../models/Registration'
+import type { Schedule } from '../../models/Schedule'
+import type { TimeSlot } from '../../models/TimeSlot'
+import { minutesStep } from '../../models/TimeSlot'
 import NonZeroNumberInput from './NonZeroNumberInput'
 import RegistrationList from './RegistrationList'
 
@@ -84,6 +88,7 @@ const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
           value={props.timeSlot.dateTime}
           onChange={date => props.onEditTimeSlotDateTime(date)}
           error={!!props.schedule.deadline && props.timeSlot.dateTime < props.schedule.deadline}
+          // eslint-disable-next-line @typescript-eslint/no-magic-numbers
           minDate={new Date(2020, 0)}
           disablePast={props.timeSlot.id <= -1}
           ampm={false}
@@ -149,7 +154,7 @@ const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
               <span style={{
                 color: props.timeSlot.registrations.length > props.timeSlot.maximumEntries
                   ? 'red'
-                  : undefined
+                  : undefined,
               }}>
                 ({props.timeSlot.registrations.length} / {props.timeSlot.maximumEntries}
                 &nbsp;entr{props.timeSlot.registrations.length === 1 ? 'y' : 'ies'})

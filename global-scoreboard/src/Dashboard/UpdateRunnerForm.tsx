@@ -1,8 +1,9 @@
 
-import { ChangeEventHandler, FormEvent, useState } from 'react'
+import type { ChangeEventHandler, FormEvent } from 'react'
+import { useState } from 'react'
 import { Button, Form, InputGroup } from 'react-bootstrap'
 
-import Player from '../models/Player'
+import type Player from '../models/Player'
 
 type UpdateRunnerFormProps = {
   currentUser: Player | null

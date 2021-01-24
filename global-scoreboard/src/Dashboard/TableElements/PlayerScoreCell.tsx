@@ -5,8 +5,8 @@ import { Button } from 'react-bootstrap'
 
 import { apiGet } from '../../fetchers/Api'
 import GenericModal from '../../GenericModal'
-import Player from '../../models/Player'
-import { RunResult } from '../../models/UpdateRunnerResult'
+import type Player from '../../models/Player'
+import type { RunResult } from '../../models/UpdateRunnerResult'
 import { renderScoreTable } from '../UpdateMessage'
 
 type PlayerScoreCellProps = {

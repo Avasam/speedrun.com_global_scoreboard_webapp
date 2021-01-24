@@ -2,13 +2,16 @@ import './App.css'
 import 'react-picky/dist/picky.css'
 import 'bootstrap/dist/css/bootstrap.css'
 
-import { FC, useEffect, useState } from 'react'
+import { StatusCodes } from 'http-status-codes'
+import type { FC } from 'react'
+import { useEffect, useState } from 'react'
 
 import Dashboard from './Dashboard/Dashboard'
 import { apiGet } from './fetchers/Api'
 import GameSearch from './GameSearch/GameSearch'
-import Configs, { ServerConfigs } from './models/Configs'
-import Player from './models/Player'
+import type { ServerConfigs } from './models/Configs'
+import Configs from './models/Configs'
+import type Player from './models/Player'
 import ScoreboardNavBar from './NavBar/ScoreboardNavBar'
 
 const getCurrentUser = () => apiGet('users/current').then<{ user: Player | undefined }>(res => res.json())
@@ -20,25 +23,27 @@ const logout = (setCurrentUser: (user: null) => void) => {
 }
 
 const App: FC = () => {
-  const [currentUser, setCurrentUser] = useState<Player | undefined | null>()
+  const [currentUser, setCurrentUser] = useState<Player | null | undefined>()
 
-  useEffect(() => {
-    Promise
-      .all([getConfigs(), getCurrentUser])
-      .then(([serverConfigs, resPromise]) => {
-        Configs.setConfigs(serverConfigs)
-        resPromise()
-          .then((res: { user: Player | undefined }) => res.user)
-          .then(setCurrentUser)
-          .catch(err => {
-            if (err.status === 401) {
-              setCurrentUser(null)
-            } else {
-              console.error(err)
-            }
-          })
-      })
-  }, [])
+  useEffect(
+    () =>
+      void Promise
+        .all([getConfigs(), getCurrentUser])
+        .then(([serverConfigs, resPromise]) => {
+          Configs.setConfigs(serverConfigs)
+          resPromise()
+            .then((res: { user: Player | undefined }) => res.user)
+            .then(setCurrentUser)
+            .catch((err: Response) => {
+              if (err.status === StatusCodes.UNAUTHORIZED) {
+                setCurrentUser(null)
+              } else {
+                console.error(err)
+              }
+            })
+        }),
+    []
+  )
 
   return (
     <div>

@@ -1,12 +1,15 @@
-import { AlertProps } from 'react-bootstrap/Alert'
+import type { AlertProps } from 'react-bootstrap/Alert'
 
-import Player from './Player'
-export default interface UpdateRunnerResult extends Player {
-  state?: AlertProps['variant']
-  message: string
-}
+import type Player from './Player'
+type UpdateRunnerResult =
+  Player &
+  {
+    state?: AlertProps['variant']
+    message: string
+  }
+export default UpdateRunnerResult
 
-export interface RunResult {
+export type RunResult = {
   gameName: string
   categoryName: string
   levelName: string | null
