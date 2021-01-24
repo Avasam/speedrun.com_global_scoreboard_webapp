@@ -2,6 +2,8 @@ import { Link, TextField } from '@material-ui/core'
 import type { ChangeEvent, FC } from 'react'
 import { useState } from 'react'
 
+const MIN_WIDTH = 9
+
 const SrcApiKeyLink: FC = () => {
   const [srcNameInput, setSrcNameInput] = useState('')
 
@@ -18,7 +20,7 @@ const SrcApiKeyLink: FC = () => {
     <TextField
       name='src-name'
       placeholder='SRC name'
-      style={{ width: `${srcNameInput.length > 0 ? srcNameInput.length + 1 : 9}ch` }}
+      style={{ width: `${srcNameInput.length > 0 ? srcNameInput.length + 1 : MIN_WIDTH}ch` }}
       onChange={handleNameChange}
     />
     <Link

@@ -6,7 +6,7 @@ import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import type { ChangeEventHandler, Dispatch, SetStateAction } from 'react'
 import { useEffect, useState } from 'react'
-import { Container, Dropdown, DropdownButton, FormControl, InputGroup, Spinner } from 'react-bootstrap'
+import { Container, FormControl, InputGroup, Spinner } from 'react-bootstrap'
 import type { Column } from 'react-bootstrap-table-next'
 import BootstrapTable from 'react-bootstrap-table-next'
 import filterFactory, { Comparator, multiSelectFilter, numberFilter } from 'react-bootstrap-table2-filter'
@@ -15,9 +15,11 @@ import type { ToolkitProviderProps } from 'react-bootstrap-table2-toolkit'
 import ToolkitProvider from 'react-bootstrap-table2-toolkit'
 import { Picky } from 'react-picky'
 
+import defaultPaginationOptions from '../Dashboard/TableElements/PaginationProps'
 import sortCaret from '../Dashboard/TableElements/SortCarret'
-import { apiGet } from '../fetchers/Api'
+import { apiGet, MAX_PAGINATION } from '../fetchers/Api'
 import type { EmbeddedSrcRun } from '../models/SrcResponse'
+import math from '../utils/Math'
 import { secondsToTimeString, timeStringToSeconds } from '../utils/Time'
 import GameCategorySearch from './GameCategorySearchBar'
 import ScoreDropCalculator from './ScoreDropCalculator'
@@ -142,7 +144,7 @@ const columns: Column[] = [
     sort: true,
     formatter: (_, row: GameValueRow | undefined) =>
       row &&
-      `${Math.trunc(row.wrPointsPerSecond * 600) / 10} pt/m`,
+      `${math.perSecondToPerMinute(row.wrPointsPerSecond)} pt/m`,
   },
   {
     dataField: 'wrPoints',
@@ -157,7 +159,7 @@ const columns: Column[] = [
     sort: true,
     formatter: (_, row: GameValueRow | undefined) =>
       row &&
-      `${Math.trunc(row.meanPointsPerSecond * 600) / 10} pt/m`,
+      `${math.perSecondToPerMinute(row.meanPointsPerSecond)} pt/m`,
   },
   {
     dataField: 'meanTime',
@@ -174,46 +176,6 @@ const columns: Column[] = [
   },
 ]
 
-const sizePerPageRenderer: PaginationProps['sizePerPageRenderer'] = ({
-  options,
-  currSizePerPage,
-  onSizePerPageChange,
-}) =>
-  <span className='react-bs-table-sizePerPage-dropdown float-right'>
-    {'Show '}
-    <DropdownButton
-      id='pageDropDown'
-      variant='outline-primary'
-      alignRight
-      title={currSizePerPage}
-      style={{ display: 'inline-block' }}
-    >
-      {
-        options.map(option =>
-          <Dropdown.Item
-            key={`data-page-${option.page}`}
-            href='#'
-            active={currSizePerPage === `${option.page}`}
-            onClick={() => onSizePerPageChange(option.page)}
-          >
-            {option.text}
-          </Dropdown.Item>)
-      }
-    </DropdownButton>
-    {' entries'}
-  </span>
-
-const paginationOptions: PaginationProps = {
-  custom: true,
-  showTotal: true,
-  totalSize: -1,
-  prePageTitle: 'hidden',
-  nextPageTitle: 'hidden',
-  alwaysShowAllBtns: true,
-  sizePerPageList: [10, 25, 50, 100],
-  sizePerPageRenderer,
-}
-
 const getAllGameValues = () =>
   apiGet('game-values')
     .then<GameValue[]>(res => res.json())
@@ -223,7 +185,7 @@ const getAllGameValues = () =>
       meanPointsPerSecond: gameValue.wrPoints / gameValue.meanTime,
     })))
 
-const getAllPlatforms = () => apiGet('https://www.speedrun.com/api/v1/platforms', { max: 200 }, false)
+const getAllPlatforms = () => apiGet('https://www.speedrun.com/api/v1/platforms', { max: MAX_PAGINATION }, false)
   .then<{ data: PlatformDto[] }>(res => res.json())
   .then<PlatformDto[]>(res => res.data)
   .then<IdToNameMap>(platforms => Object.fromEntries(platforms.map(platform => [platform.id, platform.name])))
@@ -321,7 +283,7 @@ const GameSearch = () => {
       {(toolkitprops: ToolkitProviderProps) =>
         <PaginationProvider
           pagination={paginationFactory({
-            ...paginationOptions,
+            ...defaultPaginationOptions,
             totalSize: gameValues.length,
           })}
         >

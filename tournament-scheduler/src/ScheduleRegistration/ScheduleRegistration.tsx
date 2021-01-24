@@ -1,6 +1,7 @@
 import DateFnsUtils from '@date-io/moment'
 import { Button, Card, CardActions, CardContent, Container, FormControl, FormGroup, FormLabel, InputLabel, Link, MenuItem, Select, TextField } from '@material-ui/core'
 import type { SelectInputProps } from '@material-ui/core/Select/SelectInput'
+import { StatusCodes } from 'http-status-codes'
 import moment from 'moment'
 import type { FC } from 'react'
 import { useEffect, useRef, useState } from 'react'
@@ -62,7 +63,7 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
         setTimeSlotLabelWidth((timeSlotInputLabel.current?.offsetWidth ?? 0) - timeSlotLabelPaddingRight)
       })
       .catch((err: Response) => {
-        if (err.status === 404) {
+        if (err.status === StatusCodes.NOT_FOUND) {
           setScheduleState(null)
         } else {
           console.error(err)
@@ -88,7 +89,7 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
         window.location.href = `${window.location.pathname}?view=${scheduleState?.id}`
       })
       .catch((err: Response) => {
-        if (err.status === 507) {
+        if (err.status === StatusCodes.INSUFFICIENT_STORAGE) {
           if (!scheduleState) {
             return
           }

@@ -1,6 +1,8 @@
 // Note: Acceptable with clipboard actions as it's for unknown devices that work differently. Likely mobile.
 /* eslint-disable no-alert */
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
+const MAX_SELECTION = 99_999
+
 const oldCopyToClipboard = (text: string) => {
   const textArea = document.createElement('textarea')
   textArea.value = text
@@ -8,7 +10,7 @@ const oldCopyToClipboard = (text: string) => {
   document.body.append(textArea)
   textArea.focus()
   textArea.select()
-  textArea.setSelectionRange(0, 99_999) // For mobile devices
+  textArea.setSelectionRange(0, MAX_SELECTION) // For mobile devices
 
   try {
     const successful = document.execCommand('copy')

@@ -1,5 +1,8 @@
 type QueryParams = Record<string, boolean | number | string | null>
 
+const firstHttpErrorCode = 400
+const lastHttpErrorCode = 599
+
 const makeUrl = (location: string, queryParams?: QueryParams) => {
   const targetUrl = `${window.process.env.REACT_APP_BASE_URL}/api/${location}`
   const query = new URLSearchParams(queryParams as Record<string, string>).toString()
@@ -18,7 +21,7 @@ const apiFetch = (method: RequestInit['method'], url: string, body?: RequestInit
     },
     body,
   })
-    .then(res => res.status >= 400 && res.status < 600
+    .then(res => res.status >= firstHttpErrorCode && res.status <= lastHttpErrorCode
       ? Promise.reject(res)
       : res)
 

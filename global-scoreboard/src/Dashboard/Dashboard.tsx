@@ -1,5 +1,6 @@
 import './Dashboard.css'
 
+import { ReasonPhrases, StatusCodes } from 'http-status-codes'
 import { useEffect, useRef, useState } from 'react'
 import { Col, Container, Row } from 'react-bootstrap'
 import type { AlertProps } from 'react-bootstrap/Alert'
@@ -152,7 +153,7 @@ const Dashboard = (props: DashboardProps) => {
         setAlertVariant('danger')
         if (err instanceof Error) {
           setAlertMessage(`${err.name}: ${err.message}`)
-        } else if (err.status === 418) {
+        } else if (err.status === StatusCodes.IM_A_TEAPOT) {
           setAlertVariant('warning')
           setAlertMessage(<div>
             <p>You know the drill...</p>
@@ -164,13 +165,13 @@ const Dashboard = (props: DashboardProps) => {
             <p>Oops! The site&apos;s under a lot of pressure right now. Please try again in a minute.</p>
             <img src='https://brand.twitch.tv/assets/emotes/lib/kappa.png' alt='Kappa' />
           </div>)
-        } else if (err.status === 504) {
+        } else if (err.status === StatusCodes.GATEWAY_TIMEOUT) {
           setAlertVariant('warning')
-          setAlertMessage('Error 504. The webworker probably timed out, ' +
+          setAlertMessage(`Error ${StatusCodes.GATEWAY_TIMEOUT}: ${ReasonPhrases.GATEWAY_TIMEOUT}. The webworker probably timed out, ` +
             'which can happen if updating takes more than 5 minutes. ' +
             'Please try again as next attempt should take less time since ' +
             'all calls to speedrun.com are cached for a day or until server restart.')
-        } else if (err.status === 409) {
+        } else if (err.status === StatusCodes.CONFLICT) {
           void err.text().then(errorString => {
             setAlertVariant('warning')
             switch (errorString) {
@@ -190,7 +191,7 @@ const Dashboard = (props: DashboardProps) => {
               const result = JSON.parse(errorString) as UpdateRunnerResult
               setAlertVariant(result.state ?? 'danger')
               setAlertMessage(result.message)
-              if (err.status === 400 && result.score < 1) {
+              if (err.status === StatusCodes.BAD_REQUEST && result.score < 1) {
                 setPlayersState(playersState.filter(player => player.userId !== result.userId))
               }
             } catch {

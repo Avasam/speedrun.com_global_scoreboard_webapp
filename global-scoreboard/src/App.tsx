@@ -2,6 +2,7 @@ import './App.css'
 import 'react-picky/dist/picky.css'
 import 'bootstrap/dist/css/bootstrap.css'
 
+import { StatusCodes } from 'http-status-codes'
 import type { FC } from 'react'
 import { useEffect, useState } from 'react'
 
@@ -34,7 +35,7 @@ const App: FC = () => {
             .then((res: { user: Player | undefined }) => res.user)
             .then(setCurrentUser)
             .catch((err: Response) => {
-              if (err.status === 401) {
+              if (err.status === StatusCodes.UNAUTHORIZED) {
                 setCurrentUser(null)
               } else {
                 console.error(err)

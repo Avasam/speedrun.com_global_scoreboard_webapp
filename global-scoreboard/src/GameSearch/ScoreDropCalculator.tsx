@@ -5,8 +5,10 @@ import { Button, Form, InputGroup } from 'react-bootstrap'
 import { apiGet } from '../fetchers/Api'
 import type { SrcLeaderboard, SrcRun } from '../models/SrcResponse'
 import math from '../utils/Math'
+import { secondsToTimeString } from '../utils/Time'
 
-const TIME_BONUS_DIVISOR = 3600 * 12 // 12h (1/2 day) for +100%
+// eslint-disable-next-line @typescript-eslint/no-magic-numbers
+const TIME_BONUS_DIVISOR = math.SECONDS_IN_HOUR * 12 // 12h (1/2 day) for +100%
 
 
 // eslint-disable-next-line unicorn/prevent-abbreviations
@@ -57,6 +59,7 @@ const ScoreDropCalculator = () => {
         getLeaderboardRuns(run.game, run.category, run.values).then(records => {
           /* eslint-disable extra-rules/no-commented-out-code */
           /* eslint-disable id-length */
+          /* eslint-disable @typescript-eslint/no-magic-numbers */
           const primaryTimes = records
             .slice(0, Math.floor(records.length * 0.95))
             .map(record => record.times.primary_t)
@@ -89,6 +92,7 @@ const ScoreDropCalculator = () => {
           setUpdating(false)
           /* eslint-enable extra-rules/no-commented-out-code */
           /* eslint-enable id-length */
+          /* eslint-enable @typescript-eslint/no-magic-numbers */
         }))
       .catch(() => setRequiredTime(Number.NaN))
       .finally(() => setUpdating(false))
@@ -117,16 +121,18 @@ const ScoreDropCalculator = () => {
         </InputGroup>
       </Form.Group>
     </Form>
-    {requiredTime !== null && (Number.isFinite(requiredTime)
-      ? <span>
-        The run &apos;{calculatedRunId}&apos; is currently worth {calculatedRunScore} points.
-        To reduce it, a new run would need a time of
-        <strong> {new Date(requiredTime * 1000).toISOString().slice(11, 19)}</strong> or less.
-      </span>
-      : <span>
-        The required time to reduce the points of the run &apos;{calculatedRunId}&apos; could not be calculated.
-        Either because the leaderboard has less than 4 runners, it is an individual level, or something just went wrong.
-      </span>)}
+    {requiredTime !== null && (
+      Number.isFinite(requiredTime)
+        ? <span>
+          The run &apos;{calculatedRunId}&apos; is currently worth {calculatedRunScore} points.
+          To reduce it, a new run would need a time of
+          <strong> {secondsToTimeString(requiredTime)}</strong> or less.
+        </span>
+        : <span>
+          The required time to reduce the points of the run &apos;{calculatedRunId}&apos; could not be calculated.
+          Either because the leaderboard has less than 4 runners, it is an individual level, or something just went wrong.
+        </span>
+    )}
   </div>
 }
 

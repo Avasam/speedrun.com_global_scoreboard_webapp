@@ -1,5 +1,6 @@
 import { faLink } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { StatusCodes } from 'http-status-codes'
 import type { ChangeEventHandler, FormEvent } from 'react'
 import { useState } from 'react'
 import { Button, Col, Form, InputGroup } from 'react-bootstrap'
@@ -35,7 +36,7 @@ const LoginModal = (props: LoginModalProps) => {
         props.onLogin(res.user)
       })
       .catch((err: Response) => {
-        if (err.status === 401) {
+        if (err.status === StatusCodes.UNAUTHORIZED) {
           void err.json()
             .then((data: UpdateRunnerResult) => data.message)
             .then(setLoginErrorMessage)

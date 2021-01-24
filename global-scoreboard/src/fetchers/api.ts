@@ -1,5 +1,9 @@
 type QueryParams = Record<string, boolean | number | string | null>
 
+const FIRST_HTTP_CODE = 400
+const LAST_HTTP_CODE = 599
+export const MAX_PAGINATION = 200
+
 const makeUrl = (location: string, queryParams?: QueryParams) => {
   const targetUrl = location.startsWith('http')
     ? location
@@ -22,7 +26,7 @@ const apiFetch = (method: RequestInit['method'], url: string, body?: RequestInit
       : undefined,
     body,
   })
-    .then(res => res.status >= 400 && res.status < 600
+    .then(res => res.status >= FIRST_HTTP_CODE && res.status <= LAST_HTTP_CODE
       ? Promise.reject(res)
       : res)
 

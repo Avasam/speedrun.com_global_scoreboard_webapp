@@ -3,7 +3,7 @@ import './Scoreboard.css'
 
 import type { Component, MutableRefObject } from 'react'
 import { forwardRef, useRef, useState } from 'react'
-import { Dropdown, DropdownButton, Spinner } from 'react-bootstrap'
+import { Spinner } from 'react-bootstrap'
 import type { Column } from 'react-bootstrap-table-next'
 import BootstrapTable from 'react-bootstrap-table-next'
 import paginationFactory, { PaginationListStandalone, PaginationProvider, PaginationTotalStandalone, SizePerPageDropdownStandalone } from 'react-bootstrap-table2-paginator'
@@ -13,6 +13,8 @@ import ToolkitProvider, { Search } from 'react-bootstrap-table2-toolkit'
 import Configs from '../models/Configs'
 import type { PlayerField } from '../models/Player'
 import type Player from '../models/Player'
+import { daysBetween } from '../utils/Time'
+import defaultPaginationOptions from './TableElements/PaginationProps'
 import PlayerNameCell from './TableElements/PlayerNameCell'
 import PlayerScoreCell from './TableElements/PlayerScoreCell'
 import ScoreTitle from './TableElements/ScoreTitle'
@@ -23,8 +25,7 @@ let getSortOrder: () => SortOrder | undefined
 const currentTimeOnLoad = new Date()
 const columnClass = (cell: Date | undefined) => {
   if (!cell) return 'daysSince0'
-  // FIXME: This probably doesn't take daylight savings and other weird shenanigans into account
-  const daysSince = Math.floor((currentTimeOnLoad.getTime() - cell.getTime()) / 86_400_000)
+  const daysSince = daysBetween(cell, currentTimeOnLoad)
   if (daysSince >= Configs.lastUpdatedDays[2]) return 'daysSince'
   if (daysSince >= Configs.lastUpdatedDays[1]) return 'daysSince2'
   if (daysSince >= Configs.lastUpdatedDays[0]) return 'daysSince1'
@@ -110,46 +111,6 @@ const rowClasses = (row: Player | undefined, currentUser: Player | null, friends
   return colorClass
 }
 
-const sizePerPageRenderer: PaginationProps['sizePerPageRenderer'] = ({
-  options,
-  currSizePerPage,
-  onSizePerPageChange,
-}) =>
-  <span className='react-bs-table-sizePerPage-dropdown float-right'>
-    {'Show '}
-    <DropdownButton
-      id='pageDropDown'
-      variant='outline-primary'
-      alignRight
-      title={currSizePerPage}
-      style={{ display: 'inline-block' }}
-    >
-      {
-        options.map(option =>
-          <Dropdown.Item
-            key={`data-page-${option.page}`}
-            href='#'
-            active={currSizePerPage === `${option.page}`}
-            onClick={() => onSizePerPageChange(option.page)}
-          >
-            {option.text}
-          </Dropdown.Item>)
-      }
-    </DropdownButton>
-    {' entries'}
-  </span>
-
-const paginationOptions: PaginationProps = {
-  custom: true,
-  showTotal: true,
-  totalSize: -1,
-  prePageTitle: 'hidden',
-  nextPageTitle: 'hidden',
-  alwaysShowAllBtns: true,
-  sizePerPageList: [10, 25, 50, 100],
-  sizePerPageRenderer,
-}
-
 const Legend = () =>
   <span className='legend'>
     <br />
@@ -228,7 +189,7 @@ const Scoreboard = forwardRef<ScoreboardRef, ScoreboardProps>((props, ref) => {
       {(toolkitprops: ToolkitProviderProps) =>
         <PaginationProvider
           pagination={paginationFactory({
-            ...paginationOptions,
+            ...defaultPaginationOptions,
             totalSize: props.players.length,
             // HACK: Required to keep the state in sync. Will not cause rerenders
             onPageChange: goToPage,

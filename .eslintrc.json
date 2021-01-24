@@ -255,6 +255,24 @@
         "nestedBinaryExpressions": false
       }
     ],
+    "@typescript-eslint/no-magic-numbers": [
+      "error",
+      {
+        "enforceConst": true,
+        // Note: detectObjects catches a few too many false-negative. Still good to check once in a while
+        // "detectObjects": true,
+        "ignore": [
+          -1,
+          0,
+          1,
+          2
+        ],
+        "ignoreArrayIndexes": true,
+        "ignoreEnums": true,
+        "ignoreNumericLiteralTypes": true,
+        "ignoreReadonlyClassProperties": true
+      }
+    ],
     "@typescript-eslint/no-misused-promises": [
       "error",
       {
@@ -276,9 +294,6 @@
         "allowNullish": true
       }
     ],
-    // TODO: temporary disabled until I figure these rules out
-    "@typescript-eslint/no-magic-numbers": "off",
-    "@typescript-eslint/naming-convention": "off",
     // TODO: Check later if some "no-unnecessary-type-annotation" has been implemented
     // see https://github.com/typescript-eslint/typescript-eslint/issues/295
     // Custom rules and eslint:recommended overrides (https://eslint.org/docs/rules/)

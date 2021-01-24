@@ -2,6 +2,7 @@ import 'react-add-to-calendar/dist/react-add-to-calendar.min.css'
 
 import DateFnsUtils from '@date-io/moment'
 import { Container, createStyles, List, ListItem, ListItemText, makeStyles } from '@material-ui/core'
+import { StatusCodes } from 'http-status-codes'
 import moment from 'moment'
 import type { FC } from 'react'
 import { useEffect, useState } from 'react'
@@ -11,6 +12,7 @@ import { apiGet } from '../fetchers/Api'
 import type { ScheduleDto } from '../models/Schedule'
 import { Schedule } from '../models/Schedule'
 import { TimeSlot } from '../models/TimeSlot'
+import math from '../utils/Math'
 
 type ScheduleRegistrationProps = {
   scheduleId: number
@@ -20,14 +22,14 @@ const useStyles = makeStyles(theme =>
   createStyles({
     root: {
       backgroundColor: theme.palette.background.paper,
-      margin: theme.spacing(0.5),
+      margin: theme.spacing(math.HALF),
     },
     rootHeader: {
       color: theme.palette.text.primary,
       fontWeight: theme.typography.fontWeightBold,
       backgroundColor: theme.palette.background.default,
-      paddingTop: theme.spacing(0.5),
-      paddingBottom: theme.spacing(0.5),
+      paddingTop: theme.spacing(math.HALF),
+      paddingBottom: theme.spacing(math.HALF),
       paddingLeft: theme.spacing(2),
       paddingRight: theme.spacing(2),
     },
@@ -40,6 +42,7 @@ const useStyles = makeStyles(theme =>
       paddingBottom: 0,
     },
     addToCalendar: {
+      // eslint-disable-next-line @typescript-eslint/no-magic-numbers
       marginTop: theme.spacing(1.25),
       marginLeft: theme.spacing(2),
       marginBottom: 10,
@@ -93,7 +96,7 @@ const ScheduleViewer: FC<ScheduleRegistrationProps> = (props: ScheduleRegistrati
         setScheduleState(schedule)
       })
       .catch((err: Response) => {
-        if (err.status === 404) {
+        if (err.status === StatusCodes.NOT_FOUND) {
           setScheduleState(null)
         } else {
           console.error(err)

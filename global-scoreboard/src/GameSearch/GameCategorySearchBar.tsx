@@ -2,8 +2,9 @@ import type { Dispatch, SetStateAction } from 'react'
 import { FormControl, FormLabel } from 'react-bootstrap'
 import type { SearchFieldProps, SearchProps } from 'react-bootstrap-table2-toolkit'
 
-import { apiGet } from '../fetchers/Api'
+import { apiGet, MAX_PAGINATION } from '../fetchers/Api'
 import type { DataArray, SrcGame } from '../models/SrcResponse'
+import math from '../utils/Math'
 
 type IdToNameMap = Record<string, string>
 
@@ -26,12 +27,15 @@ function debounce<T>(fn: (...args: T[]) => void, time: number) {
   }
 }
 
+// Note: 500 is double the default table update
+const DEBOUNCE_TIME = math.MS_IN_SECOND * math.HALF
+
 const GameCategorySearch = (props: GameCategorySearchProps) => {
   const handleOnChange = debounce(
     (searchText: string) =>
       !searchText
         ? props.onClear?.()
-        : apiGet('https://www.speedrun.com/api/v1/games', { name: searchText, max: 200 }, false)
+        : apiGet('https://www.speedrun.com/api/v1/games', { name: searchText, max: MAX_PAGINATION }, false)
           .then<DataArray<SrcGame>>(res => res.json())
           .then(res => res.data)
           .then<IdToNameMap>(games => Object.fromEntries(games.map(game => [game.id, game.names.international])))
@@ -43,8 +47,7 @@ const GameCategorySearch = (props: GameCategorySearchProps) => {
             })
             props.onSearch?.(searchText)
           }),
-    // Note: 500 is double the default table update
-    500
+    DEBOUNCE_TIME
   )
 
   return <FormLabel>

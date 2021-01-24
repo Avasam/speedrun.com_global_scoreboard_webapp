@@ -3,6 +3,7 @@ import './App.css'
 import { AppBar, Button, createMuiTheme, IconButton, ThemeProvider, Toolbar, Typography } from '@material-ui/core'
 import { teal } from '@material-ui/core/colors'
 import useMediaQuery from '@material-ui/core/useMediaQuery'
+import { StatusCodes } from 'http-status-codes'
 import type { FC } from 'react'
 import { useEffect, useState } from 'react'
 import Div100vh from 'react-div-100vh'
@@ -56,7 +57,7 @@ const App: FC = () => {
       .then((res: { user: User | undefined }) => res.user)
       .then(setCurrentUser)
       .catch((err: Response) => {
-        if (err.status === 401) {
+        if (err.status === StatusCodes.UNAUTHORIZED) {
           setCurrentUser(null)
         } else {
           console.error(err)
