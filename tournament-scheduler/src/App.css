@@ -39,6 +39,15 @@
   width: 16px;
 }
 
+/* Properly hide empty labels on calendar selector popup */
+.MuiDialogActions-root > .MuiButton-root {
+  min-width: unset;
+}
+.MuiDialogActions-root > .MuiButton-root > .MuiButton-label:empty+.MuiTouchRipple-root,
+.MuiDialogActions-root > .MuiButton-root > .MuiButton-label:empty {
+  display: none;
+}
+
 label {
   font-size: calc(10px + 2vmin);
 }

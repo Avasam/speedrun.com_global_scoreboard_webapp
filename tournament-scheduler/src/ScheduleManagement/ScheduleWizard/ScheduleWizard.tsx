@@ -119,6 +119,8 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
                 id='schedule-deadline'
                 label='Registration deadline'
                 value={schedule.deadline}
+                autoOk
+                okLabel={<></>}
                 onChange={momentDate => setSchedule({
                   ...schedule,
                   registrationLink: schedule.registrationLink,
