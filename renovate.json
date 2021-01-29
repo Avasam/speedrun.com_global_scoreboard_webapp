@@ -1,0 +1,11 @@
+{
+  "extends": [
+    "config:base",
+    ":preserveSemverRanges",
+    ":respectLatest",
+    ":prHourlyLimitNone"
+  ],
+  "baseBranches": ["develop"],
+  "ignoreDeps": ["eslint-plugin-extra-rules"],
+  "ignorePaths": ["dependencies"]
+}
