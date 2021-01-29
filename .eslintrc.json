@@ -1,12 +1,9 @@
 {
   "plugins": [
-    "@typescript-eslint",
-    "react",
     "react-hooks",
     // "jsx-a11y",
-    "sonarjs",
     "switch-case",
-    "unicorn",
+    "prefer-arrow",
     "simple-import-sort",
     "extra-rules"
   ],
@@ -77,8 +74,7 @@
     "react/jsx-uses-react": "off",
     "react/prop-types": "off",
     "react/react-in-jsx-scope": "off",
-    // sonarjs/recommended overrides
-    "sonarjs/no-duplicate-string": "error",
+    // sonarjs/recommended overrides (https://github.com/SonarSource/eslint-plugin-sonarjs/blob/master/src/index.ts)
     // This rule does not correctly treat react's function components. See https://github.com/SonarSource/SonarJS/issues/2238
     // Also react-app service workers template are at 22
     // Set back to error with appropriate number if ever fixed
@@ -165,6 +161,16 @@
     // Simple import rules
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
+    // Prefer Arrow rule
+    "prefer-arrow/prefer-arrow-functions": [
+      "error",
+      {
+        "disallowPrototype": true,
+        "singleReturnOnly": true,
+        "classPropertiesAllowed": true,
+        "allowStandaloneDeclarations": false
+      }
+    ],
     // Custom rules and @typescript-eslint/all overrides (https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/src/configs/all.ts)
     // Automatically deactivates ESLint rules (configured below) that are taken care of by TypeScript (https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/src/configs/eslint-recommended.ts)
     "@typescript-eslint/comma-dangle": [
@@ -172,9 +178,9 @@
       {
         "arrays": "always-multiline",
         "objects": "always-multiline",
-        "imports": "never",
-        "exports": "never",
-        "functions": "never"
+        "imports": "always-multiline",
+        "exports": "always-multiline",
+        "functions": "only-multiline"
       }
     ],
     "@typescript-eslint/consistent-type-definitions": [
@@ -195,40 +201,6 @@
     // Doesn't allow `let myVar: Type | undefined`
     "@typescript-eslint/init-declarations": "off",
     "@typescript-eslint/lines-between-class-members": "off",
-    // TODO: Would accept this if it had autofixes, otherwise this is too tedious to use. Check again later
-    "@typescript-eslint/prefer-readonly-parameter-types": "off",
-    "@typescript-eslint/promise-function-async": [
-      "error",
-      {
-        "checkArrowFunctions": false
-      }
-    ],
-    "@typescript-eslint/object-curly-spacing": [
-      "error",
-      "always"
-    ],
-    "@typescript-eslint/quotes": [
-      "error",
-      "single"
-    ],
-    "@typescript-eslint/semi": [
-      "error",
-      "never"
-    ],
-    "@typescript-eslint/space-before-function-paren": [
-      "error",
-      {
-        "anonymous": "always",
-        "named": "never"
-      }
-    ],
-    "@typescript-eslint/space-infix-ops": [
-      "error",
-      {
-        "int32Hint": true
-      }
-    ],
-    "@typescript-eslint/strict-boolean-expressions": "off",
     "@typescript-eslint/member-delimiter-style": [
       "error",
       {
@@ -287,6 +259,40 @@
         "varsIgnorePattern": "^_"
       }
     ],
+    // TODO: Would accept this if it had autofixes, otherwise this is too tedious to use. Check again later
+    "@typescript-eslint/prefer-readonly-parameter-types": "off",
+    "@typescript-eslint/promise-function-async": [
+      "error",
+      {
+        "checkArrowFunctions": false
+      }
+    ],
+    "@typescript-eslint/object-curly-spacing": [
+      "error",
+      "always"
+    ],
+    "@typescript-eslint/quotes": [
+      "error",
+      "single"
+    ],
+    "@typescript-eslint/semi": [
+      "error",
+      "never"
+    ],
+    "@typescript-eslint/space-before-function-paren": [
+      "error",
+      {
+        "anonymous": "always",
+        "named": "never"
+      }
+    ],
+    "@typescript-eslint/space-infix-ops": [
+      "error",
+      {
+        "int32Hint": true
+      }
+    ],
+    "@typescript-eslint/strict-boolean-expressions": "off",
     "@typescript-eslint/restrict-template-expressions": [
       "error",
       {
@@ -439,9 +445,6 @@
     "arrow-spacing": "error",
     "generator-star-spacing": "error",
     "no-class-assign": "error",
-    // TODO: Check for new 7.0.0-alpha.0 rules once it's no longuer in alpha
-    // "no-restricted-exports": "error",
-    "no-restricted-imports": "error",
     "no-useless-computed-key": "error",
     "no-useless-rename": "error",
     "object-shorthand": "error",

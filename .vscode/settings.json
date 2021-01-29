@@ -1,11 +1,17 @@
 {
   "files.associations": {
+    "*.json": "jsonc",
     "*.html": "jinja-html"
   },
   "editor.rulers": [
     80,
     120
   ],
+  "[git-commit]": {
+    "editor.rulers": [
+      72
+    ]
+  },
   "editor.detectIndentation": false,
   "editor.tabSize": 2,
   "[python]": {
@@ -20,7 +26,6 @@
   "html.format.wrapAttributes": "force-expand-multiline",
   "editor.codeActionsOnSave": {
     "source.fixAll": true,
-    "source.fixAll.tslint": true,
     "source.fixAll.eslint": true,
     "source.fixAll.markdownlint": true
   },
@@ -37,6 +42,7 @@
     "--max-line-length=120"
   ],
   "typescript.tsdk": "./tournament-scheduler/node_modules/typescript/lib",
+  "javascript.format.semicolons": "remove",
   "typescript.format.semicolons": "remove",
   "eslint.validate": [
     "typescript",
