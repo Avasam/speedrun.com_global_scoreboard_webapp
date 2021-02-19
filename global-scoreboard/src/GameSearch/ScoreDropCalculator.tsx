@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Button, Form, InputGroup } from 'react-bootstrap'
 
 import { apiGet } from '../fetchers/Api'
-import type { SrcLeaderboard, SrcRun } from '../models/SrcResponse'
+import type { DataArray, SrcLeaderboard, SrcRun, SrcVariable } from '../models/SrcResponse'
 import math from '../utils/Math'
 import { secondsToTimeString } from '../utils/Time'
 
@@ -20,6 +20,15 @@ const addVarToValuesKeys = (values: SrcRun['data']['values']) => {
   return newDict
 }
 
+const filterSubCatVariables = (variables: SrcRun['data']['values'], subCategories: string[]) => {
+  const newVariables: SrcRun['data']['values'] = {}
+  for (const key of Object.keys(variables)) {
+    if (!subCategories.includes(key)) continue
+    newVariables[key] = variables[key]
+  }
+  return newVariables
+}
+
 
 const getRunDetails = (runId: string) =>
   apiGet(
@@ -29,6 +38,19 @@ const getRunDetails = (runId: string) =>
   )
     .then<SrcRun>(res => res.json())
     .then(res => res.data)
+
+const getGameSubCategories = (gameId: string) =>
+  apiGet(
+    `https://www.speedrun.com/api/v1/games/${gameId}/variables`,
+    {},
+    false
+  )
+    .then<DataArray<SrcVariable>>(res => res.json())
+    .then(res =>
+      res
+        .data
+        .filter(variable => variable['is-subcategory'])
+        .map(variable => variable.id))
 
 const getLeaderboardRuns = (gameId: string, categoryId: string, subCategories: SrcRun['data']['values']) =>
   apiGet(
@@ -43,6 +65,7 @@ const ScoreDropCalculator = () => {
   const [runId, setRunId] = useState('')
   const [updating, setUpdating] = useState(false)
   const [requiredTime, setRequiredTime] = useState<number | null>(null)
+  const [requiredNewPlayers, setRequiredNewPlayers] = useState(0)
   const [calculatedRunScore, setCalculatedRunScore] = useState(0)
   const [calculatedRunId, setCalculatedRunId] = useState('')
 
@@ -54,9 +77,9 @@ const ScoreDropCalculator = () => {
     setUpdating(true)
     setCalculatedRunId(runId)
 
-    getRunDetails(runId)
-      .then(run =>
-        getLeaderboardRuns(run.game, run.category, run.values).then(records => {
+    getRunDetails(runId).then(run =>
+      getGameSubCategories(run.game).then(subCategories =>
+        getLeaderboardRuns(run.game, run.category, filterSubCatVariables(run.values, subCategories)).then(records => {
           /* eslint-disable extra-rules/no-commented-out-code */
           /* eslint-disable id-length */
           /* eslint-disable @typescript-eslint/no-magic-numbers */
@@ -85,15 +108,33 @@ const ScoreDropCalculator = () => {
           // (m * N + n) / (N + 1) = x; N = <original population>; m = <mean>; x = <targetted mean>
           // when solving for n, becomes
           // x * (N + 1) - m * N = n
-          const n = x * (N + 1) - m * N
+          let n = x * (N + 1) - m * N
 
           // Round down to the nearest second
-          setRequiredTime(Math.floor(n))
+          n = Math.floor(n)
+
+          if (n > 0) {
+            setRequiredTime(n)
+            setRequiredNewPlayers(1)
+          } else {
+            setRequiredTime(t)
+            // This seems to be an accurate shorcut of solving for N in the first formula using t instead of m and p ≔ p-1
+            setRequiredNewPlayers(Math.ceil((n + m * N) / t) - N)
+          }
           setUpdating(false)
+
+          console.info('m', m)
+          console.info('t', t)
+          console.info('w', w)
+          console.info('N', N)
+          console.info('p', p)
+          console.info('x', x)
+          console.info('n', n)
+
           /* eslint-enable extra-rules/no-commented-out-code */
           /* eslint-enable id-length */
           /* eslint-enable @typescript-eslint/no-magic-numbers */
-        }))
+        })))
       .catch(() => setRequiredTime(Number.NaN))
       .finally(() => setUpdating(false))
   }
@@ -123,14 +164,17 @@ const ScoreDropCalculator = () => {
     </Form>
     {requiredTime !== null && (
       Number.isFinite(requiredTime)
-        ? <span>
-          The run &apos;{calculatedRunId}&apos; is currently worth {calculatedRunScore} points.
-          To reduce it, a new run would need a time of
-          <strong> {secondsToTimeString(requiredTime)}</strong> or less.
-        </span>
+        ? <>
+          <span>The run &apos;{calculatedRunId}&apos; is currently worth {calculatedRunScore} points. </span>
+          {requiredNewPlayers > 1
+            ? <span>To reduce it, the WR of {secondsToTimeString(requiredTime)} needs to be beaten
+              <strong> {requiredNewPlayers} times</strong>.</span>
+            : <span>To reduce it, a new run would need a time of
+              <strong> {secondsToTimeString(requiredTime)}</strong> or less.</span>
+          }</>
         : <span>
           The required time to reduce the points of the run &apos;{calculatedRunId}&apos; could not be calculated.
-          Either because the leaderboard has less than 4 runners, it is an individual level, or something just went wrong.
+        Either because the leaderboard has less than 4 runners, it is an individual level, or something just went wrong.
         </span>
     )}
   </div>

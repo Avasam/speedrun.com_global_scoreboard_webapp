@@ -45,6 +45,13 @@ export type SrcLeaderboard = {
   }
 }
 
+export type SrcVariable = {
+  data: {
+    id: string
+    'is-subcategory': boolean
+  }
+}
+
 export type DataArray<T extends { data: unknown }> = {
   data: T['data'][]
 }
