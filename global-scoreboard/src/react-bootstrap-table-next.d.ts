@@ -7,6 +7,7 @@
 /* eslint-disable @typescript-eslint/consistent-type-definitions */
 /* eslint-disable @typescript-eslint/no-extraneous-class */
 /* eslint-disable unicorn/no-keyword-prefix */
+/* eslint-disable unicorn/no-static-only-class */
 /* eslint-disable unicorn/prevent-abbreviations */
 /* eslint-disable extra-rules/no-commented-out-code */
 
