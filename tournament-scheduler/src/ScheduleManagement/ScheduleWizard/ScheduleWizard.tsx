@@ -55,6 +55,7 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
   }
   const addNewTimeSlot = () => {
     schedule.timeSlots.unshift(createDefaultTimeSlot())
+    schedule.timeSlots.sort(TimeSlot.compareFn)
     setSchedule({
       ...schedule,
       registrationLink: schedule.registrationLink,
@@ -87,7 +88,7 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
   return <Container>
     <Card>
       <CardContent>
-        <FormGroup>
+        <FormGroup className='error-as-warning'>
           <TextField
             required
             error={!schedule.name}
@@ -125,7 +126,7 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
                   deadline: momentDate?.startOf('day').toDate() ?? todayFlat(),
                 })}
                 error={!validateDeadline()}
-                helperText={!validateDeadline() && 'Registrations should close no later than the day of the earliest time slot'}
+                helperText={!validateDeadline() && 'Warning: Your registrations close after the earliest time slot'}
                 disablePast={earliestTimeslotDate > new Date()}
                 minDateMessage='Deadline should not be before today'
                 InputProps={{
@@ -168,7 +169,7 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
         </Button>
         <Button
           size='small'
-          disabled={!schedule.name || !validateDeadline()}
+          disabled={!schedule.name}
           onClick={() => props.onSave({
             ...schedule,
             deadline: moment(schedule.deadline).startOf('day').toDate(),

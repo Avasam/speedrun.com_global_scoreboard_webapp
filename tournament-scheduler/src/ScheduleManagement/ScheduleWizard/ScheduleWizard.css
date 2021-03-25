@@ -41,3 +41,12 @@ or just add negative padding on Collapse, thought that feels hacky */
 #schedule-deadline-helper-text {
   width: max-content; /* Ensures error text does not wrap uselessly */
 }
+
+.error-as-warning .MuiFormLabel-root.Mui-error,
+.error-as-warning .MuiFormHelperText-root.Mui-error {
+  color: yellow;
+}
+
+.error-as-warning .MuiInput-underline.Mui-error:after {
+  border-bottom-color: yellow;
+}

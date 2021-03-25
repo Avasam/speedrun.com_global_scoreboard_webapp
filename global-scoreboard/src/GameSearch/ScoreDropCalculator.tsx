@@ -174,7 +174,7 @@ const ScoreDropCalculator = () => {
           }</>
         : <span>
           The required time to reduce the points of the run &apos;{calculatedRunId}&apos; could not be calculated.
-        Either because the leaderboard has less than 4 runners, it is an individual level, or something just went wrong.
+          Either because the leaderboard has less than 4 runners, it is an individual level, or something just went wrong.
         </span>
     )}
   </div>
