@@ -1,11 +1,14 @@
-import { Button, Card, CardActions, CardContent, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, makeStyles, Theme } from '@material-ui/core'
-import { Styles } from '@material-ui/core/styles/withStyles'
+import type { Theme } from '@material-ui/core'
+import { Button, Card, CardActions, CardContent, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, makeStyles } from '@material-ui/core'
+import type { Styles } from '@material-ui/core/styles/withStyles'
 import DeleteForever from '@material-ui/icons/DeleteForever'
-import { FC, useEffect, useState } from 'react'
+import type { FC } from 'react'
+import { useEffect, useState } from 'react'
 
 import { apiDelete, apiGet, apiPost, apiPut } from '../fetchers/Api'
-import { createDefaultSchedule, Schedule, ScheduleDto } from '../models/Schedule'
-import User from '../models/User'
+import type { ScheduleDto } from '../models/Schedule'
+import { createDefaultSchedule, Schedule } from '../models/Schedule'
+import type User from '../models/User'
 import copyToClipboard from '../utils/Clipboard'
 import { ScheduleWizard } from './ScheduleWizard/ScheduleWizard'
 
@@ -13,7 +16,7 @@ const getSchedules = () =>
   apiGet('schedules')
     .then(res =>
       res.json().then((scheduleDtos: ScheduleDto[] | undefined) =>
-        scheduleDtos?.map(scheduleDto => new Schedule(scheduleDto))))
+        scheduleDtos?.map(scheduleDto => new Schedule(scheduleDto)) ?? []))
 
 const postSchedules = (schedule: ScheduleDto) =>
   apiPost('schedules', schedule)
@@ -60,7 +63,7 @@ const ScheduleManagement: FC<ScheduleManagementProps> = (props: ScheduleManageme
     savePromise
       .then(() => {
         getSchedules()
-          .then(res => setSchedules(res?.reverse() || []))
+          .then(res => setSchedules(res.reverse()))
           .catch(console.error)
         setCurrentSchedule(undefined)
       })
@@ -69,7 +72,7 @@ const ScheduleManagement: FC<ScheduleManagementProps> = (props: ScheduleManageme
 
   useEffect(() => {
     getSchedules()
-      .then(res => setSchedules(res?.reverse() || []))
+      .then(res => setSchedules(res.reverse()))
       .catch(console.error)
   }, [])
 

@@ -4,10 +4,12 @@ import DateFnsUtils from '@date-io/moment'
 import { Button, Card, CardActions, CardContent, Checkbox, Container, FormControlLabel, FormGroup, IconButton, InputAdornment, TextField } from '@material-ui/core'
 import Event from '@material-ui/icons/Event'
 import { DatePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
-import moment, { Moment } from 'moment'
-import { FC, useState } from 'react'
+import type { Moment } from 'moment'
+import moment from 'moment'
+import type { FC } from 'react'
+import { useState } from 'react'
 
-import { Schedule, ScheduleDto } from '../../models/Schedule'
+import type { Schedule, ScheduleDto } from '../../models/Schedule'
 import { createDefaultTimeSlot, TimeSlot } from '../../models/TimeSlot'
 import { todayFlat } from '../../utils/Date'
 import TimeSlotRow from './TimeSlotRow'
@@ -32,7 +34,7 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
     })
     Array.prototype.forEach.call(
       document.getElementsByClassName('Mui-focused'),
-      element => element.classList.remove('Mui-focused'),
+      (element: HTMLElement) => element.classList.remove('Mui-focused')
     )
   }
 
@@ -53,6 +55,7 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
   }
   const addNewTimeSlot = () => {
     schedule.timeSlots.unshift(createDefaultTimeSlot())
+    schedule.timeSlots.sort(TimeSlot.compareFn)
     setSchedule({
       ...schedule,
       registrationLink: schedule.registrationLink,
@@ -78,14 +81,14 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
   const earliestTimeslotDate = schedule.timeSlots.map(timeSlot => timeSlot.dateTime)[0]
 
   const validateDeadline = () =>
-    schedule.deadline &&
+    !schedule.deadline ||
     (schedule.deadline <= earliestTimeslotDate &&
       (earliestTimeslotDate <= new Date() || schedule.deadline >= todayFlat()))
 
   return <Container>
     <Card>
       <CardContent>
-        <FormGroup>
+        <FormGroup className='error-as-warning'>
           <TextField
             required
             error={!schedule.name}
@@ -115,17 +118,18 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
             <MuiPickersUtilsProvider utils={DateFnsUtils}>
               <DatePicker
                 id='schedule-deadline'
-                label='Registration deadline'
+                label={`${!schedule.deadline ? 'No r' : 'R'}egistration deadline`}
                 value={schedule.deadline}
                 onChange={momentDate => setSchedule({
                   ...schedule,
                   registrationLink: schedule.registrationLink,
-                  deadline: momentDate?.startOf('day').toDate() || todayFlat(),
+                  deadline: momentDate?.startOf('day').toDate() ?? null,
                 })}
                 error={!validateDeadline()}
-                helperText={!validateDeadline() && 'Registrations should close no later than the day of the earliest time slot'}
+                helperText={!validateDeadline() && 'Warning: Your registrations close after the earliest time slot'}
                 disablePast={earliestTimeslotDate > new Date()}
                 minDateMessage='Deadline should not be before today'
+                clearable
                 InputProps={{
                   endAdornment:
                     <InputAdornment position='end'>
@@ -166,10 +170,10 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
         </Button>
         <Button
           size='small'
-          disabled={!schedule.name || !validateDeadline()}
+          disabled={!schedule.name}
           onClick={() => props.onSave({
             ...schedule,
-            deadline: moment(schedule.deadline).startOf('day').toDate()
+            deadline: moment(schedule.deadline).startOf('day').toDate(),
           })}
         >
           Save

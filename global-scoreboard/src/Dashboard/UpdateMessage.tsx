@@ -2,9 +2,10 @@ import { faInfoCircle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useEffect, useState } from 'react'
 import { Alert, OverlayTrigger, ProgressBar, Tooltip } from 'react-bootstrap'
-import { AlertProps } from 'react-bootstrap/Alert'
+import type { AlertProps } from 'react-bootstrap/Alert'
 
-import { RunResult } from '../models/UpdateRunnerResult'
+import type { RunResult } from '../models/UpdateRunnerResult'
+import math from '../utils/Math'
 
 type UpdateMessageProps = {
   variant: AlertProps['variant']
@@ -13,7 +14,9 @@ type UpdateMessageProps = {
 }
 
 const progressBarTickInterval = 16 // 60 FPS
-const minutes5 = 5000 * 60
+// eslint-disable-next-line @typescript-eslint/no-magic-numbers
+const minutes5 = 5 * math.MS_IN_MINUTE
+const FROM_HUNDREDTHS = 100
 let progressTimer: NodeJS.Timeout
 let position: number
 
@@ -21,7 +24,7 @@ const renderRow = (rows: RunResult[]) =>
   rows.map((row, rowi) =>
     <tr key={`row${rowi}`}>
       <td>
-        {Math.round(position += row.levelFraction * 100) / 100}
+        {math.roundToDecimals(position += row.levelFraction)}
       </td>
       <td>
         {row.gameName} - {row.categoryName}{row.levelName ? ` (${row.levelName})` : ''}
@@ -81,7 +84,7 @@ const UpdateMessage = (props: UpdateMessageProps) => {
       setCurrentTime(Date.now())
       progressTimer = setInterval(
         () => setCurrentTime(Date.now()),
-        progressBarTickInterval,
+        progressBarTickInterval
       )
     } else {
       clearInterval(progressTimer)
@@ -103,7 +106,7 @@ const UpdateMessage = (props: UpdateMessageProps) => {
       <ProgressBar
         animated
         variant='info'
-        now={(1 - (currentTime - props.updateStartTime) / minutes5) * 100}
+        now={(1 - (currentTime - props.updateStartTime) / minutes5) * FROM_HUNDREDTHS}
       />}
   </Alert>
 }

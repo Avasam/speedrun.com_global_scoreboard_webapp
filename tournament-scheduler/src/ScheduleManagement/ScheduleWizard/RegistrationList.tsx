@@ -1,8 +1,10 @@
 import { Button, ButtonGroup, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, List, ListItem, ListItemText, TextField } from '@material-ui/core'
 import DeleteForever from '@material-ui/icons/DeleteForever'
-import { FC, useState } from 'react'
+import type { FC } from 'react'
+import { useState } from 'react'
 
-import Registration, { RegistrationProxy } from '../../models/Registration'
+import type { RegistrationProxy } from '../../models/Registration'
+import type Registration from '../../models/Registration'
 
 
 type RegistrationListProps = {
@@ -85,21 +87,20 @@ const RegistrationList: FC<RegistrationListProps> = (props: RegistrationListProp
       </div>
     }
   >
-    {props.registration
-      .participants
-      .concat(
-        Array.from(
-          { length: Math.max(0, props.participantsPerEntry - props.registration.participants.length) },
-          () => ''
-        )
-      )
+    {[
+      ...props.registration.participants,
+      ...Array.from(
+        { length: Math.max(0, props.participantsPerEntry - props.registration.participants.length) },
+        () => ''
+      ),
+    ]
       .map((participant: string, index) =>
         <ListItem
           key={`participant-${index}`}
           style={{
             alignItems: 'baseline',
             padding: '0 16px',
-            color: index >= props.participantsPerEntry ? 'red' : undefined
+            color: index >= props.participantsPerEntry ? 'red' : undefined,
           }}>
           <span>{index + 1}.&nbsp;</span>
           <TextField
@@ -109,7 +110,7 @@ const RegistrationList: FC<RegistrationListProps> = (props: RegistrationListProp
             onChange={event => props.onParticipantNameChange(
               props.registration,
               index,
-              event.target.value,
+              event.target.value
             )}
           />
         </ListItem>)}

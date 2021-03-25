@@ -1,8 +1,11 @@
-export default interface Registration {
+type Registration = {
   id: number
   participants: string[]
 }
+export default Registration
 
-export interface RegistrationProxy extends Registration {
-  hasChanged?: boolean
-}
+export type RegistrationProxy =
+  Registration &
+  {
+    hasChanged?: boolean
+  }

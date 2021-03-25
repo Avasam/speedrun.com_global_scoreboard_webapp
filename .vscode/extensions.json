@@ -5,10 +5,12 @@
     "ms-pyright.pyright",
     "ms-python.python",
     "sonarsource.sonarlint-vscode",
-    "ms-vscode.vscode-typescript-tslint-plugin",
     "davidanson.vscode-markdownlint",
     "eamodio.gitlens",
     "meganrogge.template-string-converter",
     "hookyqr.minify"
+  ],
+  "unwantedRecommendations": [
+    "esbenp.prettier-vscode"
   ]
 }

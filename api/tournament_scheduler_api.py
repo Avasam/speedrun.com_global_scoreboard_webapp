@@ -36,7 +36,7 @@ def get_schedule(id: str):
 @api.route('/schedules', methods=('POST',))
 @authentication_required
 def post_schedule(current_user: Player):
-    data: Dict[str, ] = request.get_json()
+    data: Dict[str, Any] = request.get_json()
 
     error_message, name, is_active, deadline, time_slots = __validate_create_schedule(data)
     if error_message is not None:
@@ -48,7 +48,7 @@ def post_schedule(current_user: Player):
 @api.route('/schedules/<id>', methods=('PUT',))
 @authentication_required
 def put_schedule(current_user: Player, id: str):
-    data: Dict[str, ] = request.get_json()
+    data: Dict[str, Any] = request.get_json()
     try:
         schedule_id = int(id)
     except ValueError:
@@ -75,7 +75,7 @@ def delete_schedule(current_user: Player, id: str):
 
 @api.route('/time-slots/<id>/registrations', methods=('POST',))
 def post_registration(id: str):
-    data: Dict[str, ] = request.get_json()
+    data: Dict[str, Any] = request.get_json()
 
     error_message, registration_key, participants = __validate_create_registration(data)
     if error_message is not None:
@@ -94,7 +94,7 @@ def post_registration(id: str):
 @api.route('/registrations/<id>', methods=('PUT',))
 @authentication_required
 def put_registration(current_user: Player, id: str):
-    data: Dict[str, ] = request.get_json()
+    data: Dict[str, Any] = request.get_json()
 
     try:
         registration_id = int(id)

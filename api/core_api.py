@@ -19,7 +19,7 @@ api = Blueprint('core_api', __name__)
 
 @api.route('/login', methods=('POST',))
 def login():
-    data: Dict[str, ] = request.get_json()
+    data: Dict[str, Any] = request.get_json()
     player, error_message = Player.authenticate(data['srcApiKey'])
 
     if not player:

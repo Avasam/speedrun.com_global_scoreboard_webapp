@@ -1,9 +1,9 @@
 import { floorToMinutesStep, tomorrow } from '../utils/Date'
-import Registration from './Registration'
+import type Registration from './Registration'
 
-export interface TimeSlotDto {
+export type TimeSlotDto = {
   id: number
-  dateTime: Date
+  dateTime: Date | string
   maximumEntries: number
   participantsPerEntry: number
   registrations: Registration[]
@@ -15,7 +15,6 @@ export class TimeSlot {
   maximumEntries: number
   participantsPerEntry: number
   registrations: Registration[]
-  static compareFn = (a: TimeSlot, b: TimeSlot) => a.dateTime.valueOf() - b.dateTime.valueOf()
 
   constructor(dto: TimeSlotDto) {
     this.id = dto.id
@@ -24,6 +23,8 @@ export class TimeSlot {
     this.participantsPerEntry = dto.participantsPerEntry
     this.registrations = dto.registrations
   }
+
+  static compareFn = (a: TimeSlot, b: TimeSlot) => a.dateTime.valueOf() - b.dateTime.valueOf()
 }
 
 export const minutesStep = 5

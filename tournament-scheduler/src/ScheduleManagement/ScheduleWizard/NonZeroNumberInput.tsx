@@ -14,7 +14,7 @@ const NonZeroNumberInput = (props: NonZeroNumberInputProps) => {
       ref={ref => {
         inputRef(ref ? ref.inputElement : null)
       }}
-      mask={[/[1-9]/, /\d/,]}
+      mask={[/[1-9]/, /\d/]}
       guide={false}
     />
   )

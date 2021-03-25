@@ -1,2 +1,2 @@
 ALTER TABLE `schedule` 
-ADD COLUMN `deadline` DATETIME NOT NULL AFTER `is_active`;
+ADD COLUMN `deadline` DATETIME NULL AFTER `is_active`;

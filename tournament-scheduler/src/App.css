@@ -21,17 +21,17 @@
 }
 
 .App .MuiTextField-root {
-  min-width: 214px; /* Enough to fit September 22nd 22:22 */
+  min-width: 214px; /* Enough to fit 'September 22nd 22:22' */
 }
 
 .MuiFormControl-root.MuiTextField-root[format] {
   min-width: 1px;
 }
 .MuiFormControl-root.MuiTextField-root[format="MMMM Do HH:mm"] {
-  width: 214px; /* Enough to fit September 22nd 22:20*/
+  width: 214px; /* Enough to fit 'September 22nd 22:20' */
 }
 .MuiFormControl-root.MuiTextField-root[format="MMMM Do"] {
-  width: 168px; /* Enough to fit September 22nd*/
+  width: 210px; /* Enough to fit 'No registration deadline' */
 }
 
 .MuiIconButton-root > .MuiIconButton-label {

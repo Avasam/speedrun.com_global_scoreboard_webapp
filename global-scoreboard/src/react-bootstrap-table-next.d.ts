@@ -1,12 +1,15 @@
 // Note: Let's stay as close to the original types as possible, even if they're vague
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-duplicate-imports */
+/* eslint-disable @typescript-eslint/no-duplicate-imports */
+/* eslint-disable @typescript-eslint/sort-type-union-intersection-members */
 /* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/consistent-type-definitions */
+/* eslint-disable @typescript-eslint/no-extraneous-class */
 /* eslint-disable unicorn/no-keyword-prefix */
+/* eslint-disable unicorn/no-static-only-class */
 /* eslint-disable unicorn/prevent-abbreviations */
 /* eslint-disable extra-rules/no-commented-out-code */
-/* eslint-disable sort-imports */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 // Origin: https://gitlab.com/fluidattacks/integrates/-/blob/master/integrates/front/src/typings/react-bootstrap-table-2/index.d.ts
 // Modified:
@@ -30,16 +33,20 @@
 // - Extends FilterProps and all optionnal
 // - Column.filter as component with FilterProps
 // - Column.filterRenderer exists
-// - Column.filter type is React.Component<FilterProps>
+// - Column.filter type is React.FC<FilterProps>
 // - CustomFilterProps extends
 // - NumberFIlterFunction
 // - FilterProps.getFilter exists
 // - export SearchFieldProps and SearchProps
 // - onSearch has first parameter searchText: string
+// - Pagination is a React Component
+// - Added SelectFilterFunction and getFilter to SelectFilterProps
+// - Shorthand method signature is forbidden. Use a function property instead.eslint@typescript-eslint/method-signature-style
 
 type RowFieldValue = ReactText | Date | TODO
 type TODO = any
-type Pagination = TODO
+
+type Pagination = React.FC<PaginationProps>
 // Note: Not my TODO
 // eslint-disable-next-line no-warning-comments
 // TODO: check missings : https://react-bootstrap-table.github.io/react-bootstrap-table2/docs/pagination-props.html
@@ -83,7 +90,7 @@ type onTableChange = (type: TableChangeType, event: TableChangeNewState) => TODO
 interface TableChangeNewState {
   page?: number
   sizePerPage?: number
-  filters?: { [dataField: string]: Filter<any> }
+  filters?: Record<string, Filter<any>>
   sortField?: string
   sortOrder?: SortOrder
   data?: RowT[]
@@ -106,9 +113,9 @@ interface Filter<Type extends TODO = TODO> {
   comparator: PredefinedComparatorTypes
 }
 interface FilterProps<Type extends TODO> {
-  getFilter?(filter: FilterFunction<Type>): TODO
-  onFilter?(filterVal: string, data?: any): TODO
-  onInput?(event: React.SyntheticEvent<HTMLInputElement>, value: string): void
+  getFilter?: (filter: FilterFunction<Type>) => TODO
+  onFilter?: (filterVal: string, data?: any) => TODO
+  onInput?: (event: React.SyntheticEvent<HTMLInputElement>, value: string) => void
   defaultValue?: Type
   placeholder?: string
   className?: string
@@ -127,11 +134,12 @@ interface DateFilterProps extends FilterProps<TODO> {
   defaultValue?: { date: Date, comparator: PredefinedComparatorTypes }
 }
 interface SelectFilterProps extends FilterProps<TODO> {
-  options: { [key: ReactText]: string }
+  getFilter?: (filter: SelectFilterFunction) => TODO
+  options: Record<ReactText, string>
   withoutEmptyOption?: boolean
 }
 interface NumberFilterProps extends FilterProps<TODO> {
-  getFilter?(filter: NumberFilterFunction): TODO
+  getFilter?: (filter: NumberFilterFunction) => TODO
   options?: number[]
   withoutEmptyNumberOption?: boolean
   comparators?: PredefinedComparatorTypes[]
@@ -152,6 +160,7 @@ interface CustomFilterProps extends FilterProps<TODO> {
 }
 type FilterFunction<Type extends TODO> = (val: Type) => TODO
 type NumberFilterFunction = (val: { number: number | '', comparator: PredefinedComparatorTypes }) => TODO
+type SelectFilterFunction = FilterFunction<string[]>
 type FilterVal = string | TODO
 type FilterType = 'TEXT' | TODO
 interface ComparatorTypes {
@@ -164,7 +173,9 @@ interface ComparatorTypes {
   LE: '<='
 }
 // eslint-disable-next-line no-shadow
-declare enum PredefinedComparatorTypes { LIKE = 'LIKE', EQ = '=', NE = '!=', GT = '>', GE = '>=', LT = '<', LE = '<=' }
+declare enum PredefinedComparatorTypes {
+  LIKE = 'LIKE', EQ = '=', NE = '!=', GT = '>', GE = '>=', LT = '<', LE = '<='
+}
 type PredefinedComparators = typeof PredefinedComparatorTypes
 // EDITOR
 type EditorProps = TODO
@@ -185,9 +196,13 @@ interface SelectRowOptions {
   onSelect?: (row: any, isSelect: boolean, index: number) => void
   onSelectAll?: (isSelect: boolean, rows: any) => void
 }
-interface ExpandRowOptions { renderer: (row: any) => JSX.Element, showExpandColumn?: boolean }
+interface ExpandRowOptions {
+  renderer: (row: any) => JSX.Element
+  showExpandColumn?: boolean
+}
 declare module 'react-bootstrap-table-next' {
-  import { Component, ReactElement } from 'react'
+  import type { ReactElement, FC } from 'react'
+  import { Component } from 'react'
   export default class BootstrapTable extends Component<BootstrapTableProps, TODO> {
     table: {
       props: {
@@ -232,7 +247,7 @@ declare module 'react-bootstrap-table-next' {
     remote?: boolean | RemoteProps
     bordered?: boolean
     bootstrap4?: boolean
-    noDataIndication?(): JSX.Element | string
+    noDataIndication?: () => JSX.Element | string
     loading?: boolean
     overlay?: Overlay
     caption?: string | JSX.Element
@@ -258,15 +273,15 @@ declare module 'react-bootstrap-table-next' {
     isDummyField?: boolean
     sort?: boolean
     searchable?: boolean
-    filter?: React.Component<FilterProps>
+    filter?: FC<FilterProps>
     formatExtraData?: TODO
     formatter?: (cell: TODO, row: TODO, rowIndex: number, formatExtraData: any) => ReactNode
     headerFormatter?: (column: Column, colIndex: number, components: any) => ReactNode
     headerStyle?: (colum: TODO, colIndex: number) => any
-    sortFunc?<T>(a: T, b: T, order: SortOrder, rowA: Row, rowB: Row): number
+    sortFunc?: <T>(a: T, b: T, order: SortOrder, rowA: Row, rowB: Row) => number
     style?: (colum: TODO, colIndex: number) => {}
-    filterValue?<T>(cell: T, row: TODO): any
-    onSort?(dataField: string, order: SortOrder): void
+    filterValue?: <T>(cell: T, row: TODO) => any
+    onSort?: (dataField: string, order: SortOrder) => void
     sortCaret?: (order: SortOrder | null | undefined, column: Column) => JSX.Element | null
     filterRenderer?: (onFilter: FilterProps['onFilter'], column: Column) => ReactElement
   }
@@ -276,17 +291,19 @@ type RowT<Type extends TODO = TODO, FieldId extends string = string> = {
   [fieldName in FieldId]: RowFieldValue
 }
 declare module 'react-bootstrap-table2-filter' {
+  import type { FC } from 'react'
   export default function filterFactory<Type extends TODO>(options?: FilterOptions): FilterProps<Type>
-  function textFilter(props?: TextFilterProps): TODO
-  function dateFilter(props?: DateFilterProps): TODO
-  function selectFilter(props?: SelectFilterProps): TODO
-  function multiSelectFilter(props?: SelectFilterProps): TODO
-  function numberFilter(props?: NumberFilterProps): TODO
-  function customFilter(props?: CustomFilterProps): TODO
+  function textFilter(props?: TextFilterProps): FC<TextFilterProps>
+  function dateFilter(props?: DateFilterProps): FC<DateFilterProps>
+  function selectFilter(props?: SelectFilterProps): FC<SelectFilterProps>
+  function multiSelectFilter(props?: SelectFilterProps): FC<SelectFilterProps>
+  function numberFilter(props?: NumberFilterProps): FC<NumberFilterProps>
+  function customFilter(props?: CustomFilterProps): FC<CustomFilterProps>
   const Comparator: PredefinedComparators
 }
 declare module 'react-bootstrap-table2-paginator' {
-  import { Component, FunctionComponent } from 'react'
+  import type { FC } from 'react'
+  import { Component } from 'react'
   export default function paginationFactory(options?: PaginationProps): Pagination
   export type PaginationProviderProps = {
     paginationProps: PaginationProps
@@ -294,7 +311,7 @@ declare module 'react-bootstrap-table2-paginator' {
   }
   export class PaginationProvider extends Component<{
     pagination: Pagination
-    children: FunctionComponent<PaginationProviderProps>
+    children: FC<PaginationProviderProps>
   }>{ }
   export class PaginationListStandalone extends Component<PaginationProps, TODO>{ }
   export class SizePerPageDropdownStandalone extends Component<PaginationProps, TODO>{ }
@@ -305,15 +322,16 @@ declare module 'react-bootstrap-table2-overlay' {
   export default function overlayFactory(props?: OverlayOptions): Overlay
 }
 declare module 'react-bootstrap-table2-toolkit' {
-  import { Component, ReactElement } from 'react'
-  import { Column } from 'react-bootstrap-table-next'
+  import type { ReactElement } from 'react'
+  import { Component } from 'react'
+  import type { Column } from 'react-bootstrap-table-next'
   interface BaseProps {
     columns: Column[]
-    data: Array<{}>
+    data: {}[]
     keyField: string
   }
   interface CsvProps {
-    onExport?(): void
+    onExport?: () => void
   }
   export interface ColumnToggle extends Column {
     toggle?: boolean
@@ -323,7 +341,7 @@ declare module 'react-bootstrap-table2-toolkit' {
     className?: string
     columns: Column[]
     contextual?: string
-    onColumnToggle(dataField: string): void
+    onColumnToggle: (dataField: string) => void
     toggles: Dictionary<string, boolean>
   }
   export interface ToolkitProviderProps {
@@ -333,7 +351,7 @@ declare module 'react-bootstrap-table2-toolkit' {
     searchProps: SearchProps
   }
   interface CSVExportProps {
-    children?: {} | Array<{}>
+    children?: {} | {}[]
     className?: string
     style?: {}
   }
@@ -344,17 +362,17 @@ declare module 'react-bootstrap-table2-toolkit' {
   }
   export interface SearchProps {
     searchText?: string
-    onClear?(): void
-    onSearch?(searchText: string): void
+    onClear?: () => void
+    onSearch?: (searchText: string) => void
   }
   export class ColumnToggle {
-    static ToggleList(props: ColumnToggleProps): ReactElement
+    static ToggleList: (props: ColumnToggleProps) => ReactElement
   }
   export class Search {
-    static SearchBar(props: SearchProps | SearchFieldProps): ReactElement
+    static SearchBar: (props: SearchProps | SearchFieldProps) => ReactElement
   }
   export class CSVExport {
-    static ExportCSVButton(props: CSVExportProps | CsvProps): ReactElement
+    static ExportCSVButton: (props: CSVExportProps | CsvProps) => ReactElement
   }
   export default class ToolkitProvider extends Component<TODO, TODO> { }
 }

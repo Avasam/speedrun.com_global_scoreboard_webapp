@@ -1,3 +1,8 @@
+// Note: Acceptable with clipboard actions as it's for unknown devices that work differently. Likely mobile.
+/* eslint-disable no-alert */
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
+const MAX_SELECTION = 99_999
+
 const oldCopyToClipboard = (text: string) => {
   const textArea = document.createElement('textarea')
   textArea.value = text
@@ -5,15 +10,14 @@ const oldCopyToClipboard = (text: string) => {
   document.body.append(textArea)
   textArea.focus()
   textArea.select()
-  textArea.setSelectionRange(0, 99_999) // For mobile devices
+  textArea.setSelectionRange(0, MAX_SELECTION) // For mobile devices
 
   try {
     const successful = document.execCommand('copy')
     if (!successful) throw new Error('execCommand failed')
     console.info('text copied to clipboard successfully using textarea')
-  } catch (err) {
-    // Note: Acceptable with clipboard actions as it's for unknown devices that work differently. Likely mobile.
-    // eslint-disable-next-line no-alert
+    // @ts-expect-error TypeScript should allow error type on catch https://github.com/Microsoft/TypeScript/issues/20024
+  } catch (err: Error) {
     alert(`Could not copy text: ${err}`)
     console.error('Could not copy text using textarea:', err)
   }
@@ -22,6 +26,8 @@ const oldCopyToClipboard = (text: string) => {
 }
 
 const copyToClipboard = (text: string) => {
+  // Note: navigator.clipboard may not exist on some devices
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (!navigator.clipboard) {
     oldCopyToClipboard(text)
     return
@@ -30,11 +36,9 @@ const copyToClipboard = (text: string) => {
   navigator.clipboard.writeText(text).then(
     () => console.info('text copied to clipboard successfully'),
     err => {
-      // Note: Acceptable with clipboard actions as it's for unknown devices that work differently. Likely mobile.
-      // eslint-disable-next-line no-alert
       alert(`Could not copy text: ${err}`)
       console.error('Could not copy text:', err)
-    },
+    }
   )
 }
 
