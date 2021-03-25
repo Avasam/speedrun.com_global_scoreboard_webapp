@@ -155,13 +155,19 @@ class Player(db.Model):
     def get_schedules(self) -> List[Schedule]:
         return Schedule.query.filter(Schedule.owner_id == self.user_id).all()
 
-    def create_schedule(self, name: str, is_active: bool, deadline: str, time_slots: List[Dict[str, str]]) -> int:
+    def create_schedule(
+        self,
+        name: str,
+        is_active: bool,
+        deadline: Optional[str],
+        time_slots: List[Dict[str, str]]
+    ) -> int:
         new_schedule = Schedule(
             name=name,
             owner_id=self.user_id,
             registration_key=str(uuid.uuid4()),
             is_active=is_active,
-            deadline=datetime.strptime(deadline, DATETIME_FORMAT))
+            deadline=None if deadline is None else datetime.strptime(deadline, DATETIME_FORMAT))
         db.session.add(new_schedule)
         db.session.flush()
 
@@ -181,7 +187,7 @@ class Player(db.Model):
         schedule_id: int,
         name: str,
         is_active: bool,
-        deadline: str,
+        deadline: Optional[str],
         time_slots: List[Dict[str, str]]
     ) -> bool:
         try:
@@ -195,7 +201,7 @@ class Player(db.Model):
 
         schedule_to_update.name = name
         schedule_to_update.is_active = is_active
-        schedule_to_update.deadline = datetime.strptime(deadline, DATETIME_FORMAT)
+        schedule_to_update.deadline = None if deadline is None else datetime.strptime(deadline, DATETIME_FORMAT)
 
         # Manually take care of merging the time slots
         # since I can't figure out how to do it automatically within SQLAlchemy
