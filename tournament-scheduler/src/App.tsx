@@ -106,8 +106,27 @@ const App: FC = () => {
       </div>
 
       <footer>
-        &copy; <a href='https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/master/LICENSE' target='about'>Copyright</a> {new Date().getFullYear()} by <a href='https://github.com/Avasam/' target='about'>Samuel Therrien</a>.
-        Powered by <a href='https://www.speedrun.com/' target='src'>speedrun.com</a> and <a href='https://www.pythonanywhere.com/' target='about'>PythonAnywhere</a>
+        &copy; <a
+          href='https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/master/LICENSE'
+          target='about'
+        >Copyright</a> {new Date().getFullYear()} by <a
+          href='https://github.com/Avasam/'
+          target='about'
+        >Samuel Therrien</a> (
+        <a href='https://www.twitch.tv/Avasam' target='about'>
+          Avasam<img
+            height='14'
+            alt='Twitch'
+            src='https://static.twitchcdn.net/assets/favicon-32-d6025c14e900565d6177.png'
+          ></img>
+        </a>).
+        Powered by <a
+          href='https://www.speedrun.com/'
+          target='src'
+        >speedrun.com</a> and <a
+          href='https://www.pythonanywhere.com/'
+          target='about'
+        >PythonAnywhere</a>
       </footer>
     </ThemeProvider>
   </Div100vh>

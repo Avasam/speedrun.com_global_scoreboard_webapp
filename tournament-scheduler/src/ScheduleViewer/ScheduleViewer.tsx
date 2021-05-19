@@ -110,7 +110,7 @@ const ScheduleViewer: FC<ScheduleRegistrationProps> = (props: ScheduleRegistrati
       : <div style={{ textAlign: 'left', width: 'fit-content', margin: 'auto' }}>
         <label>Schedule for: {scheduleState.name}</label>
         <span style={{ display: 'block' }}>All dates and times are given in your local timezone.</span>
-        {!scheduleState.active && <div><br />This scheduleState is currently inactive and registration is closed.</div>}
+        {!scheduleState.active && <div><br />This schedule is currently inactive and registration is closed.</div>}
         {scheduleState
           .timeSlots
           .filter(timeSlot => timeSlot.registrations.length > 0)

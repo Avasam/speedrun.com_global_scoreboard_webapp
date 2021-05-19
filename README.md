@@ -1,4 +1,5 @@
 # speedrun.com global scoreboard Webapp
+
 The webapp version of an unofficial speedrun.com global scoreboard for competitive speedrunning  
 [![Renovate](https://img.shields.io/badge/renovate-enabled-brightgreen.svg)](https://renovatebot.com)  
 

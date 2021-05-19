@@ -104,7 +104,7 @@
     "unicorn/no-keyword-prefix": [
       "error",
       {
-        "blacklist": [
+        "disallowedPrefixes": [
           "class",
           "for",
           "of"
@@ -130,7 +130,7 @@
       {
         "checkDefaultAndNamespaceImports": false,
         "checkShorthandImports": false,
-        "whitelist": {
+        "allowList": {
           "fn": true,
           "args": true,
           // environment config
@@ -353,6 +353,7 @@
           // Comparison
           "a",
           "b",
+          "x",
           // Date formats
           "dd",
           "mm",

@@ -2,7 +2,7 @@
   "recommendations": [
     "dbaeumer.vscode-eslint",
     "ms-vscode.vscode-typescript-next",
-    "ms-pyright.pyright",
+    "ms-python.vscode-pylance",
     "ms-python.python",
     "sonarsource.sonarlint-vscode",
     "davidanson.vscode-markdownlint",
@@ -11,6 +11,7 @@
     "hookyqr.minify"
   ],
   "unwantedRecommendations": [
+    "ms-pyright.pyright",
     "esbenp.prettier-vscode"
   ]
 }
