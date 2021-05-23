@@ -39,7 +39,7 @@ type FormatExtraDataProps = {
   handleOnBefriend: (friendId: string) => void
 }
 
-const dateFormat = { year: 'numeric', month: 'long', day: 'numeric' }
+const dateFormat: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' }
 
 const nameFormatter = (_cell: unknown, row: Player | undefined, _rowIndex: number, formatExtraData?: FormatExtraDataProps) =>
   row &&

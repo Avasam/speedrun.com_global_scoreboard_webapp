@@ -205,6 +205,14 @@ const fetchValueNamesForRun = async (runId: string) => {
     })
 }
 
+type LocalStorageItem = Record<string, unknown> | unknown[] | string
+
+const getLocalStorageItem = function <T extends LocalStorageItem>(key: string, fallback: T) {
+  const item = localStorage.getItem(key)
+  if (item != null && item.constructor === fallback.constructor) return JSON.parse(item) as T
+  return fallback
+}
+
 const GameSearch = () => {
   const [gameValues, setGameValues] = useState<GameValueRow[]>([])
   const [platforms, setPlatforms] = useState<IdToNameMap>()
@@ -215,11 +223,11 @@ const GameSearch = () => {
   const [maxTimeText, setMaxTimeText] = useState('')
 
   useEffect(() => {
-    setGameMap(JSON.parse(localStorage.getItem('games') ?? '{}'))
-    setCategoryMap(JSON.parse(localStorage.getItem('categories') ?? '{}'))
-    doPlatformSelection(JSON.parse(localStorage.getItem('selectedPlatforms') ?? '[]'))
-    doMinTimeChange(JSON.parse(localStorage.getItem('selectedMinTime') ?? '""'))
-    doMaxTimeChange(JSON.parse(localStorage.getItem('selectedMaxTime') ?? '""'))
+    setGameMap(getLocalStorageItem('games', {}))
+    setCategoryMap(getLocalStorageItem('categories', {}))
+    doPlatformSelection(getLocalStorageItem('selectedPlatforms', []))
+    doMinTimeChange(getLocalStorageItem('selectedMinTime', ''))
+    doMaxTimeChange(getLocalStorageItem('selectedMaxTime', ''))
     void getAllGameValues().then(setGameValues)
     void getAllPlatforms().then(setPlatforms)
   }, [])
