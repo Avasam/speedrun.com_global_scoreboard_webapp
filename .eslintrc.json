@@ -44,10 +44,8 @@
   "overrides": [
     {
       "files": [
-        "*.config.js",
-        "*-test.js",
+        "*.js",
         "*.test.tsx",
-        "*.spec.js",
         "environment.*",
         "*.d.ts"
       ],
