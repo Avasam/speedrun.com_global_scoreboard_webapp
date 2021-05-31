@@ -32,7 +32,7 @@
   },
   "devDependencies": {
     "@types/jest": "^26.0.23",
-    "@types/node": "^15.6.0",
+    "@types/node": "^15.6.1",
     "@types/react": "^17.0.6",
     "@types/react-add-to-calendar": "^0.1.0",
     "@types/react-div-100vh": "^0.4.0",
