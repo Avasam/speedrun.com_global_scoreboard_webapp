@@ -18,14 +18,12 @@
     "plugin:switch-case/recommended",
     "plugin:unicorn/recommended"
   ],
-  "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaVersion": 2021,
     "sourceType": "module",
     "ecmaFeatures": {
       "jsx": true
-    },
-    "project": "./tsconfig.json"
+    }
   },
   "settings": {
     "react": {
@@ -178,7 +176,8 @@
         "objects": "always-multiline",
         "imports": "always-multiline",
         "exports": "always-multiline",
-        "functions": "only-multiline"
+        "functions": "only-multiline",
+        "enums": "always-multiline"
       }
     ],
     "@typescript-eslint/consistent-type-definitions": [
@@ -370,6 +369,15 @@
     "jsx-quotes": [
       "error",
       "prefer-single"
+    ],
+    "max-len": [
+      "error",
+      {
+        "code": 120,
+        "tabWidth": 2,
+        "ignoreComments": false,
+        "ignorePattern": "^import .*?$"
+      }
     ],
     // These rule does not correctly treat react's function components. See https://github.com/SonarSource/SonarJS/issues/2238
     // Max very high as most of the react code lives in functions.

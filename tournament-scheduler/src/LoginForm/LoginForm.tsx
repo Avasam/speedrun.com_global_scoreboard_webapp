@@ -58,15 +58,17 @@ const LoginForm: FC<loginFormProps> = (props: loginFormProps) => {
       onClick={() => login(srcApiKeyInput, props.onLogin)}
     >Access my schedules</Button>
     <span className='paragraph'>
-      If you don&apos;t trust the above link because SRC&apos;s api portal looks sketchy, you can also access your api key through
+      If you don&apos;t trust the above link because SRC&apos;s api portal looks sketchy,
+      you can also access your api key through
       <br /> <SrcApiKeyLink></SrcApiKeyLink>
     </span>
     <label>Why do we need your API key?</label>
     <p>
       By using your key, it&apos;s possible to authenticate you to speedrun.com without ever asking for a password!
-      <br />If something ever goes wrong or you believe someone is abusing your key, you can change it easily at any time.
-      <br /> Once logged in, you can manage your schedules, which includes creating, modifying and sharing them!
-      <br /><br />
+      <br />
+      If something ever goes wrong, or you believe someone is abusing your key, you can change it easily at any time.
+      <br />
+      Once logged in, you can manage your schedules, which includes creating, modifying and sharing them!
     </p>
   </Container>
 }

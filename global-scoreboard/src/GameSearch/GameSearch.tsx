@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import type { ChangeEventHandler, Dispatch, SetStateAction } from 'react'
 import { useEffect, useState } from 'react'
 import { Container, FormControl, InputGroup, Spinner } from 'react-bootstrap'
-import type { Column } from 'react-bootstrap-table-next'
+import type { Column, ColumnFormatter } from 'react-bootstrap-table-next'
 import BootstrapTable from 'react-bootstrap-table-next'
 import filterFactory, { Comparator, multiSelectFilter, numberFilter } from 'react-bootstrap-table2-filter'
 import paginationFactory, { PaginationListStandalone, PaginationProvider, PaginationTotalStandalone, SizePerPageDropdownStandalone } from 'react-bootstrap-table2-paginator'
@@ -63,27 +63,30 @@ let platformFilter: SelectFilterFunction
 let minTimeFilter: NumberFilterFunction
 let maxTimeFilter: NumberFilterFunction
 
-const runIdFormatter = (_cell: unknown, row: GameValueRow | undefined, _rowIndex: number, formatExtraData?: FormatExtraDataProps) => {
-  if (!row || !formatExtraData) return ''
-  if (!formatExtraData.gameMap[row.gameId] || !formatExtraData.categoryMap[row.categoryId]) {
-    void fetchValueNamesForRun(row.runId)
-      .then(results => {
-        if (!results) return
-        const [game, category] = results
-        formatExtraData.setGameMap(previousGames => {
-          const newGames = { ...previousGames, ...game }
-          localStorage.setItem('games', JSON.stringify(newGames))
-          return newGames
+const runIdFormatter: ColumnFormatter<GameValueRow, FormatExtraDataProps> =
+  (_cell, row, _rowIndex, formatExtraData) => {
+    if (!row || !formatExtraData) return ''
+    if (!formatExtraData.gameMap[row.gameId] || !formatExtraData.categoryMap[row.categoryId]) {
+      void fetchValueNamesForRun(row.runId)
+        .then(results => {
+          if (!results) return
+          const [game, category] = results
+          formatExtraData.setGameMap(previousGames => {
+            const newGames = { ...previousGames, ...game }
+            localStorage.setItem('games', JSON.stringify(newGames))
+            return newGames
+          })
+          formatExtraData.setCategoryMap(previousCategories => {
+            const newCategories = { ...previousCategories, ...category }
+            localStorage.setItem('categories', JSON.stringify(newCategories))
+            return newCategories
+          })
         })
-        formatExtraData.setCategoryMap(previousCategories => {
-          const newCategories = { ...previousCategories, ...category }
-          localStorage.setItem('categories', JSON.stringify(newCategories))
-          return newCategories
-        })
-      })
+    }
+    return <a href={`https://www.speedrun.com/run/${row.runId}`} target='src'>
+      <FontAwesomeIcon icon={faExternalLinkAlt} />
+    </a>
   }
-  return <a href={`https://www.speedrun.com/run/${row.runId}`} target='src'><FontAwesomeIcon icon={faExternalLinkAlt} /></a>
-}
 
 const columns: Column[] = [
   {
@@ -95,29 +98,32 @@ const columns: Column[] = [
   {
     dataField: 'gameId',
     text: 'Game',
-    formatter: (_, row: GameValueRow | undefined, __, formatExtraData?: FormatExtraDataProps) =>
+    formatter: ((_, row, __, formatExtraData) =>
       (row &&
         formatExtraData &&
         formatExtraData.gameMap[row.gameId]) ||
-      row?.gameId,
+      row?.gameId
+    ) as ColumnFormatter<GameValueRow, FormatExtraDataProps>,
   },
   {
     dataField: 'categoryId',
     text: 'Category',
-    formatter: (_, row: GameValueRow | undefined, __, formatExtraData?: FormatExtraDataProps) =>
+    formatter: ((_, row, __, formatExtraData) =>
       (row &&
         formatExtraData &&
         formatExtraData.categoryMap[row.categoryId]) ||
-      row?.categoryId,
+      row?.categoryId
+    ) as ColumnFormatter<GameValueRow, FormatExtraDataProps>,
   },
   {
     dataField: 'platformId',
     text: 'Platform',
-    formatter: (_, row: GameValueRow | undefined, __, formatExtraData?: FormatExtraDataProps) =>
+    formatter: ((_, row, __, formatExtraData) =>
       (row?.platformId &&
         formatExtraData &&
         formatExtraData.platforms[row.platformId]) ||
-      '-',
+      '-'
+    ) as ColumnFormatter<GameValueRow, FormatExtraDataProps>,
     filter: multiSelectFilter({
       options: {},
       getFilter: filter => platformFilter = filter,
@@ -129,9 +135,10 @@ const columns: Column[] = [
     text: 'WR Time',
     searchable: false,
     sort: true,
-    formatter: (_, row: GameValueRow | undefined) =>
+    formatter: ((_, row) =>
       row &&
-      secondsToTimeString(row.wrTime),
+      secondsToTimeString(row.wrTime)
+    ) as ColumnFormatter<GameValueRow, void>,
     filter: numberFilter({
       getFilter: filter => maxTimeFilter = filter,
       style: { 'display': 'none' },
@@ -142,9 +149,10 @@ const columns: Column[] = [
     text: 'WR Points/Time',
     searchable: false,
     sort: true,
-    formatter: (_, row: GameValueRow | undefined) =>
+    formatter: ((_, row) =>
       row &&
-      `${math.perSecondToPerMinute(row.wrPointsPerSecond)} pt/m`,
+      `${math.perSecondToPerMinute(row.wrPointsPerSecond)} pt/m`
+    ) as ColumnFormatter<GameValueRow, void>,
   },
   {
     dataField: 'wrPoints',
@@ -157,18 +165,20 @@ const columns: Column[] = [
     text: 'WR Points/Avg Time',
     searchable: false,
     sort: true,
-    formatter: (_, row: GameValueRow | undefined) =>
+    formatter: ((_, row) =>
       row &&
-      `${math.perSecondToPerMinute(row.meanPointsPerSecond)} pt/m`,
+      `${math.perSecondToPerMinute(row.meanPointsPerSecond)} pt/m`
+    ) as ColumnFormatter<GameValueRow, void>,
   },
   {
     dataField: 'meanTime',
     text: 'Avg Time',
     searchable: false,
     sort: true,
-    formatter: (_, row: GameValueRow | undefined) =>
+    formatter: ((_, row) =>
       row &&
-      secondsToTimeString(row.meanTime),
+      secondsToTimeString(row.meanTime)
+    ) as ColumnFormatter<GameValueRow, FormatExtraDataProps>,
     filter: numberFilter({
       getFilter: filter => minTimeFilter = filter,
       style: { 'display': 'none' },

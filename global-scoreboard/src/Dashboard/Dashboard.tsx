@@ -97,12 +97,14 @@ const Dashboard = (props: DashboardProps) => {
 
   const handleOnUpdateRunner = (runnerNameOrId: string) => {
     setAlertVariant('info')
-    setAlertMessage(`Updating "${runnerNameOrId}". This may take up to 5 minutes, depending on the amount of runs to analyse. Please Wait...`)
+    setAlertMessage(`Updating "${runnerNameOrId}". This may take up to 5 minutes, ` +
+      'depending on the amount of runs to analyse. Please Wait...')
     if (window.process.env.REACT_APP_BYPASS_UPDATE_RESTRICTIONS !== 'true' &&
       !validateRunnerNotRecentlyUpdated(runnerNameOrId, playersState)) {
       setAlertVariant('warning')
       const cantUpdateTime = Configs.lastUpdatedDays[0]
-      setAlertMessage(`Runner ${runnerNameOrId} has already been updated in the past ${cantUpdateTime} day${cantUpdateTime === 1 ? '' : 's'}`)
+      setAlertMessage(`Runner ${runnerNameOrId} has already been updated in the past ` +
+        `${cantUpdateTime} day${cantUpdateTime === 1 ? '' : 's'}`)
       return
     }
     setUpdateStartTime(Date.now())
@@ -170,8 +172,8 @@ const Dashboard = (props: DashboardProps) => {
             break
           case StatusCodes.GATEWAY_TIMEOUT:
             setAlertVariant('warning')
-            setAlertMessage(`Error ${StatusCodes.GATEWAY_TIMEOUT}: ${ReasonPhrases.GATEWAY_TIMEOUT}. The webworker probably timed out, ` +
-              'which can happen if updating takes more than 5 minutes. ' +
+            setAlertMessage(`Error ${StatusCodes.GATEWAY_TIMEOUT}: ${ReasonPhrases.GATEWAY_TIMEOUT}. ` +
+              'The webworker probably timed out, which can happen if updating takes more than 5 minutes. ' +
               'Please try again as next attempt should take less time since ' +
               'all calls to speedrun.com are cached for a day or until server restart.')
 
@@ -184,7 +186,8 @@ const Dashboard = (props: DashboardProps) => {
                   setAlertMessage('It seems you are already updating a runner. Please try again in 5 minutes.')
                   break
                 case 'name_or_id':
-                  setAlertMessage('It seems that runner is already being updated (possibly by someone else). Please try again in 5 minutes.')
+                  setAlertMessage('It seems this runner is already being updated (possibly by someone else). ' +
+                    'Please try again in 5 minutes.')
                   break
                 default:
                   setAlertMessage(errorString)

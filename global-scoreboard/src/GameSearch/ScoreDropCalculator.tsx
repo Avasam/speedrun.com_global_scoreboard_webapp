@@ -82,6 +82,7 @@ const ScoreDropCalculator = () => {
         getLeaderboardRuns(run.game, run.category, filterSubCatVariables(run.values, subCategories)).then(records => {
           /* eslint-disable extra-rules/no-commented-out-code */
           /* eslint-disable id-length */
+          /* eslint-disable max-len */
           /* eslint-disable @typescript-eslint/no-magic-numbers */
           const primaryTimes = records
             .slice(0, Math.floor(records.length * 0.95))
@@ -133,6 +134,7 @@ const ScoreDropCalculator = () => {
 
           /* eslint-enable extra-rules/no-commented-out-code */
           /* eslint-enable id-length */
+          /* eslint-enable max-len */
           /* eslint-enable @typescript-eslint/no-magic-numbers */
         })))
       .catch(() => setRequiredTime(Number.NaN))
@@ -143,7 +145,9 @@ const ScoreDropCalculator = () => {
   return <div style={{ marginTop: '1rem', marginBottom: '1rem' }}>
     <Form onSubmit={(event: FormEvent<HTMLFormElement>) => event.preventDefault()}>
       <Form.Group controlId='calculate-score-drop'>
-        <Form.Label>Enter a run&apos;s ID to calculate the required time, for a new player, to drop the score value of said run:</Form.Label>
+        <Form.Label>
+          Enter a run&apos;s ID to calculate the required time, for a new player, to drop the score value of said run:
+        </Form.Label>
         <InputGroup>
           <Form.Control
             required
@@ -173,8 +177,10 @@ const ScoreDropCalculator = () => {
               <strong> {secondsToTimeString(requiredTime)}</strong> or less.</span>
           }</>
         : <span>
-          The required time to reduce the points of the run &apos;{calculatedRunId}&apos; could not be calculated.
-          Either because the leaderboard has less than 4 runners, it is an individual level, or something just went wrong.
+          The required time to reduce the points of the run
+          &apos;{calculatedRunId}&apos; could not be calculated.
+          Either because the leaderboard has less than 4 runners,
+          it is an individual level, or something just went wrong.
         </span>
     )}
   </div>

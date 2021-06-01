@@ -67,7 +67,10 @@ const RegistrationList: FC<RegistrationListProps> = (props: RegistrationListProp
             <DialogContentText id='alert-dialog-description'>
               Are you sure that you want to delete entry #{props.index + 1} of this time slot forever?
               This action will take effect immediatly and is irreversible.
-              <strong><i> Make sure you have noticed the participants as you will not be able to retrieve this entry after this point!</i></strong>
+              <strong>
+                <i> Make sure you have notified the participants,
+                  as you will not be able to retrieve this entry after this point!</i>
+              </strong>
             </DialogContentText>
           </DialogContent>
           <DialogActions>

@@ -1,11 +1,11 @@
 import math from './Math'
 
 export const secondsToTimeString = (totalSeconds: number) => {
-  const hours = Math.trunc(totalSeconds / math.SECONDS_IN_HOUR)
+  const hours = Math.trunc(totalSeconds / math.SECONDS_IN_HOUR).toString().padStart(2, '0')
   totalSeconds %= math.SECONDS_IN_HOUR
-  const minutes = Math.trunc(totalSeconds / math.SECONDS_IN_MINUTE)
-  const seconds = Math.trunc(totalSeconds % math.SECONDS_IN_MINUTE)
-  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+  const minutes = Math.trunc(totalSeconds / math.SECONDS_IN_MINUTE).toString().padStart(2, '0')
+  const seconds = Math.trunc(totalSeconds % math.SECONDS_IN_MINUTE).toString().padStart(2, '0')
+  return `${hours}:${minutes}:${seconds}`
 }
 
 export const timeStringToSeconds = (timeString: string) => {

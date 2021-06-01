@@ -1,18 +1,18 @@
 diff --git a/node_modules/react-bootstrap-table-next/lib/src/body.js b/node_modules/react-bootstrap-table-next/lib/src/body.js
-index ab2ea0c..0789828 100644
+index ab2ea0c..141cb99 100644
 --- a/node_modules/react-bootstrap-table-next/lib/src/body.js
 +++ b/node_modules/react-bootstrap-table-next/lib/src/body.js
 @@ -137,7 +137,7 @@ var Body = function (_React$Component) {
            additionalRowProps.selectRow = selectRow;
          }
-
+ 
 -        content = data.map(function (row, index) {
 +        content = data.filter(row => row).map(function (row, index) {
            var key = _utils2.default.get(row, keyField);
            var baseRowProps = _extends({
              key: key,
 diff --git a/node_modules/react-bootstrap-table-next/lib/src/store/sort.js b/node_modules/react-bootstrap-table-next/lib/src/store/sort.js
-index cc3320a..7d5edbc 100644
+index cc3320a..8e205bb 100644
 --- a/node_modules/react-bootstrap-table-next/lib/src/store/sort.js
 +++ b/node_modules/react-bootstrap-table-next/lib/src/store/sort.js
 @@ -20,14 +20,13 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
@@ -34,7 +34,7 @@ index cc3320a..7d5edbc 100644
 
  var sort = exports.sort = function sort(data, sortOrder, _ref) {
 diff --git a/node_modules/react-bootstrap-table-next/lib/src/utils.js b/node_modules/react-bootstrap-table-next/lib/src/utils.js
-index 5271e86..ef1f22a 100644
+index 5271e86..973ac11 100644
 --- a/node_modules/react-bootstrap-table-next/lib/src/utils.js
 +++ b/node_modules/react-bootstrap-table-next/lib/src/utils.js
 @@ -11,7 +11,7 @@ var _underscore2 = _interopRequireDefault(_underscore);
