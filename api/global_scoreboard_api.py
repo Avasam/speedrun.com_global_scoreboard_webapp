@@ -18,7 +18,11 @@ api = Blueprint('global_scoreboard_api', __name__)
 
 @api.route('/players', methods=('GET',))
 def get_all_players():
-    return jsonify(map_to_dto(Player.get_all()))
+    country_code_str: Optional[str] = request.args.get('region')
+    if country_code_str is None:
+        return jsonify(map_to_dto(Player.get_all()))
+    country_codes = list(set(country_code_str.split(',')))
+    return jsonify(Player.get_by_country_code(country_codes)), 200, {'Access-Control-Allow-Origin': '*'}
 
 
 @api.route('/players/<id>/score-details', methods=('GET',))

@@ -249,6 +249,12 @@
       }
     ],
     "@typescript-eslint/no-type-alias": "off",
+    // Note: These 2 drown TS2304 and actually make the errors harder to understand.
+    // See: https://github.com/typescript-eslint/typescript-eslint/issues/2665
+    // There's nothing we can do until a pedantic any check in TypeScript is added
+    // Eg.: https://github.com/microsoft/TypeScript/issues/40174
+    "@typescript-eslint/no-unsafe-call": "off",
+    "@typescript-eslint/no-unsafe-assignment": "off",
     "@typescript-eslint/no-unused-vars": [
       "error",
       {
@@ -413,6 +419,12 @@
     "no-dupe-else-if": "error",
     "no-inner-declarations": "error",
     "no-lonely-if": "error",
+    "no-multiple-empty-lines": [
+      "error",
+      {
+        "max": 1
+      }
+    ],
     "no-unneeded-ternary": "error",
     "no-warning-comments": [
       "warn",
