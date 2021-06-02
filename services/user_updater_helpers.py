@@ -216,6 +216,7 @@ def update_runner_in_database(player: Player, user: User):
             else:
                 text_output = f"{user} found. Updated their entry."
                 result_state = "success"
+            print(user._country_code)
             player.update(name=user._name,
                           country_code=user._country_code,
                           score=floor(user._points),

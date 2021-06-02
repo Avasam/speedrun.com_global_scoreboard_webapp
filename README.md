@@ -53,8 +53,8 @@ Note: The soft cutoff works great on games such as Barney. But is too punishing 
 
 ## Dev environment setup
 
-Get yourself a [MySQL server](https://dev.mysql.com/downloads/mysql/) (PythonAnywhere uses version 5.6.40)  
-Install [Python](https://www.python.org/downloads/) 3.7+  
+Get yourself a [MySQL server](https://dev.mysql.com/downloads/mysql/) (as of 2021/06/01, PythonAnywhere uses version 5.7.27)  
+Install [Python](https://www.python.org/downloads/) 3.7 or 3.8 (but not 3.9 !)  
 Install PIP (this should come bundled with python 3.4+)  
 Run this command in a terminal: `pip3 install flask flask_cors flask_sqlalchemy sqlalchemy httplib2 simplejson mysql-connector requests pyjwt`  
 Copy `configs.template.py` as `configs.py` and update the file as needed.  
