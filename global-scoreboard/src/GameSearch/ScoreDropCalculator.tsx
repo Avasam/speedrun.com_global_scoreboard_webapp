@@ -10,7 +10,6 @@ import { secondsToTimeString } from '../utils/Time'
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers
 const TIME_BONUS_DIVISOR = math.SECONDS_IN_HOUR * 12 // 12h (1/2 day) for +100%
 
-
 // eslint-disable-next-line unicorn/prevent-abbreviations
 const addVarToValuesKeys = (values: SrcRun['data']['values']) => {
   const newDict: SrcRun['data']['values'] = {}
@@ -28,7 +27,6 @@ const filterSubCatVariables = (variables: SrcRun['data']['values'], subCategorie
   }
   return newVariables
 }
-
 
 const getRunDetails = (runId: string) =>
   apiGet(
@@ -140,7 +138,6 @@ const ScoreDropCalculator = () => {
       .catch(() => setRequiredTime(Number.NaN))
       .finally(() => setUpdating(false))
   }
-
 
   return <div style={{ marginTop: '1rem', marginBottom: '1rem' }}>
     <Form onSubmit={(event: FormEvent<HTMLFormElement>) => event.preventDefault()}>

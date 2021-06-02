@@ -6,7 +6,6 @@ import { useState } from 'react'
 import type { RegistrationProxy } from '../../models/Registration'
 import type Registration from '../../models/Registration'
 
-
 type RegistrationListProps = {
   registration: RegistrationProxy
   index: number

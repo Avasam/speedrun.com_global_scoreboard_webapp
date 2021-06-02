@@ -14,7 +14,6 @@ export type SrcCategory = {
   }
 }
 
-
 export type EmbeddedSrcRun = {
   data: {
     game: SrcGame
