@@ -1,6 +1,8 @@
+import { StatusCodes } from 'http-status-codes'
+
 type QueryParams = Record<string, boolean | number | string | null>
 
-const firstHttpErrorCode = 400
+const firstHttpErrorCode = StatusCodes.BAD_REQUEST
 const lastHttpErrorCode = 599
 
 const makeUrl = (location: string, queryParams?: QueryParams) => {

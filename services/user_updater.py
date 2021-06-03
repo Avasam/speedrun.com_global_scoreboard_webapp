@@ -41,7 +41,7 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int, P
             player = Player.get(user._name)
             if player:
                 text_output = (f"User ID \"{user._id}\" not found on speedrun.com. "
-                               "\nRemoved it from the database.")
+                               "\nRemoved them from the database.")
                 result_state = "warning"
                 db.session.delete(player)
                 db.session.commit()
@@ -64,7 +64,6 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int, P
                 __set_user_points(user)
 
                 if not threads_exceptions:
-                    print(f"\nLooking for {user._id}")
                     text_output, result_state = update_runner_in_database(player, user)
                 else:
                     errors_str = "Please report to: https://github.com/Avasam/Global_Speedrunning_Scoreboard/issues\n" \
