@@ -11,6 +11,15 @@ type PlayerNameCellProps = {
   handleOnBefriend: (friendId: string) => void
 }
 
+const backupFlag = (element: HTMLImageElement) => {
+  const backupSrc = element.src.replace(/\/[a-z]+?\.png/, '.png')
+  if (backupSrc.endsWith('flags.png')) {
+    element.removeAttribute('src')
+  } else {
+    element.src = backupSrc
+  }
+}
+
 const PlayerNameCell = (props: PlayerNameCellProps) =>
   <span className='name-cell'>
     <a
@@ -23,6 +32,7 @@ const PlayerNameCell = (props: PlayerNameCellProps) =>
         alt=''
         className='flagicon'
         src={`https://www.speedrun.com/images/flags/${props.player.countryCode}.png`}
+        onError={err => backupFlag(err.currentTarget)}
       />}{props.player.name}</a>
     {
       !props.isCurrentUser &&

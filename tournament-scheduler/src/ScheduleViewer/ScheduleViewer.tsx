@@ -1,12 +1,12 @@
-import 'react-add-to-calendar/dist/react-add-to-calendar.min.css'
+import '@culturehq/add-to-calendar/dist/styles.css'
 
+import AddToCalendar from '@culturehq/add-to-calendar'
 import DateFnsUtils from '@date-io/moment'
 import { Container, createStyles, List, ListItem, ListItemText, makeStyles } from '@material-ui/core'
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment'
 import type { FC } from 'react'
 import { useEffect, useState } from 'react'
-import AddToCalendar from 'react-add-to-calendar'
 
 import { apiGet } from '../fetchers/Api'
 import type { ScheduleDto } from '../models/Schedule'
@@ -48,7 +48,8 @@ const useStyles = makeStyles(theme =>
       marginBottom: 10,
       display: 'inline-block',
       color: theme.palette.text.primary,
-      backgroundColor: theme.palette.background.default,
+      backgroundColor: theme.palette.background.paper,
+      borderRadius: 4,
     },
   }))
 
@@ -67,23 +68,22 @@ const buildCalendarEventDescription = (timeSlot: TimeSlot, schedule: Schedule) =
   const url = window.location.href
   const title = schedule.name
   const players = timeSlot.registrations.length <= 1
-    ? `Participants:\n${timeSlot
+    ? `Participants:<br/>${timeSlot
       .registrations
       .flatMap(registration => registration.participants)
-      .map((participant, index) => `${index + 1}. ${participant}\n`)
+      .map((participant, index) => `${index + 1}. ${participant}<br/>`)
       .join('')}`
     : timeSlot
       .registrations
       .map(registration => registration.participants)
       .map((participants, entryIndex) =>
-        `Participants for entry #${entryIndex + 1}:\n${participants
+        `Participants for entry #${entryIndex + 1}:<br/>${participants
           .map((participant, index) =>
             `${index + 1}. ${participant}`)
-          .join('\n')}`)
-      .join('\n\n')
-  return `${title}\n${url}\n\n${players}`
+          .join('<br/>')}`)
+      .join('<br/><br/>')
+  return `${title}<br/>${url}<br/><br/>${players}`
 }
-
 
 const ScheduleViewer: FC<ScheduleRegistrationProps> = (props: ScheduleRegistrationProps) => {
   const [scheduleState, setScheduleState] = useState<Schedule | null | undefined>()
@@ -110,7 +110,7 @@ const ScheduleViewer: FC<ScheduleRegistrationProps> = (props: ScheduleRegistrati
       : <div style={{ textAlign: 'left', width: 'fit-content', margin: 'auto' }}>
         <label>Schedule for: {scheduleState.name}</label>
         <span style={{ display: 'block' }}>All dates and times are given in your local timezone.</span>
-        {!scheduleState.active && <div><br />This scheduleState is currently inactive and registration is closed.</div>}
+        {!scheduleState.active && <div><br />This schedule is currently inactive and registration is closed.</div>}
         {scheduleState
           .timeSlots
           .filter(timeSlot => timeSlot.registrations.length > 0)
@@ -125,15 +125,15 @@ const ScheduleViewer: FC<ScheduleRegistrationProps> = (props: ScheduleRegistrati
                     {moment(timeSlot.dateTime).format(`ddd ${new DateFnsUtils().dateTime24hFormat}`)}
                     <div className={classes.addToCalendar}>
                       <AddToCalendar
+                        filename={buildCalendarEventTitle(timeSlot, scheduleState)}
                         event={{
-                          title: buildCalendarEventTitle(timeSlot, scheduleState),
-                          description: buildCalendarEventDescription(timeSlot, scheduleState),
-                          location: '',
-                          startTime: timeSlot.dateTime,
-                          endTime: moment(timeSlot.dateTime).add(1, 'h').toDate(),
+                          name: buildCalendarEventTitle(timeSlot, scheduleState),
+                          details: buildCalendarEventDescription(timeSlot, scheduleState),
+                          location: window.location.href,
+                          startsAt: timeSlot.dateTime.toISOString(),
+                          endsAt: moment(timeSlot.dateTime).add(1, 'h').toDate().toISOString(),
                         }}
-                        buttonLabel='Add to calendar'
-                      />
+                      >Add to calendar</AddToCalendar>
                     </div>
                   </>}
                   secondary={

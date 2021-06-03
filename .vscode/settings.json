@@ -17,10 +17,11 @@
   "[python]": {
     "editor.tabSize": 4,
   },
-  "[py]": {
-    "editor.tabSize": 4,
-  },
   "editor.formatOnSave": true,
+  // For node_modules
+  "[javascript]": {
+    "editor.formatOnSave": false,
+  },
   "javascript.preferences.quoteStyle": "single",
   "typescript.preferences.quoteStyle": "single",
   "html.format.wrapAttributes": "force-expand-multiline",
@@ -30,7 +31,7 @@
     "source.fixAll.markdownlint": true
   },
   "python.linting.pylintEnabled": false,
-  "//": "Using flake8 as other linters are incomplete or have false positives with Requests",
+  // "Using flake8 as other linters are incomplete or have false positives with Requests",
   "python.linting.flake8Enabled": true,
   "python.linting.enabled": true,
   "python.linting.pycodestyleEnabled": false,
@@ -53,6 +54,32 @@
       "mode": "auto"
     }
   ],
+  // Copy those over to your user settings
+  "sonarlint.rules": {
+    "python:S1192": {
+      "level": "off"
+    },
+    "python:S3776": {
+      "level": "off"
+    },
+    "python:S107": {
+      "level": "off"
+    },
+    "typescript:S3735": {
+      "level": "off"
+    },
+    "typescript:S3358": {
+      "level": "off"
+    },
+    "typescript:S3776": {
+      "level": "off"
+    }
+  },
   "files.insertFinalNewline": true,
-  "python.pythonPath": "",
+  "trailing-spaces.deleteModifiedLinesOnly": true,
+  "trailing-spaces.includeEmptyLines": true,
+  "trailing-spaces.trimOnSave": true,
+  "trailing-spaces.syntaxIgnore": [
+    "markdown"
+  ],
 }
