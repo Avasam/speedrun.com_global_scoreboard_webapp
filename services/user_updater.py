@@ -113,7 +113,12 @@ def __set_user_code_and_name(user: User) -> None:
 
     user._id = infos["data"]["id"]
     location = infos["data"]["location"]
-    user._country_code = location["country"]["code"] if location else None
+    if location is not None:
+        country = location["country"]
+        region = location.get("region")
+        user._country_code = region["code"] if region else country["code"]
+    else:
+        user._country_code = None
     user._name = infos["data"]["names"].get("international")
     japanese_name = infos["data"]["names"].get("japanese")
     if japanese_name:
