@@ -119,6 +119,7 @@
     ],
     "unicorn/numeric-separators-style": "error",
     "unicorn/prefer-add-event-listener": "error",
+    "unicorn/prefer-object-has-own": "error",
     "unicorn/prefer-query-selector": 0,
     "unicorn/prefer-text-content": "error",
     "unicorn/prevent-abbreviations": [
