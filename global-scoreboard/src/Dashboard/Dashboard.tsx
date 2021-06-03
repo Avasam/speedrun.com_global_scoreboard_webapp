@@ -97,12 +97,14 @@ const Dashboard = (props: DashboardProps) => {
 
   const handleOnUpdateRunner = (runnerNameOrId: string) => {
     setAlertVariant('info')
-    setAlertMessage(`Updating "${runnerNameOrId}". This may take up to 5 minutes, depending on the amount of runs to analyse. Please Wait...`)
+    setAlertMessage(`Updating "${runnerNameOrId}". This may take up to 5 minutes, ` +
+      'depending on the amount of runs to analyse. Please Wait...')
     if (window.process.env.REACT_APP_BYPASS_UPDATE_RESTRICTIONS !== 'true' &&
       !validateRunnerNotRecentlyUpdated(runnerNameOrId, playersState)) {
       setAlertVariant('warning')
       const cantUpdateTime = Configs.lastUpdatedDays[0]
-      setAlertMessage(`Runner ${runnerNameOrId} has already been updated in the past ${cantUpdateTime} day${cantUpdateTime === 1 ? '' : 's'}`)
+      setAlertMessage(`Runner ${runnerNameOrId} has already been updated in the past ` +
+        `${cantUpdateTime} day${cantUpdateTime === 1 ? '' : 's'}`)
       return
     }
     setUpdateStartTime(Date.now())
@@ -153,51 +155,59 @@ const Dashboard = (props: DashboardProps) => {
         setAlertVariant('danger')
         if (err instanceof Error) {
           setAlertMessage(`${err.name}: ${err.message}`)
-        } else if (err.status === StatusCodes.IM_A_TEAPOT) {
-          setAlertVariant('warning')
-          setAlertMessage(<div>
-            <p>You know the drill...</p>
-            <p>
-              <img src='https://speedrun.com/themes/Default/1st.png' alt='' />
-              <br />
-              <img src='https://speedrun.com/themes/Default/logo.png' alt='speedrun.com' style={{ width: 384 }} />
-            </p>
-            <p>Oops! The site&apos;s under a lot of pressure right now. Please try again in a minute.</p>
-            <img src='https://brand.twitch.tv/assets/emotes/lib/kappa.png' alt='Kappa' />
-          </div>)
-        } else if (err.status === StatusCodes.GATEWAY_TIMEOUT) {
-          setAlertVariant('warning')
-          setAlertMessage(`Error ${StatusCodes.GATEWAY_TIMEOUT}: ${ReasonPhrases.GATEWAY_TIMEOUT}. The webworker probably timed out, ` +
-            'which can happen if updating takes more than 5 minutes. ' +
-            'Please try again as next attempt should take less time since ' +
-            'all calls to speedrun.com are cached for a day or until server restart.')
-        } else if (err.status === StatusCodes.CONFLICT) {
-          void err.text().then(errorString => {
+        } else switch (err.status) {
+          case StatusCodes.IM_A_TEAPOT:
             setAlertVariant('warning')
-            switch (errorString) {
-              case 'current_user':
-                setAlertMessage('It seems you are already updating a runner. Please try again in 5 minutes.')
-                break
-              case 'name_or_id':
-                setAlertMessage('It seems that runner is already being updated (possibly by someone else). Please try again in 5 minutes.')
-                break
-              default:
-                setAlertMessage(errorString)
-            }
-          })
-        } else {
-          void err.text().then(errorString => {
-            try {
-              const result = JSON.parse(errorString) as UpdateRunnerResult
-              setAlertVariant(result.state ?? 'danger')
-              setAlertMessage(result.message)
-              if (err.status === StatusCodes.BAD_REQUEST && result.score < 1) {
-                setPlayersState(playersState.filter(player => player.userId !== result.userId))
+            setAlertMessage(<div>
+              <p>You know the drill...</p>
+              <p>
+                <img src='https://speedrun.com/themes/Default/1st.png' alt='' />
+                <br />
+                <img src='https://speedrun.com/themes/Default/logo.png' alt='speedrun.com' style={{ width: 384 }} />
+              </p>
+              <p>Oops! The site&apos;s under a lot of pressure right now. Please try again in a minute.</p>
+              <img src='https://brand.twitch.tv/assets/emotes/lib/kappa.png' alt='Kappa' />
+            </div>)
+
+            break
+          case StatusCodes.GATEWAY_TIMEOUT:
+            setAlertVariant('warning')
+            setAlertMessage(`Error ${StatusCodes.GATEWAY_TIMEOUT}: ${ReasonPhrases.GATEWAY_TIMEOUT}. ` +
+              'The webworker probably timed out, which can happen if updating takes more than 5 minutes. ' +
+              'Please try again as next attempt should take less time since ' +
+              'all calls to speedrun.com are cached for a day or until server restart.')
+
+            break
+          case StatusCodes.CONFLICT:
+            void err.text().then(errorString => {
+              setAlertVariant('warning')
+              switch (errorString) {
+                case 'current_user':
+                  setAlertMessage('It seems you are already updating a runner. Please try again in 5 minutes.')
+                  break
+                case 'name_or_id':
+                  setAlertMessage('It seems this runner is already being updated (possibly by someone else). ' +
+                    'Please try again in 5 minutes.')
+                  break
+                default:
+                  setAlertMessage(errorString)
               }
-            } catch {
-              setAlertMessage(errorString)
-            }
-          })
+            })
+
+            break
+          default:
+            void err.text().then(errorString => {
+              try {
+                const result = JSON.parse(errorString) as UpdateRunnerResult
+                setAlertVariant(result.state ?? 'danger')
+                setAlertMessage(result.message)
+                if (err.status === StatusCodes.BAD_REQUEST && result.score < 1) {
+                  setPlayersState(playersState.filter(player => player.userId !== result.userId))
+                }
+              } catch {
+                setAlertMessage(errorString)
+              }
+            })
         }
       })
       .finally(() => setUpdateStartTime(null))

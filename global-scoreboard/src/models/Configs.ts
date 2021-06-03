@@ -13,5 +13,4 @@ const Configs: (ServerConfigs & { setConfigs: (configs: ServerConfigs) => void }
   },
 }
 
-
 export default Configs

@@ -10,6 +10,7 @@
 /* eslint-disable unicorn/no-static-only-class */
 /* eslint-disable unicorn/prevent-abbreviations */
 /* eslint-disable extra-rules/no-commented-out-code */
+/* eslint-disable max-len */
 
 // Origin: https://gitlab.com/fluidattacks/integrates/-/blob/master/integrates/front/src/typings/react-bootstrap-table-2/index.d.ts
 // Modified:
@@ -42,6 +43,7 @@
 // - Pagination is a React Component
 // - Added SelectFilterFunction and getFilter to SelectFilterProps
 // - Shorthand method signature is forbidden. Use a function property instead.eslint@typescript-eslint/method-signature-style
+// - Added ColumnFormatter<T> type alias
 
 type RowFieldValue = ReactText | Date | TODO
 type TODO = any
@@ -174,7 +176,7 @@ interface ComparatorTypes {
 }
 // eslint-disable-next-line no-shadow
 declare enum PredefinedComparatorTypes {
-  LIKE = 'LIKE', EQ = '=', NE = '!=', GT = '>', GE = '>=', LT = '<', LE = '<='
+  LIKE = 'LIKE', EQ = '=', NE = '!=', GT = '>', GE = '>=', LT = '<', LE = '<=',
 }
 type PredefinedComparators = typeof PredefinedComparatorTypes
 // EDITOR
@@ -201,7 +203,7 @@ interface ExpandRowOptions {
   showExpandColumn?: boolean
 }
 declare module 'react-bootstrap-table-next' {
-  import type { ReactElement, FC } from 'react'
+  import type { FC, ReactElement, ReactNode } from 'react'
   import { Component } from 'react'
   export default class BootstrapTable extends Component<BootstrapTableProps, TODO> {
     table: {
@@ -263,6 +265,7 @@ declare module 'react-bootstrap-table-next' {
     selectRow?: SelectRowOptions
     expandRow?: ExpandRowOptions
   }
+  export type ColumnFormatter<T, F> = (cell: T | undefined, row: T | undefined, rowIndex: number, formatExtraData: F | undefined) => ReactNode
   export interface Column {
     align?: string
     dataField: string
@@ -275,7 +278,7 @@ declare module 'react-bootstrap-table-next' {
     searchable?: boolean
     filter?: FC<FilterProps>
     formatExtraData?: TODO
-    formatter?: (cell: TODO, row: TODO, rowIndex: number, formatExtraData: any) => ReactNode
+    formatter?: ColumnFormatter<T, F>
     headerFormatter?: (column: Column, colIndex: number, components: any) => ReactNode
     headerStyle?: (colum: TODO, colIndex: number) => any
     sortFunc?: <T>(a: T, b: T, order: SortOrder, rowA: Row, rowB: Row) => number

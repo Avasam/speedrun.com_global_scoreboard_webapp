@@ -1,7 +1,7 @@
 from __future__ import annotations
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import orm, text
+from sqlalchemy import or_, orm, text
 from typing import cast, Dict, List, Optional, Tuple, Union
 from services.utils import get_file, SpeedrunComError, UserUpdaterError
 import sys
@@ -30,7 +30,8 @@ class Player(db.Model):
 
     user_id: str = db.Column(db.String(8), primary_key=True)
     name: str = db.Column(db.String(32), nullable=False)
-    country_code: Optional[str] = db.Column(db.String(5))
+    # The biggest region code I found so far was "us/co/coloradosprings" at 21
+    country_code: Optional[str] = db.Column(db.String(24))
     score: int = db.Column(db.Integer, nullable=False)
     score_details: str = db.Column(db.String())
     last_update: Optional[datetime] = db.Column(db.DateTime())
@@ -90,18 +91,39 @@ class Player(db.Model):
             rank=player[5]) for player in db.engine.execute(sql).fetchall()]
 
     @staticmethod
+    def get_by_country_code(country_codes: List[str]):
+        def to_filtered_dto(player: Player) -> dict[str, Union[str, datetime, None]]:
+            return {
+                'userId': player.user_id,
+                'name': player.name,
+                'countryCode': player.country_code,
+                'lastUpdate': player.last_update,
+            }
+
+        country_code_queries = [y for x in [(
+            Player.country_code == country_code,
+            Player.country_code.like(f'{country_code}/%')
+        ) for country_code in country_codes]
+            for y in x]
+
+        return [to_filtered_dto(player) for player in Player.query.filter(or_(*country_code_queries)).all()]
+
+    @staticmethod
     def create(user_id: str, name: str, **kwargs: Union[Optional[str], float, datetime]) -> Player:
         """
         kwargs:
+        - country_code: str
         - score: int
         - last_update: Union[datetime, str]
         """
+        country_code = kwargs.get('country_code', None)
         score = kwargs.get('score', 0)
         last_update = kwargs.get('last_update', None)
 
         player = Player(
             user_id=user_id,
             name=name,
+            country_code=country_code,
             score=score,
             last_update=last_update)
         db.session.add(player)
@@ -110,6 +132,13 @@ class Player(db.Model):
         return player
 
     def update(self, **kwargs: Union[Optional[str], float, datetime]) -> Player:
+        """
+        kwargs:
+        - name: str
+        - country_code: str
+        - score: int
+        - last_update: Union[datetime, str]
+        """
         player = Player \
             .query \
             .filter(Player.user_id == self.user_id) \

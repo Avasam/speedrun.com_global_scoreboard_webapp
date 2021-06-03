@@ -45,7 +45,8 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
   const checkFormValidity = () => {
     const participantCount = selectedTimeSlot?.participantsPerEntry
     const actualParticipants = participants.slice(0, participantCount)
-    const valid = actualParticipants.length === participantCount && actualParticipants.every(participant => !!participant)
+    const valid = actualParticipants.length === participantCount &&
+      actualParticipants.every(participant => !!participant)
     setFormValidity(valid)
   }
 
@@ -72,7 +73,8 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
   }, [props.registrationLink])
 
   const selectTimeSlot: SelectInputProps['onChange'] = event => {
-    setSelectedTimeSlot(scheduleState?.timeSlots.find(timeSlot => timeSlot.id === Number.parseInt(event.target.value as string)))
+    const eventValue = Number.parseInt(event.target.value as string)
+    setSelectedTimeSlot(scheduleState?.timeSlots.find(timeSlot => timeSlot.id === eventValue))
     setErrorMessage('')
   }
 
@@ -83,7 +85,11 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
 
   const sendRegistrationForm = () => {
     if (!selectedTimeSlot) return
-    postRegistration(selectedTimeSlot.id, participants.slice(0, selectedTimeSlot.participantsPerEntry), registrationKeyState)
+    postRegistration(
+      selectedTimeSlot.id,
+      participants.slice(0, selectedTimeSlot.participantsPerEntry),
+      registrationKeyState
+    )
       .then(() => {
         localStorage.removeItem('register')
         window.location.href = `${window.location.pathname}?view=${scheduleState?.id}`
@@ -110,7 +116,9 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
 
   return <Container>
     {!scheduleState
-      ? scheduleState === null && <div>Sorry. `<code>{props.registrationLink}</code>` does not lead to an existing registration form.</div>
+      ? scheduleState === null && <div>
+        Sorry. `<code>{props.registrationLink}</code>` does not lead to an existing registration form.
+      </div>
       : <Card>
         <CardContent style={{ textAlign: 'left' }}>
           <label>Schedule for: {scheduleState.name}</label>
@@ -122,7 +130,9 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
           {!scheduleState.active
             ? <div><br />Sorry. This schedule is currently inactive and registration is closed.</div>
             : scheduleState.deadline && scheduleState.deadline < new Date()
-              ? <div><br />Sorry. Registrations for this schedule are over (Deadline: {fancyFormat(scheduleState.deadline)}).</div>
+              ? <div>
+                <br />Sorry. Registrations for this schedule are over (Deadline: {fancyFormat(scheduleState.deadline)}).
+              </div>
               : <FormGroup>
                 {scheduleState.deadline && <div><br />{
                   `Registration deadline: ${fancyFormat(scheduleState.deadline)
@@ -173,7 +183,9 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
                       (_, index) =>
                         <TextField
                           key={`participant-${index}`}
-                          label={`Participant${selectedTimeSlot.participantsPerEntry > 1 ? ` ${index + 1}` : ''}'s name`}
+                          label={
+                            `Participant${selectedTimeSlot.participantsPerEntry > 1 ? ` ${index + 1}` : ''}'s name`
+                          }
                           onChange={event => handleParticipantChange(index, event.target.value)}
                         />
                     )}

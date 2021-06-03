@@ -29,7 +29,6 @@ const sizePerPageRenderer: PaginationProps['sizePerPageRenderer'] = ({
     {' entries'}
   </span>
 
-
 const defaultPaginationOptions: PaginationProps = {
   custom: true,
   showTotal: true,

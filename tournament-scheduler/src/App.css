@@ -17,7 +17,7 @@
 }
 
 .MuiContainer-root {
-  padding-top: 16px; 
+  padding-top: 16px;
 }
 
 .App .MuiTextField-root {
@@ -74,15 +74,28 @@ p, .paragraph {
   max-width: 90px; /* Enough to fit title at minimum supported width */
 }
 
-.react-add-to-calendar,
-.react-add-to-calendar .react-add-to-calendar__button,
-.react-add-to-calendar .react-add-to-calendar__dropdown,
-.react-add-to-calendar .react-add-to-calendar__dropdown ul li a {
-  z-index: 1;
+/* Replicate Material Design Style with AddToCalendar */
+.chq-atc,
+.chq-atc .chq-atc--button,
+.chq-atc .chq-atc--button:focus,
+.chq-atc .chq-atc--dropdown,
+.chq-atc .chq-atc--dropdown a {
+  border: 0;
+  border-radius: inherit;
   color: inherit;
   background-color: inherit;
 }
 
-.react-add-to-calendar ul {
-  padding: 0;
+.chq-atc .chq-atc--dropdown {
+  padding: 8px 0;
+}
+
+.chq-atc .chq-atc--button:hover,
+
+.chq-atc .chq-atc--dropdown a:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.chq-atc--button path:not(:hover) {
+  fill: white;
 }

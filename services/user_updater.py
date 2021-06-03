@@ -120,9 +120,6 @@ def __set_user_code_and_name(user: User) -> None:
     else:
         user._country_code = None
     user._name = infos["data"]["names"].get("international")
-    japanese_name = infos["data"]["names"].get("japanese")
-    if japanese_name:
-        user._name += f" ({japanese_name})"
     if infos["data"]["role"] == "banned":
         user._banned = True
         user._points = 0

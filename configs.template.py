@@ -21,5 +21,5 @@ sql_track_modifications: bool = False
 sql_connector: str = "mysqlconnector"
 sql_username: str = "admin"
 sql_password: str = "admin"
-sql_hostname: str = "localhost:3356"
+sql_hostname: str = "localhost:3306"
 sql_database_name: str = "speedrun_global_scoreboard"
