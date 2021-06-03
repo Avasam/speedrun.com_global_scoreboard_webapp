@@ -31,7 +31,7 @@
     "source.fixAll.markdownlint": true
   },
   "python.linting.pylintEnabled": false,
-  // "Using flake8 as other linters are incomplete or have false positives with Requests",
+  // Using flake8 as other linters are incomplete or have false positives with Requests
   "python.linting.flake8Enabled": true,
   "python.linting.enabled": true,
   "python.linting.pycodestyleEnabled": false,
