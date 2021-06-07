@@ -91,7 +91,7 @@ const ScoreDropCalculator = () => {
           const w = primaryTimes[primaryTimes.length - 1]
           const N = primaryTimes.length
 
-          // Original algorithm (https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/master/README.md)
+          // Original algorithm (https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/main/README.md)
           // (e ^ (Min[pi, (w - t) / (w - m)] * (1 - 1 / (N - 1))) - 1) * 10 * (1 + (t / 43200)) = p; N = <population>; t = <time>; w = <worst time>; m = <mean>
           let p = (Math.exp(Math.min(Math.PI, (w - t) / (w - m)) * (1 - 1 / (N - 1))) - 1) * 10 * (1 + t / TIME_BONUS_DIVISOR)
           p = Math.floor(p)

@@ -5,6 +5,7 @@
     "ms-python.vscode-pylance",
     "ms-python.python",
     "sonarsource.sonarlint-vscode",
+    "mikestead.dotenv",
     "davidanson.vscode-markdownlint",
     "eamodio.gitlens",
     "meganrogge.template-string-converter",

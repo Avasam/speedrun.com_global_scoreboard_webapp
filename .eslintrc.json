@@ -78,7 +78,7 @@
       "warn",
       64
     ],
-    // unicorn/recommended overrides (https://github.com/sindresorhus/eslint-plugin-unicorn/blob/master/index.js#L41)
+    // unicorn/recommended overrides (https://github.com/sindresorhus/eslint-plugin-unicorn/blob/main/index.js#L41)
     "unicorn/catch-error-name": [
       "error",
       {

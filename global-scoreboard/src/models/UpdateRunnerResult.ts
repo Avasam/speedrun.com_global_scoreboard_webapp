@@ -1,10 +1,10 @@
-import type { AlertProps } from 'react-bootstrap/Alert'
+import type { Variant } from 'react-bootstrap/esm/types'
 
 import type Player from './Player'
 type UpdateRunnerResult =
   Player &
   {
-    state?: AlertProps['variant']
+    state?: Variant
     message: string
   }
 export default UpdateRunnerResult

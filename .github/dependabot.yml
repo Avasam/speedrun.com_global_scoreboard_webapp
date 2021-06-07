@@ -11,10 +11,16 @@ updates:
     open-pull-requests-limit: 10
     schedule:
       interval: "weekly"
+    labels:
+      - "dependencies"
     assignees:
       - "Avasam"
     reviewers:
       - "Avasam"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-patch"]
+    versioning-strategy: increase-if-necessary
 
   - package-ecosystem: "npm"
     directory: "/global-scoreboard"
@@ -22,8 +28,19 @@ updates:
     open-pull-requests-limit: 10
     schedule:
       interval: "weekly"
+    labels:
+      - "dependencies"
     assignees:
       - "Avasam"
     reviewers:
       - "Avasam"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-patch"]
+    versioning-strategy: increase-if-necessary
     
+  # Check for updates to GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

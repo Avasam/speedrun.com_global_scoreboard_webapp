@@ -12,7 +12,7 @@ type PlayerNameCellProps = {
 }
 
 const backupFlag = (element: HTMLImageElement) => {
-  const backupSrc = element.src.replace(/\/[a-z]+?\.png/, '.png')
+  const backupSrc = element.src.replace(/\/[\da-z]+?\.png/, '.png')
   if (backupSrc.endsWith('flags.png')) {
     element.removeAttribute('src')
   } else {
