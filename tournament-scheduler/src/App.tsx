@@ -107,7 +107,7 @@ const App: FC = () => {
 
       <footer>
         &copy; <a
-          href='https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/master/LICENSE'
+          href='https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/main/LICENSE'
           target='about'
         >Copyright</a> {new Date().getFullYear()} by <a
           href='https://github.com/Avasam/'

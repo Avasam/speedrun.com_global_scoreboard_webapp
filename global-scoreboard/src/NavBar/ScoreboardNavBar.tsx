@@ -44,7 +44,7 @@ const ScoreboardNavBar = (props: LoginInfoProps) =>
       <Navbar.Collapse id='basic-navbar-nav'>
         <Nav className='mr-auto'>
           <Nav.Link
-            href='https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/master/README.md'
+            href='https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/main/README.md'
             target='about'
           >About</Nav.Link>
           <Nav.Link
