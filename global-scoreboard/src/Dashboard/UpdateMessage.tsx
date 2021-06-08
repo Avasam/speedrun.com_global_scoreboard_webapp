@@ -2,13 +2,13 @@ import { faInfoCircle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useEffect, useState } from 'react'
 import { Alert, OverlayTrigger, ProgressBar, Tooltip } from 'react-bootstrap'
-import type { AlertProps } from 'react-bootstrap/Alert'
+import type { Variant } from 'react-bootstrap/esm/types'
 
 import type { RunResult } from '../models/UpdateRunnerResult'
 import math from '../utils/Math'
 
 type UpdateMessageProps = {
-  variant: AlertProps['variant']
+  variant: Variant
   message: JSX.Element | string
   updateStartTime: number | null | undefined
 }

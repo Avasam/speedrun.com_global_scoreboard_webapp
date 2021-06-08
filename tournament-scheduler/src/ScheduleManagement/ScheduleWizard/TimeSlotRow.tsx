@@ -25,6 +25,11 @@ const putRegistration = (registration: Registration) =>
 const deleteRegistration = (registrationId: number) =>
   apiDelete(`registrations/${registrationId}`)
 
+// eslint-disable-next-line prefer-arrow/prefer-arrow-functions
+const createProxy = function <T>(registrations: T) {
+  return JSON.parse(JSON.stringify(registrations)) as T
+}
+
 type TimeSlotRowProps = {
   schedule: Schedule
   timeSlot: TimeSlot
@@ -39,7 +44,7 @@ type TimeSlotRowProps = {
 const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
   const [open, setOpen] = useState(false)
   const [registrationsProxy, setRegistrationsProxy] = useState<RegistrationProxy[]>(
-    JSON.parse(JSON.stringify(props.timeSlot.registrations))
+    createProxy(props.timeSlot.registrations)
   )
 
   const handleParticipantNameChange = (registration: RegistrationProxy, participantIndex: number, name: string) => {
@@ -58,7 +63,7 @@ const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
         }
         registrationProxy.hasChanged = false
 
-        setRegistrationsProxy(JSON.parse(JSON.stringify(registrationsProxy)))
+        setRegistrationsProxy(createProxy(registrationsProxy))
       })
       .catch(console.error)
 
@@ -67,7 +72,7 @@ const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
       ...props.timeSlot.registrations[registrationIndex],
       hasChanged: false,
     }
-    setRegistrationsProxy(JSON.parse(JSON.stringify(registrationsProxy)))
+    setRegistrationsProxy(createProxy(registrationsProxy))
   }
 
   const handleRemoveRegistrations = (registrationIndex: number) =>
@@ -75,7 +80,7 @@ const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
       .then(() => {
         props.timeSlot.registrations.splice(registrationIndex, 1)
         registrationsProxy.splice(registrationIndex, 1)
-        setRegistrationsProxy(JSON.parse(JSON.stringify(registrationsProxy)))
+        setRegistrationsProxy(createProxy(registrationsProxy))
       })
       .catch(console.error)
 

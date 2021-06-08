@@ -10,7 +10,6 @@ import { secondsToTimeString } from '../utils/Time'
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers
 const TIME_BONUS_DIVISOR = math.SECONDS_IN_HOUR * 12 // 12h (1/2 day) for +100%
 
-
 // eslint-disable-next-line unicorn/prevent-abbreviations
 const addVarToValuesKeys = (values: SrcRun['data']['values']) => {
   const newDict: SrcRun['data']['values'] = {}
@@ -28,7 +27,6 @@ const filterSubCatVariables = (variables: SrcRun['data']['values'], subCategorie
   }
   return newVariables
 }
-
 
 const getRunDetails = (runId: string) =>
   apiGet(
@@ -82,6 +80,7 @@ const ScoreDropCalculator = () => {
         getLeaderboardRuns(run.game, run.category, filterSubCatVariables(run.values, subCategories)).then(records => {
           /* eslint-disable extra-rules/no-commented-out-code */
           /* eslint-disable id-length */
+          /* eslint-disable max-len */
           /* eslint-disable @typescript-eslint/no-magic-numbers */
           const primaryTimes = records
             .slice(0, Math.floor(records.length * 0.95))
@@ -92,7 +91,7 @@ const ScoreDropCalculator = () => {
           const w = primaryTimes[primaryTimes.length - 1]
           const N = primaryTimes.length
 
-          // Original algorithm (https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/master/README.md)
+          // Original algorithm (https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/main/README.md)
           // (e ^ (Min[pi, (w - t) / (w - m)] * (1 - 1 / (N - 1))) - 1) * 10 * (1 + (t / 43200)) = p; N = <population>; t = <time>; w = <worst time>; m = <mean>
           let p = (Math.exp(Math.min(Math.PI, (w - t) / (w - m)) * (1 - 1 / (N - 1))) - 1) * 10 * (1 + t / TIME_BONUS_DIVISOR)
           p = Math.floor(p)
@@ -133,17 +132,19 @@ const ScoreDropCalculator = () => {
 
           /* eslint-enable extra-rules/no-commented-out-code */
           /* eslint-enable id-length */
+          /* eslint-enable max-len */
           /* eslint-enable @typescript-eslint/no-magic-numbers */
         })))
       .catch(() => setRequiredTime(Number.NaN))
       .finally(() => setUpdating(false))
   }
 
-
   return <div style={{ marginTop: '1rem', marginBottom: '1rem' }}>
     <Form onSubmit={(event: FormEvent<HTMLFormElement>) => event.preventDefault()}>
       <Form.Group controlId='calculate-score-drop'>
-        <Form.Label>Enter a run&apos;s ID to calculate the required time, for a new player, to drop the score value of said run:</Form.Label>
+        <Form.Label>
+          Enter a run&apos;s ID to calculate the required time, for a new player, to drop the score value of said run:
+        </Form.Label>
         <InputGroup>
           <Form.Control
             required
@@ -173,8 +174,10 @@ const ScoreDropCalculator = () => {
               <strong> {secondsToTimeString(requiredTime)}</strong> or less.</span>
           }</>
         : <span>
-          The required time to reduce the points of the run &apos;{calculatedRunId}&apos; could not be calculated.
-          Either because the leaderboard has less than 4 runners, it is an individual level, or something just went wrong.
+          The required time to reduce the points of the run
+          &apos;{calculatedRunId}&apos; could not be calculated.
+          Either because the leaderboard has less than 4 runners,
+          it is an individual level, or something just went wrong.
         </span>
     )}
   </div>

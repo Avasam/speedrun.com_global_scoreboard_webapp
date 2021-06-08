@@ -4,7 +4,7 @@ import './Scoreboard.css'
 import type { Component, MutableRefObject } from 'react'
 import { forwardRef, useRef, useState } from 'react'
 import { Spinner } from 'react-bootstrap'
-import type { Column } from 'react-bootstrap-table-next'
+import type { Column, ColumnFormatter } from 'react-bootstrap-table-next'
 import BootstrapTable from 'react-bootstrap-table-next'
 import paginationFactory, { PaginationListStandalone, PaginationProvider, PaginationTotalStandalone, SizePerPageDropdownStandalone } from 'react-bootstrap-table2-paginator'
 import type { SearchProps, ToolkitProviderProps } from 'react-bootstrap-table2-toolkit'
@@ -39,9 +39,9 @@ type FormatExtraDataProps = {
   handleOnBefriend: (friendId: string) => void
 }
 
-const dateFormat = { year: 'numeric', month: 'long', day: 'numeric' }
+const dateFormat: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' }
 
-const nameFormatter = (_cell: unknown, row: Player | undefined, _rowIndex: number, formatExtraData?: FormatExtraDataProps) =>
+const nameFormatter: ColumnFormatter<Player, FormatExtraDataProps> = (_cell, row, _rowIndex, formatExtraData) =>
   row &&
   formatExtraData &&
   <PlayerNameCell
@@ -58,7 +58,8 @@ const scoreHeaderFormatter = () =>
     {sortCaret(getSortOrder())}
   </>
 
-const scoreFormatter = (_cell: unknown, row: Player | undefined) =>
+// eslint-disable-next-line prefer-arrow/prefer-arrow-functions
+const scoreFormatter: ColumnFormatter<Player, void> = (_cell, row) =>
   row &&
   <PlayerScoreCell player={row} />
 
@@ -85,7 +86,7 @@ const columns: Column[] = [
   {
     dataField: 'lastUpdate',
     text: 'Last Updated',
-    formatter: (cell: Date | undefined) => cell?.toLocaleDateString('en-us', dateFormat),
+    formatter: (cell => cell?.toLocaleDateString('en-us', dateFormat)) as ColumnFormatter<Date, void>,
     classes: columnClass,
     searchable: false,
     sort: true,

@@ -1,0 +1,59 @@
+diff --git a/node_modules/react-bootstrap-table-next/lib/src/body.js b/node_modules/react-bootstrap-table-next/lib/src/body.js
+index ab2ea0c..141cb99 100644
+--- a/node_modules/react-bootstrap-table-next/lib/src/body.js
++++ b/node_modules/react-bootstrap-table-next/lib/src/body.js
+@@ -137,7 +137,7 @@ var Body = function (_React$Component) {
+           additionalRowProps.selectRow = selectRow;
+         }
+ 
+-        content = data.map(function (row, index) {
++        content = data.filter(row => row).map(function (row, index) {
+           var key = _utils2.default.get(row, keyField);
+           var baseRowProps = _extends({
+             key: key,
+diff --git a/node_modules/react-bootstrap-table-next/lib/src/store/sort.js b/node_modules/react-bootstrap-table-next/lib/src/store/sort.js
+index cc3320a..8e205bb 100644
+--- a/node_modules/react-bootstrap-table-next/lib/src/store/sort.js
++++ b/node_modules/react-bootstrap-table-next/lib/src/store/sort.js
+@@ -20,14 +20,13 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
+ /* eslint no-underscore-dangle: 0 */
+ 
+ 
++const collator = new Intl.Collator();
+ function comparator(a, b) {
+-  var result = void 0;
+   if (typeof b === 'string') {
+-    result = b.localeCompare(a);
++    return collator.compare(a, b);
+   } else {
+-    result = a > b ? -1 : a < b ? 1 : 0;
++    return a > b ? -1 : a < b ? 1 : 0;
+   }
+-  return result;
+ }
+ 
+ var sort = exports.sort = function sort(data, sortOrder, _ref) {
+diff --git a/node_modules/react-bootstrap-table-next/lib/src/utils.js b/node_modules/react-bootstrap-table-next/lib/src/utils.js
+index 5271e86..973ac11 100644
+--- a/node_modules/react-bootstrap-table-next/lib/src/utils.js
++++ b/node_modules/react-bootstrap-table-next/lib/src/utils.js
+@@ -11,7 +11,7 @@ var _underscore2 = _interopRequireDefault(_underscore);
+ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+ 
+ function splitNested(str) {
+-  return [str].join('.').replace(/\[/g, '.').replace(/\]/g, '').split('.');
++  return str.replace(']', '').split(/\[\./);
+ } /* eslint no-empty: 0 */
+ /* eslint no-param-reassign: 0 */
+ /* eslint prefer-rest-params: 0 */
+@@ -68,8 +68,8 @@ function isEmptyObject(obj) {
+   var hasOwnProperty = Object.prototype.hasOwnProperty;
+   var keys = Object.keys(obj);
+ 
+-  for (var i = 0; i < keys.length; i += 1) {
+-    if (hasOwnProperty.call(obj, keys[i])) return false;
++  for (var key of keys) {
++    if (hasOwnProperty.call(obj, key)) return false;
+   }
+ 
+   return true;

@@ -1,6 +1,8 @@
+import { StatusCodes } from 'http-status-codes'
+
 type QueryParams = Record<string, boolean | number | string | null>
 
-const FIRST_HTTP_CODE = 400
+const FIRST_HTTP_CODE = StatusCodes.BAD_REQUEST
 const LAST_HTTP_CODE = 599
 export const MAX_PAGINATION = 200
 
