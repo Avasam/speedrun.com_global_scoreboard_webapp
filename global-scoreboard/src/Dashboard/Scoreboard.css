@@ -1,14 +1,5 @@
-.react-bs-table-sizePerPage-dropdown {
-  margin-bottom: 0.5rem; /* Same as label */
-}
-
 .react-bs-table-sizePerPage-dropdown .dropdown-menu {
   min-width: unset;
-}
-
-label,
-.search-label {
-  margin-right: 0.5rem; /* Same as label bottom */
 }
 
 .legend label {

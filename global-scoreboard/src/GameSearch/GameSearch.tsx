@@ -6,7 +6,7 @@ import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import type { ChangeEventHandler, Dispatch, SetStateAction } from 'react'
 import { useEffect, useState } from 'react'
-import { Container, FormControl, InputGroup, Spinner } from 'react-bootstrap'
+import { Col, Container, Form, FormGroup, FormLabel, InputGroup, Row, Spinner } from 'react-bootstrap'
 import type { Column, ColumnFormatter } from 'react-bootstrap-table-next'
 import BootstrapTable from 'react-bootstrap-table-next'
 import filterFactory, { Comparator, multiSelectFilter, numberFilter } from 'react-bootstrap-table2-filter'
@@ -306,47 +306,54 @@ const GameSearch = () => {
           })}
         >
           {(({ paginationProps, paginationTableProps }) =>
-            <div>
-              <GameCategorySearch
-                {...toolkitprops.searchProps}
-                placeholder='Game / Category search'
-                setGameMap={setGameMap}
-              />
-              <Picky
-                id='platform-multiselect'
-                valueKey='id'
-                labelKey='name'
-                buttonProps={{ 'className': 'form-control' }}
-                placeholder='Filter by platforms'
-                manySelectedPlaceholder='%s platforms selected'
-                allSelectedPlaceholder='All platforms selected'
-                numberDisplayed={1}
-                options={buildPlatformsOptions()}
-                value={selectedPlatforms}
-                multiple={true}
-                includeSelectAll={true}
-                includeFilter={true}
-                onChange={values => handlePlatformSelection(values as PlatformSelectOption[])}
-              />
-              <div className='time-between'>
-                <label>Time between</label>
-                <InputGroup>
-                  <FormControl
-                    name='min-time'
-                    placeholder='Min Avg'
-                    value={minTimeText}
-                    onChange={handleMinTimeChange} />
-                  <InputGroup.Append className='input-group-prepend'>
+            <>
+              <Row className='gx-0' noGutters>
+                <Col xs='auto'>
+                  <GameCategorySearch
+                    {...toolkitprops.searchProps}
+                    placeholder='Game / Category search'
+                    setGameMap={setGameMap}
+                  />
+                </Col>
+                <Col xs='auto' className='mb-2 me-2'>
+                  <Picky
+                    id='platform-multiselect'
+                    valueKey='id'
+                    labelKey='name'
+                    buttonProps={{ 'className': 'form-control' }}
+                    placeholder='Filter by platforms'
+                    manySelectedPlaceholder='%s platforms selected'
+                    allSelectedPlaceholder='All platforms selected'
+                    numberDisplayed={1}
+                    options={buildPlatformsOptions()}
+                    value={selectedPlatforms}
+                    multiple={true}
+                    includeSelectAll={true}
+                    includeFilter={true}
+                    onChange={values => handlePlatformSelection(values as PlatformSelectOption[])}
+                  />
+                </Col>
+                <FormGroup as={Col} xs='auto' className='mb-2 me-auto time-between'>
+                  <FormLabel>Time between</FormLabel>
+                  <InputGroup>
+                    <Form.Control
+                      name='min-time'
+                      placeholder='Min Avg'
+                      value={minTimeText}
+                      onChange={handleMinTimeChange} />
                     <InputGroup.Text>-</InputGroup.Text>
-                  </InputGroup.Append>
-                  <FormControl
-                    name='max-time'
-                    placeholder='Max WR'
-                    value={maxTimeText}
-                    onChange={handleMaxTimeChange} />
-                </InputGroup>
-              </div>
-              <SizePerPageDropdownStandalone {...paginationProps} />
+                    <Form.Control
+                      name='max-time'
+                      placeholder='Max WR'
+                      value={maxTimeText}
+                      onChange={handleMaxTimeChange} />
+                  </InputGroup>
+                </FormGroup>
+                <Col xs='auto' className='mb-2'>
+                  <SizePerPageDropdownStandalone {...paginationProps} />
+                </Col>
+              </Row>
+
               <BootstrapTable
                 wrapperClasses='table-responsive'
                 striped
@@ -365,11 +372,12 @@ const GameSearch = () => {
                 }]}
                 filter={filterFactory()}
               />
+
               <div>
                 <PaginationTotalStandalone {...paginationProps} />
                 <PaginationListStandalone {...paginationProps} />
               </div>
-            </div>
+            </>
           )}
         </PaginationProvider>
       }

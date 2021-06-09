@@ -18,10 +18,6 @@
     "editor.tabSize": 4,
   },
   "editor.formatOnSave": true,
-  // For node_modules
-  "[javascript]": {
-    "editor.formatOnSave": false,
-  },
   "javascript.preferences.quoteStyle": "single",
   "typescript.preferences.quoteStyle": "single",
   "html.format.wrapAttributes": "force-expand-multiline",
