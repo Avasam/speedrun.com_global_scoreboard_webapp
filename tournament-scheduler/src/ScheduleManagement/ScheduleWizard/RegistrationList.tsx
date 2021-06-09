@@ -40,7 +40,6 @@ const RegistrationList: FC<RegistrationListProps> = (props: RegistrationListProp
         />
         <ButtonGroup
           style={{ marginLeft: '16px' }}
-          color='primary'
           size='small'
           disabled={!props.registration.hasChanged}
         >

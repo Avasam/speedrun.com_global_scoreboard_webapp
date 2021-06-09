@@ -1,12 +1,12 @@
-import DateFnsUtils from '@date-io/moment'
 import type { InputBaseComponentProps } from '@material-ui/core'
-import { Card, CardContent, Collapse, FormControl, IconButton, Input, InputAdornment, InputLabel, ListItem, ListItemText } from '@material-ui/core'
+import { Card, CardContent, Collapse, FormControl, IconButton, Input, InputAdornment, InputLabel, ListItem, ListItemText, TextField } from '@material-ui/core'
 import Event from '@material-ui/icons/Event'
 import ExpandLess from '@material-ui/icons/ExpandLess'
 import ExpandMore from '@material-ui/icons/ExpandMore'
 import FileCopy from '@material-ui/icons/FileCopy'
-import { DateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
-import type { MaterialUiPickersDate } from '@material-ui/pickers/typings/date'
+import { DateTimePicker } from '@material-ui/lab'
+import AdapterDateFns from '@material-ui/lab/AdapterMoment'
+import LocalizationProvider from '@material-ui/lab/LocalizationProvider'
 import type { FC } from 'react'
 import { useState } from 'react'
 
@@ -34,7 +34,7 @@ type TimeSlotRowProps = {
   schedule: Schedule
   timeSlot: TimeSlot
   id: number
-  onEditTimeSlotDateTime: (date: MaterialUiPickersDate) => void
+  onEditTimeSlotDateTime: (date: Date | null) => void
   onDuplicateTimeSlot: () => void
   onRemoveTimeSlot: () => void
   onEditTimeSlotMaximumEntries: (maximumEntries: number) => void
@@ -86,13 +86,11 @@ const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
 
   return <Card raised={true} className='time-slot-row'>
     <CardContent>
-      <MuiPickersUtilsProvider utils={DateFnsUtils}>
+      <LocalizationProvider dateAdapter={AdapterDateFns}>
         <DateTimePicker
-          id={`time-slot-date-${props.id}`}
           label='Date and time'
           value={props.timeSlot.dateTime}
           onChange={date => props.onEditTimeSlotDateTime(date)}
-          error={!!props.schedule.deadline && props.timeSlot.dateTime < props.schedule.deadline}
           // eslint-disable-next-line @typescript-eslint/no-magic-numbers
           minDate={new Date(2020, 0)}
           disablePast={props.timeSlot.id <= -1}
@@ -107,8 +105,14 @@ const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
               </InputAdornment>
             ,
           }}
+          renderInput={params =>
+            <TextField
+              {...params}
+              id={`time-slot-date-${props.id}`}
+              error={!!props.schedule.deadline && props.timeSlot.dateTime < props.schedule.deadline}
+            />}
         />
-      </MuiPickersUtilsProvider>
+      </LocalizationProvider>
       <div className='number-input-container'>
         <FormControl>
           <InputLabel htmlFor={`maximum-entries-${props.id}`}>Maximum entries</InputLabel>
@@ -135,7 +139,6 @@ const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
           />
         </FormControl>
         <IconButton
-          color='primary'
           aria-label='duplicate time slot'
           component='button'
           onClick={() => props.onDuplicateTimeSlot()}

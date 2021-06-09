@@ -4,7 +4,7 @@ import 'bootstrap/dist/css/bootstrap.css'
 
 import { StatusCodes } from 'http-status-codes'
 import type { FC } from 'react'
-import { useEffect, useState } from 'react'
+import { StrictMode, useEffect, useState } from 'react'
 
 import Dashboard from './Dashboard/Dashboard'
 import { apiGet } from './fetchers/Api'
@@ -46,7 +46,7 @@ const App: FC = () => {
   )
 
   return (
-    <div>
+    <StrictMode>
       <ScoreboardNavBar
         username={currentUser === null ? null : currentUser?.name}
         onLogin={setCurrentUser}
@@ -80,7 +80,7 @@ const App: FC = () => {
           target='about'
         >PythonAnywhere</a>
       </footer>
-    </div>
+    </StrictMode>
   )
 }
 

@@ -1,8 +1,9 @@
 import '@culturehq/add-to-calendar/dist/styles.css'
 
 import AddToCalendar from '@culturehq/add-to-calendar'
-import DateFnsUtils from '@date-io/moment'
-import { Container, createStyles, List, ListItem, ListItemText, makeStyles } from '@material-ui/core'
+import { Container, List, ListItem, ListItemText } from '@material-ui/core'
+import AdapterDateFns from '@material-ui/lab/AdapterMoment'
+import { createStyles, makeStyles } from '@material-ui/styles'
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment'
 import type { FC } from 'react'
@@ -49,6 +50,7 @@ const useStyles = makeStyles(theme =>
       display: 'inline-block',
       color: theme.palette.text.primary,
       backgroundColor: theme.palette.background.paper,
+      // TODO MUI5: theme.shape.borderRadius ?
       borderRadius: 4,
     },
   }))
@@ -122,7 +124,7 @@ const ScheduleViewer: FC<ScheduleRegistrationProps> = (props: ScheduleRegistrati
                 <ListItemText
                   className={classes.rootHeader}
                   primary={<>
-                    {moment(timeSlot.dateTime).format(`ddd ${new DateFnsUtils().dateTime24hFormat}`)}
+                    {moment(timeSlot.dateTime).format(`ddd ${new AdapterDateFns().formats.fullTime24h}`)}
                     <div className={classes.addToCalendar}>
                       <AddToCalendar
                         filename={buildCalendarEventTitle(timeSlot, scheduleState)}

@@ -1,11 +1,16 @@
+/* eslint-disable @typescript-eslint/no-empty-interface */
+/* eslint-disable @typescript-eslint/consistent-type-definitions */
 import './App.css'
 
-import { AppBar, Button, createMuiTheme, IconButton, ThemeProvider, Toolbar, Typography } from '@material-ui/core'
+import { AppBar, Button, IconButton, Toolbar, Typography } from '@material-ui/core'
 import { teal } from '@material-ui/core/colors'
+import type { Theme } from '@material-ui/core/styles'
+// TODO MUI5: Force ThemeProvider from the right package (not styles, not core)
+import { createTheme, ThemeProvider } from '@material-ui/core/styles'
 import useMediaQuery from '@material-ui/core/useMediaQuery'
 import { StatusCodes } from 'http-status-codes'
 import type { FC } from 'react'
-import { useEffect, useState } from 'react'
+import { StrictMode, useEffect, useState } from 'react'
 import Div100vh from 'react-div-100vh'
 
 import { apiGet } from './fetchers/Api'
@@ -15,9 +20,14 @@ import ScheduleManagement from './ScheduleManagement/ScheduleManagement'
 import ScheduleRegistration from './ScheduleRegistration/ScheduleRegistration'
 import ScheduleViewer from './ScheduleViewer/ScheduleViewer'
 
-const darkTheme = createMuiTheme({
+// Note: https://next.material-ui.com/guides/migration-v4/#material-ui-styles
+declare module '@material-ui/styles' {
+  interface DefaultTheme extends Theme { }
+}
+
+const darkTheme = createTheme({
   palette: {
-    type: 'dark',
+    mode: 'dark',
     primary: teal,
   },
 })
@@ -67,69 +77,72 @@ const App: FC = () => {
 
   const isMobileSize = useMediaQuery('(max-width:640px)')
 
-  return <Div100vh className='App'>
-    <ThemeProvider theme={darkTheme}>
-      <AppBar position='static'>
-        <Toolbar>
-          {(currentUser || scheduleRegistrationLink || viewScheduleId || isMobileSize) &&
-            <IconButton
-              className='logo-button'
-              onClick={() => {
-                localStorage.removeItem('register')
-                window.location.href = window.location.pathname
-              }}
-            >
-              <img
-                className='logo'
-                style={{ height: !currentUser && isMobileSize ? 'auto' : undefined }}
-                alt='logo'
-                src={`${window.process.env.REACT_APP_BASE_URL}/assets/images/favicon.webp`}
-              />
-            </IconButton>
-          }
-          <Typography variant={currentUser || isMobileSize ? 'h4' : 'h2'}>Tournament Scheduler</Typography>
-          {currentUser &&
-            <Button variant='contained' color='secondary' onClick={() => logout(setCurrentUser)}>Logout</Button>
-          }
-        </Toolbar>
-      </AppBar>
+  return <StrictMode>
+    <Div100vh className='App'>
+      <ThemeProvider theme={darkTheme}>
+        <AppBar position='static'>
+          <Toolbar>
+            {(currentUser || scheduleRegistrationLink || viewScheduleId || isMobileSize) &&
+              <IconButton
+                className='logo-button'
+                onClick={() => {
+                  localStorage.removeItem('register')
+                  window.location.href = window.location.pathname
+                }}
+              >
+                <img
+                  className='logo'
+                  style={{ height: !currentUser && isMobileSize ? 'auto' : undefined }}
+                  alt='logo'
+                  src={`${window.process.env.REACT_APP_BASE_URL}/assets/images/favicon.webp`}
+                />
+              </IconButton>
+            }
+            <Typography variant={currentUser || isMobileSize ? 'h4' : 'h2'}>Tournament Scheduler</Typography>
+            {currentUser &&
+              <Button variant='contained' color='secondary' onClick={() => logout(setCurrentUser)}>Logout</Button>
+            }
+          </Toolbar>
+        </AppBar>
 
-      <div className='main'>
-        {scheduleRegistrationLink
-          ? <ScheduleRegistration registrationLink={scheduleRegistrationLink} />
-          : viewScheduleId
-            ? <ScheduleViewer scheduleId={viewScheduleId} />
-            : currentUser !== undefined && (currentUser
-              ? <ScheduleManagement currentUser={currentUser} />
-              : <LoginForm onLogin={setCurrentUser} />)
-        }
-      </div>
+        <div className='main'>
+          {scheduleRegistrationLink
+            ? <ScheduleRegistration registrationLink={scheduleRegistrationLink} />
+            : viewScheduleId
+              ? <ScheduleViewer scheduleId={viewScheduleId} />
+              : currentUser !== undefined && (currentUser
+                ? <ScheduleManagement currentUser={currentUser} />
+                : <LoginForm onLogin={setCurrentUser} />)
+          }
+        </div>
 
-      <footer>
-        &copy; <a
-          href='https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/main/LICENSE'
-          target='about'
-        >Copyright</a> {new Date().getFullYear()} by <a
-          href='https://github.com/Avasam/'
-          target='about'
-        >Samuel Therrien</a> (
-        <a href='https://www.twitch.tv/Avasam' target='about'>
-          Avasam<img
-            height='14'
-            alt='Twitch'
-            src='https://static.twitchcdn.net/assets/favicon-32-d6025c14e900565d6177.png'
-          ></img>
-        </a>).
-        Powered by <a
-          href='https://www.speedrun.com/'
-          target='src'
-        >speedrun.com</a> and <a
-          href='https://www.pythonanywhere.com/'
-          target='about'
-        >PythonAnywhere</a>
-      </footer>
-    </ThemeProvider>
-  </Div100vh>
+        <footer>
+          &copy; <a
+            href='https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/main/LICENSE'
+            target='about'
+          >Copyright</a> {new Date().getFullYear()} by <a
+            href='https://github.com/Avasam/'
+            target='about'
+          >Samuel Therrien</a> (
+          <a href='https://www.twitch.tv/Avasam' target='about'>
+            Avasam<img
+              height='14'
+              alt='Twitch'
+              src='https://static.twitchcdn.net/assets/favicon-32-d6025c14e900565d6177.png'
+            ></img>
+          </a>).
+          Powered by <a
+            href='https://www.speedrun.com/'
+            target='src'
+          >speedrun.com</a> and <a
+            href='https://www.pythonanywhere.com/'
+            target='about'
+          >PythonAnywhere</a>
+        </footer>
+      </ThemeProvider>
+    </Div100vh>
+  </StrictMode>
+
 }
 
 export default App

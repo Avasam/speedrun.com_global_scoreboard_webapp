@@ -1,10 +1,9 @@
 import './ScheduleWizard.css'
 
-import DateFnsUtils from '@date-io/moment'
 import { Button, Card, CardActions, CardContent, Checkbox, Container, FormControlLabel, FormGroup, IconButton, InputAdornment, TextField } from '@material-ui/core'
 import Event from '@material-ui/icons/Event'
-import { DatePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
-import type { Moment } from 'moment'
+import { DatePicker, LocalizationProvider } from '@material-ui/lab'
+import AdapterDateFns from '@material-ui/lab/AdapterMoment'
 import moment from 'moment'
 import type { FC } from 'react'
 import { useState } from 'react'
@@ -13,6 +12,8 @@ import type { Schedule, ScheduleDto } from '../../models/Schedule'
 import { createDefaultTimeSlot, TimeSlot } from '../../models/TimeSlot'
 import { todayFlat } from '../../utils/Date'
 import TimeSlotRow from './TimeSlotRow'
+
+// TODO MUI5: move all 'moment' references to date utils?
 
 type ScheduleWizardProps = {
   schedule: Schedule
@@ -23,9 +24,8 @@ type ScheduleWizardProps = {
 export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardProps) => {
   const [schedule, setSchedule] = useState(props.schedule)
 
-  const editTimeSlotDateTime = (momentDate: Moment | null, index: number) => {
-    if (!momentDate) return
-    const date = momentDate.toDate()
+  const editTimeSlotDateTime = (date: Date | null, index: number) => {
+    if (!date) return
     schedule.timeSlots[index].dateTime = date
     schedule.timeSlots.sort(TimeSlot.compareFn)
     setSchedule({
@@ -111,24 +111,20 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
                     registrationLink: schedule.registrationLink,
                     active: event.target.checked,
                   })}
-                  color='primary' />
+                />
               }
             />
 
-            <MuiPickersUtilsProvider utils={DateFnsUtils}>
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
               <DatePicker
-                id='schedule-deadline'
                 label={`${!schedule.deadline ? 'No r' : 'R'}egistration deadline`}
                 value={schedule.deadline}
-                onChange={momentDate => setSchedule({
+                onChange={date => setSchedule({
                   ...schedule,
                   registrationLink: schedule.registrationLink,
-                  deadline: momentDate?.startOf('day').toDate() ?? null,
+                  deadline: date == null ? null : moment(date).startOf('day').toDate(),
                 })}
-                error={!validateDeadline()}
-                helperText={!validateDeadline() && 'Warning: Your registrations close after the earliest time slot'}
                 disablePast={earliestTimeslotDate > new Date()}
-                minDateMessage='Deadline should not be before today'
                 clearable
                 InputProps={{
                   endAdornment:
@@ -139,11 +135,20 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
                     </InputAdornment>
                   ,
                 }}
+                renderInput={params =>
+                  <TextField
+                    {...params}
+                    id='schedule-deadline'
+                    error={!validateDeadline()}
+                    // TODO MUI5: Reimplement the following error message
+                    // minDateMessage='Deadline should not be before today'
+                    helperText={!validateDeadline() && 'Warning: Your registrations close after the earliest time slot'}
+                  />}
               />
-            </MuiPickersUtilsProvider>
+            </LocalizationProvider>
           </div>
 
-          <Button style={{ width: 'fit-content' }} variant='contained' color='primary' onClick={addNewTimeSlot}>
+          <Button style={{ width: 'fit-content' }} variant='contained' onClick={addNewTimeSlot}>
             Add a time slot
           </Button>
           {schedule.timeSlots.map((timeSlot: TimeSlot, index) =>

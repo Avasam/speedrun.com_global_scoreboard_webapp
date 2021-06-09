@@ -1,7 +1,6 @@
-import type { Theme } from '@material-ui/core'
-import { Button, Card, CardActions, CardContent, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, makeStyles } from '@material-ui/core'
-import type { Styles } from '@material-ui/core/styles/withStyles'
+import { Button, Card, CardActions, CardContent, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton } from '@material-ui/core'
 import DeleteForever from '@material-ui/icons/DeleteForever'
+import { makeStyles } from '@material-ui/styles'
 import type { FC } from 'react'
 import { useEffect, useState } from 'react'
 
@@ -35,7 +34,6 @@ type ScheduleManagementProps = {
 const styles = {
   card: {
     width: '100%',
-    textAlign: 'start',
     marginTop: '16px',
     marginBottom: '16px',
   },
@@ -90,7 +88,6 @@ const ScheduleManagement: FC<ScheduleManagementProps> = (props: ScheduleManageme
       <Button
         style={{ marginTop: styles.card.marginTop, width: styles.card.width }}
         variant='contained'
-        color='primary'
         onClick={() => handleEdit(createDefaultSchedule())}
       >
         Create new Schedule
@@ -114,7 +111,7 @@ type ScheduleCardProps = {
 const ScheduleCard: FC<ScheduleCardProps> = (props: ScheduleCardProps) => {
   // FIXME: Probably have to use styles correctly
   // eslint-disable-next-line @typescript-eslint/ban-types
-  const classes = makeStyles(styles as Styles<Theme, {}, 'card' | 'cardActions'>)()
+  const classes = makeStyles(styles)()
   const [open, setOpen] = useState(false)
 
   const handleClose = (confirmed: boolean) => {

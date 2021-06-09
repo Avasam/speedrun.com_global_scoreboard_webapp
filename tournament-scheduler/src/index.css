@@ -45,6 +45,7 @@ code {
 }
 
 ::-webkit-scrollbar-track-piece {
+  /* TODO MUI5: Check if this is still good */
   background-color: #424242;
   border-radius: 6px;
 }
