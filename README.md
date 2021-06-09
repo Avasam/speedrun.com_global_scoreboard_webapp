@@ -1,7 +1,9 @@
 # speedrun.com global scoreboard Webapp
 
 The webapp version of an unofficial speedrun.com global scoreboard for competitive speedrunning  
-[![Renovate](https://img.shields.io/badge/renovate-enabled-brightgreen.svg)](https://renovatebot.com)  
+[![Renovate](https://img.shields.io/badge/renovate-enabled-brightgreen.svg)](https://renovatebot.com)
+[![Dependabot status](https://api.dependabot.com/badges/status?host=github&repo=Avasam/speedrun.com_global_scoreboard_webapp)](https://github.com/dependabot/dependabot-core/issues/1912)
+[![Dependabot enabled](https://camo.githubusercontent.com/d46d9d2844f3f242a99809e9d2778d0d39fb8f705e9dbaf474d4aadc7187f5bc/68747470733a2f2f6170692e646570656e6461626f742e636f6d2f6261646765732f7374617475733f686f73743d676974687562267265706f3d79737331342f6d757369637368617265)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-dependabot-security-updates)
 
 ### **[See the scoreboard](https://www.Avasam.dev/)**
 
@@ -53,10 +55,10 @@ Note: The soft cutoff works great on games such as Barney. But is too punishing 
 
 ## Dev environment setup
 
-Get yourself a [MySQL server](https://dev.mysql.com/downloads/mysql/) (PythonAnywhere uses version 5.6.40)  
-Install [Python](https://www.python.org/downloads/) 3.7+  
+Get yourself a [MySQL server](https://dev.mysql.com/downloads/mysql/) (as of 2021/06/01, PythonAnywhere uses version 5.7.27)  
+Install [Python](https://www.python.org/downloads/) 3.7 or 3.8 (but not 3.9 !)  
 Install PIP (this should come bundled with python 3.4+)  
-Run this command through the python interpreter (or prepend with `py -m` in a terminal): `pip install flask flask_cors flask_sqlalchemy sqlalchemy httplib2 simplejson mysql-connector requests pyjwt`  
+Run this command in a terminal: `pip3 install flask flask_cors flask_sqlalchemy sqlalchemy httplib2 simplejson mysql-connector requests pyjwt`  
 Copy `configs.template.py` as `configs.py` and update the file as needed.  
 If needed, copy `.env.development` as `.env.development.local` and update the file.  
 

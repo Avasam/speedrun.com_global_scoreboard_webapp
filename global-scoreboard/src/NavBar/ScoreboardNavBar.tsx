@@ -42,9 +42,9 @@ const ScoreboardNavBar = (props: LoginInfoProps) =>
       <Navbar.Brand href='/global-scoreboard'>Ava&apos;s speedrunning global scoreboard</Navbar.Brand>
       <Navbar.Toggle aria-controls='basic-navbar-nav' />
       <Navbar.Collapse id='basic-navbar-nav'>
-        <Nav className='mr-auto'>
+        <Nav className='me-auto'>
           <Nav.Link
-            href='https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/master/README.md'
+            href='https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/main/README.md'
             target='about'
           >About</Nav.Link>
           <Nav.Link

@@ -2,7 +2,7 @@ import './QuickView.css'
 
 import { faArrowAltCircleRight } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Button, Table } from 'react-bootstrap'
+import { Button, FormLabel, Table } from 'react-bootstrap'
 
 import type Player from '../..//models/Player'
 import Configs from '../../models/Configs'
@@ -29,7 +29,7 @@ type QuickViewProps = {
 
 const QuickView = (props: QuickViewProps) =>
   <>
-    <label>Quick view:</label>
+    <FormLabel>Quick view:</FormLabel>
     <div className='table-responsive-lg quick-view'>
       <Table striped>
         <thead>

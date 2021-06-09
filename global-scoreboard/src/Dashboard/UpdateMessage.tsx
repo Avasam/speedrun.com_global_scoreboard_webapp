@@ -1,14 +1,14 @@
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useEffect, useState } from 'react'
-import { Alert, OverlayTrigger, ProgressBar, Tooltip } from 'react-bootstrap'
-import type { AlertProps } from 'react-bootstrap/Alert'
+import { Alert, FormLabel, OverlayTrigger, ProgressBar, Tooltip } from 'react-bootstrap'
+import type { Variant } from 'react-bootstrap/esm/types'
 
 import type { RunResult } from '../models/UpdateRunnerResult'
 import math from '../utils/Math'
 
 type UpdateMessageProps = {
-  variant: AlertProps['variant']
+  variant: Variant
   message: JSX.Element | string
   updateStartTime: number | null | undefined
 }
@@ -65,12 +65,12 @@ export const renderScoreTable = ([topRuns, lesserRuns]: RunResult[][], topMessag
   return <>
     <div>{topMessage}</div>
     {topRuns.length > 0 && <>
-      <label>Top 60 runs:</label>
+      <FormLabel>Top 60 runs:</FormLabel>
       {renderTable(topRuns)}
     </>}
     {lesserRuns.length > 0 && <>
       <br />
-      <label>Other runs:</label>
+      <FormLabel>Other runs:</FormLabel>
       {renderTable(lesserRuns)}
     </>}
   </>

@@ -85,7 +85,6 @@ const buildCalendarEventDescription = (timeSlot: TimeSlot, schedule: Schedule) =
   return `${title}<br/>${url}<br/><br/>${players}`
 }
 
-
 const ScheduleViewer: FC<ScheduleRegistrationProps> = (props: ScheduleRegistrationProps) => {
   const [scheduleState, setScheduleState] = useState<Schedule | null | undefined>()
   const classes = useStyles()

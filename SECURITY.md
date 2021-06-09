@@ -2,11 +2,12 @@
 
 ## Supported Versions
 
-| Version | Supported          |
-| ------- | :------------------: |
-| master  | :white_check_mark: |
+| Version | Supported |
+| ------- | :-------: |
+| main | :white_check_mark: |
 | develop | :white_check_mark: |
-| renavate/* | (automatically taken care of by renovate-bot) |
+| renovate/* | (automatically taken care of by renovate) |
+| dependabot/* | (automatically taken care of by dependabot) |
 | everything else | WIP branches, security support may be lacking |
 
 ## Reporting a Vulnerability

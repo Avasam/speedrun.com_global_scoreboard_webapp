@@ -1,15 +1,13 @@
 .picky {
-  display: inline-block;
   width: 244px; /* Nintendo Entertainment System in the options */
-  margin-right: 0.5rem; /* Same as label bottom */
 }
 
 .picky__dropdown {
   top: 34px; /* Adjust */
+  max-height: calc(100vh - 192px) !important; /* Still fits on a <= 394px wide screen */
 }
 
 .time-between {
-  display: inline-block;
   white-space: nowrap;
 }
 

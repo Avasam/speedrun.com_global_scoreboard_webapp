@@ -53,12 +53,10 @@ const LoginModal = (props: LoginModalProps) => {
   return (
     <GenericModal show={props.show} onHide={props.onClose} title='Enter your API key' >
       <Form onSubmit={(event: FormEvent<HTMLFormElement>) => event.preventDefault()}>
-        <Form.Group controlId='src-api-key'>
+        <Form.Group className='mb-3' controlId='src-api-key'>
           <Form.Label>Enter your API key</Form.Label>
           <InputGroup>
-            <InputGroup.Prepend>
-              <InputGroup.Text><FontAwesomeIcon icon={faLink} /></InputGroup.Text>
-            </InputGroup.Prepend>
+            <InputGroup.Text><FontAwesomeIcon icon={faLink} /></InputGroup.Text>
             <Form.Control
               type='password'
               placeholder='API key'
@@ -67,27 +65,25 @@ const LoginModal = (props: LoginModalProps) => {
               onChange={handleSrcApiKeyChange}
               isInvalid={!!loginErrorMessage}
             />
-            <InputGroup.Append>
-              <Button
-                as='a'
-                variant='outline-secondary'
-                href='https://www.speedrun.com/api/auth'
-                target='src'
-              >What&apos;s my key?</Button>
-            </InputGroup.Append>
+            <Button
+              as='a'
+              variant='outline-secondary'
+              href='https://www.speedrun.com/api/auth'
+              target='src'
+            >What&apos;s my key?</Button>
             <Form.Control.Feedback type='invalid'>
               {loginErrorMessage}
             </Form.Control.Feedback>
           </InputGroup>
         </Form.Group>
 
-        <Form.Group>
-          <Col xs={{ span: 6, offset: 3 }}>
-            <Button type='submit' variant='success' block onClick={() => attemptLogin()}>Log in</Button>
+        <Form.Group className='mb-3'>
+          <Col className='d-grid' xs={{ span: 6, offset: 3 }}>
+            <Button type='submit' variant='success' onClick={() => attemptLogin()}>Log in</Button>
           </Col>
         </Form.Group>
 
-        <Form.Group>
+        <Form.Group className='mb-3'>
           <span className='paragraph'>
             If you don&apos;t trust the above link because SRC&apos;s api portal
             looks sketchy, you can also access your api key through:
@@ -96,7 +92,7 @@ const LoginModal = (props: LoginModalProps) => {
         </Form.Group>
       </Form>
 
-      <br /><label>Why do we need your API key?</label>
+      <br /><Form.Label>Why do we need your API key?</Form.Label>
       <br />By using your key, it&apos;s possible to authenticate you to
       speedrun.com without ever asking for a password! If something ever goes
       wrong or you believe someone is abusing your key, you can change it easily

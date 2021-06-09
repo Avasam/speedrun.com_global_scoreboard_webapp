@@ -32,7 +32,7 @@ const logout = (setCurrentUser: (user: null) => void) => {
 const App: FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null | undefined>()
   const viewScheduleIdFromUrl = new URLSearchParams(window.location.search).get('view')
-  const [viewScheduleId] = useState<number | null>((viewScheduleIdFromUrl && Number.parseInt(viewScheduleIdFromUrl)) || null)
+  const [viewScheduleId] = useState((viewScheduleIdFromUrl && Number.parseInt(viewScheduleIdFromUrl)) || null)
 
   // Take registrationLink from the URL if present,
   // otherwise from the localStorage if there are no other searchParam
@@ -107,7 +107,7 @@ const App: FC = () => {
 
       <footer>
         &copy; <a
-          href='https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/master/LICENSE'
+          href='https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/main/LICENSE'
           target='about'
         >Copyright</a> {new Date().getFullYear()} by <a
           href='https://github.com/Avasam/'

@@ -41,7 +41,7 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int, P
             player = Player.get(user._name)
             if player:
                 text_output = (f"User ID \"{user._id}\" not found on speedrun.com. "
-                               "\nRemoved it from the database.")
+                               "\nRemoved them from the database.")
                 result_state = "warning"
                 db.session.delete(player)
                 db.session.commit()
@@ -64,7 +64,6 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int, P
                 __set_user_points(user)
 
                 if not threads_exceptions:
-                    print(f"\nLooking for {user._id}")
                     text_output, result_state = update_runner_in_database(player, user)
                 else:
                     errors_str = "Please report to: https://github.com/Avasam/Global_Speedrunning_Scoreboard/issues\n" \
@@ -113,11 +112,13 @@ def __set_user_code_and_name(user: User) -> None:
 
     user._id = infos["data"]["id"]
     location = infos["data"]["location"]
-    user._country_code = location["country"]["code"] if location else None
+    if location is not None:
+        country = location["country"]
+        region = location.get("region")
+        user._country_code = region["code"] if region else country["code"]
+    else:
+        user._country_code = None
     user._name = infos["data"]["names"].get("international")
-    japanese_name = infos["data"]["names"].get("japanese")
-    if japanese_name:
-        user._name += f" ({japanese_name})"
     if infos["data"]["role"] == "banned":
         user._banned = True
         user._points = 0

@@ -104,6 +104,22 @@ table.scoreDetailsTable th {
   transition: none;
 }
 
+.form-label {
+  margin-right: 0.5rem; /* Same as margin-bottom */
+}
+
+.row > .me-auto + .col-auto {
+  padding-left: 0.5rem; /* Same as .form-label margin-right */
+}
+
+/* Hacky adjustments by copying BS4's form-control definitions to go back to that look */
+.picky__input {
+  height: calc(1.5em + .75rem + 2px);
+}
+.form-control:read-only {
+  background-color: #fff;
+}
+
 /* TODO: Helps with Table overlap, but this is not enough in extreme cases.
  * Right now the longest name is "TheTrashmanMossman69" */
 @media (min-width: 992px) and (max-width: 1199px) {

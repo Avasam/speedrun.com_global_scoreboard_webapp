@@ -20,7 +20,6 @@
 #
 # Contact:
 # samuel.06@hotmail.com
-# api.core_api import api as core_api
 ##########################################################################
 from api.core_api import api as core_api
 from api.game_search_api import api as game_search_api

@@ -1,0 +1,25 @@
+{
+  "extends": [
+    "config:base",
+    "schedule:weekly",
+    ":preserveSemverRanges",
+    ":respectLatest",
+    ":prHourlyLimitNone"
+  ],
+  "baseBranches": [
+    "develop"
+  ],
+  "labels": [
+    "dependencies"
+  ],
+  "assigneesFromCodeOwners": true,
+  "additionalReviewers": [
+    "Avasam"
+  ],
+  "ignoreDeps": [
+    "eslint-plugin-extra-rules"
+  ],
+  "ignorePaths": [
+    "dependencies"
+  ]
+}

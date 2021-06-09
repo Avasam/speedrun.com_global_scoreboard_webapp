@@ -3,8 +3,8 @@ import './Scoreboard.css'
 
 import type { Component, MutableRefObject } from 'react'
 import { forwardRef, useRef, useState } from 'react'
-import { Spinner } from 'react-bootstrap'
-import type { Column } from 'react-bootstrap-table-next'
+import { Col, FormLabel, Row, Spinner } from 'react-bootstrap'
+import type { Column, ColumnFormatter } from 'react-bootstrap-table-next'
 import BootstrapTable from 'react-bootstrap-table-next'
 import paginationFactory, { PaginationListStandalone, PaginationProvider, PaginationTotalStandalone, SizePerPageDropdownStandalone } from 'react-bootstrap-table2-paginator'
 import type { SearchProps, ToolkitProviderProps } from 'react-bootstrap-table2-toolkit'
@@ -19,7 +19,6 @@ import PlayerNameCell from './TableElements/PlayerNameCell'
 import PlayerScoreCell from './TableElements/PlayerScoreCell'
 import ScoreTitle from './TableElements/ScoreTitle'
 import sortCaret from './TableElements/SortCarret'
-const { SearchBar } = Search
 
 let getSortOrder: () => SortOrder | undefined
 const currentTimeOnLoad = new Date()
@@ -41,7 +40,7 @@ type FormatExtraDataProps = {
 
 const dateFormat: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' }
 
-const nameFormatter = (_cell: unknown, row: Player | undefined, _rowIndex: number, formatExtraData?: FormatExtraDataProps) =>
+const nameFormatter: ColumnFormatter<Player, FormatExtraDataProps> = (_cell, row, _rowIndex, formatExtraData) =>
   row &&
   formatExtraData &&
   <PlayerNameCell
@@ -58,7 +57,8 @@ const scoreHeaderFormatter = () =>
     {sortCaret(getSortOrder())}
   </>
 
-const scoreFormatter = (_cell: unknown, row: Player | undefined) =>
+// eslint-disable-next-line prefer-arrow/prefer-arrow-functions
+const scoreFormatter: ColumnFormatter<Player, void> = (_cell, row) =>
   row &&
   <PlayerScoreCell player={row} />
 
@@ -85,7 +85,7 @@ const columns: Column[] = [
   {
     dataField: 'lastUpdate',
     text: 'Last Updated',
-    formatter: (cell: Date | undefined) => cell?.toLocaleDateString('en-us', dateFormat),
+    formatter: (cell => cell?.toLocaleDateString('en-us', dateFormat)) as ColumnFormatter<Date, void>,
     classes: columnClass,
     searchable: false,
     sort: true,
@@ -114,7 +114,7 @@ const rowClasses = (row: Player | undefined, currentUser: Player | null, friends
 const Legend = () =>
   <span className='legend'>
     <br />
-    <label>Updated:</label>{' '}
+    <FormLabel>Updated:</FormLabel>{' '}
     <span className='daysSince0'>This&nbsp;week</span>{', '}
     <span className='daysSince1'>This&nbsp;month</span>{', '}
     <span className='daysSince2'>In&nbsp;the&nbsp;last&nbsp;3&nbsp;months</span>{', '}
@@ -170,7 +170,7 @@ const Scoreboard = forwardRef<ScoreboardRef, ScoreboardProps>((props, ref) => {
   getSortOrder = () => boostrapTableRef.current?.sortContext.state.sortOrder
 
   return <>
-    <label>Scoreboard:</label>
+    <FormLabel>Scoreboard:</FormLabel>
     <ToolkitProvider
       keyField='userId'
       data={props.players}
@@ -199,8 +199,14 @@ const Scoreboard = forwardRef<ScoreboardRef, ScoreboardProps>((props, ref) => {
         >
           {(({ paginationProps, paginationTableProps }) =>
             <div>
-              <SearchBar ref={searchBarRef} {...toolkitprops.searchProps} />
-              <SizePerPageDropdownStandalone {...paginationProps} />
+              <Row className='gx-0' noGutters>
+                <Col xs='auto' className='mb-2 me-auto'>
+                  <Search.SearchBar ref={searchBarRef} {...toolkitprops.searchProps} />
+                </Col>
+                <Col xs='auto' className='mb-2'>
+                  <SizePerPageDropdownStandalone {...paginationProps} />
+                </Col>
+              </Row>
               <BootstrapTable
                 ref={boostrapTableRef}
                 wrapperClasses='table-responsive'

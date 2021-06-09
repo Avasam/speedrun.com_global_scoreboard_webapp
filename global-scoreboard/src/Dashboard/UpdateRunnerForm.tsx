@@ -19,7 +19,7 @@ const UpdateRunnerForm = (props: UpdateRunnerFormProps) => {
 
   return (
     <Form onSubmit={(event: FormEvent<HTMLFormElement>) => event.preventDefault()}>
-      <Form.Group controlId='update-user'>
+      <Form.Group className='mb-3' controlId='update-user'>
         <Form.Label>Update runner:</Form.Label>
         <InputGroup>
           <Form.Control
@@ -30,15 +30,13 @@ const UpdateRunnerForm = (props: UpdateRunnerFormProps) => {
               (props.updating || !props.currentUser)}
             aria-describedby='update user name or id'
           />
-          <InputGroup.Append>
-            <Button
-              id='update-runner-button'
-              type='submit'
-              disabled={window.process.env.REACT_APP_BYPASS_UPDATE_RESTRICTIONS !== 'true' &&
-                (props.updating || !props.currentUser || !updateUserNameOrId)}
-              onClick={() => props.onUpdate(updateUserNameOrId.trim())}
-            >Update</Button>
-          </InputGroup.Append>
+          <Button
+            id='update-runner-button'
+            type='submit'
+            disabled={window.process.env.REACT_APP_BYPASS_UPDATE_RESTRICTIONS !== 'true' &&
+              (props.updating || !props.currentUser || !updateUserNameOrId)}
+            onClick={() => props.onUpdate(updateUserNameOrId.trim())}
+          >Update</Button>
         </InputGroup>
       </Form.Group>
     </Form>

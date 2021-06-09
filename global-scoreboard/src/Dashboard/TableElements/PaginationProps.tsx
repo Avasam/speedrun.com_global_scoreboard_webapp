@@ -5,12 +5,12 @@ const sizePerPageRenderer: PaginationProps['sizePerPageRenderer'] = ({
   currSizePerPage,
   onSizePerPageChange,
 }) =>
-  <span className='react-bs-table-sizePerPage-dropdown float-right'>
+  <span className='react-bs-table-sizePerPage-dropdown'>
     {'Show '}
     <DropdownButton
       id='pageDropDown'
       variant='outline-primary'
-      alignRight
+      align='end'
       title={currSizePerPage}
       style={{ display: 'inline-block' }}
     >
@@ -28,7 +28,6 @@ const sizePerPageRenderer: PaginationProps['sizePerPageRenderer'] = ({
     </DropdownButton>
     {' entries'}
   </span>
-
 
 const defaultPaginationOptions: PaginationProps = {
   custom: true,

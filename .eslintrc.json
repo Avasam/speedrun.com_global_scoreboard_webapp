@@ -18,14 +18,12 @@
     "plugin:switch-case/recommended",
     "plugin:unicorn/recommended"
   ],
-  "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaVersion": 2021,
     "sourceType": "module",
     "ecmaFeatures": {
       "jsx": true
-    },
-    "project": "./tsconfig.json"
+    }
   },
   "settings": {
     "react": {
@@ -80,7 +78,7 @@
       "warn",
       64
     ],
-    // unicorn/recommended overrides (https://github.com/sindresorhus/eslint-plugin-unicorn/blob/master/index.js#L41)
+    // unicorn/recommended overrides (https://github.com/sindresorhus/eslint-plugin-unicorn/blob/main/index.js#L41)
     "unicorn/catch-error-name": [
       "error",
       {
@@ -121,6 +119,7 @@
     ],
     "unicorn/numeric-separators-style": "error",
     "unicorn/prefer-add-event-listener": "error",
+    "unicorn/prefer-object-has-own": "error",
     "unicorn/prefer-query-selector": 0,
     "unicorn/prefer-text-content": "error",
     "unicorn/prevent-abbreviations": [
@@ -178,7 +177,8 @@
         "objects": "always-multiline",
         "imports": "always-multiline",
         "exports": "always-multiline",
-        "functions": "only-multiline"
+        "functions": "only-multiline",
+        "enums": "always-multiline"
       }
     ],
     "@typescript-eslint/consistent-type-definitions": [
@@ -250,6 +250,12 @@
       }
     ],
     "@typescript-eslint/no-type-alias": "off",
+    // Note: These 2 drown TS2304 and actually make the errors harder to understand.
+    // See: https://github.com/typescript-eslint/typescript-eslint/issues/2665
+    // There's nothing we can do until a pedantic any check in TypeScript is added
+    // Eg.: https://github.com/microsoft/TypeScript/issues/40174
+    "@typescript-eslint/no-unsafe-call": "off",
+    "@typescript-eslint/no-unsafe-assignment": "off",
     "@typescript-eslint/no-unused-vars": [
       "error",
       {
@@ -371,6 +377,15 @@
       "error",
       "prefer-single"
     ],
+    "max-len": [
+      "error",
+      {
+        "code": 120,
+        "tabWidth": 2,
+        "ignoreComments": false,
+        "ignorePattern": "^import .*?$"
+      }
+    ],
     // These rule does not correctly treat react's function components. See https://github.com/SonarSource/SonarJS/issues/2238
     // Max very high as most of the react code lives in functions.
     "max-lines": [
@@ -405,6 +420,12 @@
     "no-dupe-else-if": "error",
     "no-inner-declarations": "error",
     "no-lonely-if": "error",
+    "no-multiple-empty-lines": [
+      "error",
+      {
+        "max": 1
+      }
+    ],
     "no-unneeded-ternary": "error",
     "no-warning-comments": [
       "warn",

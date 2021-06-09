@@ -1,2 +1,2 @@
-ALTER TABLE `schedule` 
+ALTER TABLE `schedule`
 CHANGE COLUMN `deadline` `deadline` DATETIME NULL ;

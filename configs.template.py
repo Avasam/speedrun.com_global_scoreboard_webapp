@@ -13,13 +13,11 @@ auto_reload_templates: bool = True
 # Custom settings
 bypass_update_restrictions: bool = True
 last_updated_days: List[int] = [7, 30, 91]
-# Timezone: https://momentjs.com/timezone/#format-dates-in-any-timezone
-server_timezone: str = "America/New_York"
 
 # Database settings
 sql_track_modifications: bool = False
 sql_connector: str = "mysqlconnector"
 sql_username: str = "admin"
 sql_password: str = "admin"
-sql_hostname: str = "localhost:3356"
+sql_hostname: str = "localhost:3306"
 sql_database_name: str = "speedrun_global_scoreboard"
