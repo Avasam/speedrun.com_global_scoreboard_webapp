@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react'
-import { FormControl, FormLabel } from 'react-bootstrap'
+import { Form } from 'react-bootstrap'
 import type { SearchFieldProps, SearchProps } from 'react-bootstrap-table2-toolkit'
 
 import { apiGet, MAX_PAGINATION } from '../fetchers/Api'
@@ -50,13 +50,13 @@ const GameCategorySearch = (props: GameCategorySearchProps) => {
     DEBOUNCE_TIME
   )
 
-  return <FormLabel>
-    <FormControl
+  return <Form.Label>
+    <Form.Control
       className={props.className}
       placeholder={props.placeholder}
       onChange={event => handleOnChange(event.currentTarget.value)}
     />
-  </FormLabel>
+  </Form.Label>
 
 }
 

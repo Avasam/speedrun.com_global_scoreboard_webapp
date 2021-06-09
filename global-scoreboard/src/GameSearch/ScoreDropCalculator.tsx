@@ -141,7 +141,7 @@ const ScoreDropCalculator = () => {
 
   return <div style={{ marginTop: '1rem', marginBottom: '1rem' }}>
     <Form onSubmit={(event: FormEvent<HTMLFormElement>) => event.preventDefault()}>
-      <Form.Group controlId='calculate-score-drop'>
+      <Form.Group className='mb-3' controlId='calculate-score-drop'>
         <Form.Label>
           Enter a run&apos;s ID to calculate the required time, for a new player, to drop the score value of said run:
         </Form.Label>
@@ -153,13 +153,11 @@ const ScoreDropCalculator = () => {
             disabled={updating}
             aria-describedby='calculate score drop'
           />
-          <InputGroup.Append>
-            <Button
-              type='submit'
-              disabled={updating || !runId}
-              onClick={onCalculate}
-            >Calculate</Button>
-          </InputGroup.Append>
+          <Button
+            type='submit'
+            disabled={updating || !runId}
+            onClick={onCalculate}
+          >Calculate</Button>
         </InputGroup>
       </Form.Group>
     </Form>

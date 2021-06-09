@@ -1,0 +1,13 @@
+diff --git a/node_modules/react-bootstrap-table2-paginator/lib/src/pagination-total.js b/node_modules/react-bootstrap-table2-paginator/lib/src/pagination-total.js
+index c96c269..7fd5ca6 100644
+--- a/node_modules/react-bootstrap-table2-paginator/lib/src/pagination-total.js
++++ b/node_modules/react-bootstrap-table2-paginator/lib/src/pagination-total.js
+@@ -21,7 +21,7 @@ var PaginationTotal = function PaginationTotal(props) {
+   return _react2.default.createElement(
+     'span',
+     { className: 'react-bootstrap-table-pagination-total' },
+-    '\xA0Showing rows ',
++    'Showing rows ',
+     props.from,
+     ' to\xA0',
+     props.to,
