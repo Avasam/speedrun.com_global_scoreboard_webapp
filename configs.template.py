@@ -13,8 +13,6 @@ auto_reload_templates: bool = True
 # Custom settings
 bypass_update_restrictions: bool = True
 last_updated_days: List[int] = [7, 30, 91]
-# Timezone: https://momentjs.com/timezone/#format-dates-in-any-timezone
-server_timezone: str = "America/New_York"
 
 # Database settings
 sql_track_modifications: bool = False

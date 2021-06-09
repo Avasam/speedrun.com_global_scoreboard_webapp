@@ -24,7 +24,7 @@ def authentication_required(f):
 
         try:
             token = auth_headers[1]
-            data = jwt.decode(token, current_app.config['SECRET_KEY'])
+            data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=["HS256"])
             player: Player = Player.query.filter_by(user_id=data['sub']).first()
             if not player:
                 raise RuntimeError('User not found')

@@ -25,13 +25,16 @@ def login():
     if not player:
         return jsonify({'message': error_message, 'authenticated': False}), 401
 
-    token = jwt.encode({
+    token: str = jwt.encode({
         'sub': player.user_id,
         'iat': datetime.utcnow(),
         'exp': datetime.utcnow() + timedelta(days=1)},
         current_app.config['SECRET_KEY'])
+    # Note: https://github.com/jpadilla/pyjwt/issues/529
+    if type(token) is bytes:
+        token = token.decode('UTF-8')
     return jsonify({
-        'token': token.decode('UTF-8'),
+        'token': token,
         'user': {
             'userId': player.user_id,
             'name': player.name,
