@@ -9,10 +9,11 @@ import moment from 'moment'
 import type { FC } from 'react'
 import { useState } from 'react'
 
-import type { Schedule, ScheduleDto } from '../../models/Schedule'
-import { createDefaultTimeSlot, TimeSlot } from '../../models/TimeSlot'
-import { todayFlat } from '../../utils/Date'
 import TimeSlotRow from './TimeSlotRow'
+import type { Schedule, ScheduleDto } from 'src/Models/Schedule'
+import { createDefaultTimeSlot, TimeSlot } from 'src/Models/TimeSlot'
+import { DEADLINE_FORMAT, diffDays, startOfDay } from 'src/utils/Date'
+import { getDeadlineDueText } from 'src/utils/ScheduleHelper'
 
 type ScheduleWizardProps = {
   schedule: Schedule

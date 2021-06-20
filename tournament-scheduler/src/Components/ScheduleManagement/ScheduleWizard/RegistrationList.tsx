@@ -3,8 +3,8 @@ import DeleteForever from '@material-ui/icons/DeleteForever'
 import type { FC } from 'react'
 import { useState } from 'react'
 
-import type { RegistrationProxy } from '../../models/Registration'
-import type Registration from '../../models/Registration'
+import type { RegistrationProxy } from 'src/Models/Registration'
+import type Registration from 'src/Models/Registration'
 
 type RegistrationListProps = {
   registration: RegistrationProxy

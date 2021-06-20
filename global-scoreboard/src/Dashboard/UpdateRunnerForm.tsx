@@ -3,7 +3,7 @@ import type { ChangeEventHandler, FormEvent } from 'react'
 import { useState } from 'react'
 import { Button, Form, InputGroup } from 'react-bootstrap'
 
-import type Player from '../models/Player'
+import type Player from 'src/Models/Player'
 
 type UpdateRunnerFormProps = {
   currentUser: Player | null

@@ -2,10 +2,10 @@ import type { ChangeEventHandler, FormEvent } from 'react'
 import { useState } from 'react'
 import { Button, Form, InputGroup } from 'react-bootstrap'
 
-import { apiGet } from '../fetchers/Api'
-import type { DataArray, SrcLeaderboard, SrcRun, SrcVariable } from '../models/SrcResponse'
-import math from '../utils/Math'
-import { secondsToTimeString } from '../utils/Time'
+import { apiGet } from 'src/fetchers/Api'
+import type { DataArray, SrcLeaderboard, SrcRun, SrcVariable } from 'src/Models/SrcResponse'
+import math from 'src/utils/Math'
+import { secondsToTimeString } from 'src/utils/Time'
 
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers
 const TIME_BONUS_DIVISOR = math.SECONDS_IN_HOUR * 12 // 12h (1/2 day) for +100%

@@ -1,6 +1,6 @@
-import { tomorrowFlat } from '../utils/Date'
 import type { TimeSlotDto } from './TimeSlot'
 import { createDefaultTimeSlot, TimeSlot } from './TimeSlot'
+import { nextDayFlat } from 'src/utils/Date'
 
 export type ScheduleDto = {
   id: number
@@ -17,7 +17,7 @@ export class Schedule {
   active: boolean
   registrationKey: string
   get registrationLink(): string {
-    return `${window.location.origin}${window.location.pathname}?register=${this.id}-${this.registrationKey}`
+    return `${window.location.origin}/register/${this.id}-${this.registrationKey}`
   }
   deadline: Date | null
   timeSlots: TimeSlot[]

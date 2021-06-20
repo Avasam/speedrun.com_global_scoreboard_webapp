@@ -10,14 +10,15 @@ import type { MaterialUiPickersDate } from '@material-ui/pickers/typings/date'
 import type { FC } from 'react'
 import { useState } from 'react'
 
-import { apiDelete, apiPut } from '../../fetchers/Api'
-import type { RegistrationProxy } from '../../models/Registration'
-import type Registration from '../../models/Registration'
-import type { Schedule } from '../../models/Schedule'
-import type { TimeSlot } from '../../models/TimeSlot'
-import { minutesStep } from '../../models/TimeSlot'
 import NonZeroNumberInput from './NonZeroNumberInput'
 import RegistrationList from './RegistrationList'
+import { apiDelete, apiPut } from 'src/fetchers/Api'
+import type { RegistrationProxy } from 'src/Models/Registration'
+import type Registration from 'src/Models/Registration'
+import type { Schedule } from 'src/Models/Schedule'
+import type { TimeSlot } from 'src/Models/TimeSlot'
+import { minutesStep } from 'src/Models/TimeSlot'
+import { TIMESLOT_FORMAT } from 'src/utils/Date'
 
 const putRegistration = (registration: Registration) =>
   apiPut(`registrations/${registration.id}`, registration)

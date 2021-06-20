@@ -2,9 +2,9 @@ import type { Dispatch, SetStateAction } from 'react'
 import { Form } from 'react-bootstrap'
 import type { SearchFieldProps, SearchProps } from 'react-bootstrap-table2-toolkit'
 
-import { apiGet, MAX_PAGINATION } from '../fetchers/Api'
-import type { DataArray, SrcGame } from '../models/SrcResponse'
-import math from '../utils/Math'
+import { apiGet, MAX_PAGINATION } from 'src/fetchers/Api'
+import type { DataArray, SrcGame } from 'src/Models/SrcResponse'
+import math from 'src/utils/Math'
 
 type IdToNameMap = Record<string, string>
 

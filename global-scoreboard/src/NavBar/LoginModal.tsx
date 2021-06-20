@@ -5,10 +5,10 @@ import type { ChangeEventHandler, FormEvent } from 'react'
 import { useState } from 'react'
 import { Button, Col, Form, InputGroup } from 'react-bootstrap'
 
-import { apiPost } from '../fetchers/Api'
-import GenericModal from '../GenericModal'
-import type Player from '../models/Player'
-import type UpdateRunnerResult from '../models/UpdateRunnerResult'
+import { apiPost } from 'src/fetchers/Api'
+import GenericModal from 'src/GenericModal'
+import type Player from 'src/Models/Player'
+import type UpdateRunnerResult from 'src/Models/UpdateRunnerResult'
 import SrcApiKeyLink from './SrcApiKeyLink'
 
 type LoginModalProps = {

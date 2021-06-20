@@ -4,15 +4,18 @@ import type { SelectInputProps } from '@material-ui/core/Select/SelectInput'
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment'
 import type { FC } from 'react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
+import { Link as RouterLink, useHistory } from 'react-router-dom'
 
-import { apiGet, apiPost } from '../fetchers/Api'
-import type { ScheduleDto } from '../models/Schedule'
-import { Schedule } from '../models/Schedule'
-import { TimeSlot } from '../models/TimeSlot'
+import { apiGet, apiPost } from 'src/fetchers/Api'
+import type { ScheduleDto } from 'src/Models/Schedule'
+import { Schedule } from 'src/Models/Schedule'
+import { TimeSlot } from 'src/Models/TimeSlot'
+import { addTime, diffDays, fancyFormat } from 'src/utils/Date'
+import { getDeadlineDueText } from 'src/utils/ScheduleHelper'
 
 type ScheduleRegistrationProps = {
-  registrationLink: string
+  registrationId?: string
 }
 
 const timeSlotLabelPaddingRight = 40
@@ -32,31 +35,31 @@ const postRegistration = (timeSlotId: number, participants: string[], registrati
 
 const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegistrationProps) => {
   const [scheduleState, setScheduleState] = useState<Schedule | null | undefined>()
-  const [registrationKeyState, setRegistrationKeyState] = useState<string>('')
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<TimeSlot | undefined>()
   const [timeSlotLabelWidth, setTimeSlotLabelWidth] = useState(0)
   const [participants, setParticipants] = useState<string[]>([])
   const [formValidity, setFormValidity] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const history = useHistory()
 
-  const timeSlotInputLabel = useRef<HTMLLabelElement>(null)
-  const deadlineDaysLeft = moment(scheduleState?.deadline).diff(Date.now(), 'days')
+  // Take registrationLink from the localStorage
+  const registrationId = localStorage.getItem('registrationId') ?? ''
 
-  const checkFormValidity = () => {
+  useEffect(() => {
     const participantCount = selectedTimeSlot?.participantsPerEntry
     const actualParticipants = participants.slice(0, participantCount)
     const valid = actualParticipants.length === participantCount &&
       actualParticipants.every(participant => !!participant)
     setFormValidity(valid)
-  }
-
-  useEffect(checkFormValidity, [selectedTimeSlot, participants])
+  }, [selectedTimeSlot, participants])
 
   useEffect(() => {
-    const splitIndex = props.registrationLink.indexOf('-')
-    const id = Number.parseInt(props.registrationLink.slice(0, Math.max(0, splitIndex)))
-    const registrationKey = props.registrationLink.slice(splitIndex + 1)
-    setRegistrationKeyState(registrationKey)
+    if (props.registrationId) return
+
+    console.info('Current registrationId:', registrationId)
+    const splitIndex = registrationId.indexOf('-')
+    const id = Number.parseInt(registrationId.slice(0, Math.max(0, splitIndex)))
+    const registrationKey = registrationId.slice(splitIndex + 1)
     getSchedule(id, registrationKey)
       .then((schedule: Schedule) => {
         schedule.timeSlots.sort(TimeSlot.compareFn)
@@ -70,7 +73,14 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
           console.error(err)
         }
       })
-  }, [props.registrationLink])
+  }, [props.registrationId, registrationId])
+
+  // Keep the registrationLink in localStorage so we can then hide it from the URL
+  if (props.registrationId) {
+    console.info('New registrationId:', props.registrationId)
+    localStorage.setItem('registrationId', props.registrationId)
+    history.push('/register')
+  }
 
   const selectTimeSlot: SelectInputProps['onChange'] = event => {
     const eventValue = Number.parseInt(event.target.value as string)
@@ -88,12 +98,9 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
     postRegistration(
       selectedTimeSlot.id,
       participants.slice(0, selectedTimeSlot.participantsPerEntry),
-      registrationKeyState
+      registrationId
     )
-      .then(() => {
-        localStorage.removeItem('register')
-        window.location.href = `${window.location.pathname}?view=${scheduleState?.id}`
-      })
+      .then(() => history.push(`/view/${scheduleState?.id}`))
       .catch((err: Response) => {
         if (err.status === StatusCodes.INSUFFICIENT_STORAGE) {
           if (!scheduleState) {
@@ -114,16 +121,19 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
       })
   }
 
+  const deadlineDaysLeft = diffDays(scheduleState?.deadline)
+
   return <Container>
     {!scheduleState
       ? scheduleState === null && <div>
-        Sorry. `<code>{props.registrationLink}</code>` does not lead to an existing registration form.
+        Sorry. `<code>{props.registrationId}</code>` does not lead to an existing registration form.
       </div>
       : <Card>
         <CardContent style={{ textAlign: 'left' }}>
           <label>Schedule for: {scheduleState.name}</label>
-          <Link href={`${window.location.href}?view=${scheduleState.id}`} target='blank' style={{ display: 'block' }}>
-            Click here to view the current registrations in a new tab
+          <br />
+          <Link component={RouterLink} to={`/view/${scheduleState.id}`}>
+            Click here to view the current registrations
           </Link>
           <span style={{ display: 'block' }}>All dates and times are given in your local timezone.</span>
 

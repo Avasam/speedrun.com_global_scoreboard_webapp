@@ -5,9 +5,9 @@ import useMediaQuery from '@material-ui/core/useMediaQuery'
 import type { FC } from 'react'
 import { useState } from 'react'
 
-import { apiPost } from '../fetchers/Api'
-import type User from '../models/User'
 import SrcApiKeyLink from './SrcApiKeyLink'
+import { apiPost } from 'src/fetchers/Api'
+import type User from 'src/Models/User'
 
 type loginFormProps = {
   onLogin: (currentUser: User) => void

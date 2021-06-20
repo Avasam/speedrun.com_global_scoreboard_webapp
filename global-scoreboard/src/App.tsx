@@ -9,9 +9,9 @@ import { useEffect, useState } from 'react'
 import Dashboard from './Dashboard/Dashboard'
 import { apiGet } from './fetchers/Api'
 import GameSearch from './GameSearch/GameSearch'
-import type { ServerConfigs } from './models/Configs'
-import Configs from './models/Configs'
-import type Player from './models/Player'
+import type { ServerConfigs } from './Models/Configs'
+import Configs from './Models/Configs'
+import type Player from './Models/Player'
 import ScoreboardNavBar from './NavBar/ScoreboardNavBar'
 
 const getCurrentUser = () => apiGet('users/current').then<{ user: Player | undefined }>(res => res.json())

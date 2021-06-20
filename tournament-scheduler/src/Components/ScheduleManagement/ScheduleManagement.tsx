@@ -1,16 +1,15 @@
-import type { Theme } from '@material-ui/core'
-import { Button, Card, CardActions, CardContent, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, makeStyles } from '@material-ui/core'
-import type { Styles } from '@material-ui/core/styles/withStyles'
-import DeleteForever from '@material-ui/icons/DeleteForever'
+import { Button, Card, CardActions, CardContent, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton } from '@material-ui/core'
+import { DeleteForever } from '@material-ui/icons'
 import type { FC } from 'react'
 import { useEffect, useState } from 'react'
+import { Link as RouterLink } from 'react-router-dom'
 
-import { apiDelete, apiGet, apiPost, apiPut } from '../fetchers/Api'
-import type { ScheduleDto } from '../models/Schedule'
-import { createDefaultSchedule, Schedule } from '../models/Schedule'
-import type User from '../models/User'
-import copyToClipboard from '../utils/Clipboard'
 import { ScheduleWizard } from './ScheduleWizard/ScheduleWizard'
+import { apiDelete, apiGet, apiPost, apiPut } from 'src/fetchers/Api'
+import type { ScheduleDto } from 'src/Models/Schedule'
+import { createDefaultSchedule, Schedule } from 'src/Models/Schedule'
+import type User from 'src/Models/User'
+import copyToClipboard from 'src/utils/Clipboard'
 
 const getSchedules = () =>
   apiGet('schedules')
@@ -171,11 +170,9 @@ const ScheduleCard: FC<ScheduleCardProps> = (props: ScheduleCardProps) => {
         Edit
       </Button>
       <Button
+        component={RouterLink}
         size='small'
-        onClick={() => {
-          localStorage.removeItem('register')
-          window.location.href = `${window.location.pathname}?view=${props.schedule.id}`
-        }}
+        to={`/view/${props.schedule.id}`}
       >
         Open public page
       </Button>

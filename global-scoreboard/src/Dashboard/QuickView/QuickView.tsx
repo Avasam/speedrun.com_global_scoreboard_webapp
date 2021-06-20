@@ -4,12 +4,12 @@ import { faArrowAltCircleRight } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Button, FormLabel, Table } from 'react-bootstrap'
 
-import type Player from '../..//models/Player'
-import Configs from '../../models/Configs'
-import { daysBetween } from '../../utils/Time'
-import PlayerNameCell from '../TableElements/PlayerNameCell'
-import PlayerScoreCell from '../TableElements/PlayerScoreCell'
-import ScoreTitle from '../TableElements/ScoreTitle'
+import type Player from 'src//Models/Player'
+import Configs from 'src/Models/Configs'
+import PlayerNameCell from 'src/TableElements/PlayerNameCell'
+import PlayerScoreCell from 'src/TableElements/PlayerScoreCell'
+import ScoreTitle from 'src/TableElements/ScoreTitle'
+import { diffDays } from 'src/utils/Time'
 
 const currentTimeOnLoad = new Date()
 const columnClass = (lastUpdate: Date) => {

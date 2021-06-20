@@ -1,5 +1,5 @@
-import { floorToMinutesStep, tomorrow } from '../utils/Date'
 import type Registration from './Registration'
+import { floorToMinutesStep, nextDay } from 'src/utils/Date'
 
 export type TimeSlotDto = {
   id: number

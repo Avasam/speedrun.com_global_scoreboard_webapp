@@ -37,7 +37,7 @@
   text-decoration: underline;
 }
 
-.App .src-api-key-link .MuiTextField-root {
+.src-api-key-link.src-api-key-link .MuiTextField-root {
   min-width: 0;
 }
 
