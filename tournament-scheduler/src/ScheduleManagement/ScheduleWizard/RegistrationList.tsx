@@ -1,5 +1,5 @@
 import { Button, ButtonGroup, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, List, ListItem, ListItemText, TextField } from '@material-ui/core'
-import DeleteForever from '@material-ui/icons/DeleteForever'
+import { DeleteForever } from '@material-ui/icons'
 import type { FC } from 'react'
 import { useState } from 'react'
 
@@ -44,13 +44,11 @@ const RegistrationList: FC<RegistrationListProps> = (props: RegistrationListProp
           disabled={!props.registration.hasChanged}
         >
           <Button color='primary' onClick={() => props.onSave(props.registration)}>Save</Button>
-          <Button color='secondary' onClick={() => props.onReset(props.index)}>Reset</Button>
+          <Button color='error' onClick={() => props.onReset(props.index)}>Reset</Button>
         </ButtonGroup>
         <IconButton
-          style={{ color: 'red' }}
-          color='secondary'
+          className='error'
           aria-label='remove time slot'
-          component='button'
           onClick={() => setOpen(true)}
         ><DeleteForever /></IconButton>
 
@@ -78,8 +76,7 @@ const RegistrationList: FC<RegistrationListProps> = (props: RegistrationListProp
             <Button
               onClick={() => handleClose(true)}
               variant='outlined'
-              color='secondary'
-              style={{ color: 'red' }}
+              color='error'
             >
               <strong>Yes, delete this entry</strong>
             </Button>

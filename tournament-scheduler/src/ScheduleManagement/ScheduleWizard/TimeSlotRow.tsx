@@ -1,12 +1,7 @@
-import type { InputBaseComponentProps } from '@material-ui/core'
-import { Card, CardContent, Collapse, FormControl, IconButton, Input, InputAdornment, InputLabel, ListItem, ListItemText, TextField } from '@material-ui/core'
-import Event from '@material-ui/icons/Event'
-import ExpandLess from '@material-ui/icons/ExpandLess'
-import ExpandMore from '@material-ui/icons/ExpandMore'
-import FileCopy from '@material-ui/icons/FileCopy'
-import { DateTimePicker } from '@material-ui/lab'
-import AdapterDateFns from '@material-ui/lab/AdapterMoment'
-import LocalizationProvider from '@material-ui/lab/LocalizationProvider'
+import { Card, CardContent, Collapse, IconButton, ListItem, ListItemText, TextField } from '@material-ui/core'
+import { Event, ExpandLess, ExpandMore, FileCopy } from '@material-ui/icons'
+import { LocalizationProvider, MobileDateTimePicker } from '@material-ui/lab'
+import AdapterDateFns from '@material-ui/lab/AdapterDayjs'
 import type { FC } from 'react'
 import { useState } from 'react'
 
@@ -16,8 +11,11 @@ import type Registration from '../../models/Registration'
 import type { Schedule } from '../../models/Schedule'
 import type { TimeSlot } from '../../models/TimeSlot'
 import { minutesStep } from '../../models/TimeSlot'
+import { TIMESLOT_FORMAT } from '../../utils/Date'
 import NonZeroNumberInput from './NonZeroNumberInput'
 import RegistrationList from './RegistrationList'
+
+const MIN_YEAR = 2000
 
 const putRegistration = (registration: Registration) =>
   apiPut(`registrations/${registration.id}`, registration)
@@ -84,27 +82,19 @@ const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
       })
       .catch(console.error)
 
-  return <Card raised={true} className='time-slot-row'>
+  return <Card raised={true} className='time-slot-row error-as-warning'>
     <CardContent>
       <LocalizationProvider dateAdapter={AdapterDateFns}>
-        <DateTimePicker
+        <MobileDateTimePicker
           label='Date and time'
+          inputFormat={TIMESLOT_FORMAT}
           value={props.timeSlot.dateTime}
           onChange={date => props.onEditTimeSlotDateTime(date)}
-          // eslint-disable-next-line @typescript-eslint/no-magic-numbers
-          minDate={new Date(2020, 0)}
+          minDate={new Date(MIN_YEAR, 0)}
           disablePast={props.timeSlot.id <= -1}
           ampm={false}
           minutesStep={minutesStep}
-          InputProps={{
-            endAdornment:
-              <InputAdornment position='end'>
-                <IconButton>
-                  <Event />
-                </IconButton>
-              </InputAdornment>
-            ,
-          }}
+          InputProps={{ endAdornment: <Event /> }}
           renderInput={params =>
             <TextField
               {...params}
@@ -114,31 +104,26 @@ const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
         />
       </LocalizationProvider>
       <div className='number-input-container'>
-        <FormControl>
-          <InputLabel htmlFor={`maximum-entries-${props.id}`}>Maximum entries</InputLabel>
-          <Input
-            id={`maximum-entries-${props.id}`}
-            type='tel'
-            inputProps={{ min: '1' }}
-            onFocus={event => event.target.select()}
-            value={props.timeSlot.maximumEntries}
-            onChange={event => props.onEditTimeSlotMaximumEntries(Number.parseInt(event.target.value, 10) || 1)}
-            inputComponent={NonZeroNumberInput as FC<InputBaseComponentProps>}
-          />
-        </FormControl>
-        <FormControl>
-          <InputLabel htmlFor={`participants-per-entry-${props.id}`}>Participants per entry</InputLabel>
-          <Input
-            id={`participants-per-entry-${props.id}`}
-            type='tel'
-            inputProps={{ min: '1' }}
-            onFocus={event => event.target.select()}
-            value={props.timeSlot.participantsPerEntry}
-            onChange={event => props.onEditTimeSlotparticipantsPerEntry(Number.parseInt(event.target.value, 10) || 1)}
-            inputComponent={NonZeroNumberInput as FC<InputBaseComponentProps>}
-          />
-        </FormControl>
+        <TextField
+          id={`maximum-entries-${props.id}`}
+          label='Maximum entries'
+          type='tel'
+          inputProps={{ min: '1', inputComponent: { NonZeroNumberInput } }}
+          onFocus={event => event.target.select()}
+          value={props.timeSlot.maximumEntries}
+          onChange={event => props.onEditTimeSlotMaximumEntries(Number.parseInt(event.target.value, 10) || 1)}
+        />
+        <TextField
+          id={`participants-per-entry-${props.id}`}
+          label='Participants per entry'
+          type='tel'
+          inputProps={{ min: '1', inputComponent: { NonZeroNumberInput } }}
+          onFocus={event => event.target.select()}
+          value={props.timeSlot.participantsPerEntry}
+          onChange={event => props.onEditTimeSlotparticipantsPerEntry(Number.parseInt(event.target.value, 10) || 1)}
+        />
         <IconButton
+          color='primary'
           aria-label='duplicate time slot'
           component='button'
           onClick={() => props.onDuplicateTimeSlot()}
@@ -147,8 +132,7 @@ const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
         </IconButton>
         {props.schedule.timeSlots.length > 1 &&
           <IconButton
-            style={{ color: 'red' }}
-            color='secondary'
+            className='error'
             aria-label='remove time slot'
             component='button'
             onClick={() => props.onRemoveTimeSlot()}

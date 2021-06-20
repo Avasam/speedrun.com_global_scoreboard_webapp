@@ -16,7 +16,21 @@ or just add negative padding on Collapse, thought that feels hacky */
 }
 
 .time-slot-row .number-input-container .MuiFormControl-root .MuiInputLabel-root {
-  margin-top: -6px;
+  margin-top: -12px;
+  white-space: unset;
+  text-overflow: unset;
+}
+
+.time-slot-row .number-input-container .MuiFormControl-root {
+  width: 64px;
+}
+
+.error-as-warning.MuiFormControl-root.MuiTextField-root {
+  width: 172px; /* Enough to fit 'Wed Jun 22nd 2022' */
+}
+
+.time-slot-row .MuiTextField-root {
+  width: 222px; /* Enough to fit 'Wed Jun 22nd 2022, 22:22' */
 }
 
 .time-slot-row.time-slot-row .MuiFormControl-root {
@@ -27,6 +41,14 @@ or just add negative padding on Collapse, thought that feels hacky */
   margin-right: 12px;
 }
 
+.MuiInput-root > .MuiSvgIcon-root {
+  display: inline;
+  position: absolute;
+  top: 4px;
+  right: 0;
+  pointer-events: none;
+}
+
 .MuiFormControlLabel-root.MuiFormControlLabel-root {
   width: fit-content;
   margin: 12px;
@@ -34,12 +56,10 @@ or just add negative padding on Collapse, thought that feels hacky */
   padding-right: 6px;
 }
 
-.time-slot-row .number-input-container .MuiFormControl-root {
-  width: 64px;
-}
-
 #schedule-deadline-helper-text {
   width: max-content; /* Ensures error text does not wrap uselessly */
+  white-space: pre;
+  width: 240px;
 }
 
 .error-as-warning .MuiFormLabel-root.Mui-error,

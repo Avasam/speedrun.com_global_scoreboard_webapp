@@ -1,6 +1,5 @@
-import { Button, Card, CardActions, CardContent, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton } from '@material-ui/core'
-import DeleteForever from '@material-ui/icons/DeleteForever'
-import { makeStyles } from '@material-ui/styles'
+import { Button, Card, CardActions, CardContent, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Link } from '@material-ui/core'
+import { DeleteForever } from '@material-ui/icons'
 import type { FC } from 'react'
 import { useEffect, useState } from 'react'
 
@@ -36,6 +35,7 @@ const styles = {
     width: '100%',
     marginTop: '16px',
     marginBottom: '16px',
+    textAlign: 'start' as const,
   },
   cardActions: {
     display: 'flex',
@@ -61,7 +61,7 @@ const ScheduleManagement: FC<ScheduleManagementProps> = (props: ScheduleManageme
     savePromise
       .then(() => {
         getSchedules()
-          .then(res => setSchedules(res.reverse()))
+          .then(setSchedules)
           .catch(console.error)
         setCurrentSchedule(undefined)
       })
@@ -70,7 +70,7 @@ const ScheduleManagement: FC<ScheduleManagementProps> = (props: ScheduleManageme
 
   useEffect(() => {
     getSchedules()
-      .then(res => setSchedules(res.reverse()))
+      .then(setSchedules)
       .catch(console.error)
   }, [])
 
@@ -109,9 +109,6 @@ type ScheduleCardProps = {
 }
 
 const ScheduleCard: FC<ScheduleCardProps> = (props: ScheduleCardProps) => {
-  // FIXME: Probably have to use styles correctly
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  const classes = makeStyles(styles)()
   const [open, setOpen] = useState(false)
 
   const handleClose = (confirmed: boolean) => {
@@ -119,12 +116,11 @@ const ScheduleCard: FC<ScheduleCardProps> = (props: ScheduleCardProps) => {
     setOpen(false)
   }
 
-  return <Card className={classes.card}>
+  return <Card style={styles.card}>
     <CardContent>
       <span>{props.schedule.name}</span>
       <IconButton
-        style={{ color: 'red' }}
-        color='secondary'
+        className='error'
         aria-label='delete schedule'
         component='button'
         onClick={() => setOpen(true)}
@@ -151,8 +147,7 @@ const ScheduleCard: FC<ScheduleCardProps> = (props: ScheduleCardProps) => {
           <Button
             onClick={() => handleClose(true)}
             variant='outlined'
-            color='secondary'
-            style={{ color: 'red' }}
+            color='error'
           >
             <strong>Yes, delete this schedule</strong>
           </Button>
@@ -160,7 +155,7 @@ const ScheduleCard: FC<ScheduleCardProps> = (props: ScheduleCardProps) => {
       </Dialog>
 
     </CardContent>
-    <CardActions className={classes.cardActions}>
+    <CardActions sx={styles.cardActions}>
       <Button
         size='small'
         onClick={() => props.onEdit(props.schedule)}
@@ -168,11 +163,10 @@ const ScheduleCard: FC<ScheduleCardProps> = (props: ScheduleCardProps) => {
         Edit
       </Button>
       <Button
+        component={Link}
         size='small'
-        onClick={() => {
-          localStorage.removeItem('register')
-          window.location.href = `${window.location.pathname}?view=${props.schedule.id}`
-        }}
+        onClick={() => localStorage.removeItem('register')}
+        href={`${window.location.pathname}?view=${props.schedule.id}`}
       >
         Open public page
       </Button>

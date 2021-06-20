@@ -1,11 +1,9 @@
 import '@culturehq/add-to-calendar/dist/styles.css'
 
 import AddToCalendar from '@culturehq/add-to-calendar'
-import { Container, List, ListItem, ListItemText } from '@material-ui/core'
-import AdapterDateFns from '@material-ui/lab/AdapterMoment'
-import { createStyles, makeStyles } from '@material-ui/styles'
+import { Box, Button, Container, List, ListItem, ListItemText, Paper } from '@material-ui/core'
+import { useTheme } from '@material-ui/core/styles'
 import { StatusCodes } from 'http-status-codes'
-import moment from 'moment'
 import type { FC } from 'react'
 import { useEffect, useState } from 'react'
 
@@ -13,172 +11,141 @@ import { apiGet } from '../fetchers/Api'
 import type { ScheduleDto } from '../models/Schedule'
 import { Schedule } from '../models/Schedule'
 import { TimeSlot } from '../models/TimeSlot'
-import math from '../utils/Math'
+import { addTime, diffDays, fancyFormat } from '../utils/Date'
+import { buildCalendarEventDescription, buildCalendarEventTitle, getDeadlineDueText } from '../utils/ScheduleHelper'
 
 type ScheduleRegistrationProps = {
   scheduleId: number
 }
-
-const useStyles = makeStyles(theme =>
-  createStyles({
-    root: {
-      backgroundColor: theme.palette.background.paper,
-      margin: theme.spacing(math.HALF),
-    },
-    rootHeader: {
-      color: theme.palette.text.primary,
-      fontWeight: theme.typography.fontWeightBold,
-      backgroundColor: theme.palette.background.default,
-      paddingTop: theme.spacing(math.HALF),
-      paddingBottom: theme.spacing(math.HALF),
-      paddingLeft: theme.spacing(2),
-      paddingRight: theme.spacing(2),
-    },
-    nested: {
-      paddingLeft: theme.spacing(2),
-      paddingRight: theme.spacing(2),
-    },
-    item: {
-      paddingTop: 0,
-      paddingBottom: 0,
-    },
-    addToCalendar: {
-      // eslint-disable-next-line @typescript-eslint/no-magic-numbers
-      marginTop: theme.spacing(1.25),
-      marginLeft: theme.spacing(2),
-      marginBottom: 10,
-      display: 'inline-block',
-      color: theme.palette.text.primary,
-      backgroundColor: theme.palette.background.paper,
-      // TODO MUI5: theme.shape.borderRadius ?
-      borderRadius: 4,
-    },
-  }))
 
 const getSchedule = (id: number) =>
   apiGet(`schedules/${id}`)
     .then(res =>
       res.json().then((scheduleDto: ScheduleDto) => new Schedule(scheduleDto)))
 
-const buildCalendarEventTitle = (timeSlot: TimeSlot, schedule: Schedule) =>
-  `${timeSlot
-    .registrations
-    .flatMap(registration => registration.participants)
-    .join(', ')} (${schedule.name})`
-
-const buildCalendarEventDescription = (timeSlot: TimeSlot, schedule: Schedule) => {
-  const url = window.location.href
-  const title = schedule.name
-  const players = timeSlot.registrations.length <= 1
-    ? `Participants:<br/>${timeSlot
-      .registrations
-      .flatMap(registration => registration.participants)
-      .map((participant, index) => `${index + 1}. ${participant}<br/>`)
-      .join('')}`
-    : timeSlot
-      .registrations
-      .map(registration => registration.participants)
-      .map((participants, entryIndex) =>
-        `Participants for entry #${entryIndex + 1}:<br/>${participants
-          .map((participant, index) =>
-            `${index + 1}. ${participant}`)
-          .join('<br/>')}`)
-      .join('<br/><br/>')
-  return `${title}<br/>${url}<br/><br/>${players}`
-}
-
 const ScheduleViewer: FC<ScheduleRegistrationProps> = (props: ScheduleRegistrationProps) => {
-  const [scheduleState, setScheduleState] = useState<Schedule | null | undefined>()
-  const classes = useStyles()
+  const [schedule, setSchedule] = useState<Schedule | null | undefined>()
+  const theme = useTheme()
 
   useEffect(() => {
     getSchedule(props.scheduleId)
-      .then((schedule: Schedule) => {
-        schedule.timeSlots.sort(TimeSlot.compareFn)
-        setScheduleState(schedule)
+      .then((newSchedule: Schedule) => {
+        newSchedule.timeSlots.sort(TimeSlot.compareFn)
+        setSchedule(newSchedule)
       })
       .catch((err: Response) => {
         if (err.status === StatusCodes.NOT_FOUND) {
-          setScheduleState(null)
+          setSchedule(null)
         } else {
           console.error(err)
         }
       })
   }, [props.scheduleId])
 
-  return <Container>
-    {!scheduleState
-      ? scheduleState === null && <div>Sorry. `<code>{props.scheduleId}</code>` is not a valid scheduleState id.</div>
+  const deadlineDaysLeft = diffDays(schedule?.deadline)
+
+  const timeslots = schedule?.timeSlots.filter(timeSlot => timeSlot.registrations.length > 0) ?? []
+  return <Container maxWidth='md'>
+    {!schedule
+      ? schedule === null && <div>Sorry. `<code>{props.scheduleId}</code>` is not a valid schedule id.</div>
       : <div style={{ textAlign: 'left', width: 'fit-content', margin: 'auto' }}>
-        <label>Schedule for: {scheduleState.name}</label>
+        <label>Schedule for: {schedule.name}</label>
         <span style={{ display: 'block' }}>All dates and times are given in your local timezone.</span>
-        {!scheduleState.active && <div><br />This schedule is currently inactive and registration is closed.</div>}
-        {scheduleState
-          .timeSlots
-          .filter(timeSlot => timeSlot.registrations.length > 0)
-          .map(timeSlot =>
+        {schedule.active
+          ? schedule.deadline && <p>
+            Registrations {deadlineDaysLeft > 0 ? 'are closing' : 'closed'} {getDeadlineDueText(deadlineDaysLeft)}.
+          </p>
+          : <p>This schedule is currently inactive and registration is closed.</p>
+        }
+        {timeslots.length === 0 && <p>There are no registrations for this schedule.</p>}
+        {timeslots.map(timeSlot =>
+          <Paper key={`timeslot-${timeSlot.id}`} elevation={24}>
             <List
-              key={`timeslot-${timeSlot.id}`}
-              className={classes.root}
               subheader={
-                <ListItemText
-                  className={classes.rootHeader}
-                  primary={<>
-                    {moment(timeSlot.dateTime).format(`ddd ${new AdapterDateFns().formats.fullTime24h}`)}
-                    <div className={classes.addToCalendar}>
-                      <AddToCalendar
-                        filename={buildCalendarEventTitle(timeSlot, scheduleState)}
-                        event={{
-                          name: buildCalendarEventTitle(timeSlot, scheduleState),
-                          details: buildCalendarEventDescription(timeSlot, scheduleState),
-                          location: window.location.href,
-                          startsAt: timeSlot.dateTime.toISOString(),
-                          endsAt: moment(timeSlot.dateTime).add(1, 'h').toDate().toISOString(),
+                <Paper>
+                  <ListItemText
+                    primary={<>
+                      {fancyFormat(timeSlot.dateTime)}
+                      {/* TODO: Make paper colored buttons */}
+                      <Button
+                        sx={{
+                          marginLeft: 2,
+                          backgroundColor: theme.palette.background.paper,
+                          boxShadow: `0px 11px 15px -7px rgb(0 0 0 / 20%),
+                                      0px 24px 38px 3px rgb(0 0 0 / 14%),
+                                      0px 9px 46px 8px rgb(0 0 0 / 12%)`,
+                          backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.16))',
+                          '&:hover, .chq-atc--dropdown a:hover ': {
+                            backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                          },
                         }}
-                      >Add to calendar</AddToCalendar>
-                    </div>
-                  </>}
-                  secondary={
-                    `(${timeSlot.registrations.length} / ${timeSlot.maximumEntries}` +
-                    ` entr${timeSlot.registrations.length === 1 ? 'y' : 'ies'})`
-                  }
-                />
+                        size='small'
+                        variant='contained'
+                        color='inherit'
+                      >
+                        <AddToCalendar
+                          filename={buildCalendarEventTitle(timeSlot, schedule)}
+                          event={{
+                            name: buildCalendarEventTitle(timeSlot, schedule),
+                            details: buildCalendarEventDescription(timeSlot, schedule),
+                            location: window.location.href,
+                            startsAt: timeSlot.dateTime.toISOString(),
+                            endsAt: addTime(1, 'Hours', timeSlot.dateTime).toISOString(),
+                          }}
+                        >Add to calendar</AddToCalendar>
+                      </Button>
+                    </>}
+                    secondary={
+                      `(${timeSlot.registrations.length} / ${timeSlot.maximumEntries}` +
+                      ` entr${timeSlot.registrations.length === 1 ? 'y' : 'ies'})`
+                    }
+                  />
+                </Paper>
               }
             >
-              {timeSlot.participantsPerEntry <= 1 &&
-                <ListItemText secondary='Participants' className={classes.nested} />
+              {(timeSlot.participantsPerEntry <= 1 || timeSlot.registrations.length === 1) &&
+                <ListItemText secondary='Participants' />
               }
-              <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+              {/* TODO: Maybe use a dynamic grid instead of flexes here. Especially when there's only one list */}
+              <Box display='flex'>
                 {timeSlot.registrations.map((registration, registrationIndex) =>
                   <List
                     key={`registration-${registration.id}`}
                     component='div'
                     disablePadding
+                    style={timeSlot.registrations.length === 1
+                      ? {
+                        display: 'flex',
+                        flexFlow: 'wrap',
+                        whiteSpace: 'nowrap',
+                      }
+                      : undefined}
                     subheader={
-                      timeSlot.participantsPerEntry > 1
-                        ? <ListItemText secondary='Participants' />
-                        : undefined
+                      timeSlot.participantsPerEntry <= 1 || timeSlot.registrations.length === 1
+                        ? undefined
+                        : <ListItemText secondary='Participants' />
                     }
-                    className={classes.nested}
                   >
                     {registration.participants.map((participant, participantIndex) =>
-                      <ListItem key={`participant-${participantIndex}`} className={classes.item}>
+                      <ListItem key={`participant-${participantIndex}`}>
                         <ListItemText
                           primary={
-                            `${(timeSlot.participantsPerEntry > 1
-                              ? participantIndex
-                              : registrationIndex) + 1
-                            }. ${participant}`
+                            `${(timeSlot.participantsPerEntry <= 1
+                              ? registrationIndex
+                              : participantIndex
+                            ) + 1}. ${participant}`
                           }
                         />
                       </ListItem>)}
                   </List>)}
-              </div>
-            </List>)}
-      </div>
+              </Box>
+            </List>
+          </Paper>)
+        }
+      </div >
     }
 
-  </Container>
+  </Container >
 }
 
 export default ScheduleViewer

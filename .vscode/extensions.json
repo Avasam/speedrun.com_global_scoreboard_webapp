@@ -10,10 +10,12 @@
     "eamodio.gitlens",
     "meganrogge.template-string-converter",
     "shardulm94.trailing-spaces",
+    "coenraads.bracket-pair-colorizer-2",
     "hookyqr.minify"
   ],
   "unwantedRecommendations": [
     "ms-pyright.pyright",
+    "coenraads.bracket-pair-colorizer",
     "esbenp.prettier-vscode"
   ]
 }

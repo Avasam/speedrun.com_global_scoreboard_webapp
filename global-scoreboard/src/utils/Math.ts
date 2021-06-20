@@ -1,3 +1,4 @@
+/* eslint-disable extra-rules/no-commented-out-code */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable unicorn/no-array-reduce */
 const mean = (numbers: number[]) =>
@@ -19,7 +20,7 @@ const math = {
   SECONDS_IN_HOUR: 3600,
   MS_IN_SECOND: 1000,
   MS_IN_MINUTE: 60_000,
-  MS_IN_DAY: 86_400_000,
+  MS_IN_DAY: 86_400_000, // 1000 * 60 * 60 * 24
   HALF: 0.5,
 }
 export default math

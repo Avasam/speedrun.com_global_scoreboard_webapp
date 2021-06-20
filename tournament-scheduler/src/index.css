@@ -30,17 +30,17 @@ code {
 }
 
 ::-webkit-scrollbar-thumb,
-::-webkit-scrollbar-corner, 
+::-webkit-scrollbar-corner,
 ::-webkit-scrollbar-track {
-  /* Opera can't take transparent here, any color will do */
+  /* Opera can't take transparent here */
   background-color: #303030;
   border-color: #424242;
 }
 
 ::-webkit-scrollbar-thumb:hover,
-::-webkit-scrollbar-corner:hover, 
+::-webkit-scrollbar-corner:hover,
 ::-webkit-scrollbar-track:hover {
-  /* Opera can't take transparent here, any color will do */
+  /* Opera can't take transparent here */
   background-color: #242424;
 }
 
@@ -48,4 +48,14 @@ code {
   /* TODO MUI5: Check if this is still good */
   background-color: #424242;
   border-radius: 6px;
+}
+
+
+.MuiModal-root .PrivatePickersSlideTransition-root {
+  min-height: 232px; /* Fix weird extra-height in calendar picker */
+}
+
+.MuiModal-root .PrivateDateTimePickerToolbar-penIcon,
+.MuiModal-root .PrivateDatePickerToolbar-penIcon {
+  display: none;
 }

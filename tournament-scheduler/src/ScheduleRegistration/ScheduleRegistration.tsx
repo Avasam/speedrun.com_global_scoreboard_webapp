@@ -1,8 +1,6 @@
-import { Button, Card, CardActions, CardContent, Container, FormControl, FormGroup, FormLabel, InputLabel, Link, MenuItem, Select, TextField } from '@material-ui/core'
+import { Button, Card, CardActions, CardContent, Container, FormControl, FormGroup, FormLabel, InputLabel, Link, MenuItem, Select, TextField, Typography } from '@material-ui/core'
 import type { SelectInputProps } from '@material-ui/core/Select/SelectInput'
-import AdapterDateFns from '@material-ui/lab/AdapterMoment'
 import { StatusCodes } from 'http-status-codes'
-import moment from 'moment'
 import type { FC } from 'react'
 import { useEffect, useState } from 'react'
 
@@ -10,15 +8,14 @@ import { apiGet, apiPost } from '../fetchers/Api'
 import type { ScheduleDto } from '../models/Schedule'
 import { Schedule } from '../models/Schedule'
 import { TimeSlot } from '../models/TimeSlot'
+import { addTime, diffDays, fancyFormat } from '../utils/Date'
+import { getDeadlineDueText } from '../utils/ScheduleHelper'
 
 type ScheduleRegistrationProps = {
   registrationLink: string
 }
 
 const timeSlotLabelPaddingRight = 40
-
-const fancyFormat = (date: Date) =>
-  moment(date).format(`ddd ${new AdapterDateFns().formats.fullTime24h}`)
 
 const entriesLeft = (timeSlot: TimeSlot) => timeSlot.maximumEntries - timeSlot.registrations.length
 
@@ -38,7 +35,7 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
   const [formValidity, setFormValidity] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
 
-  const deadlineDaysLeft = moment(scheduleState?.deadline).diff(Date.now(), 'days')
+  const deadlineDaysLeft = diffDays(scheduleState?.deadline)
 
   const checkFormValidity = () => {
     const participantCount = selectedTimeSlot?.participantsPerEntry
@@ -132,9 +129,8 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
               </div>
               : <FormGroup>
                 {scheduleState.deadline && <div><br />{
-                  `Registration deadline: ${fancyFormat(scheduleState.deadline)
-                  } (${deadlineDaysLeft} day${deadlineDaysLeft === 1 ? '' : 's'
-                  } left)`}
+                  `Registration deadline: ${fancyFormat(addTime(-1, 'Seconds', scheduleState.deadline))
+                  } (${getDeadlineDueText(deadlineDaysLeft)})`}
                 </div>}
                 <FormControl variant='outlined' style={{ margin: '16px 0' }}>
                   <InputLabel
@@ -207,7 +203,7 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
           >
             Sign {selectedTimeSlot?.participantsPerEntry === 1 ? 'me' : 'us'} up!
           </Button>
-          <span style={{ color: 'red' }}>{errorMessage}</span>
+          <Typography color='error'>{errorMessage}</Typography>
         </CardActions>
       </Card>
     }
