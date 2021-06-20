@@ -6,14 +6,14 @@ import { Button, FormLabel, Table } from 'react-bootstrap'
 
 import type Player from '../..//models/Player'
 import Configs from '../../models/Configs'
-import { daysBetween } from '../../utils/Time'
+import { diffDays } from '../../utils/Time'
 import PlayerNameCell from '../TableElements/PlayerNameCell'
 import PlayerScoreCell from '../TableElements/PlayerScoreCell'
 import ScoreTitle from '../TableElements/ScoreTitle'
 
 const currentTimeOnLoad = new Date()
 const columnClass = (lastUpdate: Date) => {
-  const daysSince = daysBetween(lastUpdate, currentTimeOnLoad)
+  const daysSince = diffDays(lastUpdate, currentTimeOnLoad)
   if (daysSince >= Configs.lastUpdatedDays[2]) return 'daysSince'
   if (daysSince >= Configs.lastUpdatedDays[1]) return 'daysSince2'
   return ''

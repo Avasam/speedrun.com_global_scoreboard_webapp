@@ -53,6 +53,7 @@
         "jest": true
       },
       "rules": {
+        "@typescript-eslint/consistent-type-definitions": "off",
         "unicorn/filename-case": "off"
       }
     },
@@ -254,8 +255,9 @@
     // See: https://github.com/typescript-eslint/typescript-eslint/issues/2665
     // There's nothing we can do until a pedantic any check in TypeScript is added
     // Eg.: https://github.com/microsoft/TypeScript/issues/40174
-    "@typescript-eslint/no-unsafe-call": "off",
-    "@typescript-eslint/no-unsafe-assignment": "off",
+    // Which is likely never gonna happen: https://github.com/microsoft/TypeScript/issues/24737
+    "@typescript-eslint/no-unsafe-call": "warn",
+    "@typescript-eslint/no-unsafe-assignment": "warn",
     "@typescript-eslint/no-unused-vars": [
       "error",
       {

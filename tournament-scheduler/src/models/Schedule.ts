@@ -1,4 +1,4 @@
-import { tomorrowFlat } from '../utils/Date'
+import { nextDayFlat } from '../utils/Date'
 import type { TimeSlotDto } from './TimeSlot'
 import { createDefaultTimeSlot, TimeSlot } from './TimeSlot'
 
@@ -38,6 +38,6 @@ export const createDefaultSchedule = () =>
     name: 'New Schedule',
     active: false,
     registrationKey: '',
-    deadline: tomorrowFlat(),
+    deadline: nextDayFlat(),
     timeSlots: [createDefaultTimeSlot()],
   })

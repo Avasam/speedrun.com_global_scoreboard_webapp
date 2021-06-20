@@ -57,7 +57,6 @@ const scoreHeaderFormatter = () =>
     {sortCaret(getSortOrder())}
   </>
 
-// eslint-disable-next-line prefer-arrow/prefer-arrow-functions
 const scoreFormatter: ColumnFormatter<Player, void> = (_cell, row) =>
   row &&
   <PlayerScoreCell player={row} />
