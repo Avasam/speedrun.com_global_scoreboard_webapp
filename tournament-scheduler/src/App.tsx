@@ -19,6 +19,8 @@ import math from './utils/Math'
 
 const themeSpacing = createTheme().spacing
 
+const embedded = typeof new URLSearchParams(window.location.search).get('embedded') == 'string'
+
 const darkTheme = createTheme({
   palette: {
     mode: 'dark',
@@ -27,7 +29,7 @@ const darkTheme = createTheme({
     error: { main: red[700] },
     background: {
       // HACK: I shouldn't need to set this: https://next.material-ui.com/customization/default-theme/#explore
-      default: '#222',
+      default: embedded ? 'transparent' : '#222',
     },
   },
   components: {
@@ -121,6 +123,7 @@ const logout = (setCurrentUser: (user: null) => void) => {
   localStorage.removeItem('jwtToken')
 }
 
+// eslint-disable-next-line complexity
 const App: FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null | undefined>()
   const viewScheduleIdFromUrl = new URLSearchParams(window.location.search).get('view')
@@ -163,32 +166,33 @@ const App: FC = () => {
     <Div100vh className='App'>
       <ThemeProvider theme={darkTheme}>
         <CssBaseline />
-        <AppBar position='static' enableColorOnDark>
-          <Toolbar>
-            {(currentUser || scheduleRegistrationLink || viewScheduleId || isMobileSize) &&
-              <Link
-                component={IconButton}
-                className='logo-button'
-                onClick={() => localStorage.removeItem('register')}
-                href={window.location.pathname}
-              >
-                <img
-                  className='logo'
-                  style={{ height: !currentUser && isMobileSize ? 'auto' : undefined }}
-                  alt='logo'
-                  src={`${window.process.env.REACT_APP_BASE_URL}/assets/images/favicon.webp`}
-                />
-              </Link>
-            }
-            <Typography variant={currentUser || isMobileSize ? 'h4' : 'h2'}>Tournament Scheduler</Typography>
-            {currentUser &&
-              <Button variant='contained' color='info' onClick={() => logout(setCurrentUser)}>Logout</Button>
-            }
-          </Toolbar>
-        </AppBar>
+        {!embedded &&
+          <AppBar position='static' enableColorOnDark>
+            <Toolbar>
+              {(currentUser || scheduleRegistrationLink || viewScheduleId || isMobileSize) &&
+                <Link
+                  component={IconButton}
+                  className='logo-button'
+                  onClick={() => localStorage.removeItem('register')}
+                  href={window.location.pathname}
+                >
+                  <img
+                    className='logo'
+                    style={{ height: !currentUser && isMobileSize ? 'auto' : undefined }}
+                    alt='logo'
+                    src={`${window.process.env.REACT_APP_BASE_URL}/assets/images/favicon.webp`}
+                  />
+                </Link>
+              }
+              <Typography variant={currentUser || isMobileSize ? 'h4' : 'h2'}>Tournament Scheduler</Typography>
+              {currentUser &&
+                <Button variant='contained' color='info' onClick={() => logout(setCurrentUser)}>Logout</Button>
+              }
+            </Toolbar>
+          </AppBar>
+        }
 
         <Box sx={{
-          backgroundColor: 'background.default',
           flex: 1,
           overflow: 'auto',
         }}>
@@ -202,7 +206,7 @@ const App: FC = () => {
           }
         </Box>
 
-        <Box sx={{ backgroundColor: 'background.default' }} component='footer'>
+        <footer>
           &copy; <a
             href='https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/main/LICENSE'
             target='about'
@@ -224,7 +228,7 @@ const App: FC = () => {
             href='https://www.pythonanywhere.com/'
             target='about'
           >PythonAnywhere</a>
-        </Box>
+        </footer>
       </ThemeProvider>
     </Div100vh>
   </StrictMode>
