@@ -19,10 +19,11 @@ export const timeStringToSeconds = (timeString: string) => {
 }
 
 // From https://stackoverflow.com/a/17727953
-export const daysBetween = (startDate: Date, endDate: Date) => {
+// This drops all the hours to make sure you get a day and eliminates any DST problem by using UTC.
+export const diffDays = (startDate: Date, endDate: Date) => {
   // A day in UTC always lasts 24 hours (unlike in other time formats)
   const start = Date.UTC(startDate.getFullYear(), startDate.getMonth(), startDate.getDate())
   const end = Date.UTC(endDate.getFullYear(), endDate.getMonth(), endDate.getDate())
   // so it's safe to divide by 24 hours
-  return (end - start) / math.MS_IN_DAY
+  return (end - start) / -math.MS_IN_DAY
 }

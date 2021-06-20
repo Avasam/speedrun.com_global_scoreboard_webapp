@@ -5,15 +5,15 @@ import { useEffect, useRef, useState } from 'react'
 import { Col, Container, Row } from 'react-bootstrap'
 import type { Variant } from 'react-bootstrap/esm/types'
 
-import { apiDelete, apiGet, apiPost, apiPut } from 'src/fetchers/Api'
-import Configs from 'src/Models/Configs'
-import type Player from 'src/Models/Player'
-import type UpdateRunnerResult from 'src/Models/UpdateRunnerResult'
 import QuickView from './QuickView/QuickView'
 import type { ScoreboardRef } from './Scoreboard'
 import Scoreboard from './Scoreboard'
 import UpdateMessage, { renderScoreTable } from './UpdateMessage'
 import UpdateRunnerForm from './UpdateRunnerForm'
+import { apiDelete, apiGet, apiPost, apiPut } from 'src/fetchers/Api'
+import Configs from 'src/Models/Configs'
+import type Player from 'src/Models/Player'
+import type UpdateRunnerResult from 'src/Models/UpdateRunnerResult'
 
 type DashboardProps = {
   currentUser: Player | null | undefined

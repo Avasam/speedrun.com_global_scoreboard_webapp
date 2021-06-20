@@ -5,11 +5,11 @@ import type { ChangeEventHandler, FormEvent } from 'react'
 import { useState } from 'react'
 import { Button, Col, Form, InputGroup } from 'react-bootstrap'
 
+import SrcApiKeyLink from './SrcApiKeyLink'
 import { apiPost } from 'src/fetchers/Api'
 import GenericModal from 'src/GenericModal'
 import type Player from 'src/Models/Player'
 import type UpdateRunnerResult from 'src/Models/UpdateRunnerResult'
-import SrcApiKeyLink from './SrcApiKeyLink'
 
 type LoginModalProps = {
   show: boolean

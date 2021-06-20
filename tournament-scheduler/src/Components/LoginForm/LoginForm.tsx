@@ -54,7 +54,6 @@ const LoginForm: FC<loginFormProps> = (props: loginFormProps) => {
     </div>
     <Button
       variant='contained'
-      color='primary'
       onClick={() => login(srcApiKeyInput, props.onLogin)}
     >Access my schedules</Button>
     <span className='paragraph'>

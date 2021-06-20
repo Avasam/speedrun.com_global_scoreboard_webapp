@@ -31,7 +31,7 @@ export const minutesStep = 5
 export const createDefaultTimeSlot = () =>
   new TimeSlot({
     id: -1,
-    dateTime: floorToMinutesStep(tomorrow(), minutesStep),
+    dateTime: floorToMinutesStep(nextDay(), minutesStep),
     maximumEntries: 1,
     participantsPerEntry: 1,
     registrations: [],

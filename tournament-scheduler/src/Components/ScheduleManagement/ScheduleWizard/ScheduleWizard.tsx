@@ -1,11 +1,9 @@
 import './ScheduleWizard.css'
 
-import DateFnsUtils from '@date-io/moment'
-import { Button, Card, CardActions, CardContent, Checkbox, Container, FormControlLabel, FormGroup, IconButton, InputAdornment, TextField } from '@material-ui/core'
-import Event from '@material-ui/icons/Event'
-import { DatePicker, MuiPickersUtilsProvider } from '@material-ui/pickers'
-import type { Moment } from 'moment'
-import moment from 'moment'
+import { Button, Card, CardActions, CardContent, Checkbox, Container, FormControlLabel, FormGroup, TextField, Typography } from '@material-ui/core'
+import { Event } from '@material-ui/icons'
+import { LocalizationProvider, MobileDatePicker } from '@material-ui/lab'
+import AdapterDateFns from '@material-ui/lab/AdapterDayjs'
 import type { FC } from 'react'
 import { useState } from 'react'
 
@@ -24,9 +22,10 @@ type ScheduleWizardProps = {
 export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardProps) => {
   const [schedule, setSchedule] = useState(props.schedule)
 
-  const editTimeSlotDateTime = (momentDate: Moment | null, index: number) => {
-    if (!momentDate) return
-    const date = momentDate.toDate()
+  schedule.timeSlots.sort(TimeSlot.compareFn)
+
+  const editTimeSlotDateTime = (date: Date | null, index: number) => {
+    if (!date) return
     schedule.timeSlots[index].dateTime = date
     schedule.timeSlots.sort(TimeSlot.compareFn)
     setSchedule({
@@ -79,17 +78,25 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
     })
   }
 
+  const deadlineDaysLeft = diffDays(schedule.deadline)
+
   const earliestTimeslotDate = schedule.timeSlots.map(timeSlot => timeSlot.dateTime)[0]
 
   const validateDeadline = () =>
-    !schedule.deadline ||
-    (schedule.deadline <= earliestTimeslotDate &&
-      (earliestTimeslotDate <= new Date() || schedule.deadline >= todayFlat()))
+    !schedule.deadline || schedule.deadline <= earliestTimeslotDate
+
+  const validateDeadlineTooEarly = () =>
+    !schedule.deadline || schedule.deadline >= startOfDay() ||
+    // If earliest timeslot is older than today, then this is anold schedule we're editing
+    // and we should allow the user to keep their old deadline
+    earliestTimeslotDate <= new Date()
+
+  const validateForm = () => schedule.name && validateDeadlineTooEarly()
 
   return <Container>
     <Card>
       <CardContent>
-        <FormGroup className='error-as-warning'>
+        <FormGroup>
           <TextField
             required
             error={!schedule.name}
@@ -112,39 +119,49 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
                     registrationLink: schedule.registrationLink,
                     active: event.target.checked,
                   })}
-                  color='primary' />
+                />
               }
             />
 
-            <MuiPickersUtilsProvider utils={DateFnsUtils}>
-              <DatePicker
-                id='schedule-deadline'
+            <LocalizationProvider dateAdapter={AdapterDateFns} locale='fr'>
+              <MobileDatePicker
                 label={`${!schedule.deadline ? 'No r' : 'R'}egistration deadline`}
+                inputFormat={DEADLINE_FORMAT}
                 value={schedule.deadline}
-                onChange={momentDate => setSchedule({
+                onChange={date => setSchedule({
                   ...schedule,
                   registrationLink: schedule.registrationLink,
-                  deadline: momentDate?.startOf('day').toDate() ?? null,
+                  deadline: date == null ? null : startOfDay(date),
                 })}
-                error={!validateDeadline()}
-                helperText={!validateDeadline() && 'Warning: Your registrations close after the earliest time slot'}
                 disablePast={earliestTimeslotDate > new Date()}
-                minDateMessage='Deadline should not be before today'
+                showTodayButton
                 clearable
-                InputProps={{
-                  endAdornment:
-                    <InputAdornment position='end'>
-                      <IconButton>
-                        <Event />
-                      </IconButton>
-                    </InputAdornment>
-                  ,
-                }}
+                InputProps={{ endAdornment: <Event /> }}
+                renderInput={params =>
+                  <TextField
+                    {...params}
+                    id='schedule-deadline'
+                    error={!(validateDeadline() && validateDeadlineTooEarly())}
+                    className={validateDeadlineTooEarly() ? 'error-as-warning' : undefined}
+                    // Note: Overkill as we shouldn't have twose two messages at once, but good idea for form validation
+                    helperText={[
+                      !validateDeadlineTooEarly() && 'Deadline should not be before today',
+                      !validateDeadline() && 'Warning: Your registrations close after the earliest time slot',
+                    ].filter(x => x).join('\n')}
+                  />}
               />
-            </MuiPickersUtilsProvider>
+            </LocalizationProvider>
+            {schedule.deadline &&
+              <Typography
+                component={'label'}
+                color={deadlineDaysLeft > 0 ? 'yellow' : undefined}
+                style={{ alignSelf: 'center' }}
+              >
+                &nbsp;Closes {getDeadlineDueText(deadlineDaysLeft)}
+              </Typography>}
           </div>
 
-          <Button style={{ width: 'fit-content' }} variant='contained' color='primary' onClick={addNewTimeSlot}>
+          <Button style={{ width: 'fit-content' }} variant='contained' onClick={addNewTimeSlot}>
             Add a time slot
           </Button>
           {schedule.timeSlots.map((timeSlot: TimeSlot, index) =>
@@ -171,10 +188,10 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
         </Button>
         <Button
           size='small'
-          disabled={!schedule.name}
+          disabled={!validateForm()}
           onClick={() => props.onSave({
             ...schedule,
-            deadline: moment(schedule.deadline).startOf('day').toDate(),
+            deadline: startOfDay(schedule.deadline),
           })}
         >
           Save

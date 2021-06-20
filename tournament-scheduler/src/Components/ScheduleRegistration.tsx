@@ -1,8 +1,6 @@
-import DateFnsUtils from '@date-io/moment'
-import { Button, Card, CardActions, CardContent, Container, FormControl, FormGroup, FormLabel, InputLabel, Link, MenuItem, Select, TextField } from '@material-ui/core'
+import { Button, Card, CardActions, CardContent, Container, FormControl, FormGroup, FormLabel, InputLabel, Link, MenuItem, Select, TextField, Typography } from '@material-ui/core'
 import type { SelectInputProps } from '@material-ui/core/Select/SelectInput'
 import { StatusCodes } from 'http-status-codes'
-import moment from 'moment'
 import type { FC } from 'react'
 import { useEffect, useState } from 'react'
 import { Link as RouterLink, useHistory } from 'react-router-dom'
@@ -20,9 +18,6 @@ type ScheduleRegistrationProps = {
 
 const timeSlotLabelPaddingRight = 40
 
-const fancyFormat = (date: Date) =>
-  moment(date).format(`ddd ${new DateFnsUtils().dateTime24hFormat}`)
-
 const entriesLeft = (timeSlot: TimeSlot) => timeSlot.maximumEntries - timeSlot.registrations.length
 
 const getSchedule = (id: number, registrationKey: string) =>
@@ -36,7 +31,6 @@ const postRegistration = (timeSlotId: number, participants: string[], registrati
 const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegistrationProps) => {
   const [scheduleState, setScheduleState] = useState<Schedule | null | undefined>()
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<TimeSlot | undefined>()
-  const [timeSlotLabelWidth, setTimeSlotLabelWidth] = useState(0)
   const [participants, setParticipants] = useState<string[]>([])
   const [formValidity, setFormValidity] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
@@ -64,7 +58,6 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
       .then((schedule: Schedule) => {
         schedule.timeSlots.sort(TimeSlot.compareFn)
         setScheduleState(schedule)
-        setTimeSlotLabelWidth((timeSlotInputLabel.current?.offsetWidth ?? 0) - timeSlotLabelPaddingRight)
       })
       .catch((err: Response) => {
         if (err.status === StatusCodes.NOT_FOUND) {
@@ -145,13 +138,11 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
               </div>
               : <FormGroup>
                 {scheduleState.deadline && <div><br />{
-                  `Registration deadline: ${fancyFormat(scheduleState.deadline)
-                  } (${deadlineDaysLeft} day${deadlineDaysLeft === 1 ? '' : 's'
-                  } left)`}
+                  `Registration deadline: ${fancyFormat(addTime(-1, 'Seconds', scheduleState.deadline))
+                  } (${getDeadlineDueText(deadlineDaysLeft)})`}
                 </div>}
                 <FormControl variant='outlined' style={{ margin: '16px 0' }}>
                   <InputLabel
-                    ref={timeSlotInputLabel}
                     id='time-slot-select-label'
                     style={{ paddingRight: `${timeSlotLabelPaddingRight}px` }}
                   >
@@ -162,7 +153,7 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
                     id='time-slot-select'
                     value={selectedTimeSlot?.id ?? ''}
                     onChange={selectTimeSlot}
-                    labelWidth={timeSlotLabelWidth}
+                    label='Choose your time slot amongst the following'
                   >
                     {scheduleState.timeSlots.map(timeSlot =>
                       <MenuItem
@@ -207,7 +198,6 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
           <Button
             size='small'
             variant='contained'
-            color='primary'
             disabled={
               !formValidity ||
               !selectedTimeSlot ||
@@ -222,7 +212,7 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
           >
             Sign {selectedTimeSlot?.participantsPerEntry === 1 ? 'me' : 'us'} up!
           </Button>
-          <span style={{ color: 'red' }}>{errorMessage}</span>
+          <Typography color='error'>{errorMessage}</Typography>
         </CardActions>
       </Card>
     }

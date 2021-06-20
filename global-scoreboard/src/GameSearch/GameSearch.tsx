@@ -15,14 +15,14 @@ import type { ToolkitProviderProps } from 'react-bootstrap-table2-toolkit'
 import ToolkitProvider from 'react-bootstrap-table2-toolkit'
 import { Picky } from 'react-picky'
 
+import GameCategorySearch from './GameCategorySearchBar'
+import ScoreDropCalculator from './ScoreDropCalculator'
 import defaultPaginationOptions from 'src/Dashboard/TableElements/PaginationProps'
 import sortCaret from 'src/Dashboard/TableElements/SortCarret'
 import { apiGet, MAX_PAGINATION } from 'src/fetchers/Api'
 import type { EmbeddedSrcRun } from 'src/Models/SrcResponse'
 import math from 'src/utils/Math'
 import { secondsToTimeString, timeStringToSeconds } from 'src/utils/Time'
-import GameCategorySearch from './GameCategorySearchBar'
-import ScoreDropCalculator from './ScoreDropCalculator'
 
 type PlatformDto = {
   id: string

@@ -38,6 +38,6 @@ export const createDefaultSchedule = () =>
     name: 'New Schedule',
     active: false,
     registrationKey: '',
-    deadline: tomorrowFlat(),
+    deadline: nextDayFlat(),
     timeSlots: [createDefaultTimeSlot()],
   })

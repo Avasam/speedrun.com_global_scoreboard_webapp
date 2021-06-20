@@ -18,9 +18,13 @@ import { apiGet } from './fetchers/Api'
 import type User from './Models/User'
 import math from './utils/Math'
 
-const darkTheme = createMuiTheme({
+const themeSpacing = createTheme().spacing
+
+const embedded = typeof new URLSearchParams(window.location.search).get('embedded') == 'string'
+
+const darkTheme = createTheme({
   palette: {
-    type: 'dark',
+    mode: 'dark',
     primary: teal,
     secondary: lightBlue,
     error: { main: red[700] },
@@ -121,6 +125,7 @@ const logout = (setCurrentUser: (user: null) => void) => {
   localStorage.removeItem('jwtToken')
 }
 
+// eslint-disable-next-line complexity
 const App: FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null | undefined>()
   const location = useLocation()

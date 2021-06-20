@@ -10,21 +10,21 @@ import paginationFactory, { PaginationListStandalone, PaginationProvider, Pagina
 import type { SearchProps, ToolkitProviderProps } from 'react-bootstrap-table2-toolkit'
 import ToolkitProvider, { Search } from 'react-bootstrap-table2-toolkit'
 
-import Configs from 'src/Models/Configs'
-import type { PlayerField } from 'src/Models/Player'
-import type Player from 'src/Models/Player'
-import { daysBetween } from 'src/utils/Time'
 import defaultPaginationOptions from './TableElements/PaginationProps'
 import PlayerNameCell from './TableElements/PlayerNameCell'
 import PlayerScoreCell from './TableElements/PlayerScoreCell'
 import ScoreTitle from './TableElements/ScoreTitle'
 import sortCaret from './TableElements/SortCarret'
+import Configs from 'src/Models/Configs'
+import type { PlayerField } from 'src/Models/Player'
+import type Player from 'src/Models/Player'
+import { diffDays } from 'src/utils/Time'
 
 let getSortOrder: () => SortOrder | undefined
 const currentTimeOnLoad = new Date()
 const columnClass = (cell: Date | undefined) => {
   if (!cell) return 'daysSince0'
-  const daysSince = daysBetween(cell, currentTimeOnLoad)
+  const daysSince = diffDays(cell, currentTimeOnLoad)
   if (daysSince >= Configs.lastUpdatedDays[2]) return 'daysSince'
   if (daysSince >= Configs.lastUpdatedDays[1]) return 'daysSince2'
   if (daysSince >= Configs.lastUpdatedDays[0]) return 'daysSince1'
@@ -57,7 +57,6 @@ const scoreHeaderFormatter = () =>
     {sortCaret(getSortOrder())}
   </>
 
-// eslint-disable-next-line prefer-arrow/prefer-arrow-functions
 const scoreFormatter: ColumnFormatter<Player, void> = (_cell, row) =>
   row &&
   <PlayerScoreCell player={row} />

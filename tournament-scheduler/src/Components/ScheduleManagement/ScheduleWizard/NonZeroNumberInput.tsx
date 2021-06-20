@@ -1,23 +1,33 @@
+import type { InputBaseComponentProps } from '@material-ui/core'
+import type { FC } from 'react'
+import { forwardRef, useCallback } from 'react'
 import MaskedInput from 'react-text-mask'
 
-type NonZeroNumberInputProps = {
-  value: number | string
-  inputRef: (ref: HTMLElement | null) => void
-}
+// Note: False positive
+// eslint-disable-next-line react/display-name
+const NonZeroNumberInput = forwardRef<HTMLElement>((props, ref) => {
+  const setRef = useCallback(
+    (maskedInputRef: { inputElement: HTMLElement } | null) => {
+      const value = maskedInputRef ? maskedInputRef.inputElement : null
 
-const NonZeroNumberInput = (props: NonZeroNumberInputProps) => {
-  const { inputRef, ...other } = props
+      if (typeof ref === 'function') {
+        ref(value)
+      } else if (ref) {
+        ref.current = value
+      }
+    },
+    [ref],
+  )
 
   return (
     <MaskedInput
-      {...other}
-      ref={ref => {
-        inputRef(ref ? ref.inputElement : null)
-      }}
+      {...props}
+      ref={setRef}
       mask={[/[1-9]/, /\d/]}
       guide={false}
     />
   )
-}
+}) as FC<InputBaseComponentProps>
+NonZeroNumberInput.displayName = 'NonZeroNumberInput'
 
 export default NonZeroNumberInput
