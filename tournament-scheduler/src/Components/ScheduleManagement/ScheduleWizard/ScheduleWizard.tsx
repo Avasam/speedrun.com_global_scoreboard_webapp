@@ -143,6 +143,7 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
                     id='schedule-deadline'
                     error={!(validateDeadline() && validateDeadlineTooEarly())}
                     className={validateDeadlineTooEarly() ? 'error-as-warning' : undefined}
+                    style={{ width: '198px' }} // Enough to fit 'No registration deadline'
                     // Note: Overkill as we shouldn't have twose two messages at once, but good idea for form validation
                     helperText={[
                       !validateDeadlineTooEarly() && 'Deadline should not be before today',
@@ -154,7 +155,7 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
             {schedule.deadline &&
               <Typography
                 component={'label'}
-                color={deadlineDaysLeft > 0 ? 'yellow' : undefined}
+                color={deadlineDaysLeft > 0 ? 'warn' : undefined}
                 style={{ alignSelf: 'center' }}
               >
                 &nbsp;Closes {getDeadlineDueText(deadlineDaysLeft)}

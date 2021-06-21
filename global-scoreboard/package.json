@@ -10,9 +10,7 @@
     "compress-build-folder": "powershell Compress-Archive -Update -Path .\\build\\ -CompressionLevel Optimal -DestinationPath ..\\global-scoreboard-build.zip",
     "lint": "eslint src/ --ext .ts,.tsx --ignore-path ../.gitignore",
     "lint:fix": "npm run lint -- --fix",
-    "upgrade": "npx npm-check-updates -u -x bootstrap & npm i & npm audit fix",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
+    "upgrade": "npx npm-check-updates -u & npm i",
     "postinstall": "patch-package"
   },
   "dependencies": {

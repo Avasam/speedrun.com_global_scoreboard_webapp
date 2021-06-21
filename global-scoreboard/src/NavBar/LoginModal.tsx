@@ -84,11 +84,11 @@ const LoginModal = (props: LoginModalProps) => {
         </Form.Group>
 
         <Form.Group className='mb-3'>
-          <span className='paragraph'>
+          <p>
             If you don&apos;t trust the above link because SRC&apos;s api portal
             looks sketchy, you can also access your api key through:
             <SrcApiKeyLink />
-          </span>
+          </p>
         </Form.Group>
       </Form>
 

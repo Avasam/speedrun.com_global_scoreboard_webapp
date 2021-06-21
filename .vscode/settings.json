@@ -1,7 +1,7 @@
 {
   "files.associations": {
     "*.json": "jsonc",
-    "*.html": "jinja-html"
+    "*.html": "html"
   },
   "editor.rulers": [
     80,
@@ -20,7 +20,6 @@
   "editor.formatOnSave": true,
   "javascript.preferences.quoteStyle": "single",
   "typescript.preferences.quoteStyle": "single",
-  "html.format.wrapAttributes": "force-expand-multiline",
   "editor.codeActionsOnSave": {
     "source.fixAll": true,
     "source.fixAll.eslint": true,

@@ -3,7 +3,6 @@ import '@culturehq/add-to-calendar/dist/styles.css'
 import AddToCalendar from '@culturehq/add-to-calendar'
 import { Box, Button, Container, List, ListItem, ListItemText, Paper, useTheme } from '@material-ui/core'
 import { StatusCodes } from 'http-status-codes'
-import type { FC } from 'react'
 import { useEffect, useState } from 'react'
 
 import { apiGet } from 'src/fetchers/Api'
@@ -22,7 +21,7 @@ const getSchedule = (id: number) =>
     .then(res =>
       res.json().then((scheduleDto: ScheduleDto) => new Schedule(scheduleDto)))
 
-const ScheduleViewer: FC<ScheduleRegistrationProps> = (props: ScheduleRegistrationProps) => {
+const ScheduleViewer = (props: ScheduleRegistrationProps) => {
   const [schedule, setSchedule] = useState<Schedule | null | undefined>()
   const theme = useTheme()
 
@@ -44,6 +43,7 @@ const ScheduleViewer: FC<ScheduleRegistrationProps> = (props: ScheduleRegistrati
   const deadlineDaysLeft = diffDays(schedule?.deadline)
 
   const timeslots = schedule?.timeSlots.filter(timeSlot => timeSlot.registrations.length > 0) ?? []
+
   return <Container maxWidth='md'>
     {!schedule
       ? schedule === null && <div>Sorry. `<code>{props.scheduleId}</code>` is not a valid schedule id.</div>
@@ -64,8 +64,6 @@ const ScheduleViewer: FC<ScheduleRegistrationProps> = (props: ScheduleRegistrati
         {timeslots.map(timeSlot =>
           <Paper key={`timeslot-${timeSlot.id}`} elevation={24}>
             <List
-              key={`timeslot-${timeSlot.id}`}
-              className={classes.root}
               subheader={
                 <Paper>
                   <ListItemText
@@ -76,11 +74,8 @@ const ScheduleViewer: FC<ScheduleRegistrationProps> = (props: ScheduleRegistrati
                         sx={{
                           float: 'right',
                           backgroundColor: theme.palette.background.paper,
-                          boxShadow: `0px 11px 15px -7px rgb(0 0 0 / 20%),
-                                      0px 24px 38px 3px rgb(0 0 0 / 14%),
-                                      0px 9px 46px 8px rgb(0 0 0 / 12%)`,
                           backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.16))',
-                          '&:hover, .chq-atc--dropdown a:hover ': {
+                          '&:hover': {
                             backgroundColor: 'rgba(255, 255, 255, 0.08)',
                           },
                         }}

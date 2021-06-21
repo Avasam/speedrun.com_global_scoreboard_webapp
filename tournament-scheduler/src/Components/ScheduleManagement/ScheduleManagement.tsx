@@ -73,9 +73,7 @@ const ScheduleManagement: FC<ScheduleManagementProps> = (props: ScheduleManageme
     getSchedules()
       .then(setSchedules)
       .catch(console.error)
-  }, [])
-
-  return currentSchedule
+  }, [])  return currentSchedule
     ? <ScheduleWizard
       schedule={currentSchedule}
       onSave={handleSave}

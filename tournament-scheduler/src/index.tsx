@@ -24,7 +24,7 @@ if ((process.env.REACT_APP_BASE_URL?.includes('127.0.0.1') || process.env.REACT_
 
 ReactDOM.render(
   <StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename='/tournament-scheduler'>
       <Div100vh>
         <App />
       </Div100vh>

@@ -1,10 +1,7 @@
-/* eslint-disable @typescript-eslint/no-confusing-void-expression */
-import './App.css'
-
-import { AppBar, Box, Button, CssBaseline, IconButton, Link, Stack, Toolbar, Typography } from '@material-ui/core'
-import { lightBlue, red, teal } from '@material-ui/core/colors'
-import { createTheme, ThemeProvider } from '@material-ui/core/styles'
-import useMediaQuery from '@material-ui/core/useMediaQuery'
+import { AppBar, Box, Button, CssBaseline, IconButton, Link, Stack, Toolbar, Typography, useMediaQuery } from '@material-ui/core'
+import { ThemeProvider } from '@material-ui/core/styles'
+import Brightness4 from '@material-ui/icons/Brightness4'
+import Brightness7 from '@material-ui/icons/Brightness7'
 import { StatusCodes } from 'http-status-codes'
 import type { FC } from 'react'
 import { useEffect, useState } from 'react'
@@ -16,107 +13,16 @@ import ScheduleRegistration from './Components/ScheduleRegistration'
 import ScheduleViewer from './Components/ScheduleViewer'
 import { apiGet } from './fetchers/Api'
 import type User from './Models/User'
-import math from './utils/Math'
+import darkTheme from './styles/dark.theme'
+import lightTheme from './styles/light.theme'
 
-const themeSpacing = createTheme().spacing
-
+type Themes = 'dark' | 'light'
+type Body = { body: { background: string } }
 const embedded = typeof new URLSearchParams(window.location.search).get('embedded') == 'string'
-
-const darkTheme = createTheme({
-  palette: {
-    mode: 'dark',
-    primary: teal,
-    secondary: lightBlue,
-    error: { main: red[700] },
-    background: {
-      // HACK: I shouldn't need to set this: https://next.material-ui.com/customization/default-theme/#explore
-      default: '#222',
-    },
-  },
-  components: {
-    MuiTextField: {
-      defaultProps: {
-        variant: 'standard',
-      },
-    },
-    // HACK: Couldn't get the color override working.
-    // See the following issu for eventual solution:
-    // https://github.com/mui-org/material-ui/issues/24778
-    MuiIconButton: {
-      styleOverrides: {
-        root: {
-          '&.error': {
-            color: red[700],
-          },
-        },
-      },
-    },
-    MuiListItemText: {
-      styleOverrides: {
-        root: {
-          paddingLeft: themeSpacing(2),
-          paddingRight: themeSpacing(2),
-        },
-        multiline: {
-          '.MuiPaper-root:first-child > &': {
-            paddingTop: themeSpacing(1),
-            paddingBottom: themeSpacing(1),
-          },
-        },
-      },
-    },
-    MuiListItem: {
-      styleOverrides: {
-        root: {
-          paddingTop: 0,
-          paddingBottom: 0,
-          width: 'auto',
-        },
-      },
-    },
-    MuiCssBaseline: {
-      styleOverrides: {
-        'body': {
-          background: embedded ? 'transparent' : undefined,
-          fill: 'white',
-        },
-        '.MuiButtonBase-root.MuiPickersDay-root': {
-          backgroundColor: 'unset',
-        },
-        '.PrivatePickersToolbar-root, .MuiTabs-root': {
-          backgroundColor: '#222',
-        },
-        /* Replicate Material Design Style with AddToCalendar */
-        '.chq-atc': {
-          '.chq-atc--button.chq-atc--button, path, .chq-atc--dropdown, .chq-atc--dropdown a': {
-            fontSize: '1rem',
-            textTransform: 'none',
-            borderRadius: themeSpacing(math.HALF),
-            border: 'none',
-            padding: 0,
-            backgroundColor: 'transparent',
-            color: 'inherit',
-            fill: 'inherit !important',
-          },
-          '.chq-atc--dropdown a': {
-            padding: `${themeSpacing(1)} ${themeSpacing(2)}`,
-          },
-          '.chq-atc--dropdown': {
-            marginTop: `${themeSpacing(math.HALF)}`,
-            marginLeft: `-${themeSpacing(1 + math.QUARTER)}`,
-            width: `calc(100% + ${themeSpacing(2 + math.HALF)})`,
-            padding: `${themeSpacing(1)} 0`,
-            backgroundColor: '#121212',
-            boxShadow: `0px 11px 15px -7px rgb(0 0 0 / 20%),
-                        0px 24px 38px 3px rgb(0 0 0 / 14%),
-                        0px 9px 46px 8px rgb(0 0 0 / 12%)`,
-            backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.16))',
-          },
-        },
-      },
-    },
-  },
-})
+if (embedded) {
+  (lightTheme.components?.MuiCssBaseline?.styleOverrides as unknown as Body).body.background = 'transparent';
+  (darkTheme.components?.MuiCssBaseline?.styleOverrides as unknown as Body).body.background = 'transparent'
+}
 
 const getCurrentUser = () => apiGet('users/current').then(res => res.json())
 
@@ -125,8 +31,11 @@ const logout = (setCurrentUser: (user: null) => void) => {
   localStorage.removeItem('jwtToken')
 }
 
-// eslint-disable-next-line complexity
 const App: FC = () => {
+  const isMobileSize = useMediaQuery('(max-width:640px)', { noSsr: true })
+  const prefersLightScheme = useMediaQuery('@media (prefers-color-scheme: light)', { noSsr: true })
+  const savedTheme = prefersLightScheme ? 'light' : 'dark'
+  const [preferedTheme, setPreferedTheme] = useState(savedTheme)
   const [currentUser, setCurrentUser] = useState<User | null | undefined>()
   const location = useLocation()
 
@@ -143,9 +52,12 @@ const App: FC = () => {
       })
   }, [])
 
-  const isMobileSize = useMediaQuery('(max-width:640px)')
+  const saveTheme = (theme: Themes) => {
+    setPreferedTheme(theme)
+    localStorage.setItem('preferedTheme', theme)
+  }
 
-  return <ThemeProvider theme={darkTheme}>
+  return <ThemeProvider theme={preferedTheme === 'light' ? lightTheme : darkTheme}>
     <CssBaseline />
     <Stack style={{ height: '100%', textAlign: 'center' }}>
       {!embedded &&
@@ -154,23 +66,36 @@ const App: FC = () => {
             {(currentUser || isMobileSize || location.pathname !== '/') &&
               <Link
                 component={RouterLink}
-                className='logo-button'
                 to='/'
+                style={{ height: 'auto', width: 'auto' }}
               >
                 <IconButton>
                   <img
-                    className='logo'
-                    style={{ height: !currentUser && isMobileSize ? 'auto' : undefined }}
+                    style={{
+                      height: !currentUser && isMobileSize ? 'auto' : '40px',
+                      maxWidth: '90px', // Enough to fit title at minimum supported width
+                    }}
                     alt='logo'
                     src={`${window.process.env.REACT_APP_BASE_URL}/assets/images/favicon.webp`}
                   />
                 </IconButton>
               </Link>
             }
+            <div></div>
             <Typography variant={currentUser || isMobileSize ? 'h4' : 'h2'}>Tournament Scheduler</Typography>
-            {currentUser &&
-              <Button variant='contained' color='info' onClick={() => logout(setCurrentUser)}>Logout</Button>
-            }
+            <div>
+              {preferedTheme === 'dark'
+                ? <IconButton onClick={() => saveTheme('light')}><Brightness7 /></IconButton>
+                : <IconButton onClick={() => saveTheme('dark')}><Brightness4 /></IconButton>
+              }
+              {currentUser &&
+                <Button
+                  style={{ marginLeft: darkTheme.spacing(2) }}
+                  variant='contained'
+                  color='secondary'
+                  onClick={() => logout(setCurrentUser)}>Logout</Button>
+              }
+            </div>
           </Toolbar>
         </AppBar>
       }
@@ -199,27 +124,27 @@ const App: FC = () => {
       </Box>
 
       <footer>
-        &copy; <a
+        &copy; <Link
           href='https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/main/LICENSE'
           target='about'
-        >Copyright</a> {new Date().getFullYear()} by <a
+        >Copyright</Link> {new Date().getFullYear()} by <Link
           href='https://github.com/Avasam/'
           target='about'
-        >Samuel Therrien</a> (
-        <a href='https://www.twitch.tv/Avasam' target='about'>
+        >Samuel Therrien</Link> (
+        <Link href='https://www.twitch.tv/Avasam' target='about'>
           Avasam<img
             height='14'
             alt='Twitch'
             src='https://static.twitchcdn.net/assets/favicon-32-d6025c14e900565d6177.png'
           ></img>
-        </a>).
-        Powered by <a
+        </Link>).
+        Powered by <Link
           href='https://www.speedrun.com/'
           target='src'
-        >speedrun.com</a> and <a
+        >speedrun.com</Link> and <Link
           href='https://www.pythonanywhere.com/'
           target='about'
-        >PythonAnywhere</a>
+        >PythonAnywhere</Link>
       </footer>
     </Stack>
   </ThemeProvider>

@@ -39,6 +39,7 @@ export const nextDayFlat = (from?: DateProperty) => startOfDay(nextDay(from))
 
 export const floorToMinutesStep = (date: Date, minutesStep: number) => {
   const coefficient = math.MS_IN_MINUTE * minutesStep
+
   return new Date(Math.ceil(date.getTime() / coefficient) * coefficient)
 }
 
@@ -52,6 +53,7 @@ export const diffDays = (startDate: DateProperty, endDate?: DateProperty) => {
   // A day in UTC always lasts 24 hours (unlike in other time formats)
   const start = Date.UTC(date1.getFullYear(), date1.getMonth(), date1.getDate())
   const end = Date.UTC(date2.getFullYear(), date2.getMonth(), date2.getDate())
+
   // so it's safe to divide by 24 hours
   return (end - start) / -math.MS_IN_DAY
 }

@@ -25,14 +25,6 @@ or just add negative padding on Collapse, thought that feels hacky */
   width: 64px;
 }
 
-.error-as-warning.MuiFormControl-root.MuiTextField-root {
-  width: 172px; /* Enough to fit 'Wed Jun 22nd 2022' */
-}
-
-.time-slot-row .MuiTextField-root {
-  width: 222px; /* Enough to fit 'Wed Jun 22nd 2022, 22:22' */
-}
-
 .time-slot-row.time-slot-row .MuiFormControl-root {
   margin: 12px 0 0;
 }
@@ -60,13 +52,4 @@ or just add negative padding on Collapse, thought that feels hacky */
   width: max-content; /* Ensures error text does not wrap uselessly */
   white-space: pre;
   width: 240px;
-}
-
-.error-as-warning .MuiFormLabel-root.Mui-error,
-.error-as-warning .MuiFormHelperText-root.Mui-error {
-  color: yellow;
-}
-
-.error-as-warning .MuiInput-underline.Mui-error:after {
-  border-bottom-color: yellow;
 }

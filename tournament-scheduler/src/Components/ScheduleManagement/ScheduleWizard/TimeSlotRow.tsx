@@ -1,5 +1,5 @@
 import { Card, CardContent, Collapse, IconButton, ListItem, ListItemText, TextField } from '@material-ui/core'
-import { Event, ExpandLess, ExpandMore, FileCopy } from '@material-ui/icons'
+import { Clear, Event, ExpandLess, ExpandMore, FileCopy } from '@material-ui/icons'
 import { LocalizationProvider, MobileDateTimePicker } from '@material-ui/lab'
 import AdapterDateFns from '@material-ui/lab/AdapterDayjs'
 import type { FC } from 'react'
@@ -100,6 +100,7 @@ const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
               {...params}
               id={`time-slot-date-${props.id}`}
               error={!!props.schedule.deadline && props.timeSlot.dateTime < props.schedule.deadline}
+              style={{ width: '222px' }} // Enough to fit 'Wed Jun 22nd 2022, 22:22'
             />}
         />
       </LocalizationProvider>
@@ -127,16 +128,14 @@ const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
           aria-label='duplicate time slot'
           component='button'
           onClick={() => props.onDuplicateTimeSlot()}
-        >
-          <FileCopy />
-        </IconButton>
+        ><FileCopy /></IconButton>
         {props.schedule.timeSlots.length > 1 &&
           <IconButton
             className='error'
             aria-label='remove time slot'
             component='button'
             onClick={() => props.onRemoveTimeSlot()}
-          >&times;</IconButton>
+          ><Clear /></IconButton>
         }
       </div>
       <div style={{ width: '100%' }}>

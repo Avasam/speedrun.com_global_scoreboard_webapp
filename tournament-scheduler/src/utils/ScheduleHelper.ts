@@ -1,5 +1,5 @@
-import type { Schedule } from '../models/Schedule'
-import type { TimeSlot } from '../models/TimeSlot'
+import type { Schedule } from 'src/Models/Schedule'
+import type { TimeSlot } from 'src/Models/TimeSlot'
 
 export const buildCalendarEventTitle = (timeSlot: TimeSlot, schedule: Schedule) =>
   `${timeSlot
@@ -25,6 +25,7 @@ export const buildCalendarEventDescription = (timeSlot: TimeSlot, schedule: Sche
             `${index + 1}. ${participant}`)
           .join('<br/>')}`)
       .join('<br/><br/>')
+
   return `${title}<br/>${url}<br/><br/>${players}`
 }
 
@@ -37,6 +38,6 @@ export const getDeadlineDueText = (deadlineDaysLeft: number) => {
     case 1:
       return 'tomorow'
     default:
-      return deadlineDaysLeft > 0 ? `in ${Math.abs(deadlineDaysLeft)} days` : `${deadlineDaysLeft} days ago`
+      return deadlineDaysLeft > 0 ? `in ${deadlineDaysLeft} days` : `${-deadlineDaysLeft} days ago`
   }
 }
