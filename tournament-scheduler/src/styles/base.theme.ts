@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 import type { ThemeOptions } from '@material-ui/core/styles'
 import { createTheme } from '@material-ui/core/styles'
 
@@ -25,6 +26,18 @@ const baseThemeOptions: ThemeOptions = {
     MuiTextField: {
       defaultProps: {
         variant: 'standard',
+      },
+    },
+    MuiCardContent: {
+      styleOverrides: {
+        root: {
+          '&:last-child': {
+            paddingBottom: themeSpacing(2),
+          },
+          '.MuiListItem-root': {
+            margin: `0 -${themeSpacing(2)}`,
+          },
+        },
       },
     },
     MuiContainer: {
@@ -67,21 +80,29 @@ const baseThemeOptions: ThemeOptions = {
         },
       },
     },
+    MuiModal: {
+      styleOverrides: {
+        root: {
+          '.PrivatePickersSlideTransition-root': {
+            minHeight: '232px', // Fixes weird extra-height in calendar picker
+          },
+          '[class*="PickerToolbar-penIcon"]': {
+            display: 'none',
+          },
+        },
+      },
+    },
+    MuiButtonBase: {
+      styleOverrides: {
+        root: {
+          '&.MuiPickersDay-root': {
+            backgroundColor: 'unset',
+          },
+        },
+      },
+    },
     MuiCssBaseline: {
       styleOverrides: {
-        code: {
-          fontFamily: ['source-code-pro', 'Menlo', 'Monaco', 'Consolas', 'Courier New', 'monospace'].join(','),
-        },
-        body: {
-          WebkitFontSmoothing: 'antialiased',
-          MozOsxFontSmoothing: 'grayscale',
-        },
-        label: {
-          fontSize: 'calc(10px + 2vmin)',
-        },
-        '.MuiButtonBase-root.MuiPickersDay-root': {
-          backgroundColor: 'unset',
-        },
         /* Replicate Material Design Style with AddToCalendar */
         '.chq-atc': {
           '.chq-atc--button.chq-atc--button, path, .chq-atc--dropdown, .chq-atc--dropdown a': {
@@ -99,8 +120,8 @@ const baseThemeOptions: ThemeOptions = {
           },
           '.chq-atc--dropdown': {
             marginTop: `${themeSpacing(math.HALF)}`,
-            marginLeft: `-${themeSpacing(1 + math.QUARTER)}`,
-            width: `calc(100% + ${themeSpacing(2 + math.HALF)})`,
+            marginLeft: `-${themeSpacing(1.25)}`,
+            width: `calc(100% + ${themeSpacing(2.5)})`,
             padding: `${themeSpacing(1)} 0`,
             boxShadow: `0px 2px 4px -1px rgb(0 0 0 / 20%),
                         0px 4px 5px 0px rgb(0 0 0 / 14%),

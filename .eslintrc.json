@@ -81,7 +81,7 @@
       }
     ],
     // unused-imports settings
-    // Loosing imports when commenting to test is extremely annoying and slow, only activate this for cleanup
+    // Loosing imports when commenting code to test is extremely annoying and slow, only activate this for cleanup
     // "unused-imports/no-unused-imports": "warn",
     // sonarjs/recommended overrides (https://github.com/SonarSource/eslint-plugin-sonarjs/blob/master/src/index.ts)
     // react-app service workers template and the eslint complexity rule are at 20

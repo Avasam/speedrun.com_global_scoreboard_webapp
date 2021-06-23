@@ -1,6 +1,4 @@
-import './LoginForm.css'
-
-import { Button, Container, Link, TextField } from '@material-ui/core'
+import { Button, Container, Link, Stack, TextField, Typography } from '@material-ui/core'
 import useMediaQuery from '@material-ui/core/useMediaQuery'
 import type { FC } from 'react'
 import { useState } from 'react'
@@ -28,47 +26,58 @@ const LoginForm: FC<loginFormProps> = (props: loginFormProps) => {
 
   const isMobileSize = useMediaQuery('(max-width:640px)')
 
-  return <Container className='login-form-container'>
-    {!isMobileSize &&
-      <img src={`${window.process.env.REACT_APP_BASE_URL}/assets/images/favicon.webp`} alt='logo' />
-    }
-    <span style={{ marginTop: '16px' }}>
-      You only need to login to create and manage schedules.
-      If you want to register to an existing schedule,
-      ask the tournament organiser for a link.
-    </span>
-    <div className='flex'>
-      <TextField
-        id='src-api-key'
-        name='src-api-key'
-        margin='normal'
-        type='password'
-        label='Enter your SRC API key'
-        onChange={event => setSrcApiKeyInput(event.currentTarget.value)}
-      />
-      <Link
-        href='https://www.speedrun.com/api/auth'
-        target='src'
-        rel='noreferrer'
-      >What&apos;s my key?</Link>
-    </div>
-    <Button
-      variant='contained'
-      onClick={() => login(srcApiKeyInput, props.onLogin)}
-    >Access my schedules</Button>
-    <p>
-      If you don&apos;t trust the above link because SRC&apos;s api portal looks sketchy,
-      you can also access your api key through
-      <br /> <SrcApiKeyLink></SrcApiKeyLink>
-    </p>
-    <label>Why do we need your API key?</label>
-    <p>
-      By using your key, it&apos;s possible to authenticate you to speedrun.com without ever asking for a password!
-      <br />
-      If something ever goes wrong, or you believe someone is abusing your key, you can change it easily at any time.
-      <br />
-      Once logged in, you can manage your schedules, which includes creating, modifying and sharing them!
-    </p>
+  return <Container maxWidth='md'>
+    <Stack alignItems='center' spacing={2}>
+      {!isMobileSize &&
+        <img
+          style={{
+            minHeight: 0,
+            objectFit: 'contain',
+            marginTop: 'auto',
+          }}
+          src={`${window.process.env.REACT_APP_BASE_URL}/assets/images/favicon.webp`}
+          alt='logo'
+        />
+      }
+      <p>
+        You only need to login to create and manage schedules.
+        <br />
+        If you want to register to an existing schedule,
+        ask the tournament organiser for a link.
+      </p>
+      <Stack direction='row' alignItems='baseline' display='inline-flex' style={{ marginTop: 0 }}>
+        <TextField
+          size='small'
+          id='src-api-key'
+          name='src-api-key'
+          type='password'
+          label='Enter your SRC API key'
+          onChange={event => setSrcApiKeyInput(event.currentTarget.value)}
+        />
+        <Link
+          href='https://www.speedrun.com/api/auth'
+          target='src'
+          rel='noreferrer'
+        >What&apos;s my key?</Link>
+      </Stack>
+      <Button
+        variant='contained'
+        onClick={() => login(srcApiKeyInput, props.onLogin)}
+      >Access my schedules</Button>
+      <p>
+        If you don&apos;t trust the above link because SRC&apos;s api portal looks sketchy,
+        you can also access your api key through
+        <br /> <SrcApiKeyLink></SrcApiKeyLink>
+      </p>
+      <Typography variant='h6'>Why do we need your API key?</Typography>
+      <p style={{ marginBottom: 'auto' }}>
+        By using your key, it&apos;s possible to authenticate you to speedrun.com without ever asking for a password!
+        <br />
+        If something ever goes wrong, or you believe someone is abusing your key, you can change it easily at any time.
+        <br />
+        Once logged in, you can manage your schedules, which includes creating, modifying and sharing them!
+      </p>
+    </Stack>
   </Container>
 }
 

@@ -26,8 +26,7 @@ const RegistrationList: FC<RegistrationListProps> = (props: RegistrationListProp
 
   return <List
     component='div'
-    dense={true}
-    disablePadding
+    dense
     subheader={
       <div>
         <ListItemText

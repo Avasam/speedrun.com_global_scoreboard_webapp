@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { InputBaseComponentProps } from '@material-ui/core'
 import type { FC } from 'react'
 import { forwardRef, useCallback } from 'react'
@@ -5,7 +6,7 @@ import MaskedInput from 'react-text-mask'
 
 // Note: False positive
 // eslint-disable-next-line react/display-name
-const NonZeroNumberInput = forwardRef<HTMLElement>((props, ref) => {
+const NonZeroNumberInput = forwardRef<HTMLElement>(({ inputProps, ...props }: any, ref) => {
   const setRef = useCallback(
     (maskedInputRef: { inputElement: HTMLElement } | null) => {
       const value = maskedInputRef ? maskedInputRef.inputElement : null

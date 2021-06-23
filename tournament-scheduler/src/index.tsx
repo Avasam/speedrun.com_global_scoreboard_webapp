@@ -1,11 +1,13 @@
 import './index.css'
 
+import { LocalizationProvider } from '@material-ui/lab'
+import DateAdapter from '@material-ui/lab/AdapterDayjs'
 import { StrictMode } from 'react'
 import Div100vh from 'react-div-100vh'
 import ReactDOM from 'react-dom'
 import { BrowserRouter } from 'react-router-dom'
 
-import App from './App'
+import App from './Components/App'
 import * as serviceWorker from './serviceWorker'
 
 // Hack for local network testing
@@ -23,10 +25,13 @@ if ((process.env.REACT_APP_BASE_URL?.includes('127.0.0.1') || process.env.REACT_
 }
 
 ReactDOM.render(
+  // Setup static Providers here
   <StrictMode>
     <BrowserRouter basename='/tournament-scheduler'>
       <Div100vh>
-        <App />
+        <LocalizationProvider dateAdapter={DateAdapter}>
+          <App />
+        </LocalizationProvider>
       </Div100vh>
     </BrowserRouter>
   </StrictMode>,

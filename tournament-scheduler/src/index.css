@@ -5,11 +5,16 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #222;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+label {
+  font-size: 'calc(10px + 2vmin)';
+  font-weight: bold;
 }
 
 ::-webkit-scrollbar {
@@ -48,14 +53,4 @@ code {
   /* TODO MUI5: Check if this is still good */
   background-color: #424242;
   border-radius: 6px;
-}
-
-
-.MuiModal-root .PrivatePickersSlideTransition-root {
-  min-height: 232px; /* Fix weird extra-height in calendar picker */
-}
-
-.MuiModal-root .PrivateDateTimePickerToolbar-penIcon,
-.MuiModal-root .PrivateDatePickerToolbar-penIcon {
-  display: none;
 }

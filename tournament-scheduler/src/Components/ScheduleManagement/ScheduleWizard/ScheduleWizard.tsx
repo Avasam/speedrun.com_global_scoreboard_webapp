@@ -1,9 +1,8 @@
-import './ScheduleWizard.css'
-
-import { Button, Card, CardActions, CardContent, Checkbox, Container, FormControlLabel, FormGroup, TextField, Typography } from '@material-ui/core'
+import type { Theme } from '@material-ui/core'
+import { Button, Card, CardActions, CardContent, Checkbox, Container, FormControlLabel, Stack, TextField, Typography } from '@material-ui/core'
 import { Event } from '@material-ui/icons'
-import { LocalizationProvider, MobileDatePicker } from '@material-ui/lab'
-import AdapterDateFns from '@material-ui/lab/AdapterDayjs'
+import { MobileDatePicker } from '@material-ui/lab'
+import type { SxProps } from '@material-ui/system'
 import type { FC } from 'react'
 import { useState } from 'react'
 
@@ -12,6 +11,16 @@ import type { Schedule, ScheduleDto } from 'src/Models/Schedule'
 import { createDefaultTimeSlot, TimeSlot } from 'src/Models/TimeSlot'
 import { DEADLINE_FORMAT, diffDays, startOfDay } from 'src/utils/Date'
 import { getDeadlineDueText } from 'src/utils/ScheduleHelper'
+
+const calendarIconStyle: SxProps<Theme> = {
+  '.MuiInput-root > .MuiSvgIcon-root': {
+    display: 'inline',
+    position: 'absolute',
+    top: '4px',
+    right: 0,
+    pointerEvents: 'none',
+  },
+}
 
 type ScheduleWizardProps = {
   schedule: Schedule
@@ -96,7 +105,7 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
   return <Container>
     <Card>
       <CardContent>
-        <FormGroup>
+        <Stack spacing={1.5} sx={calendarIconStyle}>
           <TextField
             required
             error={!schedule.name}
@@ -108,7 +117,7 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
               name: event.target.value,
             })}
           />
-          <div style={{ display: 'flex', margin: '12px 0' }}>
+          <Stack direction='row'>
             <FormControlLabel
               label='Active'
               control={
@@ -123,35 +132,42 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
               }
             />
 
-            <LocalizationProvider dateAdapter={AdapterDateFns} locale='fr'>
-              <MobileDatePicker
-                label={`${!schedule.deadline ? 'No r' : 'R'}egistration deadline`}
-                inputFormat={DEADLINE_FORMAT}
-                value={schedule.deadline}
-                onChange={date => setSchedule({
-                  ...schedule,
-                  registrationLink: schedule.registrationLink,
-                  deadline: date == null ? null : startOfDay(date),
-                })}
-                disablePast={earliestTimeslotDate > new Date()}
-                showTodayButton
-                clearable
-                InputProps={{ endAdornment: <Event /> }}
-                renderInput={params =>
-                  <TextField
-                    {...params}
-                    id='schedule-deadline'
-                    error={!(validateDeadline() && validateDeadlineTooEarly())}
-                    className={validateDeadlineTooEarly() ? 'error-as-warning' : undefined}
-                    style={{ width: '198px' }} // Enough to fit 'No registration deadline'
-                    // Note: Overkill as we shouldn't have twose two messages at once, but good idea for form validation
-                    helperText={[
-                      !validateDeadlineTooEarly() && 'Deadline should not be before today',
-                      !validateDeadline() && 'Warning: Your registrations close after the earliest time slot',
-                    ].filter(x => x).join('\n')}
-                  />}
-              />
-            </LocalizationProvider>
+            <MobileDatePicker
+              label={`${!schedule.deadline ? 'No r' : 'R'}egistration deadline`}
+              inputFormat={DEADLINE_FORMAT}
+              value={schedule.deadline}
+              onChange={date => setSchedule({
+                ...schedule,
+                registrationLink: schedule.registrationLink,
+                deadline: date == null ? null : startOfDay(date),
+              })}
+              disablePast={earliestTimeslotDate > new Date()}
+              showTodayButton
+              clearable
+              InputProps={{ endAdornment: <Event /> }}
+              renderInput={params =>
+                <TextField
+                  {...params}
+                  id='schedule-deadline'
+                  error={!(validateDeadline() && validateDeadlineTooEarly())}
+                  className={validateDeadlineTooEarly() ? 'error-as-warning' : undefined}
+                  sx={{
+                    // Enough to fit 'No registration deadline'
+                    width: '198px',
+                    minWidth: '198px',
+                    '#schedule-deadline-helper-text': {
+                      width: 'maxContent',
+                      whiteSpace: 'pre',
+                    },
+                  }}
+                  // Note: Overkill as we shouldn't have twose two messages at once,
+                  // but good idea for form validation
+                  helperText={[
+                    !validateDeadlineTooEarly() && 'Deadline should not be before today',
+                    !validateDeadline() && 'Warning: Your registrations close after the earliest time slot',
+                  ].filter(x => x).join('\n')}
+                />}
+            />
             {schedule.deadline &&
               <Typography
                 component={'label'}
@@ -160,11 +176,12 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
               >
                 &nbsp;Closes {getDeadlineDueText(deadlineDaysLeft)}
               </Typography>}
-          </div>
+          </Stack>
 
           <Button style={{ width: 'fit-content' }} variant='contained' onClick={addNewTimeSlot}>
             Add a time slot
           </Button>
+
           {schedule.timeSlots.map((timeSlot: TimeSlot, index) =>
             <TimeSlotRow
               key={`time-slot-${index}-${timeSlot.id}`}
@@ -178,7 +195,7 @@ export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardPro
               onEditTimeSlotparticipantsPerEntry={participantsPerEntry =>
                 editTimeSlotparticipantsPerEntry(participantsPerEntry, index)}
             />)}
-        </FormGroup>
+        </Stack>
       </CardContent>
       <CardActions>
         <Button

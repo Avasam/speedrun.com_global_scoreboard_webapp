@@ -7,14 +7,14 @@ import type { FC } from 'react'
 import { useEffect, useState } from 'react'
 import { Link as RouterLink, Route, useLocation } from 'react-router-dom'
 
-import LoginForm from './Components/LoginForm/LoginForm'
-import ScheduleManagement from './Components/ScheduleManagement/ScheduleManagement'
-import ScheduleRegistration from './Components/ScheduleRegistration'
-import ScheduleViewer from './Components/ScheduleViewer'
-import { apiGet } from './fetchers/Api'
-import type User from './Models/User'
-import darkTheme from './styles/dark.theme'
-import lightTheme from './styles/light.theme'
+import LoginForm from './LoginForm/LoginForm'
+import ScheduleManagement from './ScheduleManagement/ScheduleManagement'
+import ScheduleRegistration from './ScheduleRegistration'
+import ScheduleViewer from './ScheduleViewer'
+import { apiGet } from 'src/fetchers/Api'
+import type User from 'src/Models/User'
+import darkTheme from 'src/styles/dark.theme'
+import lightTheme from 'src/styles/light.theme'
 
 type Themes = 'dark' | 'light'
 type Body = { body: { background: string } }
@@ -63,12 +63,12 @@ const App: FC = () => {
       {!embedded &&
         <AppBar position='static' enableColorOnDark>
           <Toolbar>
-            {(currentUser || isMobileSize || location.pathname !== '/') &&
-              <Link
-                component={RouterLink}
-                to='/'
-                style={{ height: 'auto', width: 'auto' }}
-              >
+            <Link
+              component={RouterLink}
+              to='/'
+              style={{ height: 'auto', width: 'auto' }}
+            >
+              {(currentUser || isMobileSize || location.pathname !== '/') &&
                 <IconButton>
                   <img
                     style={{
@@ -79,9 +79,8 @@ const App: FC = () => {
                     src={`${window.process.env.REACT_APP_BASE_URL}/assets/images/favicon.webp`}
                   />
                 </IconButton>
-              </Link>
-            }
-            <div></div>
+              }
+            </Link>
             <Typography variant={currentUser || isMobileSize ? 'h4' : 'h2'}>Tournament Scheduler</Typography>
             <div>
               {preferedTheme === 'dark'
