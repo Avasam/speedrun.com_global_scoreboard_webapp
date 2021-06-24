@@ -1,4 +1,6 @@
 import './index.css'
+import 'react-picky/dist/picky.css'
+import 'bootstrap/dist/css/bootstrap.css'
 
 import { StrictMode } from 'react'
 import ReactDOM from 'react-dom'
@@ -6,6 +8,7 @@ import { BrowserRouter } from 'react-router-dom'
 
 import App from './Components/App'
 import * as serviceWorker from './serviceWorker'
+const BOOTSWATCH_POS = 4
 
 // Hack for local network testing
 window.process = {

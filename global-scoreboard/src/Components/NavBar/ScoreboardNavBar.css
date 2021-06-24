@@ -29,7 +29,9 @@
   padding-right: 0.5em;
 }
 
-
+.dropdown {
+  align-self: center;
+}
 
 /* Fixes input group append with Dashlane button */
 .input-group > .form-control+.btn.btn:last-of-type {

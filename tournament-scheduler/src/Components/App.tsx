@@ -32,9 +32,6 @@ const logout = (setCurrentUser: (user: null) => void) => {
 
 const App = () => {
   const isMobileSize = useMediaQuery('(max-width:640px)', { noSsr: true })
-  const prefersLightScheme = useMediaQuery('@media (prefers-color-scheme: light)', { noSsr: true })
-  const savedTheme = prefersLightScheme ? 'light' : 'dark'
-  const [preferedTheme, setPreferedTheme] = useState(savedTheme)
   const [currentUser, setCurrentUser] = useState<User | null | undefined>()
   const location = useLocation()
 
@@ -51,12 +48,15 @@ const App = () => {
       })
   }, [])
 
+  const prefersLightScheme = useMediaQuery('@media (prefers-color-scheme: light)', { noSsr: true })
+  const savedTheme = localStorage.getItem('preferedMaterialTheme') ?? (prefersLightScheme ? 'light' : 'dark')
+  const [preferedMaterialTheme, setpreferedMaterialTheme] = useState(savedTheme)
   const saveTheme = (theme: Themes) => {
-    setPreferedTheme(theme)
-    localStorage.setItem('preferedTheme', theme)
+    setpreferedMaterialTheme(theme)
+    localStorage.setItem('preferedMaterialTheme', theme)
   }
 
-  return <ThemeProvider theme={preferedTheme === 'light' ? lightTheme : darkTheme}>
+  return <ThemeProvider theme={preferedMaterialTheme === 'light' ? lightTheme : darkTheme}>
     <CssBaseline />
     <Stack style={{ height: '100%', textAlign: 'center' }}>
       {!embedded &&
@@ -82,7 +82,7 @@ const App = () => {
             </Link>
             <Typography variant={currentUser || isMobileSize ? 'h4' : 'h2'}>Tournament Scheduler</Typography>
             <div>
-              {preferedTheme === 'dark'
+              {preferedMaterialTheme === 'dark'
                 ? <IconButton onClick={() => saveTheme('light')}><Brightness7 /></IconButton>
                 : <IconButton onClick={() => saveTheme('dark')}><Brightness4 /></IconButton>
               }
