@@ -1,6 +1,5 @@
 import { Button, ButtonGroup, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, List, ListItem, ListItemText, TextField } from '@material-ui/core'
 import { DeleteForever } from '@material-ui/icons'
-import type { FC } from 'react'
 import { useState } from 'react'
 
 import type { RegistrationProxy } from 'src/Models/Registration'
@@ -16,7 +15,7 @@ type RegistrationListProps = {
   onParticipantNameChange: (registration: RegistrationProxy, participantIndex: number, name: string) => void
 }
 
-const RegistrationList: FC<RegistrationListProps> = (props: RegistrationListProps) => {
+const RegistrationList = (props: RegistrationListProps) => {
   const [open, setOpen] = useState(false)
 
   const handleClose = (confirmed: boolean) => {

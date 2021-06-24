@@ -18,3 +18,7 @@ code {
 label {
   font-weight: bold;
 }
+
+[data-lpignore]~[data-dashlanecreated] {
+  display: none !important;
+}

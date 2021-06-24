@@ -17,6 +17,10 @@ label {
   font-weight: bold;
 }
 
+[data-lpignore]~[data-dashlanecreated] {
+  display: none !important;
+}
+
 ::-webkit-scrollbar {
   /* !important required for Opera */
   width: 12px !important;

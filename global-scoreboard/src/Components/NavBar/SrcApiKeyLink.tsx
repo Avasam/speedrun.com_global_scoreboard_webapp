@@ -1,8 +1,8 @@
-import type { ChangeEventHandler, FC } from 'react'
+import type { ChangeEventHandler } from 'react'
 import { useState } from 'react'
 import { Button, FormControl, InputGroup } from 'react-bootstrap'
 
-const SrcApiKeyLink: FC = () => {
+const SrcApiKeyLink = () => {
   const [srcNameInput, setSrcNameInput] = useState('')
 
   const handleNameChange: ChangeEventHandler<HTMLInputElement> = event =>
@@ -23,6 +23,7 @@ const SrcApiKeyLink: FC = () => {
         name='src-name'
         placeholder='SRC name'
         aria-describedby='src name'
+        data-lpignore='true'
         onChange={handleNameChange}
       />
       <Button

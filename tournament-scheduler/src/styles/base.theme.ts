@@ -54,7 +54,7 @@ const baseThemeOptions: ThemeOptions = {
           paddingRight: themeSpacing(2),
         },
         multiline: {
-          '.MuiPaper-root:first-child > &': {
+          '.MuiPaper-root:first-of-type > &': {
             paddingTop: themeSpacing(1),
             paddingBottom: themeSpacing(1),
           },

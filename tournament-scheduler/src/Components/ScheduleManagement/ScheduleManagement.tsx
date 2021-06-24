@@ -1,6 +1,5 @@
 import { Button, Card, CardActions, CardContent, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton } from '@material-ui/core'
 import { DeleteForever } from '@material-ui/icons'
-import type { FC } from 'react'
 import { useEffect, useState } from 'react'
 import { Link as RouterLink } from 'react-router-dom'
 
@@ -43,7 +42,7 @@ const styles = {
   },
 }
 
-const ScheduleManagement: FC<ScheduleManagementProps> = (props: ScheduleManagementProps) => {
+const ScheduleManagement = (props: ScheduleManagementProps) => {
   const [schedules, setSchedules] = useState<Schedule[]>([])
   const [currentSchedule, setCurrentSchedule] = useState<Schedule | undefined>()
 
@@ -73,7 +72,8 @@ const ScheduleManagement: FC<ScheduleManagementProps> = (props: ScheduleManageme
     getSchedules()
       .then(setSchedules)
       .catch(console.error)
-  }, [])  return currentSchedule
+  }, [])
+  return currentSchedule
     ? <ScheduleWizard
       schedule={currentSchedule}
       onSave={handleSave}
@@ -107,7 +107,7 @@ type ScheduleCardProps = {
   onEdit: (schedule: Schedule) => void
 }
 
-const ScheduleCard: FC<ScheduleCardProps> = (props: ScheduleCardProps) => {
+const ScheduleCard = (props: ScheduleCardProps) => {
   const [open, setOpen] = useState(false)
 
   const handleClose = (confirmed: boolean) => {

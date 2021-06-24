@@ -1,6 +1,5 @@
 import { Button, Container, Link, Stack, TextField, Typography } from '@material-ui/core'
 import useMediaQuery from '@material-ui/core/useMediaQuery'
-import type { FC } from 'react'
 import { useState } from 'react'
 
 import SrcApiKeyLink from './SrcApiKeyLink'
@@ -21,7 +20,7 @@ const login = (srcApiKey: string, onLoginCallback: (currentUser: User) => void) 
     })
     .catch(console.error)
 
-const LoginForm: FC<loginFormProps> = (props: loginFormProps) => {
+const LoginForm = (props: loginFormProps) => {
   const [srcApiKeyInput, setSrcApiKeyInput] = useState('')
 
   const isMobileSize = useMediaQuery('(max-width:640px)')
@@ -48,7 +47,6 @@ const LoginForm: FC<loginFormProps> = (props: loginFormProps) => {
       <Stack direction='row' alignItems='baseline' display='inline-flex' style={{ marginTop: 0 }}>
         <TextField
           size='small'
-          id='src-api-key'
           name='src-api-key'
           type='password'
           label='Enter your SRC API key'
@@ -67,7 +65,7 @@ const LoginForm: FC<loginFormProps> = (props: loginFormProps) => {
       <p>
         If you don&apos;t trust the above link because SRC&apos;s api portal looks sketchy,
         you can also access your api key through
-        <br /> <SrcApiKeyLink></SrcApiKeyLink>
+        <br /> <SrcApiKeyLink />
       </p>
       <Typography variant='h6'>Why do we need your API key?</Typography>
       <p style={{ marginBottom: 'auto' }}>

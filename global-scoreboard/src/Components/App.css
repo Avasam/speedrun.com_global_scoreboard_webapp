@@ -1,17 +1,19 @@
 footer {
   text-align: center;
-  width: max-content;
-  margin: auto;
-}
-
-/* Fix close button appearing squished by landing in-between pixels */
-.close.close {
-  font-size: 1.6rem;
 }
 
 .btn.btn-link {
   padding: 0;
   border: none;
+}
+
+/* Fix feedbacks following input-groups (rather than inside) not being visible */
+.input-group+[class*="-feedback"] {
+  display: block;
+}
+/* Allow feedback text to wrap */
+[class*="-feedback"] {
+  white-space: pre-wrap;
 }
 
 /* Fix tablet size loosing out on a lot of space */

@@ -3,7 +3,6 @@ import { ThemeProvider } from '@material-ui/core/styles'
 import Brightness4 from '@material-ui/icons/Brightness4'
 import Brightness7 from '@material-ui/icons/Brightness7'
 import { StatusCodes } from 'http-status-codes'
-import type { FC } from 'react'
 import { useEffect, useState } from 'react'
 import { Link as RouterLink, Route, useLocation } from 'react-router-dom'
 
@@ -17,11 +16,11 @@ import darkTheme from 'src/styles/dark.theme'
 import lightTheme from 'src/styles/light.theme'
 
 type Themes = 'dark' | 'light'
-type Body = { body: { background: string } }
+type StylesOverrides = { body: { background: string } }
 const embedded = typeof new URLSearchParams(window.location.search).get('embedded') == 'string'
 if (embedded) {
-  (lightTheme.components?.MuiCssBaseline?.styleOverrides as unknown as Body).body.background = 'transparent';
-  (darkTheme.components?.MuiCssBaseline?.styleOverrides as unknown as Body).body.background = 'transparent'
+  (lightTheme.components?.MuiCssBaseline?.styleOverrides as unknown as StylesOverrides).body.background = 'transparent';
+  (darkTheme.components?.MuiCssBaseline?.styleOverrides as unknown as StylesOverrides).body.background = 'transparent'
 }
 
 const getCurrentUser = () => apiGet('users/current').then(res => res.json())
@@ -31,7 +30,7 @@ const logout = (setCurrentUser: (user: null) => void) => {
   localStorage.removeItem('jwtToken')
 }
 
-const App: FC = () => {
+const App = () => {
   const isMobileSize = useMediaQuery('(max-width:640px)', { noSsr: true })
   const prefersLightScheme = useMediaQuery('@media (prefers-color-scheme: light)', { noSsr: true })
   const savedTheme = prefersLightScheme ? 'light' : 'dark'

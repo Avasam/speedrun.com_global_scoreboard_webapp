@@ -29,6 +29,7 @@ const UpdateRunnerForm = (props: UpdateRunnerFormProps) => {
             disabled={window.process.env.REACT_APP_BYPASS_UPDATE_RESTRICTIONS !== 'true' &&
               (props.updating || !props.currentUser)}
             aria-describedby='update user name or id'
+            data-lpignore='true'
           />
           <Button
             id='update-runner-button'

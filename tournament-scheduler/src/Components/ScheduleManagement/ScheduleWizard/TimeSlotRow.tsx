@@ -3,7 +3,6 @@ import { Card, CardContent, Collapse, IconButton, ListItem, ListItemText, Stack,
 import { Clear, Event, ExpandLess, ExpandMore, FileCopy } from '@material-ui/icons'
 import { MobileDateTimePicker } from '@material-ui/lab'
 import type { SxProps } from '@material-ui/system'
-import type { FC } from 'react'
 import { useState } from 'react'
 
 import NonZeroNumberInput from './NonZeroNumberInput'
@@ -52,7 +51,7 @@ type TimeSlotRowProps = {
   onEditTimeSlotparticipantsPerEntry: (participantsPerEntry: number) => void
 }
 
-const TimeSlotRow: FC<TimeSlotRowProps> = (props: TimeSlotRowProps) => {
+const TimeSlotRow = (props: TimeSlotRowProps) => {
   const [open, setOpen] = useState(false)
   const [registrationsProxy, setRegistrationsProxy] = useState<RegistrationProxy[]>(
     createProxy(props.timeSlot.registrations)

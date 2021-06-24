@@ -16,6 +16,7 @@ const addVarToValuesKeys = (values: SrcRun['data']['values']) => {
   for (const key in values) {
     newDict[`var-${key}`] = values[key]
   }
+
   return newDict
 }
 
@@ -25,6 +26,7 @@ const filterSubCatVariables = (variables: SrcRun['data']['values'], subCategorie
     if (!subCategories.includes(key)) continue
     newVariables[key] = variables[key]
   }
+
   return newVariables
 }
 

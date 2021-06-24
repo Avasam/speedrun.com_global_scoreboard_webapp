@@ -48,9 +48,9 @@
         "*.*.*"
       ],
       "env": {
+        // "jest": true
         "browser": false,
-        "node": true,
-        "jest": true
+        "node": true
       },
       "rules": {
         "unicorn/filename-case": "off",
@@ -82,7 +82,7 @@
     ],
     // unused-imports settings
     // Loosing imports when commenting code to test is extremely annoying and slow, only activate this for cleanup
-    // "unused-imports/no-unused-imports": "warn",
+    "unused-imports/no-unused-imports": "off",
     // sonarjs/recommended overrides (https://github.com/SonarSource/eslint-plugin-sonarjs/blob/master/src/index.ts)
     // react-app service workers template and the eslint complexity rule are at 20
     "sonarjs/cognitive-complexity": [
@@ -230,8 +230,17 @@
         "accessibility": "no-public"
       }
     ],
-    // Doesn't work great, see: https://github.com/typescript-eslint/typescript-eslint/issues/1824
-    "@typescript-eslint/indent": "off",
+    "@typescript-eslint/indent": [
+      "error",
+      2,
+      {
+        "SwitchCase": 1,
+        // Workaround: https://github.com/typescript-eslint/typescript-eslint/issues/455#issuecomment-580636221
+        "ignoredNodes": [
+          "TSTypeParameterInstantiation"
+        ]
+      }
+    ],
     // Doesn't allow `let myVar: Type | undefined`
     "@typescript-eslint/init-declarations": "off",
     "@typescript-eslint/lines-between-class-members": "off",
@@ -343,8 +352,6 @@
         "allowNullish": true
       }
     ],
-    // TODO: Check later if some "no-unnecessary-type-annotation" has been implemented
-    // see https://github.com/typescript-eslint/typescript-eslint/issues/295
     // Custom rules and eslint:recommended overrides (https://eslint.org/docs/rules/)
     "accessor-pairs": [
       "error",
@@ -414,14 +421,6 @@
           // Theming
           "h[1-6r]"
         ]
-      }
-    ],
-    // As mentionned above, the typescrpt version doesn't work great
-    "indent": [
-      "error",
-      2,
-      {
-        "SwitchCase": 1
       }
     ],
     "jsx-quotes": [

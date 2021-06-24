@@ -1,10 +1,10 @@
 import { Button, Card, CardActions, CardContent, Container, FormControl, FormGroup, FormLabel, InputLabel, Link, MenuItem, Select, TextField, Typography } from '@material-ui/core'
 import type { SelectInputProps } from '@material-ui/core/Select/SelectInput'
 import { StatusCodes } from 'http-status-codes'
-import type { FC } from 'react'
 import { useEffect, useState } from 'react'
 import { Link as RouterLink, useHistory } from 'react-router-dom'
 
+import DisableDashlane from 'src/Components/DisableDashlane'
 import { apiGet, apiPost } from 'src/fetchers/Api'
 import type { ScheduleDto } from 'src/Models/Schedule'
 import { Schedule } from 'src/Models/Schedule'
@@ -28,7 +28,7 @@ const postRegistration = (timeSlotId: number, participants: string[], registrati
   apiPost(`time-slots/${timeSlotId}/registrations`, { participants, registrationKey })
     .then(res => res.json())
 
-const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegistrationProps) => {
+const ScheduleRegistration = (props: ScheduleRegistrationProps) => {
   const [scheduleState, setScheduleState] = useState<Schedule | null | undefined>()
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<TimeSlot | undefined>()
   const [participants, setParticipants] = useState<string[]>([])
@@ -117,6 +117,7 @@ const ScheduleRegistration: FC<ScheduleRegistrationProps> = (props: ScheduleRegi
   const deadlineDaysLeft = diffDays(scheduleState?.deadline)
 
   return <Container>
+    <DisableDashlane />
     {!scheduleState
       ? scheduleState === null && <div>
         Sorry. `<code>{props.registrationId}</code>` does not lead to an existing registration form.

@@ -45,6 +45,7 @@ const inferRank = (players: Player[], score: number) => {
   if (lowerOrEqualPlayerFoundIndex < 0) return players.length
 
   const lowerOrEqualPlayerFound = sortedPlayers[lowerOrEqualPlayerFoundIndex]
+
   return lowerOrEqualPlayerFound.score === score && lowerOrEqualPlayerFound.rank
     ? lowerOrEqualPlayerFound.rank
     : lowerOrEqualPlayerFoundIndex + 1
@@ -114,105 +115,109 @@ const Dashboard = (props: DashboardProps) => {
         playerResult.lastUpdate = new Date(playerResult.lastUpdate)
         return playerResult
       })
-      .then(result => {
-        setAlertVariant(result.state ?? 'warning')
-        setAlertMessage(renderScoreTable(result.scoreDetails ?? [[], []], result.message))
-        const newPlayers = [...playersState]
-        const existingPlayerIndex = newPlayers.findIndex(player => player.userId === result.userId)
-        const inferedRank = inferRank(newPlayers, result.score)
-        const playerModifications = {
-          rank: inferedRank,
-          name: result.name,
-          countryCode: result.countryCode,
-          score: result.score,
-          lastUpdate: result.lastUpdate,
-        }
-        if (existingPlayerIndex < 0) {
-          newPlayers.push({
-            ...playerModifications,
-            userId: result.userId,
-          })
-        } else {
-          newPlayers[existingPlayerIndex] = Object.assign(
-            {
-              userId: playersState[existingPlayerIndex].userId,
-            },
-            playerModifications
-          )
-        }
-
-        setPlayersState(newPlayers)
-        if (friendsState.some(friend => friend.userId === result.userId)) {
-          setFriendsState(buildFriendsList(friendsState, newPlayers))
-        }
-        if (currentPlayer?.userId === result.userId) {
-          setCurrentPlayer({ ...currentPlayer, ...result, rank: inferedRank })
-        }
-
-        handleJumpToPlayer(result.userId)
-      })
-      .catch((err: Error | Response) => {
-        let temporaryAlertVariant = 'danger'
-        if (err instanceof Error) {
-          setAlertMessage(`${err.name}: ${err.message}`)
-        } else {
-          temporaryAlertVariant = 'warning'
-          switch (err.status) {
-            case StatusCodes.IM_A_TEAPOT:
-              setAlertMessage(<div>
-                <p>You know the drill...</p>
-                <p>
-                  <img src='https://speedrun.com/themes/Default/1st.png' alt='' />
-                  <br />
-                  <img src='https://speedrun.com/themes/Default/logo.png' alt='speedrun.com' style={{ width: 384 }} />
-                </p>
-                <p>Oops! The site&apos;s under a lot of pressure right now. Please try again in a minute.</p>
-                <img src='https://brand.twitch.tv/assets/emotes/lib/kappa.png' alt='Kappa' />
-              </div>)
-
-              break
-            case StatusCodes.GATEWAY_TIMEOUT:
-              setAlertMessage(`Error ${StatusCodes.GATEWAY_TIMEOUT}: ${ReasonPhrases.GATEWAY_TIMEOUT}. ` +
-                'The webworker probably timed out, which can happen if updating takes more than 5 minutes. ' +
-                'Please try again as next attempt should take less time since ' +
-                'all calls to speedrun.com are cached for a day or until server restart.')
-
-              break
-            case StatusCodes.CONFLICT:
-              void err.text().then(errorString => {
-                switch (errorString) {
-                  case 'current_user':
-                    setAlertMessage('It seems you are already updating a runner. Please try again in 5 minutes.')
-                    break
-                  case 'name_or_id':
-                    setAlertMessage('It seems this runner is already being updated (possibly by someone else). ' +
-                      'Please try again in 5 minutes.')
-                    break
-                  default:
-                    setAlertMessage(errorString)
-                }
-              })
-
-              break
-            default:
-              void err.text().then(errorString => {
-                try {
-                  const result = JSON.parse(errorString) as UpdateRunnerResult
-                  setAlertVariant(result.state ?? 'danger')
-                  setAlertMessage(result.message)
-                  if (err.status === StatusCodes.BAD_REQUEST && result.score < 1) {
-                    setPlayersState(playersState.filter(player => player.userId !== result.userId))
-                  }
-                } catch {
-                  setAlertVariant('danger')
-                  setAlertMessage(errorString)
-                }
-              })
-          }
-        }
-        setAlertVariant(temporaryAlertVariant)
-      })
+      .then(onUpdateRunnerThen)
+      .catch(onUpdateRunnerCatch)
       .finally(() => setUpdateStartTime(null))
+  }
+
+  const onUpdateRunnerThen = (result: UpdateRunnerResult) => {
+    setAlertVariant(result.state ?? 'warning')
+    setAlertMessage(renderScoreTable(result.scoreDetails ?? [[], []], result.message))
+    const newPlayers = [...playersState]
+    const existingPlayerIndex = newPlayers.findIndex(player => player.userId === result.userId)
+    const inferedRank = inferRank(newPlayers, result.score)
+    const playerModifications = {
+      rank: inferedRank,
+      name: result.name,
+      countryCode: result.countryCode,
+      score: result.score,
+      lastUpdate: result.lastUpdate,
+    }
+    if (existingPlayerIndex < 0) {
+      newPlayers.push({
+        ...playerModifications,
+        userId: result.userId,
+      })
+    } else {
+      newPlayers[existingPlayerIndex] = Object.assign(
+        {
+          userId: playersState[existingPlayerIndex].userId,
+        },
+        playerModifications
+      )
+    }
+
+    setPlayersState(newPlayers)
+    if (friendsState.some(friend => friend.userId === result.userId)) {
+      setFriendsState(buildFriendsList(friendsState, newPlayers))
+    }
+    if (currentPlayer?.userId === result.userId) {
+      setCurrentPlayer({ ...currentPlayer, ...result, rank: inferedRank })
+    }
+
+    handleJumpToPlayer(result.userId)
+  }
+
+  const onUpdateRunnerCatch = (err: Error | Response) => {
+    let temporaryAlertVariant = 'danger'
+    if (err instanceof Error) {
+      setAlertMessage(`${err.name}: ${err.message}`)
+    } else {
+      temporaryAlertVariant = 'warning'
+      switch (err.status) {
+        case StatusCodes.IM_A_TEAPOT:
+          setAlertMessage(<div>
+            <p>You know the drill...</p>
+            <p>
+              <img src='https://speedrun.com/themes/Default/1st.png' alt='' />
+              <br />
+              <img src='https://speedrun.com/themes/Default/logo.png' alt='speedrun.com' style={{ width: 384 }} />
+            </p>
+            <p>Oops! The site&apos;s under a lot of pressure right now. Please try again in a minute.</p>
+            <img src='https://brand.twitch.tv/assets/emotes/lib/kappa.png' alt='Kappa' />
+          </div>)
+
+          break
+        case StatusCodes.GATEWAY_TIMEOUT:
+          setAlertMessage(`Error ${StatusCodes.GATEWAY_TIMEOUT}: ${ReasonPhrases.GATEWAY_TIMEOUT}. ` +
+            'The webworker probably timed out, which can happen if updating takes more than 5 minutes. ' +
+            'Please try again as next attempt should take less time since ' +
+            'all calls to speedrun.com are cached for a day or until server restart.')
+
+          break
+        case StatusCodes.CONFLICT:
+          void err.text().then(errorString => {
+            switch (errorString) {
+              case 'current_user':
+                setAlertMessage('It seems you are already updating a runner. Please try again in 5 minutes.')
+                break
+              case 'name_or_id':
+                setAlertMessage('It seems this runner is already being updated (possibly by someone else). ' +
+                  'Please try again in 5 minutes.')
+                break
+              default:
+                setAlertMessage(errorString)
+            }
+          })
+
+          break
+        default:
+          void err.text().then(errorString => {
+            try {
+              const result = JSON.parse(errorString) as UpdateRunnerResult
+              setAlertVariant(result.state ?? 'danger')
+              setAlertMessage(result.message)
+              if (err.status === StatusCodes.BAD_REQUEST && result.score < 1) {
+                setPlayersState(playersState.filter(player => player.userId !== result.userId))
+              }
+            } catch {
+              setAlertVariant('danger')
+              setAlertMessage(errorString)
+            }
+          })
+      }
+    }
+    setAlertVariant(temporaryAlertVariant)
   }
 
   const handleJumpToPlayer = (playerId: string) => scoreboardRef.current?.jumpToPlayer(playerId)

@@ -6,8 +6,8 @@ import { useState } from 'react'
 import { Button, Col, Form, InputGroup } from 'react-bootstrap'
 
 import SrcApiKeyLink from './SrcApiKeyLink'
+import GenericModal from 'src/Components/GenericModal'
 import { apiPost } from 'src/fetchers/Api'
-import GenericModal from 'src/GenericModal'
 import type Player from 'src/Models/Player'
 import type UpdateRunnerResult from 'src/Models/UpdateRunnerResult'
 
@@ -53,12 +53,13 @@ const LoginModal = (props: LoginModalProps) => {
   return (
     <GenericModal show={props.show} onHide={props.onClose} title='Enter your API key' >
       <Form onSubmit={(event: FormEvent<HTMLFormElement>) => event.preventDefault()}>
-        <Form.Group className='mb-3' controlId='src-api-key'>
+        <Form.Group className='mb-3'>
           <Form.Label>Enter your API key</Form.Label>
           <InputGroup>
             <InputGroup.Text><FontAwesomeIcon icon={faLink} /></InputGroup.Text>
             <Form.Control
               type='password'
+              name='src-api-key'
               placeholder='API key'
               aria-describedby='api key'
               required
@@ -71,10 +72,10 @@ const LoginModal = (props: LoginModalProps) => {
               href='https://www.speedrun.com/api/auth'
               target='src'
             >What&apos;s my key?</Button>
-            <Form.Control.Feedback type='invalid'>
-              {loginErrorMessage}
-            </Form.Control.Feedback>
           </InputGroup>
+          <Form.Control.Feedback type='invalid'>
+            {loginErrorMessage}
+          </Form.Control.Feedback>
         </Form.Group>
 
         <Form.Group className='mb-3'>

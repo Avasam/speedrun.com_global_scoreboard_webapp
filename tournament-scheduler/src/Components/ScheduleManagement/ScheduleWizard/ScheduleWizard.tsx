@@ -3,7 +3,6 @@ import { Button, Card, CardActions, CardContent, Checkbox, Container, FormContro
 import { Event } from '@material-ui/icons'
 import { MobileDatePicker } from '@material-ui/lab'
 import type { SxProps } from '@material-ui/system'
-import type { FC } from 'react'
 import { useState } from 'react'
 
 import TimeSlotRow from './TimeSlotRow'
@@ -28,7 +27,7 @@ type ScheduleWizardProps = {
   onCancel: () => void
 }
 
-export const ScheduleWizard: FC<ScheduleWizardProps> = (props: ScheduleWizardProps) => {
+export const ScheduleWizard = (props: ScheduleWizardProps) => {
   const [schedule, setSchedule] = useState(props.schedule)
 
   schedule.timeSlots.sort(TimeSlot.compareFn)

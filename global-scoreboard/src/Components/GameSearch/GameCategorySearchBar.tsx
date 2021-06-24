@@ -15,6 +15,7 @@ type GameCategorySearchProps =
 
 function debounce<T>(fn: (...args: T[]) => void, time: number) {
   let timeout: NodeJS.Timeout | undefined
+
   return wrapper
   function wrapper(...args: T[]) {
     if (timeout) {
@@ -57,7 +58,6 @@ const GameCategorySearch = (props: GameCategorySearchProps) => {
       onChange={event => handleOnChange(event.currentTarget.value)}
     />
   </Form.Label>
-
 }
 
 export default GameCategorySearch

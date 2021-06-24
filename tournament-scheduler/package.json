@@ -1,6 +1,5 @@
 {
   "name": "tournament-scheduler",
-  "version": "0.1.0",
   "description": "A web app tool to help scheduling tournaments",
   "private": true,
   "scripts": {
@@ -10,7 +9,8 @@
     "compress-build-folder": "powershell Compress-Archive -Update -Path .\\build\\ -CompressionLevel Optimal -DestinationPath ..\\tournament-scheduler-build.zip",
     "lint": "eslint src/ --ext .ts,.tsx --ignore-path ../.gitignore",
     "lint:fix": "npm run lint -- --fix",
-    "upgrade": "npx npm-check-updates -u & npm i"
+    "upgrade": "npx npm-check-updates -u & npm i",
+    "postinstall": "npm audit fix"
   },
   "dependencies": {
     "@culturehq/add-to-calendar": "^1.1.2",
@@ -29,7 +29,6 @@
     "react-text-mask": "^5.4.3"
   },
   "devDependencies": {
-    "@types/jest": "^26.0.23",
     "@types/node": "^15.12.2",
     "@types/react": "^17.0.11",
     "@types/react-add-to-calendar": "^0.1.0",

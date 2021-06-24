@@ -69,11 +69,13 @@ const ScheduleViewer = (props: ScheduleRegistrationProps) => {
                   <ListItemText
                     primary={<>
                       {fancyFormat(timeSlot.dateTime)}
-                      {/* TODO: Make paper colored buttons */}
                       <Button
+                        // <button> cannot appear as a descendant of <button>
+                        component='div'
                         sx={{
                           float: 'right',
                           backgroundColor: theme.palette.background.paper,
+                          // TODO: Make paper colored buttons
                           backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.16))',
                           '&:hover': {
                             backgroundColor: 'rgba(255, 255, 255, 0.08)',

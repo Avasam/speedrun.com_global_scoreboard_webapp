@@ -1,5 +1,5 @@
 import 'react-bootstrap-table2-paginator/dist/react-bootstrap-table2-paginator.min.css'
-import '../Dashboard/Scoreboard.css'
+import 'src/Components/Dashboard/Scoreboard.css'
 import './GameSearch.css'
 
 import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
@@ -17,8 +17,8 @@ import { Picky } from 'react-picky'
 
 import GameCategorySearch from './GameCategorySearchBar'
 import ScoreDropCalculator from './ScoreDropCalculator'
-import defaultPaginationOptions from 'src/Dashboard/TableElements/PaginationProps'
-import sortCaret from 'src/Dashboard/TableElements/SortCarret'
+import defaultPaginationOptions from 'src/Components/Dashboard/TableElements/PaginationProps'
+import sortCaret from 'src/Components/Dashboard/TableElements/SortCarret'
 import { apiGet, MAX_PAGINATION } from 'src/fetchers/Api'
 import type { EmbeddedSrcRun } from 'src/Models/SrcResponse'
 import math from 'src/utils/Math'
@@ -83,6 +83,7 @@ const runIdFormatter: ColumnFormatter<GameValueRow, FormatExtraDataProps> =
           })
         })
     }
+
     return <a href={`https://www.speedrun.com/run/${row.runId}`} target='src'>
       <FontAwesomeIcon icon={faExternalLinkAlt} />
     </a>
@@ -291,6 +292,7 @@ const GameSearch = () => {
       columns={columns.map(column => {
         if (!platforms) return column
         const formatExtraData: FormatExtraDataProps = { platforms, gameMap, setGameMap, categoryMap, setCategoryMap }
+
         return { ...column, formatExtraData, sortCaret }
       })}
       search={{

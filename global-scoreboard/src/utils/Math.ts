@@ -6,6 +6,7 @@ const mean = (numbers: number[]) =>
 
 const roundToDecimals = (number: number, decimals = 2) => {
   const rounder = 10 ^ decimals
+
   return Math.round(number * rounder) / rounder
 }
 
