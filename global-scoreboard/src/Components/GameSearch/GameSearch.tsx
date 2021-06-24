@@ -309,7 +309,7 @@ const GameSearch = () => {
         >
           {(({ paginationProps, paginationTableProps }) =>
             <>
-              <Row className='gx-0' noGutters>
+              <Row className='gx-0'>
                 <Col xs='auto'>
                   <GameCategorySearch
                     {...toolkitprops.searchProps}
@@ -363,8 +363,8 @@ const GameSearch = () => {
                 {...paginationTableProps}
                 noDataIndication={() =>
                   gameValues.length === 0 || !platforms
-                    ? <Spinner animation='border' role='scoreboard'>
-                      <span className='sr-only'>Building the GameSearch. Please wait...</span>
+                    ? <Spinner animation='border' variant='primary' role='scoreboard'>
+                      <span className='visually-hidden'>Building the GameSearch. Please wait...</span>
                     </Spinner>
                     : <span>No matching records found</span>
                 }

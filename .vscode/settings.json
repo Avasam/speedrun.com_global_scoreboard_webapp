@@ -76,7 +76,6 @@
     }
   },
   "files.insertFinalNewline": true,
-  "trailing-spaces.deleteModifiedLinesOnly": true,
   "trailing-spaces.includeEmptyLines": true,
   "trailing-spaces.trimOnSave": true,
   "trailing-spaces.syntaxIgnore": [

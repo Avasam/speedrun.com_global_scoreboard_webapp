@@ -20,6 +20,7 @@ const FriendButton = (props: FriendButtonProps) => {
       : props.onBefriend(props.playerId)
 
   return <Button
+    className='friend-button'
     variant='link'
     onClick={handleBefriendUnfriend}
     onMouseEnter={() => setIsHovered(true)}

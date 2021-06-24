@@ -169,7 +169,8 @@ const Scoreboard = forwardRef<ScoreboardRef, ScoreboardProps>((props, ref) => {
   const boostrapTableRef = useRef<BootstrapTable>(null)
   const [pageState, goToPage] = useState<number | undefined>()
 
-  getSortOrder = () => boostrapTableRef.current?.sortContext.state.sortOrder  return <>
+  getSortOrder = () => boostrapTableRef.current?.sortContext.state.sortOrder
+  return <>
     <FormLabel>Scoreboard:</FormLabel>
     <ToolkitProvider
       keyField='userId'
@@ -200,7 +201,7 @@ const Scoreboard = forwardRef<ScoreboardRef, ScoreboardProps>((props, ref) => {
         >
           {(({ paginationProps, paginationTableProps }) =>
             <div>
-              <Row className='gx-0' noGutters>
+              <Row className='gx-0'>
                 <Col xs='auto' className='mb-2 me-auto'>
                   <Search.SearchBar ref={searchBarRef} {...toolkitprops.searchProps} />
                 </Col>
@@ -208,25 +209,27 @@ const Scoreboard = forwardRef<ScoreboardRef, ScoreboardProps>((props, ref) => {
                   <SizePerPageDropdownStandalone {...paginationProps} />
                 </Col>
               </Row>
-              <BootstrapTable
-                ref={boostrapTableRef}
-                wrapperClasses='table-responsive'
-                striped
-                rowClasses={(row?: Player) => rowClasses(row, props.currentUser, props.friends)}
-                {...toolkitprops.baseProps}
-                {...paginationTableProps}
-                noDataIndication={() =>
-                  props.players.length === 0
-                    ? <Spinner animation='border' role='scoreboard'>
-                      <span className='sr-only'>Building the Scoreboard. Please wait...</span>
-                    </Spinner>
-                    : <span>No matching records found</span>
-                }
-                defaultSorted={[{
-                  dataField: 'score',
-                  order: 'desc',
-                }]}
-              />
+              <div className='panel panel-default'>
+                <BootstrapTable
+                  ref={boostrapTableRef}
+                  wrapperClasses='table-responsive'
+                  striped
+                  rowClasses={(row?: Player) => rowClasses(row, props.currentUser, props.friends)}
+                  {...toolkitprops.baseProps}
+                  {...paginationTableProps}
+                  noDataIndication={() =>
+                    props.players.length === 0
+                      ? <Spinner animation='border' variant='primary' role='scoreboard'>
+                        <span className='visually-hidden'>Building the Scoreboard. Please wait...</span>
+                      </Spinner>
+                      : <span>No matching records found</span>
+                  }
+                  defaultSorted={[{
+                    dataField: 'score',
+                    order: 'desc',
+                  }]}
+                />
+              </div>
               <div>
                 <PaginationTotalStandalone {...paginationProps} />
                 <PaginationListStandalone {...paginationProps} />

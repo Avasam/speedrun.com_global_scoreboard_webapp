@@ -1,17 +1,13 @@
-.name-cell {
-  display: flex;
-  justify-content: space-between;
-  white-space: nowrap;
-}
-
-.name-cell .btn.btn-link {
-  padding: 0;
-}
-
 img.flagicon {
+  float: left;
   height: 12px;
   margin-right: 4px;
-  margin-top: -4px;
+  margin-top: 4px;
+  margin-bottom: 5px;
   border-radius: 2px;
   filter: drop-shadow(1px 1px rgba(0,0,0,0.1));
+}
+
+.friend-button {
+  float: right
 }

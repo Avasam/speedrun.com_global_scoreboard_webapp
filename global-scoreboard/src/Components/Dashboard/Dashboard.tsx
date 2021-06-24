@@ -247,23 +247,19 @@ const Dashboard = (props: DashboardProps) => {
     />
     <Row>
       <Col md={4}>
-        <Row>
-          <UpdateRunnerForm
-            onUpdate={handleOnUpdateRunner}
-            updating={updateStartTime != null}
-            currentUser={currentPlayer}
-          />
-        </Row>
+        <UpdateRunnerForm
+          onUpdate={handleOnUpdateRunner}
+          updating={updateStartTime != null}
+          currentUser={currentPlayer}
+        />
 
-        <Row>
-          <QuickView
-            friends={friendsState}
-            currentUser={currentPlayer}
-            onJumpToPlayer={handleJumpToPlayer}
-            onUnfriend={handleUnfriend}
-            onBefriend={handleBefriend}
-          />
-        </Row>
+        <QuickView
+          friends={friendsState}
+          currentUser={currentPlayer}
+          onJumpToPlayer={handleJumpToPlayer}
+          onUnfriend={handleUnfriend}
+          onBefriend={handleBefriend}
+        />
       </Col>
 
       <Col md={8}>

@@ -30,3 +30,15 @@
 .sortCarrets svg.active {
   opacity: 1;
 }
+
+/* Tested on Firefox in Responsive Design Mode (is most restrictive use-case) */
+@media (max-width: 476px) {
+  th:nth-child(4).sortable {
+    position: relative;
+  }
+  th:nth-child(4).sortable .sortCarrets {
+    position: absolute;
+    left: 50px;
+    top: 7px;
+  }
+}

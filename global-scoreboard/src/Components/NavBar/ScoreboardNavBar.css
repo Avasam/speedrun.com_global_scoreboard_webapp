@@ -7,13 +7,29 @@
 /* Allow the title text to wrap */
 .navbar-brand {
   white-space: normal;
-  flex: 1;
+}
+@media (max-width: 767px) {
+  .navbar-brand {
+    flex: 1;
+  }
+
+  .login-info {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+  }
+  .login-info > .btn {
+    margin-right: 0.5em;
+  }
 }
 
 .navbar-nav,
 .navbar-text {
   padding-right: 0.5em;
 }
+
+
 
 /* Fixes input group append with Dashlane button */
 .input-group > .form-control+.btn.btn:last-of-type {
@@ -31,7 +47,7 @@
   .modal-body .input-group > .btn {
     width: 100%;
   }
-  
+
   .modal-body .input-group > :first-child {
     border-bottom-left-radius: 0;
     margin-left: -1px;

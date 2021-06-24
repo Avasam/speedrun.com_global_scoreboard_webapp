@@ -23,12 +23,12 @@ const LoginInfo = (props: LoginInfoProps) => {
   }
 
   return props.username
-    ? <>
+    ? <div className='login-info'>
       <Navbar.Text>
         Logged in as {props.username}
       </Navbar.Text>
       <Button type='submit' variant='danger' onClick={props.onLogout}>Log out</Button>
-    </>
+    </div>
     : <>
       <Button id='open-login-modal-button' variant='success' onClick={handleShow}>Log in</Button>
 
