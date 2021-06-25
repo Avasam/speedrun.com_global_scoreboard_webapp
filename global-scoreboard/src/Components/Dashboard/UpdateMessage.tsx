@@ -1,6 +1,6 @@
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { useEffect, useState } from 'react'
+import { forwardRef, useEffect, useState } from 'react'
 import { Alert, FormLabel, OverlayTrigger, ProgressBar, Tab, Tabs, Tooltip } from 'react-bootstrap'
 import type { Variant } from 'react-bootstrap/esm/types'
 
@@ -34,20 +34,24 @@ const renderRow = (rows: RunResult[]) =>
       </td>
     </tr>)
 
+// Maybe this will be simplified in the future: https://github.com/FortAwesome/react-fontawesome/issues/199
+const FaInfoCircle = forwardRef((props, ref) => <FontAwesomeIcon forwardedRef={ref} icon={faInfoCircle} {...props} />)
+FaInfoCircle.displayName = 'FaInfoCircle'
+
 const renderTable = (runs: RunResult[]) =>
   <table>
     <thead>
       <tr>
         <th>
           #<OverlayTrigger
-            placement='bottom'
+            placement='right'
             overlay={
               <Tooltip id='levelFractionInfo'>
                 Individual Levels (IL) are weighted and scored to a fraction of a Full Game run.
                 See the About page for a complete explanation.
               </Tooltip>
             }
-          ><FontAwesomeIcon icon={faInfoCircle} />
+          ><FaInfoCircle />
           </OverlayTrigger>
         </th>
         <th>Game - Category (Level)</th>
