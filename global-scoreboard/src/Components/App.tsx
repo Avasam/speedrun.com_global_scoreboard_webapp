@@ -7,8 +7,6 @@ import { Route } from 'react-router-dom'
 import Dashboard from './Dashboard/Dashboard'
 import GameSearch from './GameSearch/GameSearch'
 import ScoreboardNavBar from './NavBar/ScoreboardNavBar'
-import type { Themes } from 'src/Components/ThemeProvider'
-import ThemeProvider, { ThemeContext } from 'src/Components/ThemeProvider'
 import { apiGet } from 'src/fetchers/Api'
 import type { ServerConfigs } from 'src/Models/Configs'
 import Configs from 'src/Models/Configs'
@@ -44,56 +42,47 @@ const App = () => {
         }),
     []
   )
+  return <>
+    <ScoreboardNavBar
+      username={currentUser === null ? null : currentUser?.name}
+      onLogin={setCurrentUser}
+      onLogout={() => logout(setCurrentUser)}
+    />
 
-  const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches
-  const savedTheme = localStorage.getItem('preferedBootstrapTheme') as (Themes | null) ??
-    (prefersDarkScheme ? 'Darkly' : 'Default')
-  const [preferedBootstrapTheme, setpreferedBootstrapTheme] = useState(savedTheme)
+    <Route
+      path='/'
+      exact
+      render={() => <Dashboard currentUser={currentUser} />}
+    />
+    <Route
+      path='/game-search'
+      component={GameSearch}
+    />
 
-  return <ThemeContext.Provider value={[preferedBootstrapTheme, setpreferedBootstrapTheme]}>
-    <div data-theme={preferedBootstrapTheme}>
-      <ThemeProvider />
-      <ScoreboardNavBar
-        username={currentUser === null ? null : currentUser?.name}
-        onLogin={setCurrentUser}
-        onLogout={() => logout(setCurrentUser)}
-      />
-
-      <Route
-        path='/'
-        exact
-        render={() => <Dashboard currentUser={currentUser} />}
-      />
-      <Route
-        path='/game-search'
-        component={GameSearch}
-      />
-
-      <footer>
-        &copy; <a
-          href='https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/main/LICENSE'
-          target='about'
-        >Copyright</a> {new Date().getFullYear()} by <a
-          href='https://github.com/Avasam/'
-          target='about'
-        >Samuel Therrien</a> (
-        <a href='https://www.twitch.tv/Avasam' target='about'>
-          Avasam<img
-            height='14'
-            alt='Twitch'
-            src='https://static.twitchcdn.net/assets/favicon-32-d6025c14e900565d6177.png'
-          ></img>
-        </a>).
-        Powered by <a
-          href='https://www.speedrun.com/'
-          target='src'
-        >speedrun.com</a> and <a
-          href='https://www.pythonanywhere.com/'
-          target='about'
-        >PythonAnywhere</a>
-      </footer>
-    </div>
-  </ThemeContext.Provider>
+    <footer>
+      &copy; <a
+        href='https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/main/LICENSE'
+        target='about'
+      >Copyright</a> {new Date().getFullYear()} by <a
+        href='https://github.com/Avasam/'
+        target='about'
+      >Samuel Therrien</a> (
+      <a href='https://www.twitch.tv/Avasam' target='about'>
+        Avasam<img
+          height='14'
+          alt='Twitch'
+          src='https://static.twitchcdn.net/assets/favicon-32-d6025c14e900565d6177.png'
+        ></img>
+      </a>).
+      Powered by <a
+        href='https://www.speedrun.com/'
+        target='src'
+      >speedrun.com</a> and <a
+        href='https://www.pythonanywhere.com/'
+        target='about'
+      >PythonAnywhere</a>
+    </footer>
+  </>
 }
 
 export default App

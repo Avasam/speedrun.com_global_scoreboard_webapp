@@ -18,6 +18,7 @@ type LoginInfoProps = {
 
 const LoginInfo = (props: LoginInfoProps) => {
   const [show, setShow] = useState(false)
+  const [, setTheme] = useContext(ThemeContext)
 
   const handleClose = () => setShow(false)
   const handleShow = () => setShow(true)
@@ -26,39 +27,50 @@ const LoginInfo = (props: LoginInfoProps) => {
     handleClose()
   }
 
-  return props.username
-    ? <div className='login-info'>
-      <Navbar.Text>
-        Logged in as {props.username}
-      </Navbar.Text>
-      <Button type='submit' variant='danger' onClick={props.onLogout}>Log out</Button>
-    </div>
-    : <>
-      <Button id='open-login-modal-button' variant='success' onClick={handleShow}>Log in</Button>
-
-      <LoginModal show={show} onClose={handleClose} onLogin={handleLogin} />
-    </>
-}
-
-const ScoreboardNavBar = (props: LoginInfoProps) => {
-  const [, setTheme] = useContext(ThemeContext)
-  const saveTheme = (theme: Themes) => {
-    setTheme(theme)
-    localStorage.setItem('preferedBootstrapTheme', theme)
-  }
-
-  const ThemeDropDownItem = (theme: Themes) =>
+  const ThemeDropDownItem = ({ theme }: { theme: Themes }) =>
     <Dropdown.Item
-      key={`theme-${theme}`}
-      onClick={() => saveTheme(theme)}
+      onClick={() => setTheme(theme)}
     >
       {theme} {localStorage.getItem('preferedBootstrapTheme') === theme && <FontAwesomeIcon icon={faStar} />}
     </Dropdown.Item>
 
-  return <Navbar collapseOnSelect expand='md' bg='dark' variant='dark'>
+  return <div className='login-info'>
+    {props.username
+      ? <Navbar.Text>Logged in as {props.username}</Navbar.Text>
+      : <LoginModal show={show} onClose={handleClose} onLogin={handleLogin} />
+    }
+
+    <div>
+      {props.username
+        ? <Button type='submit' variant='danger' onClick={props.onLogout}>Log out</Button>
+        : <Button id='open-login-modal-button' variant='success' onClick={handleShow}>Log in</Button>}
+
+      <Dropdown align='end'>
+        <Dropdown.Toggle >
+          <FontAwesomeIcon icon={faPalette} />
+        </Dropdown.Toggle>
+        <Dropdown.Menu>
+          <Dropdown.Header>Light Themes</Dropdown.Header>
+          {LIGHT_THEMES.map(theme => <ThemeDropDownItem key={`theme-${theme}`} theme={theme} />)}
+          <Dropdown.Divider />
+          <Dropdown.Header>Dark Themes</Dropdown.Header>
+          {DARK_THEMES.map(theme => <ThemeDropDownItem key={`theme-${theme}`} theme={theme} />)}
+          <Dropdown.Divider />
+          <Dropdown.Header>
+            Powered by <a href='https://bootswatch.com/' target='about'>Bootswatch</a>
+          </Dropdown.Header>
+        </Dropdown.Menu>
+      </Dropdown>
+    </div>
+  </div>
+}
+
+const ScoreboardNavBar = (props: LoginInfoProps) =>
+  <Navbar collapseOnSelect expand='md' bg='dark' variant='dark'>
     <Container>
       <Navbar.Brand href='/global-scoreboard'>Ava&apos;s speedrunning global scoreboard</Navbar.Brand>
       <Navbar.Toggle aria-controls='basic-navbar-nav' />
+
       <Navbar.Collapse id='basic-navbar-nav'>
         <Nav className='me-auto'>
           <Nav.Link
@@ -77,24 +89,7 @@ const ScoreboardNavBar = (props: LoginInfoProps) => {
           <LoginInfo {...props} />
         }
       </Navbar.Collapse>
-      <Dropdown align='end'>
-        <Dropdown.Toggle >
-          <FontAwesomeIcon icon={faPalette} />
-        </Dropdown.Toggle>
-        <Dropdown.Menu>
-          <Dropdown.Header>Light Themes</Dropdown.Header>
-          {LIGHT_THEMES.map(theme => ThemeDropDownItem(theme))}
-          <Dropdown.Divider />
-          <Dropdown.Header>Dark Themes</Dropdown.Header>
-          {DARK_THEMES.map(theme => ThemeDropDownItem(theme))}
-          <Dropdown.Divider />
-          <Dropdown.Header>
-            Powered by <a href='https://bootswatch.com/' target='about'>Bootswatch</a>
-          </Dropdown.Header>
-        </Dropdown.Menu>
-      </Dropdown>
     </Container>
   </Navbar>
-}
 
 export default ScoreboardNavBar

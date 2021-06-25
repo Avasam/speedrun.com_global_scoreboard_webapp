@@ -60,28 +60,49 @@ tbody>tr.highlight-current-user:nth-of-type(odd){
 \*-------------------*/
 
 td:first-child{
-  font-weight:bold;
+  font-weight: bold;
 }
 
-table.scoreDetailsTable {
+.score-details-table {
   margin: auto;
+  width: fit-content;
+}
+.modal-body .score-details-table {
+  margin: -1rem;
+}
+.score-details-table table {
+  margin: 0;
   border: 1px solid;
   text-align: left;
 }
-table.scoreDetailsTable td {
+.score-details-table table td {
   border-bottom: 1px dotted;
 }
-table.scoreDetailsTable td:last-child {
+.score-details-table table td:last-child {
   text-align: right;
 }
-table.scoreDetailsTable th {
+.score-details-table table th {
   border-bottom: 1px solid;
 }
-table.scoreDetailsTable td,
-table.scoreDetailsTable th {
+.score-details-table table td,
+.score-details-table table th {
   padding: 1px 5px;
 }
-
+.score-details-table .nav-tabs .nav-item {
+  border-width: 1px;
+  border-style: solid;
+  border-color: inherit;
+  border-top-left-radius: 0.25rem;
+  border-top-right-radius: 0.25rem;
+}
+.score-details-table .nav-tabs .nav-link {
+  background-color: #d9ead2;
+}
+.score-details-table .nav-tabs .nav-link.active {
+  border: none;
+  background-color: transparent;
+  cursor: initial;
+}
 
 /*-----------------------*\
 | Bootstrap redifinitions |

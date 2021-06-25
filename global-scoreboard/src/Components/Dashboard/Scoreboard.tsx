@@ -24,7 +24,7 @@ let getSortOrder: () => SortOrder | undefined
 const currentTimeOnLoad = new Date()
 const columnClass = (cell: Date | undefined) => {
   if (!cell) return 'daysSince0'
-  const daysSince = diffDays(cell, currentTimeOnLoad)
+  const daysSince = diffDays(currentTimeOnLoad, cell)
   if (daysSince >= Configs.lastUpdatedDays[2]) return 'daysSince'
   if (daysSince >= Configs.lastUpdatedDays[1]) return 'daysSince2'
   if (daysSince >= Configs.lastUpdatedDays[0]) return 'daysSince1'

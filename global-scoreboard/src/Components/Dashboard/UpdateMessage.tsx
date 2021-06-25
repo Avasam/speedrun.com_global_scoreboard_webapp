@@ -1,7 +1,7 @@
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useEffect, useState } from 'react'
-import { Alert, FormLabel, OverlayTrigger, ProgressBar, Tooltip } from 'react-bootstrap'
+import { Alert, FormLabel, OverlayTrigger, ProgressBar, Tab, Tabs, Tooltip } from 'react-bootstrap'
 import type { Variant } from 'react-bootstrap/esm/types'
 
 import type { RunResult } from 'src/Models/UpdateRunnerResult'
@@ -35,7 +35,7 @@ const renderRow = (rows: RunResult[]) =>
     </tr>)
 
 const renderTable = (runs: RunResult[]) =>
-  <table className='scoreDetailsTable'>
+  <table>
     <thead>
       <tr>
         <th>
@@ -60,17 +60,22 @@ const renderTable = (runs: RunResult[]) =>
   </table>
 
 export const renderScoreTable = ([topRuns, lesserRuns]: RunResult[][], topMessage?: string) => {
-  position = 0  return <>
+  position = 0
+  return <>
     <div>{topMessage}</div>
-    {topRuns.length > 0 && <>
-      <FormLabel>Top 60 runs:</FormLabel>
-      {renderTable(topRuns)}
-    </>}
-    {lesserRuns.length > 0 && <>
-      <br />
-      <FormLabel>Other runs:</FormLabel>
-      {renderTable(lesserRuns)}
-    </>}
+    {topRuns.length > 0 &&
+      <div className='score-details-table'>
+        <Tabs defaultActiveKey='top60'>
+          <Tab eventKey='top60' title='Top 60 runs'>
+            {renderTable(topRuns)}
+          </Tab>
+          {lesserRuns.length > 0 &&
+            <Tab eventKey='other' title='Other runs'>
+              {renderTable(lesserRuns)}
+            </Tab>}
+        </Tabs>
+      </div>
+    }
   </>
 }
 
@@ -93,7 +98,8 @@ const UpdateMessage = (props: UpdateMessageProps) => {
 
     // Note: I don't actually care about players dependency and don't want to rerun this code on players change
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.updateStartTime])  return <Alert
+  }, [props.updateStartTime])
+  return <Alert
     variant={props.variant}
     style={{ visibility: props.message ? 'visible' : 'hidden' }}
   >

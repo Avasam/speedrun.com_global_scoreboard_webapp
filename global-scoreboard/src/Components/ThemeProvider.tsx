@@ -1,4 +1,6 @@
-import { createContext, useContext } from 'react'
+/* eslint-disable unicorn/prefer-spread */
+import type { FC } from 'react'
+import { createContext, useEffect, useRef, useState } from 'react'
 
 // TODO: Get through api: https://bootswatch.com/api/5.json
 export const THEMES = [
@@ -40,20 +42,47 @@ export type Themes = typeof THEMES[number]
 type ThemeContextProps = [Themes, (theme: Themes) => void]
 export const ThemeContext = createContext(['Default', () => { /**/ }] as ThemeContextProps)
 
-const ThemeProvider = () => {
-  const [theme] = useContext(ThemeContext)
+const setHref = (element: HTMLLinkElement, theme: Themes) => {
+  if (theme === 'Default') {
+    element.removeAttribute('href')
+  } else {
+    element.href = `https://cdn.jsdelivr.net/npm/bootswatch@5.0.2/dist/${theme.toLowerCase()}/bootstrap.min.css`
+  }
+}
 
-  // TODO: Try to load at the very top of head so it's loaded first (but after bootstrap)
-  return <>
-    {theme === 'Default'
-      ? <></>
-      : <link
-        rel='stylesheet'
-        href={
-          `https://cdn.jsdelivr.net/npm/bootswatch@5.0.2/dist/${theme.toLowerCase()}/bootstrap.min.css`
-        }
-      />}
-  </>
+const ThemeProvider: FC = ({ children }) => {
+  const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+  const savedTheme = localStorage.getItem('preferedBootstrapTheme') as (Themes | null) ??
+    (prefersDarkScheme ? 'Darkly' : 'Default')
+  const [preferedBootstrapTheme, setpreferedBootstrapTheme] = useState(savedTheme)
+  const bootswatchStyleRef = useRef<HTMLLinkElement>()
+
+  useEffect(() => {
+    if (bootswatchStyleRef.current) return
+    const bootstrapStyle = Array
+      .from(document.head.children)
+      .find(x => x.localName === 'style' && x.outerHTML.includes('Bootstrap'))
+    if (!bootstrapStyle) throw new Error('Missing bootstreap <style> in <head>')
+    bootswatchStyleRef.current = document.createElement('link')
+    bootswatchStyleRef.current.id = 'bootswatch-theme'
+    bootswatchStyleRef.current.rel = 'stylesheet'
+    setHref(bootswatchStyleRef.current, preferedBootstrapTheme)
+
+    document.head.insertBefore(bootswatchStyleRef.current, bootstrapStyle.nextSibling)
+  })
+
+  const saveTheme = (theme: Themes) => {
+    if (!bootswatchStyleRef.current) return
+    setHref(bootswatchStyleRef.current, theme)
+    setpreferedBootstrapTheme(theme)
+    localStorage.setItem('preferedBootstrapTheme', theme)
+  }
+
+  return <ThemeContext.Provider value={[preferedBootstrapTheme, saveTheme]}>
+    <div data-theme={preferedBootstrapTheme}>
+      {children}
+    </div>
+  </ThemeContext.Provider>
 }
 
 export default ThemeProvider

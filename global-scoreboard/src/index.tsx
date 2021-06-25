@@ -8,7 +8,7 @@ import { BrowserRouter } from 'react-router-dom'
 
 import App from './Components/App'
 import * as serviceWorker from './serviceWorker'
-const BOOTSWATCH_POS = 4
+import ThemeProvider from 'src/Components/ThemeProvider'
 
 // Hack for local network testing
 window.process = {
@@ -28,7 +28,9 @@ ReactDOM.render(
   // Setup static Providers here
   <StrictMode>
     <BrowserRouter basename='/global-scoreboard'>
-      <App />
+      <ThemeProvider>
+        <App />
+      </ThemeProvider>
     </BrowserRouter>
   </StrictMode>,
   document.getElementById('root')

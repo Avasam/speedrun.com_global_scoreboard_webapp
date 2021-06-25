@@ -8,28 +8,50 @@
 .navbar-brand {
   white-space: normal;
 }
-@media (max-width: 767px) {
-  .navbar-brand {
-    flex: 1;
-  }
 
+.login-info {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.login-info > div {
+  display: flex;
+}
+.login-info > div > .btn {
+  margin: 0 0.5rem;
+}
+@media (max-width: 767px) {
   .login-info {
-    display: flex;
-    flex-wrap: wrap;
     flex-direction: row-reverse;
-    justify-content: flex-end;
   }
   .login-info > .btn {
     margin-right: 0.5em;
+  }
+  .login-info > div {
+    flex-direction: row-reverse;
+  }
+  .dropdown-menu-end[data-bs-popper] {
+    left: 0;
+    right: auto;
+  }
+}
+/* Tested on Opera as it has the biggest values */
+@media (max-width: 839px) {
+  .login-info {
+    flex-wrap: wrap;
+  }
+  .navbar-brand {
+    white-space: normal;
+    flex: 1 1 24%;
   }
 }
 
 .navbar-nav,
 .navbar-text {
-  padding-right: 0.5em;
+  white-space: nowrap;
 }
 
-.dropdown {
+.navbar .dropdown {
   align-self: center;
 }
 
