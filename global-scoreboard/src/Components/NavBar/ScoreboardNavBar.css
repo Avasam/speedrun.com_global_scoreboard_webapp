@@ -89,7 +89,7 @@
     border-top-right-radius: 0.25rem;
   }
 
-  .src-api-key-link > .input-group > .btn.btn:first-child {
+  .src-api-key-link.input-group > .btn.btn:first-child {
     border-top-right-radius: 0.25rem;
     border-bottom-left-radius: 0;
     margin-bottom: -1px;

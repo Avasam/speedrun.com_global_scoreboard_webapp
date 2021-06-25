@@ -170,77 +170,74 @@ const Scoreboard = forwardRef<ScoreboardRef, ScoreboardProps>((props, ref) => {
   const [pageState, goToPage] = useState<number | undefined>()
 
   getSortOrder = () => boostrapTableRef.current?.sortContext.state.sortOrder
-  return <>
-    <FormLabel>Scoreboard:</FormLabel>
-    <ToolkitProvider
-      keyField='userId'
-      data={props.players}
-      columns={columns.map(column => {
-        const formatExtraData: FormatExtraDataProps = {
-          currentUser: props.currentUser,
-          friends: props.friends,
-          handleOnUnfriend: props.onUnfriend,
-          handleOnBefriend: props.onBefriend,
-        }
-
-        return { ...column, formatExtraData, sortCaret }
-      })}
-      search
-      bootstrap4
-    >
-      {(toolkitprops: ToolkitProviderProps) =>
-        <PaginationProvider
-          pagination={paginationFactory({
-            ...defaultPaginationOptions,
-            totalSize: props.players.length,
-            // HACK: Required to keep the state in sync. Will not cause rerenders
-            onPageChange: goToPage,
-            onSizePerPageChange: (_, page) => goToPage(page),
-            page: pageState,
-          })}
-        >
-          {(({ paginationProps, paginationTableProps }) =>
-            <div>
-              <Row className='gx-0'>
-                <Col xs='auto' className='mb-2 me-auto'>
-                  <Search.SearchBar ref={searchBarRef} {...toolkitprops.searchProps} />
-                </Col>
-                <Col xs='auto' className='mb-2'>
-                  <SizePerPageDropdownStandalone {...paginationProps} />
-                </Col>
-              </Row>
-              <div className='panel panel-default'>
-                <BootstrapTable
-                  ref={boostrapTableRef}
-                  wrapperClasses='table-responsive'
-                  striped
-                  rowClasses={(row?: Player) => rowClasses(row, props.currentUser, props.friends)}
-                  {...toolkitprops.baseProps}
-                  {...paginationTableProps}
-                  noDataIndication={() =>
-                    props.players.length === 0
-                      ? <Spinner animation='border' variant='primary' role='scoreboard'>
-                        <span className='visually-hidden'>Building the Scoreboard. Please wait...</span>
-                      </Spinner>
-                      : <span>No matching records found</span>
-                  }
-                  defaultSorted={[{
-                    dataField: 'score',
-                    order: 'desc',
-                  }]}
-                />
-              </div>
-              <div>
-                <PaginationTotalStandalone {...paginationProps} />
-                <PaginationListStandalone {...paginationProps} />
-                <Legend />
-              </div>
-            </div>
-          )}
-        </PaginationProvider>
+  return <ToolkitProvider
+    keyField='userId'
+    data={props.players}
+    columns={columns.map(column => {
+      const formatExtraData: FormatExtraDataProps = {
+        currentUser: props.currentUser,
+        friends: props.friends,
+        handleOnUnfriend: props.onUnfriend,
+        handleOnBefriend: props.onBefriend,
       }
-    </ToolkitProvider>
-  </>
+
+      return { ...column, formatExtraData, sortCaret }
+    })}
+    search
+    bootstrap4
+  >
+    {(toolkitprops: ToolkitProviderProps) =>
+      <PaginationProvider
+        pagination={paginationFactory({
+          ...defaultPaginationOptions,
+          totalSize: props.players.length,
+          // HACK: Required to keep the state in sync. Will not cause rerenders
+          onPageChange: goToPage,
+          onSizePerPageChange: (_, page) => goToPage(page),
+          page: pageState,
+        })}
+      >
+        {(({ paginationProps, paginationTableProps }) =>
+          <>
+            <Row className='gx-0'>
+              <Col xs='auto' className='mb-2 me-auto'>
+                <Search.SearchBar ref={searchBarRef} {...toolkitprops.searchProps} />
+              </Col>
+              <Col xs='auto' className='mb-2'>
+                <SizePerPageDropdownStandalone {...paginationProps} />
+              </Col>
+            </Row>
+            <div className='panel panel-default'>
+              <BootstrapTable
+                ref={boostrapTableRef}
+                wrapperClasses='table-responsive'
+                striped
+                rowClasses={(row?: Player) => rowClasses(row, props.currentUser, props.friends)}
+                {...toolkitprops.baseProps}
+                {...paginationTableProps}
+                noDataIndication={() =>
+                  props.players.length === 0
+                    ? <Spinner animation='border' variant='primary' role='scoreboard'>
+                      <span className='visually-hidden'>Building the Scoreboard. Please wait...</span>
+                    </Spinner>
+                    : <span>No matching records found</span>
+                }
+                defaultSorted={[{
+                  dataField: 'score',
+                  order: 'desc',
+                }]}
+              />
+            </div>
+            <div>
+              <PaginationTotalStandalone {...paginationProps} />
+              <PaginationListStandalone {...paginationProps} />
+              <Legend />
+            </div>
+          </>
+        )}
+      </PaginationProvider>
+    }
+  </ToolkitProvider>
 })
 Scoreboard.displayName = 'Scoreboad'
 

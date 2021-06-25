@@ -1,7 +1,7 @@
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { forwardRef, useEffect, useState } from 'react'
-import { Alert, FormLabel, OverlayTrigger, ProgressBar, Tab, Tabs, Tooltip } from 'react-bootstrap'
+import { Alert, OverlayTrigger, ProgressBar, Tab, Tabs, Tooltip } from 'react-bootstrap'
 import type { Variant } from 'react-bootstrap/esm/types'
 
 import type { RunResult } from 'src/Models/UpdateRunnerResult'

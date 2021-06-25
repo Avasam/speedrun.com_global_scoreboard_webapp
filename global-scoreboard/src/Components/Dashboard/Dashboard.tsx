@@ -2,14 +2,12 @@ import './Dashboard.css'
 
 import { ReasonPhrases, StatusCodes } from 'http-status-codes'
 import { useEffect, useRef, useState } from 'react'
-import { Col, Container, Row } from 'react-bootstrap'
+import { Container } from 'react-bootstrap'
 import type { Variant } from 'react-bootstrap/esm/types'
 
-import QuickView from './QuickView/QuickView'
 import type { ScoreboardRef } from './Scoreboard'
-import Scoreboard from './Scoreboard'
+import { DesktopScoreTableLayout, MobileScoreTableLayout } from './TableElements/ScoreTableLayout'
 import UpdateMessage, { renderScoreTable } from './UpdateMessage'
-import UpdateRunnerForm from './UpdateRunnerForm'
 import { apiDelete, apiGet, apiPost, apiPut } from 'src/fetchers/Api'
 import Configs from 'src/Models/Configs'
 import type Player from 'src/Models/Player'
@@ -18,6 +16,8 @@ import type UpdateRunnerResult from 'src/Models/UpdateRunnerResult'
 type DashboardProps = {
   currentUser: Player | null | undefined
 }
+
+const MOBILE_SIZE = 767
 
 const getFriends = () => apiGet('players/current/friends').then<Player[]>(res => res.json())
 const getAllPlayers = () => apiGet('players')
@@ -61,6 +61,24 @@ const Dashboard = (props: DashboardProps) => {
   const [alertVariant, setAlertVariant] = useState<Variant>('info')
   const [alertMessage, setAlertMessage] = useState<JSX.Element | string>('Building the Scoreboard. Please wait...')
   const [updateStartTime, setUpdateStartTime] = useState<number | null>(null)
+  const [isMobileSize, setIsMobileSize] = useState(window.innerWidth <= MOBILE_SIZE)
+  // TODO the following react SafeMode errors are thrown:
+  /*
+  Warning: Using UNSAFE_componentWillReceiveProps in strict mode is not recommended and may indicate bugs in your code.
+  See https://reactjs.org/link/unsafe-component-lifecycles for details.
+
+  * Move data fetching code or side effects to componentDidUpdate.
+  * If you're updating state whenever props change,
+  * refactor your code to use memoization techniques or move it to static getDerivedStateFromProps.
+  * Learn more at: https://reactjs.org/link/derived-state
+
+  Please update the following components: DataProvider, SearchProvider, SortProvider
+  */
+  window.addEventListener('resize', () => {
+    const newIsMobileSize = window.innerWidth <= MOBILE_SIZE
+    if (newIsMobileSize === isMobileSize) return
+    setIsMobileSize(newIsMobileSize)
+  })
 
   useEffect(() => {
     // Note: Waiting to obtain both friends and players if both calls are needed
@@ -239,40 +257,28 @@ const Dashboard = (props: DashboardProps) => {
       .catch(console.error)
   }
 
+  const layoutProps = {
+    onUpdate: handleOnUpdateRunner,
+    onJumpToPlayer: handleJumpToPlayer,
+    updating: updateStartTime != null,
+    currentUser: currentPlayer,
+    players: playersState,
+    friends: friendsState,
+    onUnfriend: handleUnfriend,
+    onBefriend: handleBefriend,
+    ref: scoreboardRef,
+  }
+
   return <Container className='dashboard-container'>
     <UpdateMessage
       variant={alertVariant}
       message={alertMessage}
       updateStartTime={updateStartTime}
     />
-    <Row>
-      <Col md={4}>
-        <UpdateRunnerForm
-          onUpdate={handleOnUpdateRunner}
-          updating={updateStartTime != null}
-          currentUser={currentPlayer}
-        />
-
-        <QuickView
-          friends={friendsState}
-          currentUser={currentPlayer}
-          onJumpToPlayer={handleJumpToPlayer}
-          onUnfriend={handleUnfriend}
-          onBefriend={handleBefriend}
-        />
-      </Col>
-
-      <Col md={8}>
-        <Scoreboard
-          ref={scoreboardRef}
-          currentUser={currentPlayer}
-          players={playersState}
-          friends={friendsState}
-          onUnfriend={handleUnfriend}
-          onBefriend={handleBefriend}
-        />
-      </Col>
-    </Row>
+    {isMobileSize && currentPlayer
+      ? <MobileScoreTableLayout {...layoutProps} />
+      : <DesktopScoreTableLayout {...layoutProps} />
+    }
   </Container>
 }
 

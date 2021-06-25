@@ -2,7 +2,7 @@ import './QuickView.css'
 
 import { faArrowAltCircleRight } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Button, FormLabel, Table } from 'react-bootstrap'
+import { Button, Table } from 'react-bootstrap'
 
 import PlayerNameCell from 'src/Components/Dashboard/TableElements/PlayerNameCell'
 import PlayerScoreCell from 'src/Components/Dashboard/TableElements/PlayerScoreCell'
@@ -28,54 +28,51 @@ type QuickViewProps = {
 }
 
 const QuickView = (props: QuickViewProps) =>
-  <>
-    <FormLabel>Quick view:</FormLabel>
-    <Table responsive striped size='sm' className='quick-view'>
-      <thead>
-        <tr>
-          <th>Rank</th>
-          <th>Name</th>
-          <th><ScoreTitle /></th>
-        </tr>
-      </thead>
-      <tbody>
-        {
-          props.currentUser
-            ? [...props.friends, props.currentUser]
-              .sort((a, b) => b.score - a.score)
-              .map(player =>
-                <tr
-                  className={player === props.currentUser ? 'highlight-current-user' : 'highlight-friend'}
-                  id={`preview-${player.userId}`}
-                  key={`preview-${player.userId}`}
-                >
-                  <td className={columnClass(player.lastUpdate)}>{player.rank}</td>
-                  <td>
-                    <PlayerNameCell
-                      player={player}
-                      isFriend={true}
-                      isCurrentUser={player === props.currentUser}
-                      handleOnUnfriend={props.onUnfriend}
-                      handleOnBefriend={props.onUnfriend}
-                    />
-                  </td>
-                  <td>
-                    <PlayerScoreCell player={player} />
-                    <Button
-                      variant='link'
-                      onClick={() => props.currentUser && props.onJumpToPlayer(player.userId)}
-                    >
-                      <FontAwesomeIcon icon={faArrowAltCircleRight} />
-                    </Button>
-                  </td>
-                </tr>)
-            : <>
-              <tr className='highlight-current-user' id='preview-0'><td colSpan={3}></td></tr>
-              <tr className='highlight-friend' id='preview-1'><td colSpan={3}></td></tr>
-            </>
-        }
-      </tbody>
-    </Table>
-  </>
+  <Table responsive striped size='sm' className='quick-view'>
+    <thead>
+      <tr>
+        <th>Rank</th>
+        <th>Name</th>
+        <th><ScoreTitle /></th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        props.currentUser
+          ? [...props.friends, props.currentUser]
+            .sort((a, b) => b.score - a.score)
+            .map(player =>
+              <tr
+                className={player === props.currentUser ? 'highlight-current-user' : 'highlight-friend'}
+                id={`preview-${player.userId}`}
+                key={`preview-${player.userId}`}
+              >
+                <td className={columnClass(player.lastUpdate)}>{player.rank}</td>
+                <td>
+                  <PlayerNameCell
+                    player={player}
+                    isFriend={true}
+                    isCurrentUser={player === props.currentUser}
+                    handleOnUnfriend={props.onUnfriend}
+                    handleOnBefriend={props.onUnfriend}
+                  />
+                </td>
+                <td>
+                  <PlayerScoreCell player={player} />
+                  <Button
+                    variant='link'
+                    onClick={() => props.currentUser && props.onJumpToPlayer(player.userId)}
+                  >
+                    <FontAwesomeIcon icon={faArrowAltCircleRight} />
+                  </Button>
+                </td>
+              </tr>)
+          : <>
+            <tr className='highlight-current-user' id='preview-0'><td colSpan={3}></td></tr>
+            <tr className='highlight-friend' id='preview-1'><td colSpan={3}></td></tr>
+          </>
+      }
+    </tbody>
+  </Table>
 
 export default QuickView
