@@ -208,10 +208,7 @@ export const ScheduleWizard = (props: ScheduleWizardProps) => {
         <Button
           size='small'
           disabled={!validateForm()}
-          onClick={() => props.onSave({
-            ...schedule,
-            deadline: startOfDay(schedule.deadline),
-          })}
+          onClick={() => props.onSave(schedule)}
         >
           Save
         </Button>
