@@ -1,38 +1,42 @@
-import '@culturehq/add-to-calendar/dist/styles.css'
-
-import AddToCalendar from '@culturehq/add-to-calendar'
-import { Box, Button, Container, List, ListItem, ListItemText, Paper, useTheme } from '@material-ui/core'
+import { Box, Container, Grid, List, ListItem, ListItemText, Paper, Stack, Typography, useTheme } from '@material-ui/core'
 import { StatusCodes } from 'http-status-codes'
 import { useEffect, useState } from 'react'
 
+import AddScheduleToCalendarButton from './AddScheduleToCalendarButton'
 import { apiGet } from 'src/fetchers/Api'
 import type { ScheduleDto } from 'src/Models/Schedule'
 import { Schedule } from 'src/Models/Schedule'
 import { TimeSlot } from 'src/Models/TimeSlot'
-import { addTime, diffDays, fancyFormat } from 'src/utils/Date'
-import { buildCalendarEventDescription, buildCalendarEventTitle, getDeadlineDueText } from 'src/utils/ScheduleHelper'
+import { diffDays, fancyFormat } from 'src/utils/Date'
+import { getDeadlineDueText } from 'src/utils/ScheduleHelper'
 
-type ScheduleRegistrationProps = {
+const embedded = typeof new URLSearchParams(window.location.search).get('embedded') == 'string'
+
+type ScheduleViewerProps = {
   scheduleId: number
+  shownInGroup?: boolean
 }
 
 const getSchedule = (id: number) =>
   apiGet(`schedules/${id}`)
     .then(res =>
-      res.json().then((scheduleDto: ScheduleDto) => new Schedule(scheduleDto)))
+      res.json().then((scheduleDto: ScheduleDto) => {
+        const newSchedule = new Schedule(scheduleDto)
+        newSchedule.timeSlots.sort(TimeSlot.compareFn)
+        return newSchedule
+      }))
 
-const ScheduleViewer = (props: ScheduleRegistrationProps) => {
+export const TimeZoneMessage = <Typography>All dates and times are given in your local timezone.</Typography>
+
+const ScheduleViewer = (props: ScheduleViewerProps) => {
   const [schedule, setSchedule] = useState<Schedule | null | undefined>()
   const theme = useTheme()
 
   useEffect(() => {
     getSchedule(props.scheduleId)
-      .then((newSchedule: Schedule) => {
-        newSchedule.timeSlots.sort(TimeSlot.compareFn)
-        setSchedule(newSchedule)
-      })
+      .then(setSchedule)
       .catch((err: Response) => {
-        if (err.status === StatusCodes.NOT_FOUND) {
+        if (err.status === StatusCodes.NOT_FOUND || err.status === StatusCodes.BAD_REQUEST) {
           setSchedule(null)
         } else {
           console.error(err)
@@ -47,11 +51,11 @@ const ScheduleViewer = (props: ScheduleRegistrationProps) => {
   return <Container maxWidth='md'>
     {!schedule
       ? schedule === null && <div>Sorry. `<code>{props.scheduleId}</code>` is not a valid schedule id.</div>
-      : <div style={{ textAlign: 'left', width: 'fit-content', margin: 'auto' }}>
-        {/* Invisible normally, but offers a background in embedded */}
-        <Paper style={{ boxShadow: 'none', background: theme.palette.background.default }}>
+      : <Box textAlign='left' width={!props.shownInGroup ? 'fit-content' : '100%'} margin='auto'>
+        {/* Offers a background in embedded */}
+        <Paper style={{ boxShadow: 'none', background: embedded ? theme.palette.background.default : 'transparent' }}>
           <label>Schedule for: {schedule.name}</label>
-          <span style={{ display: 'block' }}>All dates and times are given in your local timezone.</span>
+          {!props.shownInGroup && TimeZoneMessage}
           {schedule.active
             ? schedule.deadline && <p>
               Registrations {deadlineDaysLeft > 0 ? 'are closing' : 'closed'} {getDeadlineDueText(deadlineDaysLeft)}.
@@ -65,55 +69,35 @@ const ScheduleViewer = (props: ScheduleRegistrationProps) => {
           <Paper key={`timeslot-${timeSlot.id}`} elevation={24}>
             <List
               subheader={
-                <Paper>
-                  <ListItemText
-                    primary={<>
-                      {fancyFormat(timeSlot.dateTime)}
-                      <Button
-                        // <button> cannot appear as a descendant of <button>
-                        component='div'
-                        sx={{
-                          float: 'right',
-                          backgroundColor: theme.palette.background.paper,
-                          // TODO: Make paper colored buttons
-                          backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.16))',
-                          '&:hover': {
-                            backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                          },
-                        }}
-                        size='small'
-                        variant='contained'
-                        color='inherit'
-                      >
-                        <AddToCalendar
-                          filename={buildCalendarEventTitle(timeSlot, schedule)}
-                          event={{
-                            name: buildCalendarEventTitle(timeSlot, schedule),
-                            details: buildCalendarEventDescription(timeSlot, schedule),
-                            location: window.location.href,
-                            startsAt: timeSlot.dateTime.toISOString(),
-                            endsAt: addTime(1, 'Hours', timeSlot.dateTime).toISOString(),
-                          }}
-                        >Add to calendar</AddToCalendar>
-                      </Button>
-                    </>}
-                    secondary={
-                      `(${timeSlot.registrations.length} / ${timeSlot.maximumEntries}` +
-                      ` entr${timeSlot.registrations.length === 1 ? 'y' : 'ies'})`
-                    }
-                  />
-                </Paper>
+                <Paper
+                  elevation={4}
+                  component={ListItemText}
+                  primary={fancyFormat(timeSlot.dateTime)}
+                  secondary={<Stack
+                    component='span'
+                    direction='row'
+                    justifyContent='space-between'
+                    alignItems='baseline'
+                  >
+                    <span>
+                      ({timeSlot.registrations.length} / {timeSlot.maximumEntries} entr{
+                        timeSlot.registrations.length === 1 ? 'y' : 'ies'})
+                    </span>
+                    <AddScheduleToCalendarButton timeSlot={timeSlot} schedule={schedule} />
+                  </Stack>}
+                />
               }
             >
               {(timeSlot.participantsPerEntry <= 1 || timeSlot.registrations.length === 1) &&
                 <ListItemText secondary='Participants' />
               }
               {/* TODO: Maybe use a dynamic grid instead of flexes here. Especially when there's only one list */}
-              <Box display='flex'>
+              <Grid container>
                 {timeSlot.registrations.map((registration, registrationIndex) =>
                   <List
+                    component={Grid}
+                    item
                     key={`registration-${registration.id}`}
-                    component='div'
                     disablePadding
                     style={timeSlot.registrations.length === 1
                       ? {
@@ -140,11 +124,11 @@ const ScheduleViewer = (props: ScheduleRegistrationProps) => {
                         />
                       </ListItem>)}
                   </List>)}
-              </Box>
+              </Grid>
             </List>
           </Paper>)
         }
-      </div >
+      </Box >
     }
 
   </Container >

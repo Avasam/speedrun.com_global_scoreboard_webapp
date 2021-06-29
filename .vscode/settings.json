@@ -84,7 +84,7 @@
   "javascript.preferences.importModuleSpecifier": "non-relative",
   "typescript.preferences.importModuleSpecifier": "non-relative",
   "files.exclude": {
-    "__pycache__": true,
+    "**/__pycache__/": true,
     "*.zip": true,
     "**/node_modules": true,
     "**/build": true,

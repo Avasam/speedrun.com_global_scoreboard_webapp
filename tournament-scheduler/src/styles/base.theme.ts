@@ -44,6 +44,7 @@ const baseThemeOptions: ThemeOptions = {
       styleOverrides: {
         root: {
           paddingTop: themeSpacing(2),
+          paddingBottom: themeSpacing(2),
         },
       },
     },
@@ -54,7 +55,7 @@ const baseThemeOptions: ThemeOptions = {
           paddingRight: themeSpacing(2),
         },
         multiline: {
-          '.MuiPaper-root:first-of-type > &': {
+          '.MuiPaper-root:first-of-type > &, &.MuiPaper-root:first-of-type': {
             paddingTop: themeSpacing(1),
             paddingBottom: themeSpacing(1),
           },
@@ -92,6 +93,11 @@ const baseThemeOptions: ThemeOptions = {
         },
       },
     },
+    MuiIconButton: {
+      defaultProps: {
+        color: 'primary',
+      },
+    },
     MuiButtonBase: {
       styleOverrides: {
         root: {
@@ -105,6 +111,12 @@ const baseThemeOptions: ThemeOptions = {
       styleOverrides: {
         /* Replicate Material Design Style with AddToCalendar */
         '.chq-atc': {
+          '.MuiButton-sizeMedium > &': {
+            padding: `${themeSpacing(0.75)} ${themeSpacing(2)}`,
+          },
+          '.MuiButton-sizeSmall > &': {
+            padding: `${themeSpacing(0.5)} ${themeSpacing(1.25)}`,
+          },
           '.chq-atc--button.chq-atc--button, path, .chq-atc--dropdown, .chq-atc--dropdown a': {
             fontSize: '1rem',
             textTransform: 'none',

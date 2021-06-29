@@ -9,7 +9,8 @@ import { Link as RouterLink, Route, useLocation } from 'react-router-dom'
 import LoginForm from './LoginForm/LoginForm'
 import ScheduleManagement from './ScheduleManagement/ScheduleManagement'
 import ScheduleRegistration from './ScheduleRegistration'
-import ScheduleViewer from './ScheduleViewer'
+import ScheduleGroupViewer from './ScheduleViewer/ScheduleGroupViewer'
+import ScheduleViewer from './ScheduleViewer/ScheduleViewer'
 import { apiGet } from 'src/fetchers/Api'
 import type User from 'src/Models/User'
 import darkTheme from 'src/styles/dark.theme'
@@ -81,19 +82,20 @@ const App = () => {
               }
             </Link>
             <Typography variant={currentUser || isMobileSize ? 'h4' : 'h2'}>Tournament Scheduler</Typography>
-            <div>
+            <Stack direction='row' spacing={2} flexWrap='wrap' justifyContent='flex-end' alignItems='center'>
               {preferedMaterialTheme === 'dark'
-                ? <IconButton onClick={() => saveTheme('light')}><Brightness7 /></IconButton>
-                : <IconButton onClick={() => saveTheme('dark')}><Brightness4 /></IconButton>
+                ? <IconButton color='default' onClick={() => saveTheme('light')}><Brightness7 /></IconButton>
+                : <IconButton color='default' onClick={() => saveTheme('dark')}><Brightness4 /></IconButton>
               }
               {currentUser &&
                 <Button
-                  style={{ marginLeft: darkTheme.spacing(2) }}
+                  size='small'
                   variant='contained'
                   color='secondary'
-                  onClick={() => logout(setCurrentUser)}>Logout</Button>
+                  onClick={() => logout(setCurrentUser)}
+                >Logout</Button>
               }
-            </div>
+            </Stack>
           </Toolbar>
         </AppBar>
       }
@@ -113,7 +115,12 @@ const App = () => {
         }
         <Route
           path='/view/:scheduleId'
+          exact
           render={routeProps => <ScheduleViewer scheduleId={Number(routeProps.match.params.scheduleId)} />}
+        />
+        <Route
+          path='/view/group/:groupId'
+          render={routeProps => <ScheduleGroupViewer groupId={Number(routeProps.match.params.groupId)} />}
         />
         <Route
           path='/register/:registrationId?'

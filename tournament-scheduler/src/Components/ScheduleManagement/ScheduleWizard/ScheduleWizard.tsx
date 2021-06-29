@@ -116,7 +116,7 @@ export const ScheduleWizard = (props: ScheduleWizardProps) => {
               name: event.target.value,
             })}
           />
-          <Stack direction='row'>
+          <Stack direction='row' flexWrap='wrap'>
             <FormControlLabel
               label='Active'
               control={
@@ -155,8 +155,9 @@ export const ScheduleWizard = (props: ScheduleWizardProps) => {
                     width: '198px',
                     minWidth: '198px',
                     '#schedule-deadline-helper-text': {
-                      width: 'maxContent',
-                      whiteSpace: 'pre',
+                      // TODO: No max-content at 493 and less
+                      // Fits perfectly longest error below
+                      width: 'max-content',
                     },
                   }}
                   // Note: Overkill as we shouldn't have twose two messages at once,
@@ -164,16 +165,17 @@ export const ScheduleWizard = (props: ScheduleWizardProps) => {
                   helperText={[
                     !validateDeadlineTooEarly() && 'Deadline should not be before today',
                     !validateDeadline() && 'Warning: Your registrations close after the earliest time slot',
-                  ].filter(x => x).join('\n')}
+                  ].filter(a => a).join('\n')}
                 />}
             />
             {schedule.deadline &&
               <Typography
                 component={'label'}
+                whiteSpace='nowrap'
+                marginTop={2.5}
                 color={deadlineDaysLeft > 0 ? 'warn' : undefined}
-                style={{ alignSelf: 'center' }}
               >
-                &nbsp;Closes {getDeadlineDueText(deadlineDaysLeft)}
+                &nbsp;Close{deadlineDaysLeft > 0 ? 's' : 'd'} {getDeadlineDueText(deadlineDaysLeft)}
               </Typography>}
           </Stack>
 

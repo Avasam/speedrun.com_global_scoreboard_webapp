@@ -47,14 +47,19 @@ const ScheduleRegistration = (props: ScheduleRegistrationProps) => {
     setFormValidity(valid)
   }, [selectedTimeSlot, participants])
 
-  useEffect(() => {
-    if (props.registrationId) return
-
-    console.info('Current registrationId:', registrationId)
+  const splitIdFromRegistrationKey = () => {
     const splitIndex = registrationId.indexOf('-')
     const id = Number.parseInt(registrationId.slice(0, Math.max(0, splitIndex)))
     const registrationKey = registrationId.slice(splitIndex + 1)
-    getSchedule(id, registrationKey)
+
+    return [id, registrationKey] as [number, string]
+  }
+
+  useEffect(() => {
+    if (props.registrationId) return
+    console.info('Current registrationId:', registrationId)
+
+    getSchedule(...splitIdFromRegistrationKey())
       .then((schedule: Schedule) => {
         schedule.timeSlots.sort(TimeSlot.compareFn)
         setScheduleState(schedule)
@@ -66,13 +71,15 @@ const ScheduleRegistration = (props: ScheduleRegistrationProps) => {
           console.error(err)
         }
       })
-  }, [props.registrationId, registrationId])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.registrationId])
 
   // Keep the registrationLink in localStorage so we can then hide it from the URL
   if (props.registrationId) {
     console.info('New registrationId:', props.registrationId)
     localStorage.setItem('registrationId', props.registrationId)
     history.push('/register')
+    return <></>
   }
 
   const selectTimeSlot: SelectInputProps['onChange'] = event => {
@@ -91,7 +98,7 @@ const ScheduleRegistration = (props: ScheduleRegistrationProps) => {
     postRegistration(
       selectedTimeSlot.id,
       participants.slice(0, selectedTimeSlot.participantsPerEntry),
-      registrationId
+      splitIdFromRegistrationKey()[1]
     )
       .then(() => history.push(`/view/${scheduleState?.id}`))
       .catch((err: Response) => {
@@ -135,7 +142,8 @@ const ScheduleRegistration = (props: ScheduleRegistrationProps) => {
             ? <div><br />Sorry. This schedule is currently inactive and registration is closed.</div>
             : scheduleState.deadline && scheduleState.deadline < new Date()
               ? <div>
-                <br />Sorry. Registrations for this schedule are over (Deadline: {fancyFormat(scheduleState.deadline)}).
+                <br />Sorry. Registrations for this schedule are over (Deadline:
+                {` ${fancyFormat(addTime(-1, 'Seconds', scheduleState.deadline))}`}).
               </div>
               : <FormGroup>
                 {scheduleState.deadline && <div><br />{
