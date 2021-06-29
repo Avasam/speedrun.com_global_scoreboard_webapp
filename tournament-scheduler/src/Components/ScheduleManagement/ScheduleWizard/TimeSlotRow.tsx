@@ -29,7 +29,12 @@ const createProxy = function <T>(registrations: T) {
 }
 
 const numberInputsStyle = {
-  marginTop: 1,
+  '&>div:not(style)': {
+    marginTop: 1,
+    '&:not(:last-of-type)': {
+      marginRight: 1.5,
+    },
+  },
   '.MuiFormControl-root': {
     width: '64px',
     '[for^="maximum-entries-"], [for^="participants-per-entry-"]': {
@@ -95,60 +100,57 @@ const TimeSlotRow = (props: TimeSlotRowProps) => {
       .catch(console.error)
 
   return <Card raised={true} className='error-as-warning'>
-    <CardContent>
-      <Stack direction='row' spacing={1.5} sx={numberInputsStyle}>
-        <MobileDateTimePicker
-          label='Date and time'
-          inputFormat={TIMESLOT_FORMAT}
-          value={props.timeSlot.dateTime}
-          onChange={date => props.onEditTimeSlotDateTime(date)}
-          minDate={new Date(MIN_YEAR, 0)}
-          disablePast={props.timeSlot.id <= -1}
-          ampm={false}
-          minutesStep={minutesStep}
-          InputProps={{ endAdornment: <Event /> }}
-          renderInput={params =>
-            <TextField
-              {...params}
-              id={`time-slot-date-${props.id}`}
-              error={!!props.schedule.deadline && props.timeSlot.dateTime < props.schedule.deadline}
-              style={{ width: '222px', minWidth: '222px' }} // Enough to fit 'Wed Jun 22nd 2022, 22:22'
-            />}
+    <CardContent component={Stack} direction='row' sx={numberInputsStyle} flexWrap='wrap-reverse'>
+      <MobileDateTimePicker
+        label='Date and time'
+        inputFormat={TIMESLOT_FORMAT}
+        value={props.timeSlot.dateTime}
+        onChange={date => props.onEditTimeSlotDateTime(date)}
+        minDate={new Date(MIN_YEAR, 0)}
+        disablePast={props.timeSlot.id <= -1}
+        ampm={false}
+        minutesStep={minutesStep}
+        InputProps={{ endAdornment: <Event /> }}
+        renderInput={params =>
+          <TextField
+            {...params}
+            id={`time-slot-date-${props.id}`}
+            error={!!props.schedule.deadline && props.timeSlot.dateTime < props.schedule.deadline}
+            style={{ width: '222px', minWidth: '222px' }} // Enough to fit 'Wed Jun 22nd 2022, 22:22'
+          />}
+      />
+      <Stack direction='row' spacing={1.5}>
+        <TextField
+          id={`maximum-entries-${props.id}`}
+          label='Maximum entries'
+          type='tel'
+          inputProps={{ min: '1', inputComponent: { NonZeroNumberInput } }}
+          onFocus={event => event.target.select()}
+          value={props.timeSlot.maximumEntries}
+          onChange={event => props.onEditTimeSlotMaximumEntries(Number.parseInt(event.target.value, 10) || 1)}
         />
-        <Stack direction='row' spacing={1.5}>
-          <TextField
-            id={`maximum-entries-${props.id}`}
-            label='Maximum entries'
-            type='tel'
-            inputProps={{ min: '1', inputComponent: { NonZeroNumberInput } }}
-            onFocus={event => event.target.select()}
-            value={props.timeSlot.maximumEntries}
-            onChange={event => props.onEditTimeSlotMaximumEntries(Number.parseInt(event.target.value, 10) || 1)}
-          />
-          <TextField
-            id={`participants-per-entry-${props.id}`}
-            label='Participants per entry'
-            type='tel'
-            inputProps={{ min: '1', inputComponent: { NonZeroNumberInput } }}
-            onFocus={event => event.target.select()}
-            value={props.timeSlot.participantsPerEntry}
-            onChange={event => props.onEditTimeSlotparticipantsPerEntry(Number.parseInt(event.target.value, 10) || 1)}
-          />
+        <TextField
+          id={`participants-per-entry-${props.id}`}
+          label='Participants per entry'
+          type='tel'
+          inputProps={{ min: '1', inputComponent: { NonZeroNumberInput } }}
+          onFocus={event => event.target.select()}
+          value={props.timeSlot.participantsPerEntry}
+          onChange={event => props.onEditTimeSlotparticipantsPerEntry(Number.parseInt(event.target.value, 10) || 1)}
+        />
+        <IconButton
+          aria-label='duplicate time slot'
+          component='button'
+          onClick={() => props.onDuplicateTimeSlot()}
+        ><FileCopy /></IconButton>
+        {props.schedule.timeSlots.length > 1 &&
           <IconButton
-            color='primary'
-            aria-label='duplicate time slot'
+            className='error'
+            aria-label='remove time slot'
             component='button'
-            onClick={() => props.onDuplicateTimeSlot()}
-          ><FileCopy /></IconButton>
-          {props.schedule.timeSlots.length > 1 &&
-            <IconButton
-              className='error'
-              aria-label='remove time slot'
-              component='button'
-              onClick={() => props.onRemoveTimeSlot()}
-            ><Clear /></IconButton>
-          }
-        </Stack>
+            onClick={() => props.onRemoveTimeSlot()}
+          ><Clear /></IconButton>
+        }
       </Stack>
     </CardContent>
     <CardContent>

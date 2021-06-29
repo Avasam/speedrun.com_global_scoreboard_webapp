@@ -2,6 +2,7 @@
   "name": "tournament-scheduler",
   "description": "A web app tool to help scheduling tournaments",
   "private": true,
+  "proxy": "http://localhost:5000",
   "scripts": {
     "start": "react-scripts start",
     "build:dev": "set REACT_APP_BASE_URL=https://AvasamDev.pythonanywhere.com&& npm run build:prod",
@@ -9,8 +10,7 @@
     "compress-build-folder": "powershell Compress-Archive -Update -Path .\\build\\ -CompressionLevel Optimal -DestinationPath ..\\tournament-scheduler-build.zip",
     "lint": "eslint src/ --ext .ts,.tsx --ignore-path ../.gitignore",
     "lint:fix": "npm run lint -- --fix",
-    "upgrade": "npx npm-check-updates -u & npm i",
-    "postinstall": "npm audit fix"
+    "upgrade": "npx npm-check-updates -u & npm i"
   },
   "dependencies": {
     "@culturehq/add-to-calendar": "^1.1.2",
@@ -29,15 +29,14 @@
     "react-text-mask": "^5.4.3"
   },
   "devDependencies": {
-    "@types/node": "^15.12.2",
     "@types/react": "^17.0.11",
     "@types/react-add-to-calendar": "^0.1.0",
     "@types/react-div-100vh": "^0.4.0",
-    "@types/react-dom": "^17.0.7",
+    "@types/react-dom": "^17.0.8",
     "@types/react-router-dom": "^5.1.7",
     "@types/react-text-mask": "^5.4.7",
-    "@typescript-eslint/eslint-plugin": "^4.27.0",
-    "@typescript-eslint/parser": "^4.27.0",
+    "@typescript-eslint/eslint-plugin": "^4.28.1",
+    "@typescript-eslint/parser": "^4.28.1",
     "eslint": "^7.29.0",
     "eslint-plugin-extra-rules": "0.0.0-development",
     "eslint-plugin-jsx-a11y": "^6.4.1",
@@ -47,7 +46,7 @@
     "eslint-plugin-simple-import-sort": "^7.0.0",
     "eslint-plugin-sonarjs": "^0.7.0",
     "eslint-plugin-switch-case": "^1.1.2",
-    "eslint-plugin-unicorn": "^33.0.1",
+    "eslint-plugin-unicorn": "^34.0.0",
     "eslint-plugin-unused-imports": "^1.1.1",
     "typescript": "^4.3.4"
   },
@@ -59,6 +58,11 @@
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
       "project": "./tsconfig.json"
+    },
+    "rules": {
+      "@typescript-eslint/no-unsafe-argument": "off",
+      "@typescript-eslint/restrict-template-expressions": "off",
+      "@typescript-eslint/no-unsafe-return": "off"
     }
   },
   "//": "browserslist (first 3): https://next.material-ui.com/guides/migration-v4/#supported-browsers-and-node-versions",

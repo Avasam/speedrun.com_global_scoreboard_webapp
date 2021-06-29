@@ -37,11 +37,11 @@ const RegistrationList = (props: RegistrationListProps) => {
           }
         />
         <ButtonGroup
-          style={{ marginLeft: '16px' }}
+          sx={{ marginLeft: 2 }}
           size='small'
           disabled={!props.registration.hasChanged}
         >
-          <Button color='primary' onClick={() => props.onSave(props.registration)}>Save</Button>
+          <Button onClick={() => props.onSave(props.registration)}>Save</Button>
           <Button color='error' onClick={() => props.onReset(props.index)}>Reset</Button>
         </ButtonGroup>
         <IconButton

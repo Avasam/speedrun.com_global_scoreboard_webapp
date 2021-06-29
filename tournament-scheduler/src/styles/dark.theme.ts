@@ -37,6 +37,7 @@ const theme = createTheme(mergeDeep(
           body: {
             fill: 'white',
           },
+          // Datepicker
           '.PrivatePickersToolbar-root, .MuiTabs-root': {
             backgroundColor: '#222',
           },
@@ -54,6 +55,19 @@ const theme = createTheme(mergeDeep(
             '.MuiInput-underline.Mui-error:after': {
               borderBottomColor: warn[500],
             },
+          },
+          '::-webkit-scrollbar-thumb, ::-webkit-scrollbar-corner, ::-webkit-scrollbar-track': {
+            // Opera can't take transparent here
+            backgroundColor: '#303030',
+            borderColor: '#424242',
+            '&:hover': {
+              // Opera can't take transparent here
+              backgroundColor: '#242424',
+            },
+          },
+          '::-webkit-scrollbar-track-piece': {
+            // TODO MUI5: Check if this is still good
+            backgroundColor: '#424242',
           },
         },
       },

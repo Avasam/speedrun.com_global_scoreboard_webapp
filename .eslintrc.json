@@ -14,7 +14,6 @@
     "plugin:react/recommended",
     "plugin:react-hooks/recommended",
     // "plugin:jsx-a11y/strict",
-    // "react-app/jest",
     "plugin:sonarjs/recommended",
     "plugin:switch-case/recommended",
     "plugin:unicorn/recommended"
@@ -48,7 +47,6 @@
         "*.*.*"
       ],
       "env": {
-        // "jest": true
         "browser": false,
         "node": true
       },
@@ -82,7 +80,7 @@
     ],
     // unused-imports settings
     // Loosing imports when commenting code to test is extremely annoying and slow, only activate this for cleanup
-    "unused-imports/no-unused-imports": "off",
+    // "unused-imports/no-unused-imports": "warn",
     // sonarjs/recommended overrides (https://github.com/SonarSource/eslint-plugin-sonarjs/blob/master/src/index.ts)
     // react-app service workers template and the eslint complexity rule are at 20
     "sonarjs/cognitive-complexity": [
@@ -130,9 +128,12 @@
     ],
     "unicorn/numeric-separators-style": "error",
     "unicorn/prefer-add-event-listener": "error",
+    // TODO: Activate once TypeScript supports Array.prototype.at()
+    "unicorn/prefer-at": "off",
     "unicorn/prefer-object-has-own": "error",
     "unicorn/prefer-query-selector": 0,
     "unicorn/prefer-text-content": "error",
+    "unicorn/prefer-top-level-await": "error",
     "unicorn/prevent-abbreviations": [
       "error",
       {
@@ -141,6 +142,8 @@
         "allowList": {
           "fn": true,
           "args": true,
+          // Iterations
+          "i": true,
           // environment config
           "env": true,
           // speedrun.com
@@ -274,8 +277,7 @@
       "error",
       {
         "enforceConst": true,
-        // Note: detectObjects catches a few too many false-negative. Still good to check once in a while
-        // "detectObjects": true,
+        "detectObjects": false,
         "ignore": [
           -1,
           0,
@@ -395,17 +397,6 @@
           "fs",
           "to",
           "TO",
-          // Unused result
-          "_",
-          "__",
-          // Iterations
-          "i",
-          "j",
-          "k",
-          // Comparison
-          "a",
-          "b",
-          "x",
           // Date formats
           "dd",
           "mm",

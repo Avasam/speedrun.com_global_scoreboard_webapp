@@ -259,6 +259,29 @@ class Player(db.Model):
         db.session.commit()
         return True
 
+    def update_schedule_group_id(
+        self,
+        schedule_id: int,
+        group_id: Optional[int]
+    ) -> bool:
+        try:
+            group_id is not None and ScheduleGroup \
+                .query \
+                .filter(ScheduleGroup.group_id == group_id) \
+                .filter(ScheduleGroup.owner_id == self.user_id) \
+                .one()
+            schedule_to_update = Schedule \
+                .query \
+                .filter(Schedule.schedule_id == schedule_id) \
+                .filter(Schedule.owner_id == self.user_id) \
+                .one()
+        except orm.exc.NoResultFound:
+            return False
+
+        schedule_to_update.group_id = group_id
+        db.session.commit()
+        return True
+
     def delete_schedule(self, schedule_id: int) -> bool:
         try:
             schedule_to_delete = Schedule \
@@ -269,6 +292,67 @@ class Player(db.Model):
         except orm.exc.NoResultFound:
             return False
         db.session.delete(schedule_to_delete)
+        db.session.commit()
+        return True
+
+    def update_schedule_order(self, schedule_orders: Dict[str, Union[bool, int]]) -> bool:
+        for schedule_order in schedule_orders:
+            try:
+                print(schedule_order['order'], type(schedule_order['order']))
+                id_filter = ScheduleGroup.group_id if schedule_order['isGroup'] else Schedule.schedule_id
+                table = ScheduleGroup if schedule_order['isGroup'] else Schedule
+                to_update = table \
+                    .query \
+                    .filter(table.owner_id == self.user_id) \
+                    .filter(id_filter == schedule_order['id']) \
+                    .one()
+                to_update.order = schedule_order['order']
+            except orm.exc.NoResultFound:
+                continue
+
+        db.session.commit()
+        return True
+
+    def get_schedule_groups(self) -> List[ScheduleGroup]:
+        return ScheduleGroup.query.filter(ScheduleGroup.owner_id == self.user_id).all()
+
+    def create_schedule_group(self, name: str, order: int) -> int:
+        new_schedule_group = ScheduleGroup(name=name, order=order, owner_id=self.user_id)
+        db.session.add(new_schedule_group)
+
+        db.session.commit()
+        return new_schedule_group.group_id
+
+    def update_schedule_group(
+        self,
+        group_id: int,
+        name: str,
+        order: bool,
+    ) -> bool:
+        try:
+            schedule_group_to_update = ScheduleGroup \
+                .query \
+                .filter(ScheduleGroup.group_id == group_id) \
+                .filter(ScheduleGroup.owner_id == self.user_id) \
+                .one()
+        except orm.exc.NoResultFound:
+            return False
+
+        schedule_group_to_update.name = name
+        schedule_group_to_update.order = order
+        db.session.commit()
+        return True
+
+    def delete_schedule_group(self, group_id: int) -> bool:
+        try:
+            schedule_group_to_delete = ScheduleGroup \
+                .query \
+                .filter(ScheduleGroup.group_id == group_id) \
+                .filter(ScheduleGroup.owner_id == self.user_id) \
+                .one()
+        except orm.exc.NoResultFound:
+            return False
+        db.session.delete(schedule_group_to_delete)
         db.session.commit()
         return True
 
@@ -348,4 +432,4 @@ class Player(db.Model):
 
 
 if 'models.tournament_scheduler_models' not in sys.modules:
-    from models.tournament_scheduler_models import Participant, Registration, Schedule, TimeSlot
+    from models.tournament_scheduler_models import Participant, Registration, Schedule, ScheduleGroup, TimeSlot
