@@ -27,7 +27,7 @@ if ((process.env.REACT_APP_BASE_URL?.includes('127.0.0.1') || process.env.REACT_
 ReactDOM.render(
   // Setup static Providers here
   <StrictMode>
-    <BrowserRouter basename='/tournament-scheduler'>
+    <BrowserRouter basename={window.process.env.PUBLIC_URL}>
       <Div100vh>
         <LocalizationProvider dateAdapter={DateAdapter}>
           <App />

@@ -62,7 +62,7 @@ db.app = app
 db.init_app(app)
 
 
-@app.route('/global-scoreboard', defaults={'asset': 'index.html'})
+@app.route('/global-scoreboard/', defaults={'asset': 'index.html'})
 @app.route('/global-scoreboard/<path:asset>', methods=["GET"])
 def global_scoreboard(asset: str):
     if asset[:6] == 'static':
@@ -70,10 +70,12 @@ def global_scoreboard(asset: str):
     return send_file('global-scoreboard/build/index.html')
 
 
-@app.route('/tournament-scheduler', defaults={'asset': 'index.html'})
+@app.route('/tournament-scheduler/', defaults={'asset': 'index.html'})
 @app.route('/tournament-scheduler/<path:asset>', methods=["GET"])
 def tournament_scheduler(asset: str):
-    return send_from_directory('tournament-scheduler/build/', asset)
+    if asset[:6] == 'static':
+        return send_from_directory('tournament-scheduler/build/', asset)
+    return send_file('tournament-scheduler/build/index.html')
 
 
 @app.route('/', methods=["GET", "POST"])
