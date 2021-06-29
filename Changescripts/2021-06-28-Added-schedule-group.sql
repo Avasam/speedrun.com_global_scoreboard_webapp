@@ -20,7 +20,7 @@ DEFAULT CHARACTER SET = utf8;
 
 ALTER TABLE `schedule`
 ADD COLUMN `group_id` INT NULL AFTER `deadline`,
-ADD COLUMN `order` INT NOT NULL AFTER `group_id`,
+ADD COLUMN `order` INT NOT NULL DEFAULT -1 AFTER `group_id`,
 ADD INDEX `schedule_group_id_fk_idx` (`group_id` ASC);
 
 ALTER TABLE `schedule`

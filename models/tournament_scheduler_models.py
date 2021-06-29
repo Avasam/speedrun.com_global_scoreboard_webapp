@@ -24,7 +24,7 @@ class Schedule(db.Model):
         back_populates="schedule")
 
     group_id: int = db.Column(db.Integer, nullable=True)
-    order: int = db.Column(db.Integer, nullable=False)
+    order: int = db.Column(db.Integer, nullable=False, default=-1)
 
     @staticmethod
     def get(id: str) -> Optional[Schedule]:
@@ -60,7 +60,7 @@ class ScheduleGroup(db.Model):
     group_id: int = db.Column(db.Integer, primary_key=True)
     name: str = db.Column(db.String(128), nullable=False, default='')
     owner_id: int = db.Column(db.String(8), db.ForeignKey('player.user_id'), nullable=False)
-    order: int = db.Column(db.Integer, nullable=False)
+    order: int = db.Column(db.Integer, nullable=False, default=-1)
 
     @staticmethod
     def get(id: str) -> Optional[ScheduleGroup]:
