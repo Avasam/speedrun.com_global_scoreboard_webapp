@@ -2,6 +2,7 @@
   "name": "global-scoreboard",
   "description": "An unofficial speedrun.com global scoreboard for friendly competitive speedrunning",
   "private": true,
+  "proxy": "http://localhost:5000",
   "scripts": {
     "start": "react-scripts start",
     "build:dev": "set REACT_APP_BASE_URL=https://AvasamDev.pythonanywhere.com& npm run build:prod",

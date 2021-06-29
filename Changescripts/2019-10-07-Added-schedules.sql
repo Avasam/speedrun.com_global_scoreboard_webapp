@@ -9,7 +9,5 @@ CREATE TABLE `schedule` (
   UNIQUE INDEX `schedule_id_UNIQUE` (`schedule_id` ASC),
   CONSTRAINT `owner_id_fk`
     FOREIGN KEY (`owner_id`)
-    REFERENCES `player` (`user_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+    REFERENCES `player` (`user_id`))
 DEFAULT CHARACTER SET = utf8;

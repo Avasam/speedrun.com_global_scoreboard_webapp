@@ -4,6 +4,7 @@ import { faPalette, faStar } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useContext, useState } from 'react'
 import { Button, Container, Dropdown, Nav, Navbar } from 'react-bootstrap'
+import { Link } from 'react-router-dom'
 
 import LoginModal from './LoginModal'
 import type { Themes } from 'src/Components/ThemeProvider'
@@ -28,9 +29,7 @@ const LoginInfo = (props: LoginInfoProps) => {
   }
 
   const ThemeDropDownItem = ({ theme }: { theme: Themes }) =>
-    <Dropdown.Item
-      onClick={() => setTheme(theme)}
-    >
+    <Dropdown.Item onClick={() => setTheme(theme)}>
       {theme} {localStorage.getItem('preferedBootstrapTheme') === theme && <FontAwesomeIcon icon={faStar} />}
     </Dropdown.Item>
 
@@ -68,7 +67,7 @@ const LoginInfo = (props: LoginInfoProps) => {
 const ScoreboardNavBar = (props: LoginInfoProps) =>
   <Navbar collapseOnSelect expand='md' bg='dark' variant='dark'>
     <Container>
-      <Navbar.Brand href='/global-scoreboard'>Ava&apos;s speedrunning global scoreboard</Navbar.Brand>
+      <Navbar.Brand as={Link} to='/'>Ava&apos;s speedrunning global scoreboard</Navbar.Brand>
       <Navbar.Toggle aria-controls='basic-navbar-nav' />
 
       <Navbar.Collapse id='basic-navbar-nav'>
@@ -78,7 +77,8 @@ const ScoreboardNavBar = (props: LoginInfoProps) =>
             target='about'
           >About</Nav.Link>
           <Nav.Link
-            href='/global-scoreboard/game-search'
+            to='/game-search'
+            as={Link}
           >Game Search</Nav.Link>
           <Nav.Link
             href='https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/issues'

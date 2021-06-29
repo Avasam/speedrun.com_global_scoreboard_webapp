@@ -23,6 +23,9 @@ class Schedule(db.Model):
         cascade="all,delete,delete-orphan",
         back_populates="schedule")
 
+    group_id: int = db.Column(db.Integer, nullable=True)
+    order: int = db.Column(db.Integer, nullable=False)
+
     @staticmethod
     def get(id: str) -> Optional[Schedule]:
         return Schedule.query.get(id)
@@ -46,6 +49,35 @@ class Schedule(db.Model):
             'registrationKey': self.registration_key,
             'deadline': self.deadline,
             'timeSlots': map_to_dto(self.time_slots),
+            'groupId': self.group_id,
+            'order': self.order,
+        }
+
+
+class ScheduleGroup(db.Model):
+    __tablename__ = "schedule_group"
+
+    group_id: int = db.Column(db.Integer, primary_key=True)
+    name: str = db.Column(db.String(128), nullable=False, default='')
+    owner_id: int = db.Column(db.String(8), db.ForeignKey('player.user_id'), nullable=False)
+    order: int = db.Column(db.Integer, nullable=False)
+
+    @staticmethod
+    def get(id: str) -> Optional[ScheduleGroup]:
+        return ScheduleGroup.query.get(id)
+
+    @staticmethod
+    def get_schedules(id: str) -> Optional[List[int]]:
+        try:
+            return Schedule.query.filter(Schedule.group_id == id).all()
+        except orm.exc.NoResultFound:
+            return None
+
+    def to_dto(self) -> dict[str, Union[str, int]]:
+        return {
+            'id': self.group_id,
+            'name': self.name,
+            'order': self.order,
         }
 
 

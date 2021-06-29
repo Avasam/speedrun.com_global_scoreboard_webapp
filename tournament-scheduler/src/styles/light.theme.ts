@@ -33,15 +33,17 @@ const theme = createTheme(mergeDeep(
           body: {
             fill: 'black',
           },
-
-          '.MuiPaper-elevation8.MuiPaper-elevation8': {
-            backgroundColor: `${primary[800]}1E`, // rgba: R G B 0.12
+          // Dropdowns, lists, and carheaders
+          '.MuiPaper-elevation4, .MuiPaper-elevation8': {
+            backgroundImage: `linear-gradient(${primary[800]}1E, ${primary[800]}1E)`, // rgba: R G B 0.12
           },
-          '.PrivatePickersToolbar-root, .MuiTabs-root, .MuiPaper-elevation1.MuiPaper-elevation1': {
+          // Datepicker
+          '.PrivatePickersToolbar-root, .MuiTabs-root': {
             backgroundColor: `${primary[100]}28`, // rgba: R G B 0.16
           },
           /* Replicate Material Design Style with AddToCalendar */
           '.chq-atc .chq-atc--dropdown': {
+            backgroundImage: `linear-gradient(${primary[800]}1E, ${primary[800]}1E)`, // rgba: R G B 0.12
             backgroundColor: 'white',
             'a:hover ': {
               backgroundColor: 'rgba(0, 0, 0, 0.08)',

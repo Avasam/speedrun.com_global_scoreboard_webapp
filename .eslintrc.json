@@ -141,6 +141,8 @@
         "allowList": {
           "fn": true,
           "args": true,
+          // Iterations
+          "i": true,
           // environment config
           "env": true,
           // speedrun.com
@@ -395,17 +397,6 @@
           "fs",
           "to",
           "TO",
-          // Unused result
-          "_",
-          "__",
-          // Iterations
-          "i",
-          "j",
-          "k",
-          // Comparison
-          "a",
-          "b",
-          "x",
           // Date formats
           "dd",
           "mm",
