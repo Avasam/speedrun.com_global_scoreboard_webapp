@@ -5,7 +5,7 @@ import { Button, Form, InputGroup } from 'react-bootstrap'
 
 import type Player from 'src/Models/Player'
 
-type UpdateRunnerFormProps = {
+export type UpdateRunnerFormProps = {
   currentUser: Player | null
   updating: boolean
   onUpdate: (runnerNameOrId: string) => void

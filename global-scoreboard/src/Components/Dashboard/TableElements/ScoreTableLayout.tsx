@@ -1,22 +1,14 @@
 import { forwardRef, useState } from 'react'
 import { Col, FormLabel, Row, Tab, Tabs } from 'react-bootstrap'
 
+import type { QuickViewProps } from 'src/Components/Dashboard/QuickView/QuickView'
 import QuickView from 'src/Components/Dashboard/QuickView/QuickView'
-import type { ScoreboardRef } from 'src/Components/Dashboard/Scoreboard'
+import type { ScoreboardProps, ScoreboardRef } from 'src/Components/Dashboard/Scoreboard'
 import Scoreboard from 'src/Components/Dashboard/Scoreboard'
+import type { UpdateRunnerFormProps } from 'src/Components/Dashboard/UpdateRunnerForm'
 import UpdateRunnerForm from 'src/Components/Dashboard/UpdateRunnerForm'
-import type Player from 'src/Models/Player'
 
-type ScoreTableLayoutProps = {
-  onUpdate: (runnerNameOrId: string) => void
-  onJumpToPlayer: (playerId: string) => void
-  updating: boolean
-  currentUser: Player | null
-  players: Player[]
-  friends: Player[]
-  onUnfriend: (playerId: string) => void
-  onBefriend: (playerId: string) => void
-}
+type ScoreTableLayoutProps = QuickViewProps & ScoreboardProps & UpdateRunnerFormProps
 
 export const MobileScoreTableLayout = forwardRef<ScoreboardRef, ScoreTableLayoutProps>((props, ref) => {
   const [activeKey, setActiveKey] = useState('scoreboard')

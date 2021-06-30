@@ -56,7 +56,7 @@ const openLoginModal = () => document.getElementById('open-login-modal-button')?
 
 const Dashboard = (props: DashboardProps) => {
   const [currentPlayer, setCurrentPlayer] = useState<Player | null>(props.currentUser ?? null)
-  const [friendsState, setFriendsState] = useState<Player[]>([])
+  const [friendsState, setFriendsState] = useState<Player[] | undefined>()
   const [playersState, setPlayersState] = useState<Player[]>([])
   const [alertVariant, setAlertVariant] = useState<Variant>('info')
   const [alertMessage, setAlertMessage] = useState<JSX.Element | string>('Building the Scoreboard. Please wait...')
@@ -166,7 +166,7 @@ const Dashboard = (props: DashboardProps) => {
     }
 
     setPlayersState(newPlayers)
-    if (friendsState.some(friend => friend.userId === result.userId)) {
+    if (friendsState?.some(friend => friend.userId === result.userId)) {
       setFriendsState(buildFriendsList(friendsState, newPlayers))
     }
     if (currentPlayer?.userId === result.userId) {
@@ -241,7 +241,7 @@ const Dashboard = (props: DashboardProps) => {
   const handleJumpToPlayer = (playerId: string) => scoreboardRef.current?.jumpToPlayer(playerId)
   const handleUnfriend = (playerId: string) =>
     apiDelete(`players/current/friends/${playerId}`)
-      .then(() => setFriendsState(friendsState.filter(friend => friend.userId !== playerId)))
+      .then(() => setFriendsState(friendsState?.filter(friend => friend.userId !== playerId)))
       .catch(console.error)
   const handleBefriend = (playerId: string) => {
     if (!currentPlayer) return openLoginModal()
@@ -252,7 +252,7 @@ const Dashboard = (props: DashboardProps) => {
           console.error(`Couldn't add friend id ${playerId} as it was not found in existing players table`)
           return
         }
-        setFriendsState([...friendsState, newFriend])
+        setFriendsState([...friendsState ?? [], newFriend])
       })
       .catch(console.error)
   }

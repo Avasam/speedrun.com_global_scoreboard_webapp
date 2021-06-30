@@ -121,10 +121,10 @@ const Legend = () =>
     <span className='daysSince'>Over&nbsp;3&nbsp;months&nbsp;ago</span>
   </span>
 
-type ScoreboardProps = {
+export type ScoreboardProps = {
   currentUser: Player | null
   players: Player[]
-  friends: Player[]
+  friends: Player[] | undefined
   onUnfriend: (playerId: string) => void
   onBefriend: (playerId: string) => void
 }
@@ -176,7 +176,7 @@ const Scoreboard = forwardRef<ScoreboardRef, ScoreboardProps>((props, ref) => {
     columns={columns.map(column => {
       const formatExtraData: FormatExtraDataProps = {
         currentUser: props.currentUser,
-        friends: props.friends,
+        friends: props.friends ?? [],
         handleOnUnfriend: props.onUnfriend,
         handleOnBefriend: props.onBefriend,
       }
@@ -212,7 +212,7 @@ const Scoreboard = forwardRef<ScoreboardRef, ScoreboardProps>((props, ref) => {
                 ref={boostrapTableRef}
                 wrapperClasses='table-responsive'
                 striped
-                rowClasses={(row?: Player) => rowClasses(row, props.currentUser, props.friends)}
+                rowClasses={(row?: Player) => rowClasses(row, props.currentUser, props.friends ?? [])}
                 {...toolkitprops.baseProps}
                 {...paginationTableProps}
                 noDataIndication={() =>

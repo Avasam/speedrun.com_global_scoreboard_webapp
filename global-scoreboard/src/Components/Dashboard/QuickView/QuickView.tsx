@@ -19,8 +19,8 @@ const columnClass = (lastUpdate: Date) => {
   return ''
 }
 
-type QuickViewProps = {
-  friends: Player[]
+export type QuickViewProps = {
+  friends: Player[] | undefined
   currentUser: Player | null
   onJumpToPlayer: (playerId: string) => void
   onUnfriend: (playerId: string) => void
@@ -38,35 +38,34 @@ const QuickView = (props: QuickViewProps) =>
     </thead>
     <tbody>
       {
-        props.currentUser
+        props.currentUser && props.friends
           ? [...props.friends, props.currentUser]
             .sort((a, b) => b.score - a.score)
-            .map(player =>
-              <tr
-                className={player === props.currentUser ? 'highlight-current-user' : 'highlight-friend'}
-                id={`preview-${player.userId}`}
-                key={`preview-${player.userId}`}
-              >
-                <td className={columnClass(player.lastUpdate)}>{player.rank}</td>
-                <td>
-                  <PlayerNameCell
-                    player={player}
-                    isFriend={true}
-                    isCurrentUser={player === props.currentUser}
-                    handleOnUnfriend={props.onUnfriend}
-                    handleOnBefriend={props.onUnfriend}
-                  />
-                </td>
-                <td>
-                  <PlayerScoreCell player={player} />
-                  <Button
-                    variant='link'
-                    onClick={() => props.currentUser && props.onJumpToPlayer(player.userId)}
-                  >
-                    <FontAwesomeIcon icon={faArrowAltCircleRight} />
-                  </Button>
-                </td>
-              </tr>)
+            .map(player => <tr
+              className={player === props.currentUser ? 'highlight-current-user' : 'highlight-friend'}
+              id={`preview-${player.userId}`}
+              key={`preview-${player.userId}`}
+            >
+              <td className={columnClass(player.lastUpdate)}>{player.rank}</td>
+              <td>
+                <PlayerNameCell
+                  player={player}
+                  isFriend={true}
+                  isCurrentUser={player === props.currentUser}
+                  handleOnUnfriend={props.onUnfriend}
+                  handleOnBefriend={props.onUnfriend}
+                />
+              </td>
+              <td>
+                <PlayerScoreCell player={player} />
+                <Button
+                  variant='link'
+                  onClick={() => props.currentUser && props.onJumpToPlayer(player.userId)}
+                >
+                  <FontAwesomeIcon icon={faArrowAltCircleRight} />
+                </Button>
+              </td>
+            </tr>)
           : <>
             <tr className='highlight-current-user' id='preview-0'><td colSpan={3}></td></tr>
             <tr className='highlight-friend' id='preview-1'><td colSpan={3}></td></tr>
