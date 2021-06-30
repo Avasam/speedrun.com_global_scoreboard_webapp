@@ -258,8 +258,8 @@ def __set_run_points(run: Run) -> None:
     # Scale all the adjusted deviations so that the mean is worth 1 but the worse stays 0...
     # using the lowest time's deviation from before the "repeated times" fix!
     # (runs not affected by the prior fix won't see any difference)
-    adjusted_lowest_deviation = pre_cutoff_worst_time - mean
-    normalized_deviation = adjusted_deviation / adjusted_lowest_deviation
+    pre_cutoff_lowest_deviation = pre_cutoff_worst_time - mean
+    normalized_deviation = adjusted_deviation / pre_cutoff_lowest_deviation
 
     # More people means more accurate relative time and more optimised/hard to reach low times
     # This function would equal 0 if population = MIN_LEADERBOARD_SIZE - 1

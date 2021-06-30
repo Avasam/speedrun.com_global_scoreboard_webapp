@@ -39,9 +39,9 @@ From this step onward, the amount of runners in the leaderboard will be reffered
 Note: The soft cutoff works great on games such as Barney. But is too punishing on games such as Mario 1. To be improved.
 5. Generate a logaritmic curve that looks somewhat like below. Where the average time ≤ e-1 and the last run is worth 0  
 ![Curve Example](/assets/images/Curve%20example.jpg)
-    - 5.1. A signed deviation is obtained for all the runs
+    - 5.1. A signed deviation from the mean is obtained for all the runs
     - 5.2. The deviation is adjusted so that the last run is worth 0 points. By adding the lowest (unsigned) deviation to the signed deviation
-    - 5.3. The deviation is then normalized so that the average time is worth 1 point and the last run is still worth 0 points. By dividing the adjusted deviation with the adjusted lowest deviation. Capped at π.
+    - 5.3. The deviation is then normalized so that the average time is worth 1 point and the last run is still worth 0 points. By dividing the adjusted deviation with the lowest deviation (from before the step #4 cutoff, if it applies). Capped at π.
     - 5.4. Points for a run are equal to: `e^(normalized_deviation * certainty_adjustment) -1` which creates the logarithmic curve that starts at 0
         - `certainty_adjustment = 1 - 1 / (population - 1)`
 6. The points for a run are then multiplied by a "length bonus" and the decimal point is shifted to the right by 1.
