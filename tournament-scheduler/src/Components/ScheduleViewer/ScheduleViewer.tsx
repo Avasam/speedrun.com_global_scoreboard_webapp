@@ -73,18 +73,20 @@ const ScheduleViewer = (props: ScheduleViewerProps) => {
                   elevation={4}
                   component={ListItemText}
                   primary={fancyFormat(timeSlot.dateTime)}
-                  secondary={<Stack
-                    component='span'
-                    direction='row'
-                    justifyContent='space-between'
-                    alignItems='baseline'
-                  >
+                  secondaryTypographyProps={{
+                    component: 'span',
+                    display: 'flex',
+                    direction: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'baseline',
+                  }}
+                  secondary={<>
                     <span>
                       ({timeSlot.registrations.length} / {timeSlot.maximumEntries} entr{
                         timeSlot.registrations.length === 1 ? 'y' : 'ies'})
                     </span>
                     <AddScheduleToCalendarButton timeSlot={timeSlot} schedule={schedule} />
-                  </Stack>}
+                  </>}
                 />
               }
             >

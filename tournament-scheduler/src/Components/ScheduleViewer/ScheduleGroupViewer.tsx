@@ -28,7 +28,7 @@ const ScheduleGroupViewer = (props: ScheduleGroupViewerProps) => {
     () => {
       void getSchedules(props.groupId)
         .then(res => res.filter(schedule => schedule.timeSlots.some(timeSlot => timeSlot.registrations.length > 0)))
-        .then(res => res.sort(Schedule.compareFn))
+        .then(res => [...res].sort(Schedule.compareFn))
         .then(setSchedules)
       void getGroup(props.groupId)
         .then(res => res.name)
@@ -39,9 +39,9 @@ const ScheduleGroupViewer = (props: ScheduleGroupViewerProps) => {
   return <>
     <Typography variant='h3'>{groupName}</Typography>
     {TimeZoneMessage}
-    {schedules.length === 0 && <p>There are no registrations any schedule of this group.</p>}
+    {schedules.length === 0 && <p>There are no registrations for any schedule of this group.</p>}
     <Grid container width='100%' rowSpacing={2}>
-      {schedules.map(scheduleDto => <Grid item sm={12} md={6} lg={4} key={scheduleDto.id} >
+      {schedules.map(scheduleDto => <Grid item xs={12} key={scheduleDto.id} >
         <ScheduleViewer scheduleId={scheduleDto.id} shownInGroup />
       </Grid>)}
     </Grid>

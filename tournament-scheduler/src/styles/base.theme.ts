@@ -111,29 +111,22 @@ const baseThemeOptions: ThemeOptions = {
       styleOverrides: {
         /* Replicate Material Design Style with AddToCalendar */
         '.chq-atc': {
-          '.MuiButton-sizeMedium > &': {
-            padding: `${themeSpacing(0.75)} ${themeSpacing(2)}`,
-          },
-          '.MuiButton-sizeSmall > &': {
-            padding: `${themeSpacing(0.5)} ${themeSpacing(1.25)}`,
-          },
           '.chq-atc--button.chq-atc--button, path, .chq-atc--dropdown, .chq-atc--dropdown a': {
             fontSize: '1rem',
             textTransform: 'none',
             borderRadius: themeSpacing(math.HALF),
             border: 'none',
-            padding: 0,
             backgroundColor: 'transparent',
             color: 'inherit',
             fill: 'inherit !important',
           },
-          '.chq-atc--dropdown a': {
-            padding: `${themeSpacing(1)} ${themeSpacing(2)}`,
+          '.MuiButton-sizeMedium > & .chq-atc--button, .chq-atc--dropdown a': {
+            padding: `${themeSpacing(0.75)} ${themeSpacing(2)}`,
+          },
+          '.MuiButton-sizeSmall > & .chq-atc--button': {
+            padding: `${themeSpacing(0.5)} ${themeSpacing(1.25)}`,
           },
           '.chq-atc--dropdown': {
-            marginTop: `${themeSpacing(math.HALF)}`,
-            marginLeft: `-${themeSpacing(1.25)}`,
-            width: `calc(100% + ${themeSpacing(2.5)})`,
             padding: `${themeSpacing(1)} 0`,
             boxShadow: `0px 2px 4px -1px rgb(0 0 0 / 20%),
                         0px 4px 5px 0px rgb(0 0 0 / 14%),
