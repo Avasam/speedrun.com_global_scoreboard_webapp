@@ -1,0 +1,97 @@
+
+/* Buttons' text in nav-bar should not wrap */
+.navbar .btn {
+  white-space: nowrap;
+}
+
+/* Allow the title text to wrap */
+.navbar-brand {
+  white-space: normal;
+}
+
+.login-info {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.login-info > div {
+  display: flex;
+}
+.login-info > div > .btn {
+  margin: 0 0.5rem;
+}
+@media (max-width: 767px) {
+  .login-info {
+    flex-direction: row-reverse;
+  }
+  .login-info > .btn {
+    margin-right: 0.5em;
+  }
+  .login-info > div {
+    flex-direction: row-reverse;
+  }
+  .dropdown-menu-end[data-bs-popper] {
+    left: 0;
+    right: auto;
+  }
+}
+/* Tested on Opera as it has the biggest values */
+@media (max-width: 839px) {
+  .login-info {
+    flex-wrap: wrap;
+  }
+  .navbar-brand {
+    white-space: normal;
+    flex: 1 1 24%;
+  }
+}
+
+.navbar-nav,
+.navbar-text {
+  white-space: nowrap;
+}
+
+.navbar .dropdown {
+  align-self: center;
+}
+
+/* Fixes input group append with Dashlane button */
+.input-group > .form-control+.btn.btn:last-of-type {
+  border-top-right-radius: 0.25rem;
+  border-bottom-right-radius: 0.25rem;
+}
+
+.src-api-key-link .form-control {
+  padding: 0.375rem;
+  text-align: center;
+}
+
+/* Mobile */
+@media screen and (max-width: 397px) {
+  .modal-body .input-group > .btn {
+    width: 100%;
+  }
+
+  .modal-body .input-group > :first-child {
+    border-bottom-left-radius: 0;
+    margin-left: -1px;
+  }
+  .modal-body .input-group > .form-control {
+    margin-right: 1px;
+  }
+  .modal-body .input-group > .form-control+.btn.btn.btn:last-of-type {
+    border-top-right-radius: 0;
+    border-bottom-left-radius: 0.25rem;
+    margin-top: -1px;
+  }
+
+  .input-group > .input-group-text+.form-control.form-control[name="src-api-key"] {
+    border-top-right-radius: 0.25rem;
+  }
+
+  .src-api-key-link.input-group > .btn.btn:first-child {
+    border-top-right-radius: 0.25rem;
+    border-bottom-left-radius: 0;
+    margin-bottom: -1px;
+  }
+}

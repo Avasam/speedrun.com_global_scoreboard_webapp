@@ -24,14 +24,15 @@ def authentication_required(f):
 
         try:
             token = auth_headers[1]
-            data = jwt.decode(token, current_app.config['SECRET_KEY'])
-            player: Player = Player.query.filter_by(user_id=data['sub']).first()
-            if not player:
-                raise RuntimeError('User not found')
-            return f(player, *args, **kwargs)
+            data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=["HS256"])
         except jwt.ExpiredSignatureError:
             return jsonify(expired_msg), 401
         except jwt.InvalidTokenError:
             return jsonify(invalid_msg), 401
+
+        player: Player = Player.query.filter_by(user_id=data['sub']).first()
+        if not player:
+            raise RuntimeError('User not found')
+        return f(player, *args, **kwargs)
 
     return _verify

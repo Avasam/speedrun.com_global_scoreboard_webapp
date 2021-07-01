@@ -173,6 +173,8 @@ $RECYCLE.BIN/
 
 # configs
 configs.py
+local.*
+*.local
 
 # dependencies
 */node_modules

@@ -44,6 +44,7 @@
 // - Added SelectFilterFunction and getFilter to SelectFilterProps
 // - Shorthand method signature is forbidden. Use a function property instead.eslint@typescript-eslint/method-signature-style
 // - Added ColumnFormatter<T> type alias
+// - Added condensed to BootstrapTableProps
 
 type RowFieldValue = ReactText | Date | TODO
 type TODO = any
@@ -249,6 +250,7 @@ declare module 'react-bootstrap-table-next' {
     remote?: boolean | RemoteProps
     bordered?: boolean
     bootstrap4?: boolean
+    condensed?: boolean
     noDataIndication?: () => JSX.Element | string
     loading?: boolean
     overlay?: Overlay

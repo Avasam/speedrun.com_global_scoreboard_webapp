@@ -1,7 +1,11 @@
 {
   "files.associations": {
-    "*.json": "jsonc",
-    "*.html": "jinja-html"
+    "*.json": "json",
+    "extensions.json": "jsonc",
+    "settings.json": "jsonc",
+    ".eslintrc.json": "jsonc",
+    // "*.html": "jinja-html"
+    "*.html": "html"
   },
   "editor.rulers": [
     80,
@@ -18,13 +22,9 @@
     "editor.tabSize": 4,
   },
   "editor.formatOnSave": true,
-  // For node_modules
-  "[javascript]": {
-    "editor.formatOnSave": false,
-  },
   "javascript.preferences.quoteStyle": "single",
   "typescript.preferences.quoteStyle": "single",
-  "html.format.wrapAttributes": "force-expand-multiline",
+  "html.format.wrapAttributes": "auto",
   "editor.codeActionsOnSave": {
     "source.fixAll": true,
     "source.fixAll.eslint": true,
@@ -76,10 +76,17 @@
     }
   },
   "files.insertFinalNewline": true,
-  "trailing-spaces.deleteModifiedLinesOnly": true,
   "trailing-spaces.includeEmptyLines": true,
   "trailing-spaces.trimOnSave": true,
   "trailing-spaces.syntaxIgnore": [
     "markdown"
   ],
+  "javascript.preferences.importModuleSpecifier": "non-relative",
+  "typescript.preferences.importModuleSpecifier": "non-relative",
+  "files.exclude": {
+    "**/__pycache__/": true,
+    "*.zip": true,
+    "**/node_modules": true,
+    "**/build": true,
+  },
 }

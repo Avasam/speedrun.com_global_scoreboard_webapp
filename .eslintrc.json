@@ -5,6 +5,7 @@
     "switch-case",
     "prefer-arrow",
     "simple-import-sort",
+    "unused-imports",
     "extra-rules"
   ],
   "extends": [
@@ -13,7 +14,6 @@
     "plugin:react/recommended",
     "plugin:react-hooks/recommended",
     // "plugin:jsx-a11y/strict",
-    // "react-app/jest",
     "plugin:sonarjs/recommended",
     "plugin:switch-case/recommended",
     "plugin:unicorn/recommended"
@@ -43,17 +43,18 @@
     {
       "files": [
         "*.js",
-        "*.test.tsx",
         "environment.*",
-        "*.d.ts"
+        "*.*.*"
       ],
       "env": {
         "browser": false,
-        "node": true,
-        "jest": true
+        "node": true
       },
       "rules": {
-        "unicorn/filename-case": "off"
+        "unicorn/filename-case": "off",
+        "no-restricted-globals": "error",
+        "@typescript-eslint/no-empty-interface": "off",
+        "@typescript-eslint/consistent-type-definitions": "off"
       }
     },
     {
@@ -67,16 +68,24 @@
   ],
   "rules": {
     // react overrides
+    // disable with TypeScript
     "react/jsx-uses-react": "off",
     "react/prop-types": "off",
     "react/react-in-jsx-scope": "off",
+    "react/jsx-max-props-per-line": [
+      "error",
+      {
+        "when": "multiline"
+      }
+    ],
+    // unused-imports settings
+    // Loosing imports when commenting code to test is extremely annoying and slow, only activate this for cleanup
+    // "unused-imports/no-unused-imports": "warn",
     // sonarjs/recommended overrides (https://github.com/SonarSource/eslint-plugin-sonarjs/blob/master/src/index.ts)
-    // This rule does not correctly treat react's function components. See https://github.com/SonarSource/SonarJS/issues/2238
-    // Also react-app service workers template are at 22
-    // Set back to error with appropriate number if ever fixed
+    // react-app service workers template and the eslint complexity rule are at 20
     "sonarjs/cognitive-complexity": [
       "warn",
-      64
+      20
     ],
     // unicorn/recommended overrides (https://github.com/sindresorhus/eslint-plugin-unicorn/blob/main/index.js#L41)
     "unicorn/catch-error-name": [
@@ -119,9 +128,12 @@
     ],
     "unicorn/numeric-separators-style": "error",
     "unicorn/prefer-add-event-listener": "error",
+    // TODO: Activate once TypeScript supports Array.prototype.at()
+    "unicorn/prefer-at": "off",
     "unicorn/prefer-object-has-own": "error",
     "unicorn/prefer-query-selector": 0,
     "unicorn/prefer-text-content": "error",
+    "unicorn/prefer-top-level-await": "error",
     "unicorn/prevent-abbreviations": [
       "error",
       {
@@ -130,6 +142,8 @@
         "allowList": {
           "fn": true,
           "args": true,
+          // Iterations
+          "i": true,
           // environment config
           "env": true,
           // speedrun.com
@@ -156,7 +170,32 @@
     "extra-rules/no-commented-out-code": "warn",
     "extra-rules/potential-point-free": "error",
     // Simple import rules
-    "simple-import-sort/imports": "error",
+    "simple-import-sort/imports": [
+      "error",
+      {
+        "groups": [
+          // Side effect imports.
+          [
+            "^\\u0000"
+          ],
+          // Packages.
+          // Things that start with a letter (or digit or underscore), or `@` followed by a letter.
+          [
+            "^@?\\w"
+          ],
+          // Absolute imports and other imports such as Vue-style `@/foo`.
+          // Anything not matched in another group.
+          [
+            "^"
+          ],
+          // Relative imports.
+          // Anything that starts with a dot or src/
+          [
+            "^(\\.|src/)"
+          ]
+        ]
+      }
+    ],
     "simple-import-sort/exports": "error",
     // Prefer Arrow rule
     "prefer-arrow/prefer-arrow-functions": [
@@ -194,8 +233,17 @@
         "accessibility": "no-public"
       }
     ],
-    // Doesn't work great, see: https://github.com/typescript-eslint/typescript-eslint/issues/1824
-    "@typescript-eslint/indent": "off",
+    "@typescript-eslint/indent": [
+      "error",
+      2,
+      {
+        "SwitchCase": 1,
+        // Workaround: https://github.com/typescript-eslint/typescript-eslint/issues/455#issuecomment-580636221
+        "ignoredNodes": [
+          "TSTypeParameterInstantiation"
+        ]
+      }
+    ],
     // Doesn't allow `let myVar: Type | undefined`
     "@typescript-eslint/init-declarations": "off",
     "@typescript-eslint/lines-between-class-members": "off",
@@ -229,14 +277,14 @@
       "error",
       {
         "enforceConst": true,
-        // Note: detectObjects catches a few too many false-negative. Still good to check once in a while
-        // "detectObjects": true,
+        "detectObjects": false,
         "ignore": [
           -1,
           0,
           1,
           2
         ],
+        "ignoreDefaultValues": true,
         "ignoreArrayIndexes": true,
         "ignoreEnums": true,
         "ignoreNumericLiteralTypes": true,
@@ -254,8 +302,10 @@
     // See: https://github.com/typescript-eslint/typescript-eslint/issues/2665
     // There's nothing we can do until a pedantic any check in TypeScript is added
     // Eg.: https://github.com/microsoft/TypeScript/issues/40174
-    "@typescript-eslint/no-unsafe-call": "off",
-    "@typescript-eslint/no-unsafe-assignment": "off",
+    // Which is likely never gonna happen: https://github.com/microsoft/TypeScript/issues/24737
+    "@typescript-eslint/no-unsafe-assignment": "warn",
+    "@typescript-eslint/no-unsafe-call": "warn",
+    "@typescript-eslint/no-unsafe-member-access": "warn",
     "@typescript-eslint/no-unused-vars": [
       "error",
       {
@@ -304,8 +354,6 @@
         "allowNullish": true
       }
     ],
-    // TODO: Check later if some "no-unnecessary-type-annotation" has been implemented
-    // see https://github.com/typescript-eslint/typescript-eslint/issues/295
     // Custom rules and eslint:recommended overrides (https://eslint.org/docs/rules/)
     "accessor-pairs": [
       "error",
@@ -347,30 +395,23 @@
           "id",
           "fn",
           "fs",
-          // Unused result
-          "_",
-          "__",
-          // Iterations
-          "i",
-          "j",
-          "k",
-          // Comparison
-          "a",
-          "b",
-          "x",
+          "to",
+          "TO",
           // Date formats
           "dd",
           "mm",
-          "yy"
+          "yy",
+          // HTTP status codes
+          "OK"
+        ],
+        "exceptionPatterns": [
+          // Unused result
+          "__?",
+          // Comparison and Iterations
+          "[a-bi-k]",
+          // Theming
+          "h[1-6r]"
         ]
-      }
-    ],
-    // As mentionned above, the typescrpt version doesn't work great
-    "indent": [
-      "error",
-      2,
-      {
-        "SwitchCase": 1
       }
     ],
     "jsx-quotes": [
@@ -383,25 +424,7 @@
         "code": 120,
         "tabWidth": 2,
         "ignoreComments": false,
-        "ignorePattern": "^import .*?$"
-      }
-    ],
-    // These rule does not correctly treat react's function components. See https://github.com/SonarSource/SonarJS/issues/2238
-    // Max very high as most of the react code lives in functions.
-    "max-lines": [
-      "error",
-      {
-        "max": 500,
-        "skipComments": true,
-        "skipBlankLines": true
-      }
-    ],
-    "max-lines-per-function": [
-      "error",
-      {
-        "max": 500,
-        "skipComments": true,
-        "skipBlankLines": true
+        "ignorePattern": "^import ."
       }
     ],
     "no-alert": "error",
@@ -465,9 +488,70 @@
     "arrow-spacing": "error",
     "generator-star-spacing": "error",
     "no-class-assign": "error",
+    "no-restricted-globals": [
+      "error",
+      "globalThis",
+      {
+        "name": "React",
+        "message": "import from react instead."
+      }
+    ],
+    "no-restricted-imports": [
+      "error",
+      {
+        "paths": [
+          {
+            "name": "@material-ui/styles",
+            "message": "Please use @material-ui/core/styles instead."
+          },
+          {
+            "name": "react",
+            "importNames": [
+              "default",
+              "React"
+            ],
+            "message": "Please don't use the default React import."
+          }
+        ],
+        "patterns": [
+          {
+            "group": [
+              "../*",
+              "./../"
+            ],
+            "message": "Relative parent imports are not allowed."
+          }
+        ]
+      }
+    ],
     "no-useless-computed-key": "error",
     "no-useless-rename": "error",
     "object-shorthand": "error",
+    "padded-blocks": [
+      "error",
+      "never"
+    ],
+    "padding-line-between-statements": [
+      "error",
+      {
+        "blankLine": "always",
+        "prev": "*",
+        "next": "return"
+      },
+      {
+        "blankLine": "never",
+        "prev": [
+          "if",
+          "expression"
+        ],
+        "next": "return"
+      },
+      {
+        "blankLine": "always",
+        "prev": "block-like",
+        "next": "return"
+      }
+    ],
     "prefer-arrow-callback": "error",
     "prefer-numeric-literals": "error",
     "prefer-template": "error",

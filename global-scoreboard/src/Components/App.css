@@ -1,0 +1,24 @@
+footer {
+  text-align: center;
+}
+
+.btn.btn-link {
+  padding: 0;
+  border: none;
+}
+
+/* Fix feedbacks following input-groups (rather than inside) not being visible */
+.input-group+[class*="-feedback"] {
+  display: block;
+}
+/* Allow feedback text to wrap */
+[class*="-feedback"] {
+  white-space: pre-wrap;
+}
+
+/* Fix tablet size loosing out on a lot of space */
+@media (min-width: 768px) and (max-width: 991px) {
+  div.container, div.container-sm, div.container-md {
+    max-width: 990px;
+  }
+}

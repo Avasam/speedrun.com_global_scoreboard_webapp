@@ -1,0 +1,157 @@
+.dashboard-container {
+  padding-top: 15px;
+}
+
+/*-------------*\
+| Update Runner |
+\*-------------*/
+label[for="update-user"]+.input-group {
+  flex-wrap: nowrap;
+}
+#update-user {
+  width: 100%;
+}
+
+/*--------*\
+| Coloring |
+\*--------*/
+.daysSince0 {
+  color: blue;
+}
+
+.daysSince1 {
+  color: green;
+}
+
+.daysSince2 {
+  color: darkorange;
+}
+
+.daysSince {
+  color: crimson;
+}
+
+.highlight-vip {
+  background-color: #fcf8e3;
+}
+
+tbody>tr.highlight-vip:nth-of-type(odd){
+  background-color: #f6f2dd;
+}
+
+.highlight-friend {
+  background-color: #dff0d8;
+}
+
+tbody>tr.highlight-friend:nth-of-type(odd){
+  background-color: #d9ead2;
+}
+
+.highlight-current-user {
+  background-color: #d9edf7;
+}
+
+tbody>tr.highlight-current-user:nth-of-type(odd){
+  background-color: #d3e7f1;
+}
+
+/*-------------------*\
+| Score Preview Table |
+\*-------------------*/
+
+td:first-child{
+  font-weight: bold;
+}
+
+.score-details-table {
+  margin: auto;
+  width: fit-content;
+}
+.modal-body .score-details-table {
+  margin: -1rem;
+}
+.score-details-table table {
+  margin: 0;
+  border: 1px solid;
+  text-align: left;
+}
+.score-details-table table td {
+  border-bottom: 1px dotted;
+}
+.score-details-table table td:last-child {
+  text-align: right;
+}
+.score-details-table table th {
+  border-bottom: 1px solid;
+}
+.score-details-table table td,
+.score-details-table table th {
+  padding: 1px 5px;
+}
+.score-details-table .nav-tabs .nav-item {
+  border-width: 1px;
+  border-style: solid;
+  border-color: inherit;
+  border-top-left-radius: 0.25rem;
+  border-top-right-radius: 0.25rem;
+}
+.score-details-table .nav-tabs .nav-link {
+  background-color: #d9ead2;
+}
+.score-details-table .nav-tabs .nav-link.active {
+  border: none;
+  background-color: transparent;
+  cursor: initial;
+}
+
+/*-----------------------*\
+| Bootstrap redifinitions |
+\*-----------------------*/
+.alert {
+  text-align: center;
+  white-space: pre-wrap;
+}
+
+.row {
+  margin: 0;
+}
+
+/* This is only to show the results */
+.alert.alert-success {
+  font-family: monospace;
+}
+
+.progress-bar {
+  transition: none;
+}
+
+.form-label {
+  margin-right: 0.5rem; /* Same as margin-bottom */
+}
+
+.row > .me-auto + .col-auto {
+  padding-left: 0.5rem; /* Same as .form-label margin-right */
+}
+
+/* Hacky adjustments by copying BS4's form-control definitions to go back to that look */
+.picky__input {
+  height: calc(1.5em + .75rem + 2px);
+}
+.form-control:read-only {
+  background-color: #fff;
+}
+
+/* TODO: Helps with Table overlap, but this is not enough in extreme cases.
+ * Right now the longest name is "TheTrashmanMossman69" */
+@media (min-width: 992px) and (max-width: 1199px) {
+  .container, .container-sm, .container-md, .container-lg {
+    max-width: 990px;
+  }
+}
+/* TODO: Helps with Scoreboard having a horizontal scrollbar
+ * Right now the longest name is "TheTrashmanMossman69" */
+@media (min-width: 576px) and (max-width: 767px){
+  div.container, div.container-sm {
+    max-width: 566px;
+  }
+}

@@ -10,10 +10,14 @@
     "eamodio.gitlens",
     "meganrogge.template-string-converter",
     "shardulm94.trailing-spaces",
+    "coenraads.bracket-pair-colorizer-2",
+    "pkief.material-icon-theme",
     "hookyqr.minify"
   ],
   "unwantedRecommendations": [
+    "ms-vscode.vscode-typescript-tslint-plugin",
     "ms-pyright.pyright",
+    "coenraads.bracket-pair-colorizer",
     "esbenp.prettier-vscode"
   ]
 }

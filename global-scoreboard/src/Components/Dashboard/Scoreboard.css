@@ -1,0 +1,44 @@
+.react-bs-table-sizePerPage-dropdown .dropdown-menu {
+  min-width: unset;
+}
+
+.legend label {
+  margin-bottom: 0;
+}
+
+.legend,
+.react-bootstrap-table-pagination-total {
+  white-space: normal;
+}
+
+.react-bs-table-no-data {
+  text-align: center;
+}
+
+.react-bootstrap-table-page-btns-ul .page-item[title="hidden"] {
+  display: none;
+}
+
+.sortCarrets {
+  white-space: nowrap;
+  display: inline-block;
+}
+
+.sortCarrets svg {
+  opacity: .5;
+}
+.sortCarrets svg.active {
+  opacity: 1;
+}
+
+/* Tested on Firefox in Responsive Design Mode (is most restrictive use-case) */
+@media (max-width: 476px) {
+  th:nth-child(4).sortable {
+    position: relative;
+  }
+  th:nth-child(4).sortable .sortCarrets {
+    position: absolute;
+    left: 50px;
+    top: 7px;
+  }
+}

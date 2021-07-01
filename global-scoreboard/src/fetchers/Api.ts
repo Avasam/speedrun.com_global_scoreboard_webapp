@@ -11,6 +11,7 @@ const makeUrl = (location: string, queryParams?: QueryParams) => {
     ? location
     : `${window.process.env.REACT_APP_BASE_URL}/api/${location}`
   const query = new URLSearchParams(queryParams as Record<string, string>).toString()
+
   return query
     ? `${targetUrl}?${query}`
     : targetUrl

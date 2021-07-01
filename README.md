@@ -4,6 +4,7 @@ The webapp version of an unofficial speedrun.com global scoreboard for competiti
 [![Renovate](https://img.shields.io/badge/renovate-enabled-brightgreen.svg)](https://renovatebot.com)
 [![Dependabot status](https://api.dependabot.com/badges/status?host=github&repo=Avasam/speedrun.com_global_scoreboard_webapp)](https://github.com/dependabot/dependabot-core/issues/1912)
 [![Dependabot enabled](https://camo.githubusercontent.com/d46d9d2844f3f242a99809e9d2778d0d39fb8f705e9dbaf474d4aadc7187f5bc/68747470733a2f2f6170692e646570656e6461626f742e636f6d2f6261646765732f7374617475733f686f73743d676974687562267265706f3d79737331342f6d757369637368617265)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-dependabot-security-updates)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Avasam_speedrun.com_global_scoreboard_webapp&metric=alert_status)](https://sonarcloud.io/dashboard?id=Avasam_speedrun.com_global_scoreboard_webapp)
 
 ### **[See the scoreboard](https://www.Avasam.dev/)**
 
@@ -39,9 +40,9 @@ From this step onward, the amount of runners in the leaderboard will be reffered
 Note: The soft cutoff works great on games such as Barney. But is too punishing on games such as Mario 1. To be improved.
 5. Generate a logaritmic curve that looks somewhat like below. Where the average time ≤ e-1 and the last run is worth 0  
 ![Curve Example](/assets/images/Curve%20example.jpg)
-    - 5.1. A signed deviation is obtained for all the runs
+    - 5.1. A signed deviation from the mean is obtained for all the runs
     - 5.2. The deviation is adjusted so that the last run is worth 0 points. By adding the lowest (unsigned) deviation to the signed deviation
-    - 5.3. The deviation is then normalized so that the average time is worth 1 point and the last run is still worth 0 points. By dividing the adjusted deviation with the adjusted lowest deviation. Capped at π.
+    - 5.3. The deviation is then normalized so that the average time is worth 1 point and the last run is still worth 0 points. By dividing the adjusted deviation with the lowest deviation (from before the step #4 cutoff, if it applies). Capped at π.
     - 5.4. Points for a run are equal to: `e^(normalized_deviation * certainty_adjustment) -1` which creates the logarithmic curve that starts at 0
         - `certainty_adjustment = 1 - 1 / (population - 1)`
 6. The points for a run are then multiplied by a "length bonus" and the decimal point is shifted to the right by 1.
