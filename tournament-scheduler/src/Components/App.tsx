@@ -15,6 +15,7 @@ import { apiGet } from 'src/fetchers/Api'
 import type User from 'src/Models/User'
 import darkTheme from 'src/styles/dark.theme'
 import lightTheme from 'src/styles/light.theme'
+import copyToClipboard from 'src/utils/Clipboard'
 
 type Themes = 'dark' | 'light'
 type StylesOverrides = { body: { background: string } }
@@ -32,6 +33,18 @@ const logout = (setCurrentUser: (user: null) => void) => {
 }
 
 const App = () => {
+  /* eslint-disable react-hooks/rules-of-hooks */
+  for (const param of ['register', 'view']) {
+    const oldParamValue = new URLSearchParams(window.location.search).get(param)
+    console.log(oldParamValue, typeof oldParamValue)
+    if (oldParamValue != null) {
+      const newLink = `${window.location.origin}${window.process.env.PUBLIC_URL}/${param}/${oldParamValue}`
+      console.warn(`Old ${param} param found in URL, redirecting to:`, newLink)
+      copyToClipboard(newLink).finally(() => window.location.href = newLink)
+      return <></>
+    }
+  }
+
   const isMobileSize = useMediaQuery('(max-width:640px)', { noSsr: true })
   const [currentUser, setCurrentUser] = useState<User | null | undefined>()
   const location = useLocation()
