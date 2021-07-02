@@ -2,7 +2,7 @@ import './App.css'
 
 import { StatusCodes } from 'http-status-codes'
 import { useEffect, useState } from 'react'
-import { Route } from 'react-router-dom'
+import { Route, Switch } from 'react-router-dom'
 
 import Dashboard from './Dashboard/Dashboard'
 import GameSearch from './GameSearch/GameSearch'
@@ -49,15 +49,16 @@ const App = () => {
       onLogout={() => logout(setCurrentUser)}
     />
 
-    <Route
-      path='/'
-      exact
-      render={() => <Dashboard currentUser={currentUser} />}
-    />
-    <Route
-      path='/game-search'
-      component={GameSearch}
-    />
+    <Switch>
+      <Route
+        exact
+        path='/game-search'
+        component={GameSearch}
+      />
+      <Route
+        render={() => <Dashboard currentUser={currentUser} />}
+      />
+    </Switch>
 
     <footer>
       &copy; <a

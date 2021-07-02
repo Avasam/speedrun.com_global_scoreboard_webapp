@@ -1,3 +1,4 @@
+import '@culturehq/add-to-calendar/dist/styles.css'
 import './index.css'
 
 import { LocalizationProvider } from '@material-ui/lab'

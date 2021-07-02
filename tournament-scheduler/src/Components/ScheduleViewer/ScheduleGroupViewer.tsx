@@ -1,5 +1,3 @@
-import '@culturehq/add-to-calendar/dist/styles.css'
-
 import { Grid, Typography } from '@material-ui/core'
 import { useEffect, useState } from 'react'
 
