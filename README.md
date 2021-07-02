@@ -2,9 +2,14 @@
 
 The webapp version of an unofficial speedrun.com global scoreboard for competitive speedrunning  
 [![Renovate](https://img.shields.io/badge/renovate-enabled-brightgreen.svg)](https://renovatebot.com)
-[![Dependabot status](https://api.dependabot.com/badges/status?host=github&repo=Avasam/speedrun.com_global_scoreboard_webapp)](https://github.com/dependabot/dependabot-core/issues/1912)
 [![Dependabot enabled](https://camo.githubusercontent.com/d46d9d2844f3f242a99809e9d2778d0d39fb8f705e9dbaf474d4aadc7187f5bc/68747470733a2f2f6170692e646570656e6461626f742e636f6d2f6261646765732f7374617475733f686f73743d676974687562267265706f3d79737331342f6d757369637368617265)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-dependabot-security-updates)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Avasam_speedrun.com_global_scoreboard_webapp&metric=alert_status)](https://sonarcloud.io/dashboard?id=Avasam_speedrun.com_global_scoreboard_webapp)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=Avasam_speedrun.com_global_scoreboard_webapp&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=Avasam_speedrun.com_global_scoreboard_webapp)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=Avasam_speedrun.com_global_scoreboard_webapp&metric=ncloc)](https://sonarcloud.io/dashboard?id=Avasam_speedrun.com_global_scoreboard_webapp)  
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=Avasam_speedrun.com_global_scoreboard_webapp&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=Avasam_speedrun.com_global_scoreboard_webapp)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=Avasam_speedrun.com_global_scoreboard_webapp&metric=security_rating)](https://sonarcloud.io/dashboard?id=Avasam_speedrun.com_global_scoreboard_webapp)
+[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=Avasam_speedrun.com_global_scoreboard_webapp&metric=sqale_index)](https://sonarcloud.io/dashboard?id=Avasam_speedrun.com_global_scoreboard_webapp)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=Avasam_speedrun.com_global_scoreboard_webapp&metric=code_smells)](https://sonarcloud.io/dashboard?id=Avasam_speedrun.com_global_scoreboard_webapp)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=Avasam_speedrun.com_global_scoreboard_webapp&metric=duplicated_lines_density)](https://sonarcloud.io/dashboard?id=Avasam_speedrun.com_global_scoreboard_webapp)  
 
 ### **[See the scoreboard](https://www.Avasam.dev/)**
 
@@ -69,3 +74,5 @@ If needed, copy `.env.development` as `.env.development.local` and update the fi
 - From the root of a React app: `npm run start`, to serve the app  
 
 These steps are missing setting up a virtual environment, but if you care about that, you'll know how to set it up yourself. In any case you can let me know if you have issues setting up your dev environment.
+
+[![Dependabot status](https://api.dependabot.com/badges/status?host=github&repo=Avasam/speedrun.com_global_scoreboard_webapp)](https://github.com/dependabot/dependabot-core/issues/1912)
