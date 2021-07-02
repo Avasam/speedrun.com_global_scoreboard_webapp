@@ -10,7 +10,8 @@
     "compress-build-folder": "powershell Compress-Archive -Update -Path .\\build\\ -CompressionLevel Optimal -DestinationPath ..\\tournament-scheduler-build.zip",
     "lint": "eslint src/ --ext .ts,.tsx --ignore-path ../.gitignore",
     "lint:fix": "npm run lint -- --fix",
-    "upgrade": "npx npm-check-updates -u & npm i"
+    "upgrade": "npx npm-check-updates -u & npm i",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@culturehq/add-to-calendar": "^1.1.2",
