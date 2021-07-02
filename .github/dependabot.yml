@@ -20,7 +20,11 @@ updates:
       - "Avasam"
     ignore:
       - dependency-name: "*"
-        update-types: ["version-update:semver-patch"]
+      # Temporarily adding version-update:semver-minor to the ignore as dependabot
+      # still wants to increase the minor version in the lockfile only despite
+      # versioning-strategy: increase-if-necessary. This is a know issue:
+      # https://github.com/dependabot/dependabot-core/issues/3891
+        update-types: ["version-update:semver-patch", "version-update:semver-minor"]
     versioning-strategy: increase-if-necessary
 
   - package-ecosystem: "npm"
@@ -37,7 +41,11 @@ updates:
       - "Avasam"
     ignore:
       - dependency-name: "*"
-        update-types: ["version-update:semver-patch"]
+      # Temporarily adding version-update:semver-minor to the ignore as dependabot
+      # still wants to increase the minor version in the lockfile only despite
+      # versioning-strategy: increase-if-necessary. This is a know issue:
+      # https://github.com/dependabot/dependabot-core/issues/3891
+        update-types: ["version-update:semver-patch", "version-update:semver-minor"]
     versioning-strategy: increase-if-necessary
     
   # Check for updates to GitHub Actions
