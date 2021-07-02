@@ -4,7 +4,7 @@ import Brightness4 from '@material-ui/icons/Brightness4'
 import Brightness7 from '@material-ui/icons/Brightness7'
 import { StatusCodes } from 'http-status-codes'
 import { useEffect, useState } from 'react'
-import { Link as RouterLink, Route, useLocation } from 'react-router-dom'
+import { Link as RouterLink, Route, Switch, useLocation } from 'react-router-dom'
 
 import LoginForm from './LoginForm/LoginForm'
 import ScheduleManagement from './ScheduleManagement/ScheduleManagement'
@@ -36,7 +36,6 @@ const App = () => {
   /* eslint-disable react-hooks/rules-of-hooks */
   for (const param of ['register', 'view']) {
     const oldParamValue = new URLSearchParams(window.location.search).get(param)
-    console.log(oldParamValue, typeof oldParamValue)
     if (oldParamValue != null) {
       const newLink = `${window.location.origin}${window.process.env.PUBLIC_URL}/${param}/${oldParamValue}`
       console.warn(`Old ${param} param found in URL, redirecting to:`, newLink)
@@ -117,28 +116,28 @@ const App = () => {
         flex: 1,
         overflow: 'auto',
       }}>
-        {currentUser !== undefined &&
+        <Switch>
           <Route
-            path='/'
             exact
-            render={currentUser
-              ? () => <ScheduleManagement currentUser={currentUser} />
-              : () => <LoginForm onLogin={setCurrentUser} />
-            } />
-        }
-        <Route
-          path='/view/:scheduleId'
-          exact
-          render={routeProps => <ScheduleViewer scheduleId={Number(routeProps.match.params.scheduleId)} />}
-        />
-        <Route
-          path='/view/group/:groupId'
-          render={routeProps => <ScheduleGroupViewer groupId={Number(routeProps.match.params.groupId)} />}
-        />
-        <Route
-          path='/register/:registrationId?'
-          render={routeProps => <ScheduleRegistration {...routeProps.match.params} />}
-        />
+            path='/view/:scheduleId'
+            render={routeProps => <ScheduleViewer scheduleId={Number(routeProps.match.params.scheduleId)} />}
+          />
+          <Route
+            path='/view/group/:groupId'
+            render={routeProps => <ScheduleGroupViewer groupId={Number(routeProps.match.params.groupId)} />}
+          />
+          <Route
+            path='/register/:registrationId?'
+            render={routeProps => <ScheduleRegistration {...routeProps.match.params} />}
+          />
+          {currentUser !== undefined &&
+            <Route
+              render={currentUser
+                ? () => <ScheduleManagement currentUser={currentUser} />
+                : () => <LoginForm onLogin={setCurrentUser} />
+              } />
+          }
+        </Switch>
       </Box>
 
       <footer>

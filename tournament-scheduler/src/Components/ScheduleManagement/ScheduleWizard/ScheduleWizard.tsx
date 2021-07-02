@@ -6,6 +6,7 @@ import type { SxProps } from '@material-ui/system'
 import { useState } from 'react'
 
 import TimeSlotRow from './TimeSlotRow'
+import DisableDashlane from 'src/Components/DisableDashlane'
 import type { Schedule, ScheduleDto } from 'src/Models/Schedule'
 import { createDefaultTimeSlot, TimeSlot } from 'src/Models/TimeSlot'
 import { DEADLINE_FORMAT, diffDays, startOfDay } from 'src/utils/Date'
@@ -102,6 +103,7 @@ export const ScheduleWizard = (props: ScheduleWizardProps) => {
   const validateForm = () => schedule.name && validateDeadlineTooEarly()
 
   return <Container>
+    <DisableDashlane />
     <Card>
       <CardContent>
         <Stack spacing={1.5} sx={calendarIconStyle}>

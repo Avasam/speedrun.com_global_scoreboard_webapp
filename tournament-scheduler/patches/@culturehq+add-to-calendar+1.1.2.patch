@@ -1,0 +1,13 @@
+diff --git a/node_modules/@culturehq/add-to-calendar/dist/AddToCalendar.js b/node_modules/@culturehq/add-to-calendar/dist/AddToCalendar.js
+index 418e2d6..c6ef105 100644
+--- a/node_modules/@culturehq/add-to-calendar/dist/AddToCalendar.js
++++ b/node_modules/@culturehq/add-to-calendar/dist/AddToCalendar.js
+@@ -45,7 +45,7 @@ var useOpenState = function (initialOpen) {
+     react_1.useEffect(function () {
+         if (open) {
+             var onClose_1 = function () { return setOpen(false); };
+-            document.addEventListener("click", onClose_1);
++            // document.addEventListener("click", onClose_1);
+             return function () { return document.removeEventListener("click", onClose_1); };
+         }
+         return undefined;
