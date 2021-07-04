@@ -24,7 +24,7 @@ export class Schedule implements IOrderable {
   active: boolean
   registrationKey: string
   get registrationLink(): string {
-    return `${window.location.origin}${window.process.env.PUBLIC_URL}/register/${this.id}-${this.registrationKey}`
+    return `${window.location.origin}${process.env.PUBLIC_URL}/register/${this.id}-${this.registrationKey}`
   }
   deadline: Date | null
   timeSlots: TimeSlot[]

@@ -42,9 +42,6 @@ app.register_blueprint(core_api, url_prefix="/api")
 app.register_blueprint(game_search_api, url_prefix="/api")
 app.register_blueprint(global_scoreboard_api, url_prefix="/api")
 app.register_blueprint(tournament_scheduler_api, url_prefix="/api")
-if (configs.allow_cors):
-    from flask_cors import CORS
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 # Setup the dal (SQLAlchemy)
 SQLALCHEMY_DATABASE_URI = "mysql+{connector}://{username}:{password}@{hostname}/{database_name}".format(

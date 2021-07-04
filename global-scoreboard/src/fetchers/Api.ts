@@ -9,7 +9,7 @@ export const MAX_PAGINATION = 200
 const makeUrl = (location: string, queryParams?: QueryParams) => {
   const targetUrl = location.startsWith('http')
     ? location
-    : `${window.process.env.REACT_APP_BASE_URL}/api/${location}`
+    : `${window.location.origin}/api/${location}`
   const query = new URLSearchParams(queryParams as Record<string, string>).toString()
 
   return query

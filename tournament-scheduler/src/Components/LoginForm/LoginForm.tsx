@@ -34,7 +34,7 @@ const LoginForm = (props: loginFormProps) => {
             objectFit: 'contain',
             marginTop: 'auto',
           }}
-          src={`${window.process.env.REACT_APP_BASE_URL}/assets/images/favicon.webp`}
+          src={`${window.location.origin}/assets/images/favicon.webp`}
           alt='logo'
         />
       }

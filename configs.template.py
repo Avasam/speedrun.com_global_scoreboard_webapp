@@ -7,7 +7,6 @@ secret_key: bytes = bytes([1])  # os.urandom(16)
 # Flask settings
 debug: bool = True
 flask_environment: str = "development"
-allow_cors: bool = True
 auto_reload_templates: bool = True
 
 # Custom settings
