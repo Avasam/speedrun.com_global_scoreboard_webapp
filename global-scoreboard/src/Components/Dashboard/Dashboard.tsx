@@ -224,7 +224,7 @@ const Dashboard = (props: DashboardProps) => {
             try {
               const result = JSON.parse(errorString) as UpdateRunnerResult
               setAlertVariant(result.state ?? 'danger')
-              setAlertMessage(result.message)
+              setAlertMessage(result.message ?? '')
               if (err.status === StatusCodes.BAD_REQUEST && result.score < 1) {
                 setPlayersState(playersState.filter(player => player.userId !== result.userId))
               }

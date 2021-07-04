@@ -107,7 +107,9 @@ const UpdateMessage = (props: UpdateMessageProps) => {
     variant={props.variant}
     style={{ visibility: props.message ? 'visible' : 'hidden' }}
   >
-    {props.message || '&nbsp;'}
+    {typeof props.message === 'string'
+      ? <span dangerouslySetInnerHTML={{ __html: props.message }} />
+      : <span>{props.message}</span>}
     {props.updateStartTime != null &&
       <ProgressBar
         animated
