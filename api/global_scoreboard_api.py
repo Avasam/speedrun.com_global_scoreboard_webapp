@@ -47,9 +47,6 @@ def update_player(name_or_id: str):
     except UnhandledThreadException as exception:
         error_message = f"{type(exception).__name__}: {exception.args[0]}"
         return error_message, 500
-    except Exception:
-        error_message = f"Error: Unknown\n{traceback.format_exc()}"
-        return error_message, 500
 
 
 def __do_update_player_bypass_restrictions(name_or_id: str):

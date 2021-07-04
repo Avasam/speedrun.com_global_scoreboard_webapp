@@ -108,7 +108,7 @@ const UpdateMessage = (props: UpdateMessageProps) => {
     style={{ visibility: props.message ? 'visible' : 'hidden' }}
   >
     {typeof props.message === 'string'
-      ? <span dangerouslySetInnerHTML={{ __html: props.message }} />
+      ? <span dangerouslySetInnerHTML={{ __html: props.message.replaceAll(/\s+/g, ' ') }} />
       : <span>{props.message}</span>}
     {props.updateStartTime != null &&
       <ProgressBar
