@@ -75,7 +75,7 @@ def tournament_scheduler(asset: str):
     return send_file('tournament-scheduler/build/index.html')
 
 
-@app.route('/', methods=["GET", "POST"])
+@app.route('/', methods=["GET"])
 def index():
     return redirect(url_for('global_scoreboard'))
 
