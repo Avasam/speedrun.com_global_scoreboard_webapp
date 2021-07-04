@@ -11,7 +11,6 @@ from typing import cast, Dict, Optional
 from services.user_updater import get_updated_user
 from services.utils import UnhandledThreadException, map_to_dto, UnderALotOfPressure, UserUpdaterError
 import configs
-import traceback
 
 api = Blueprint('global_scoreboard_api', __name__)
 
@@ -113,6 +112,8 @@ def get_friends_current(current_user: Player):
 @api.route('/players/current/friends/<id>', methods=('PUT',))
 @authentication_required
 def put_friends_current(current_user: Player, id: str):
+    if not id.isalnum():
+        return jsonify({'message': '/id is not a valid user id', 'authenticated': True}), 400
     if current_user.user_id == id:
         return "You can't add yourself as a friend!", 422
     try:
@@ -129,6 +130,8 @@ def put_friends_current(current_user: Player, id: str):
 @api.route('/players/current/friends/<id>', methods=('DELETE',))
 @authentication_required
 def delete_friends_current(current_user: Player, id: str):
+    if not id.isalnum():
+        return jsonify({'message': '/id is not a valid user id', 'authenticated': True}), 400
     if current_user.unfriend(id):
         return f"Successfully removed user ID \"{id}\" from your friends."
     else:
