@@ -5,7 +5,7 @@ type UpdateRunnerResult =
   Player &
   {
     state?: Variant
-    message: string
+    message?: string
   }
 export default UpdateRunnerResult
 

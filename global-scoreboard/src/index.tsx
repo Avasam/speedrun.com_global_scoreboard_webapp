@@ -10,24 +10,10 @@ import App from './Components/App'
 import * as serviceWorker from './serviceWorker'
 import ThemeProvider from 'src/Components/ThemeProvider'
 
-// Hack for local network testing
-window.process = {
-  env: process.env,
-} as NodeJS.Process
-if ((process.env.REACT_APP_BASE_URL?.includes('127.0.0.1') || process.env.REACT_APP_BASE_URL?.includes('localhost')) &&
-  window.location.hostname !== 'localhost' &&
-  window.location.hostname !== '127.0.0.1'
-) {
-  window.process.env.REACT_APP_BASE_URL = `${window.location.protocol}//${window.location.hostname}:5000`
-  console.info('REACT_APP_BASE_URL was changed ' +
-    `from ${process.env.REACT_APP_BASE_URL} ` +
-    `to ${window.process.env.REACT_APP_BASE_URL}`)
-}
-
 ReactDOM.render(
   // Setup static Providers here
   <StrictMode>
-    <BrowserRouter basename={window.process.env.PUBLIC_URL}>
+    <BrowserRouter basename={process.env.PUBLIC_URL}>
       <ThemeProvider>
         <App />
       </ThemeProvider>

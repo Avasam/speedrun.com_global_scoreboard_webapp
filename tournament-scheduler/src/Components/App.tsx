@@ -37,7 +37,7 @@ const App = () => {
   for (const param of ['register', 'view']) {
     const oldParamValue = new URLSearchParams(window.location.search).get(param)
     if (oldParamValue != null) {
-      const newLink = `${window.location.origin}${window.process.env.PUBLIC_URL}/${param}/${oldParamValue}`
+      const newLink = `${window.location.origin}${process.env.PUBLIC_URL}/${param}/${oldParamValue}`
       console.warn(`Old ${param} param found in URL, redirecting to:`, newLink)
       copyToClipboard(newLink).finally(() => window.location.href = newLink)
       return <></>
@@ -88,7 +88,7 @@ const App = () => {
                       maxWidth: '90px', // Enough to fit title at minimum supported width
                     }}
                     alt='logo'
-                    src={`${window.process.env.REACT_APP_BASE_URL}/assets/images/favicon.webp`}
+                    src={`${window.location.origin}/assets/images/favicon.webp`}
                   />
                 </IconButton>
               }

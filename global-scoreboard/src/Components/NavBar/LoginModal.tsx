@@ -38,7 +38,7 @@ const LoginModal = (props: LoginModalProps) => {
       .catch((err: Response) => {
         if (err.status === StatusCodes.UNAUTHORIZED) {
           void err.json()
-            .then((data: UpdateRunnerResult) => data.message)
+            .then((data: UpdateRunnerResult) => data.message ?? '')
             .then(setLoginErrorMessage)
         } else {
           setLoginErrorMessage('Something went wrong')

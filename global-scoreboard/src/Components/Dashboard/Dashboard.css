@@ -109,7 +109,12 @@ td:first-child{
 \*-----------------------*/
 .alert {
   text-align: center;
-  white-space: pre-wrap;
+  white-space: pre-line;
+  word-break: break-word;
+}
+
+.alert-danger {
+  text-align: start;
 }
 
 .row {
