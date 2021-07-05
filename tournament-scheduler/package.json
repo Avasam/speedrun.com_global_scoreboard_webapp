@@ -29,7 +29,7 @@
     "react-text-mask": "^5.4.3"
   },
   "devDependencies": {
-    "http-proxy-middleware": "^0.19.1",
+    "http-proxy-middleware": "^0.21.0",
     "@types/react": "^17.0.13",
     "@types/react-add-to-calendar": "^0.1.0",
     "@types/react-div-100vh": "^0.4.0",
