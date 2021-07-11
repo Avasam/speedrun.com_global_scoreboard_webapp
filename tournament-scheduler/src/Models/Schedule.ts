@@ -2,6 +2,7 @@ import type IOrderable from './IOrderable'
 import type { TimeSlotDto } from './TimeSlot'
 import { createDefaultTimeSlot, TimeSlot } from './TimeSlot'
 import { nextDayFlat } from 'src/utils/Date'
+import { createProxy } from 'src/utils/ObjectUtils'
 
 export type ScheduleDto = IOrderable & {
   id: number
@@ -66,6 +67,20 @@ export class Schedule implements IOrderable {
       timeSlots: [createDefaultTimeSlot()],
       order: -1,
     })
+
+  clone: (properties?: Partial<Schedule>) => Schedule = properties => {
+    const copy = createProxy(this)
+    for (const timeSlot of copy.timeSlots) {
+      timeSlot.dateTime = new Date(timeSlot.dateTime)
+    }
+
+    return {
+      ...this,
+      ...copy,
+      deadline: this.deadline == null ? null : new Date(this.deadline),
+      ...properties,
+    }
+  }
 }
 
 export type ScheduleGroupDto = {

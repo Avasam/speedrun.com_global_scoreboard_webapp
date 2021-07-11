@@ -8,8 +8,9 @@ import { ScheduleWizard } from './ScheduleWizard/ScheduleWizard'
 import { apiDelete, apiGet, apiPost, apiPut } from 'src/fetchers/Api'
 import type { ScheduleDto, ScheduleGroupDto, ScheduleOrderDto } from 'src/Models/Schedule'
 import { isGroup, Schedule, ScheduleGroup } from 'src/Models/Schedule'
+import { TimeSlot } from 'src/Models/TimeSlot'
 import type User from 'src/Models/User'
-import { arrayMove } from 'src/utils/MergeDeep'
+import { arrayMove } from 'src/utils/ObjectUtils'
 
 const getSchedules = () =>
   apiGet('schedules')
@@ -92,7 +93,7 @@ const ScheduleManagement = (props: ScheduleManagementProps) => {
   }
 
   const handleCreateGroup = () => {
-    const newGroup = ScheduleGroup.createDefault(schedulesAndGroups.length)
+    const newGroup = ScheduleGroup.createDefault((schedulesAndGroups.find(Boolean)?.order ?? 1) - 1)
     void postGroups(newGroup)
       .then(id => setGroups([{ ...newGroup, id }, ...groups]))
   }
@@ -139,6 +140,7 @@ const ScheduleManagement = (props: ScheduleManagementProps) => {
   useEffect(() => {
     Promise.all([getSchedules(), getGroups()])
       .then(([newSchedules, newGroups]) => {
+        for (const schedule of newSchedules) schedule.timeSlots.sort(TimeSlot.compareFn)
         setSchedules(newSchedules)
         setGroups(newGroups)
       })

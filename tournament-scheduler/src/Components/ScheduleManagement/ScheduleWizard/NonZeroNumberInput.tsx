@@ -2,7 +2,7 @@ import { forwardRef, useCallback } from 'react'
 import type { MaskedInputProps } from 'react-text-mask'
 import MaskedInput from 'react-text-mask'
 
-type NonZeroNumberInputProps = MaskedInputProps & { inputComponent: unknown }
+type NonZeroNumberInputProps = MaskedInputProps & { inputComponent: never }
 
 const NonZeroNumberInput = forwardRef<HTMLElement, NonZeroNumberInputProps>(({ inputComponent, ...props }, ref) => {
   const setRef = useCallback(

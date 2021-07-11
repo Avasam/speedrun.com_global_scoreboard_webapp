@@ -65,15 +65,6 @@
     "python:S107": {
       "level": "off"
     },
-    "typescript:S3735": {
-      "level": "off"
-    },
-    "typescript:S3358": {
-      "level": "off"
-    },
-    "typescript:S3776": {
-      "level": "off"
-    }
   },
   "files.insertFinalNewline": true,
   "trailing-spaces.includeEmptyLines": true,
