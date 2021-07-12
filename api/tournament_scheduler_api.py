@@ -60,7 +60,7 @@ def put_schedule(current_user: Player, id: str):
         return jsonify({'message': '/id is not a valid number', 'authenticated': True}), 400
 
     data: Dict[str, Any] = request.get_json()
-    error_message, name, is_active, deadline, time_slots = __validate_create_schedule(data)
+    error_message, name, is_active, deadline, time_slots, order = __validate_create_schedule(data)
     if error_message is not None:
         return jsonify({'message': error_message, 'authenticated': True}), 400
 
