@@ -182,6 +182,32 @@ const Dashboard = (props: DashboardProps) => {
       setAlertMessage(`${err.name}: ${err.message}`)
     } else {
       temporaryAlertVariant = 'warning'
+      const conflictCase = (error: string) => {
+        switch (error) {
+          case 'current_user':
+            setAlertMessage('It seems you are already updating a runner. Please try again in 5 minutes.')
+            break
+          case 'name_or_id':
+            setAlertMessage('It seems this runner is already being updated (possibly by someone else). ' +
+              'Please try again in 5 minutes.')
+            break
+          default:
+            setAlertMessage(error)
+        }
+      }
+      const defaultCase = (error: string) => {
+        try {
+          const result = JSON.parse(error) as UpdateRunnerResult
+          setAlertVariant(result.state ?? 'danger')
+          setAlertMessage(result.message ?? '')
+          if (err.status === StatusCodes.BAD_REQUEST && result.score < 1) {
+            setPlayersState(playersState.filter(player => player.userId !== result.userId))
+          }
+        } catch {
+          setAlertVariant('danger')
+          setAlertMessage(error)
+        }
+      }
       switch (err.status) {
         case StatusCodes.IM_A_TEAPOT:
           setAlertMessage(<div>
@@ -204,35 +230,10 @@ const Dashboard = (props: DashboardProps) => {
 
           break
         case StatusCodes.CONFLICT:
-          void err.text().then(errorString => {
-            switch (errorString) {
-              case 'current_user':
-                setAlertMessage('It seems you are already updating a runner. Please try again in 5 minutes.')
-                break
-              case 'name_or_id':
-                setAlertMessage('It seems this runner is already being updated (possibly by someone else). ' +
-                  'Please try again in 5 minutes.')
-                break
-              default:
-                setAlertMessage(errorString)
-            }
-          })
-
+          void err.text().then(conflictCase)
           break
         default:
-          void err.text().then(errorString => {
-            try {
-              const result = JSON.parse(errorString) as UpdateRunnerResult
-              setAlertVariant(result.state ?? 'danger')
-              setAlertMessage(result.message ?? '')
-              if (err.status === StatusCodes.BAD_REQUEST && result.score < 1) {
-                setPlayersState(playersState.filter(player => player.userId !== result.userId))
-              }
-            } catch {
-              setAlertVariant('danger')
-              setAlertMessage(errorString)
-            }
-          })
+          void err.text().then(defaultCase)
       }
     }
     setAlertVariant(temporaryAlertVariant)

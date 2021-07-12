@@ -8,8 +8,9 @@ import { ScheduleWizard } from './ScheduleWizard/ScheduleWizard'
 import { apiDelete, apiGet, apiPost, apiPut } from 'src/fetchers/Api'
 import type { ScheduleDto, ScheduleGroupDto, ScheduleOrderDto } from 'src/Models/Schedule'
 import { isGroup, Schedule, ScheduleGroup } from 'src/Models/Schedule'
+import { TimeSlot } from 'src/Models/TimeSlot'
 import type User from 'src/Models/User'
-import { arrayMove } from 'src/utils/MergeDeep'
+import { arrayMove } from 'src/utils/ObjectUtils'
 
 const getSchedules = () =>
   apiGet('schedules')
@@ -67,6 +68,7 @@ const ScheduleManagement = (props: ScheduleManagementProps) => {
   const [currentSchedule, setCurrentSchedule] = useState<Schedule | undefined>()
   const [groups, setGroups] = useState<ScheduleGroup[]>([])
   const [schedulesAndGroups, setSchedulesAndGroups] = useState<ScheduleOrGroup[]>([])
+  const getDefaultOrder = () => (schedulesAndGroups.find(Boolean)?.order ?? 1) - 1
 
   const handleEdit = (schedule?: Schedule) =>
     setCurrentSchedule(schedule)
@@ -78,7 +80,7 @@ const ScheduleManagement = (props: ScheduleManagementProps) => {
 
   // TODO: on creation, put new schedule at the very top. This may have to be done server-side
   const handleSave = (schedule: ScheduleDto) => {
-    const savePromise = schedule.id === -1
+    const savePromise = schedule.id <= -1
       ? postSchedules(schedule)
       : putSchedule(schedule)
     savePromise
@@ -92,7 +94,7 @@ const ScheduleManagement = (props: ScheduleManagementProps) => {
   }
 
   const handleCreateGroup = () => {
-    const newGroup = ScheduleGroup.createDefault(schedulesAndGroups.length)
+    const newGroup = ScheduleGroup.createDefault(getDefaultOrder())
     void postGroups(newGroup)
       .then(id => setGroups([{ ...newGroup, id }, ...groups]))
   }
@@ -139,6 +141,7 @@ const ScheduleManagement = (props: ScheduleManagementProps) => {
   useEffect(() => {
     Promise.all([getSchedules(), getGroups()])
       .then(([newSchedules, newGroups]) => {
+        for (const schedule of newSchedules) schedule.timeSlots.sort(TimeSlot.compareFn)
         setSchedules(newSchedules)
         setGroups(newGroups)
       })
@@ -194,7 +197,7 @@ const ScheduleManagement = (props: ScheduleManagementProps) => {
           fullWidth
           variant='contained'
           startIcon={<NoteAdd />}
-          onClick={() => handleEdit(Schedule.createDefault())}
+          onClick={() => handleEdit(Schedule.createDefault(getDefaultOrder()))}
         >
           Create new Schedule
         </Button>

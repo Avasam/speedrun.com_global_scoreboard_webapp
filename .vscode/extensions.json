@@ -1,23 +1,24 @@
+// Keep in alphabetical order
 {
   "recommendations": [
-    "dbaeumer.vscode-eslint",
-    "ms-vscode.vscode-typescript-next",
-    "ms-python.vscode-pylance",
-    "ms-python.python",
-    "sonarsource.sonarlint-vscode",
-    "mikestead.dotenv",
-    "davidanson.vscode-markdownlint",
-    "eamodio.gitlens",
-    "meganrogge.template-string-converter",
-    "shardulm94.trailing-spaces",
     "coenraads.bracket-pair-colorizer-2",
+    "davidanson.vscode-markdownlint",
+    "dbaeumer.vscode-eslint",
+    "eamodio.gitlens",
+    "hookyqr.minify",
+    "meganrogge.template-string-converter",
+    "mikestead.dotenv",
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "ms-vscode.vscode-typescript-next",
     "pkief.material-icon-theme",
-    "hookyqr.minify"
+    "shardulm94.trailing-spaces",
   ],
   "unwantedRecommendations": [
-    "ms-vscode.vscode-typescript-tslint-plugin",
-    "ms-pyright.pyright",
     "coenraads.bracket-pair-colorizer",
-    "esbenp.prettier-vscode"
+    "esbenp.prettier-vscode",
+    "ms-pyright.pyright",
+    "ms-vscode.vscode-typescript-tslint-plugin",
+    "sonarsource.sonarlint-vscode",
   ]
 }

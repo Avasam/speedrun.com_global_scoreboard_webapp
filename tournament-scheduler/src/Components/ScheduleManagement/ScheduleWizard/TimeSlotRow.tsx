@@ -1,8 +1,9 @@
 import type { Theme } from '@material-ui/core'
-import { Card, CardContent, Collapse, IconButton, ListItem, ListItemText, Stack, TextField } from '@material-ui/core'
+import { Card, CardContent, Collapse, IconButton, ListItem, ListItemText, Stack, TextField, Typography } from '@material-ui/core'
 import { Clear, Event, ExpandLess, ExpandMore, FileCopy } from '@material-ui/icons'
 import { MobileDateTimePicker } from '@material-ui/lab'
 import type { SxProps } from '@material-ui/system'
+import type { MouseEventHandler } from 'react'
 import { useState } from 'react'
 
 import NonZeroNumberInput from './NonZeroNumberInput'
@@ -14,19 +15,17 @@ import type { Schedule } from 'src/Models/Schedule'
 import type { TimeSlot } from 'src/Models/TimeSlot'
 import { minutesStep } from 'src/Models/TimeSlot'
 import { TIMESLOT_FORMAT } from 'src/utils/Date'
+import type { NonFunctionProperties } from 'src/utils/ObjectUtils'
+import { createProxy } from 'src/utils/ObjectUtils'
 
 const MIN_YEAR = 2000
+export const FOCUS_CLASS = 'time-slot-focus'
 
 const putRegistration = (registration: Registration) =>
   apiPut(`registrations/${registration.id}`, registration)
 
 const deleteRegistration = (registrationId: number) =>
   apiDelete(`registrations/${registrationId}`)
-
-// eslint-disable-next-line prefer-arrow/prefer-arrow-functions
-const createProxy = function <T>(registrations: T) {
-  return JSON.parse(JSON.stringify(registrations)) as T
-}
 
 const numberInputsStyle = {
   '&>div:not(style)': {
@@ -46,14 +45,16 @@ const numberInputsStyle = {
 } as SxProps<Theme>
 
 type TimeSlotRowProps = {
-  schedule: Schedule
+  schedule: NonFunctionProperties<Schedule>
   timeSlot: TimeSlot
-  id: number
+  id: string
   onEditTimeSlotDateTime: (date: Date | null) => void
   onDuplicateTimeSlot: () => void
   onRemoveTimeSlot: () => void
   onEditTimeSlotMaximumEntries: (maximumEntries: number) => void
   onEditTimeSlotparticipantsPerEntry: (participantsPerEntry: number) => void
+  isCurrentFocus: boolean
+  onFocus: MouseEventHandler<HTMLDivElement>
 }
 
 const TimeSlotRow = (props: TimeSlotRowProps) => {
@@ -99,15 +100,27 @@ const TimeSlotRow = (props: TimeSlotRowProps) => {
       })
       .catch(console.error)
 
-  return <Card raised={true} className='error-as-warning'>
+  const handleDelete: MouseEventHandler<HTMLButtonElement> = event => {
+    // Prevent loosing current focus
+    event.stopPropagation()
+    props.onRemoveTimeSlot()
+  }
+
+  return <Card
+    raised={true}
+    sx={{ borderStyle: props.isCurrentFocus ? 'groove' : 'none' }}
+    onClick={props.onFocus}
+  >
     <CardContent component={Stack} direction='row' sx={numberInputsStyle} flexWrap='wrap-reverse'>
       <MobileDateTimePicker
         label='Date and time'
         inputFormat={TIMESLOT_FORMAT}
         value={props.timeSlot.dateTime}
+        disableCloseOnSelect
         onChange={date => props.onEditTimeSlotDateTime(date)}
         minDate={new Date(MIN_YEAR, 0)}
         disablePast={props.timeSlot.id <= -1}
+        showTodayButton
         ampm={false}
         minutesStep={minutesStep}
         InputProps={{ endAdornment: <Event /> }}
@@ -119,7 +132,7 @@ const TimeSlotRow = (props: TimeSlotRowProps) => {
             style={{ width: '222px', minWidth: '222px' }} // Enough to fit 'Wed Jun 22nd 2022, 22:22'
           />}
       />
-      <Stack direction='row' spacing={1.5}>
+      <Stack direction='row' spacing={1.5} alignItems='center'>
         <TextField
           id={`maximum-entries-${props.id}`}
           label='Maximum entries'
@@ -148,7 +161,7 @@ const TimeSlotRow = (props: TimeSlotRowProps) => {
             className='error'
             aria-label='remove time slot'
             component='button'
-            onClick={() => props.onRemoveTimeSlot()}
+            onClick={handleDelete}
           ><Clear /></IconButton>
         }
       </Stack>
@@ -157,14 +170,14 @@ const TimeSlotRow = (props: TimeSlotRowProps) => {
       <ListItem button onClick={() => setOpen(!open)}>
         <ListItemText
           primary={
-            <span style={{
-              color: props.timeSlot.registrations.length > props.timeSlot.maximumEntries
-                ? 'red'
-                : undefined,
-            }}>
+            <Typography
+              color={props.timeSlot.registrations.length > props.timeSlot.maximumEntries
+                ? 'error'
+                : undefined}
+            >
               ({props.timeSlot.registrations.length} / {props.timeSlot.maximumEntries}
               &nbsp;entr{props.timeSlot.registrations.length === 1 ? 'y' : 'ies'})
-            </span>
+            </Typography>
           }
         />
         {open ? <ExpandLess /> : <ExpandMore />}
@@ -187,7 +200,7 @@ const TimeSlotRow = (props: TimeSlotRowProps) => {
         </Stack>
       </Collapse>
     </CardContent>
-  </Card>
+  </Card >
 }
 
 export default TimeSlotRow

@@ -2,7 +2,7 @@ import { amber as warn, indigo as primary, orange as secondary, red as error } f
 import { createTheme } from '@material-ui/core/styles'
 
 import baseThemeOptions from './base.theme'
-import { mergeDeep } from 'src/utils/MergeDeep'
+import { mergeDeep } from 'src/utils/ObjectUtils'
 
 // Actual theme declaration
 const theme = createTheme(mergeDeep(

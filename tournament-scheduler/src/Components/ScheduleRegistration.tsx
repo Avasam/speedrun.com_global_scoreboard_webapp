@@ -20,6 +20,14 @@ const timeSlotLabelPaddingRight = 40
 
 const entriesLeft = (timeSlot: TimeSlot) => timeSlot.maximumEntries - timeSlot.registrations.length
 
+const entriesLeftText = (timeSlot: TimeSlot) => {
+  if (timeSlot.dateTime <= new Date()) return 'past deadline'
+  if (entriesLeft(timeSlot) <= 0) return 'full'
+  const left = entriesLeft(timeSlot)
+
+  return `${left} / ${timeSlot.maximumEntries} entr${left === 1 ? 'y' : 'ies'} left`
+}
+
 const getSchedule = (id: number, registrationKey: string) =>
   apiGet(`schedules/${id}`, { registrationKey })
     .then(res => res.json().then((scheduleDto: ScheduleDto) => new Schedule(scheduleDto)))
@@ -169,16 +177,9 @@ const ScheduleRegistration = (props: ScheduleRegistrationProps) => {
                         key={`timeslot-${timeSlot.id}`}
                         value={timeSlot.id}
                         disabled={entriesLeft(timeSlot) <= 0 || timeSlot.dateTime <= new Date()}
-                      >{
-                          `${fancyFormat(timeSlot.dateTime)
-                          } (${timeSlot.dateTime <= new Date()
-                            ? 'past deadline'
-                            : entriesLeft(timeSlot) <= 0
-                              ? 'full'
-                              : `${entriesLeft(timeSlot)} / ${timeSlot.maximumEntries}` +
-                              ` entr${entriesLeft(timeSlot) === 1 ? 'y' : 'ies'} left`
-                          })`
-                        }</MenuItem>)}
+                      >
+                        {`${fancyFormat(timeSlot.dateTime)} (${entriesLeftText(timeSlot)})`}
+                      </MenuItem>)}
                   </Select>
                 </FormControl>
                 {selectedTimeSlot && entriesLeft(selectedTimeSlot) > 0 &&
@@ -190,14 +191,15 @@ const ScheduleRegistration = (props: ScheduleRegistrationProps) => {
                     </FormLabel>
                     {Array.from(
                       { length: selectedTimeSlot.participantsPerEntry },
-                      (_, index) =>
-                        <TextField
+                      (_, index) => {
+                        const participantNumber = selectedTimeSlot.participantsPerEntry > 1 ? ` ${index + 1}` : ''
+
+                        return <TextField
                           key={`participant-${index}`}
-                          label={
-                            `Participant${selectedTimeSlot.participantsPerEntry > 1 ? ` ${index + 1}` : ''}'s name`
-                          }
+                          label={`Participant${participantNumber}'s name`}
                           onChange={event => handleParticipantChange(index, event.target.value)}
                         />
+                      }
                     )}
                   </>}
               </FormGroup>

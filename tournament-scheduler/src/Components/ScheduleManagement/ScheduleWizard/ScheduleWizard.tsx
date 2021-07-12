@@ -8,8 +8,9 @@ import { useState } from 'react'
 import TimeSlotRow from './TimeSlotRow'
 import DisableDashlane from 'src/Components/DisableDashlane'
 import type { Schedule, ScheduleDto } from 'src/Models/Schedule'
-import { createDefaultTimeSlot, TimeSlot } from 'src/Models/TimeSlot'
+import { TimeSlot } from 'src/Models/TimeSlot'
 import { DEADLINE_FORMAT, diffDays, startOfDay } from 'src/utils/Date'
+import type { NonFunctionProperties } from 'src/utils/ObjectUtils'
 import { getDeadlineDueText } from 'src/utils/ScheduleHelper'
 
 const calendarIconStyle: SxProps<Theme> = {
@@ -29,66 +30,51 @@ type ScheduleWizardProps = {
 }
 
 export const ScheduleWizard = (props: ScheduleWizardProps) => {
-  const [schedule, setSchedule] = useState(props.schedule)
+  const [currentFocus, setCurrentFocus] = useState<TimeSlot>()
+  const [schedule, setSchedule] = useState<NonFunctionProperties<Schedule>>(props.schedule.deepCopy())
+  const refreshTimeSlots = () => setSchedule({ ...schedule })
 
-  schedule.timeSlots.sort(TimeSlot.compareFn)
+  const handleCancel = () => {
+    setSchedule(props.schedule.deepCopy())
+    props.onCancel()
+  }
 
-  const editTimeSlotDateTime = (date: Date | null, index: number) => {
+  const editTimeSlotDateTime = (date: Date | null, timeSlot: TimeSlot) => {
     if (!date) return
-    schedule.timeSlots[index].dateTime = date
+    timeSlot.dateTime = date
     schedule.timeSlots.sort(TimeSlot.compareFn)
-    setSchedule({
-      ...schedule,
-      registrationLink: schedule.registrationLink,
-    })
-    Array.prototype.forEach.call(
-      document.getElementsByClassName('Mui-focused'),
-      (element: HTMLElement) => element.classList.remove('Mui-focused')
-    )
+    refreshTimeSlots()
   }
 
-  const editTimeSlotMaximumEntries = (maximumEntries: number, index: number) => {
-    schedule.timeSlots[index].maximumEntries = maximumEntries
-    setSchedule({
-      ...schedule,
-      registrationLink: schedule.registrationLink,
-    })
+  const editTimeSlotMaximumEntries = (maximumEntries: number, timeSlot: TimeSlot) => {
+    timeSlot.maximumEntries = maximumEntries
+    refreshTimeSlots()
   }
 
-  const editTimeSlotparticipantsPerEntry = (participantsPerEntry: number, index: number) => {
-    schedule.timeSlots[index].participantsPerEntry = participantsPerEntry
-    setSchedule({
-      ...schedule,
-      registrationLink: schedule.registrationLink,
-    })
+  const editTimeSlotparticipantsPerEntry = (participantsPerEntry: number, timeSlot: TimeSlot) => {
+    timeSlot.participantsPerEntry = participantsPerEntry
+    refreshTimeSlots()
   }
+
   const addNewTimeSlot = () => {
-    schedule.timeSlots.unshift(createDefaultTimeSlot())
+    const newTimeSlot = TimeSlot.createDefault()
+    schedule.timeSlots.unshift(newTimeSlot)
+    setCurrentFocus(newTimeSlot)
     schedule.timeSlots.sort(TimeSlot.compareFn)
-    setSchedule({
-      ...schedule,
-      registrationLink: schedule.registrationLink,
-    })
+    refreshTimeSlots()
   }
 
   const removeTimeSlot = (index: number) => {
     schedule.timeSlots.splice(index, 1)
-    setSchedule({
-      ...schedule,
-      registrationLink: schedule.registrationLink,
-    })
+    refreshTimeSlots()
   }
 
-  const duplicateTimeSlot = (index: number) => {
-    schedule.timeSlots.splice(index, 0, { ...schedule.timeSlots[index], id: -1, registrations: [] })
-    setSchedule({
-      ...schedule,
-      registrationLink: schedule.registrationLink,
-    })
+  const duplicateTimeSlot = (timeSlot: TimeSlot, position: number) => {
+    schedule.timeSlots.splice(position, 0, { ...timeSlot, id: -Date.now(), registrations: [] })
+    refreshTimeSlots()
   }
 
   const deadlineDaysLeft = diffDays(schedule.deadline)
-
   const earliestTimeslotDate = schedule.timeSlots.map(timeSlot => timeSlot.dateTime)[0]
 
   const validateDeadline = () =>
@@ -112,11 +98,7 @@ export const ScheduleWizard = (props: ScheduleWizardProps) => {
             error={!schedule.name}
             label={`Name (${props.schedule.name})`}
             value={schedule.name}
-            onChange={event => setSchedule({
-              ...schedule,
-              registrationLink: schedule.registrationLink,
-              name: event.target.value,
-            })}
+            onChange={event => setSchedule({ ...schedule, name: event.target.value })}
           />
           <Stack direction='row' flexWrap='wrap'>
             <FormControlLabel
@@ -124,11 +106,7 @@ export const ScheduleWizard = (props: ScheduleWizardProps) => {
               control={
                 <Checkbox
                   checked={schedule.active}
-                  onChange={event => setSchedule({
-                    ...schedule,
-                    registrationLink: schedule.registrationLink,
-                    active: event.target.checked,
-                  })}
+                  onChange={event => setSchedule({ ...schedule, active: event.target.checked })}
                 />
               }
             />
@@ -137,11 +115,8 @@ export const ScheduleWizard = (props: ScheduleWizardProps) => {
               label={`${!schedule.deadline ? 'No r' : 'R'}egistration deadline`}
               inputFormat={DEADLINE_FORMAT}
               value={schedule.deadline}
-              onChange={date => setSchedule({
-                ...schedule,
-                registrationLink: schedule.registrationLink,
-                deadline: date == null ? null : startOfDay(date),
-              })}
+              disableCloseOnSelect
+              onChange={date => setSchedule({ ...schedule, deadline: date == null ? null : startOfDay(date) })}
               disablePast={earliestTimeslotDate > new Date()}
               showTodayButton
               clearable
@@ -157,12 +132,11 @@ export const ScheduleWizard = (props: ScheduleWizardProps) => {
                     width: '198px',
                     minWidth: '198px',
                     '#schedule-deadline-helper-text': {
-                      // TODO: No max-content at 493 and less
                       // Fits perfectly longest error below
                       width: 'max-content',
                     },
                   }}
-                  // Note: Overkill as we shouldn't have twose two messages at once,
+                  // Note: Overkill as we shouldn't have those two messages at once,
                   // but good idea for form validation
                   helperText={[
                     !validateDeadlineTooEarly() && 'Deadline should not be before today',
@@ -185,25 +159,27 @@ export const ScheduleWizard = (props: ScheduleWizardProps) => {
             Add a time slot
           </Button>
 
-          {schedule.timeSlots.map((timeSlot: TimeSlot, index) =>
+          {schedule.timeSlots.map((timeSlot, index) =>
             <TimeSlotRow
-              key={`time-slot-${index}-${timeSlot.id}`}
-              id={index}
+              key={`time-slot-${timeSlot.id}`}
+              id={`${index}-${timeSlot.id}`}
               schedule={schedule}
               timeSlot={timeSlot}
-              onEditTimeSlotDateTime={date => editTimeSlotDateTime(date, index)}
-              onDuplicateTimeSlot={() => duplicateTimeSlot(index)}
+              onEditTimeSlotDateTime={date => editTimeSlotDateTime(date, timeSlot)}
+              onDuplicateTimeSlot={() => duplicateTimeSlot(timeSlot, index + 1)}
               onRemoveTimeSlot={() => removeTimeSlot(index)}
-              onEditTimeSlotMaximumEntries={maximumEntries => editTimeSlotMaximumEntries(maximumEntries, index)}
+              onEditTimeSlotMaximumEntries={maximumEntries => editTimeSlotMaximumEntries(maximumEntries, timeSlot)}
               onEditTimeSlotparticipantsPerEntry={participantsPerEntry =>
-                editTimeSlotparticipantsPerEntry(participantsPerEntry, index)}
+                editTimeSlotparticipantsPerEntry(participantsPerEntry, timeSlot)}
+              isCurrentFocus={currentFocus === timeSlot}
+              onFocus={() => setCurrentFocus(timeSlot)}
             />)}
         </Stack>
       </CardContent>
       <CardActions>
         <Button
           size='small'
-          onClick={props.onCancel}
+          onClick={handleCancel}
         >
           Cancel
         </Button>

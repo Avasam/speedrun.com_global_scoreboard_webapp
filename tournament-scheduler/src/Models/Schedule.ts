@@ -1,7 +1,9 @@
 import type IOrderable from './IOrderable'
 import type { TimeSlotDto } from './TimeSlot'
-import { createDefaultTimeSlot, TimeSlot } from './TimeSlot'
+import { TimeSlot } from './TimeSlot'
 import { nextDayFlat } from 'src/utils/Date'
+import type { NonFunctionProperties } from 'src/utils/ObjectUtils'
+import { createProxy } from 'src/utils/ObjectUtils'
 
 export type ScheduleDto = IOrderable & {
   id: number
@@ -45,7 +47,7 @@ export class Schedule implements IOrderable {
   static compareFn = (a: ScheduleCompareProps, b: ScheduleCompareProps) => {
     const result = a.order - b.order
 
-    return result !== 0 ? result : a.id - b.id
+    return result !== 0 ? result : b.id - a.id
   }
 
   static toScheduleAndGroups = (schedules: Schedule[], groups: ScheduleGroup[]) => {
@@ -56,16 +58,29 @@ export class Schedule implements IOrderable {
     return [...schedules.filter(schedule => schedule.groupId == null), ...groups].sort(Schedule.compareFn)
   }
 
-  static createDefault = () =>
+  static createDefault = (order = Date.now()) =>
     new Schedule({
-      id: -1,
+      id: -Date.now(),
       name: 'New Schedule',
       active: false,
       registrationKey: '',
       deadline: nextDayFlat(),
-      timeSlots: [createDefaultTimeSlot()],
-      order: -1,
+      timeSlots: [TimeSlot.createDefault()],
+      order,
     })
+
+  deepCopy: (properties?: Partial<Schedule>) => NonFunctionProperties<Schedule> = properties => {
+    const copy = createProxy(this)
+    for (const timeSlot of copy.timeSlots) {
+      timeSlot.dateTime = new Date(timeSlot.dateTime)
+    }
+
+    return {
+      ...copy,
+      deadline: this.deadline == null ? null : new Date(this.deadline),
+      ...properties,
+    }
+  }
 }
 
 export type ScheduleGroupDto = {
@@ -87,9 +102,9 @@ export class ScheduleGroup implements IOrderable {
     this.order = dto.order
   }
 
-  static createDefault = (order = -1) =>
+  static createDefault = (order = Date.now()) =>
     new ScheduleGroup({
-      id: -1,
+      id: -Date.now(),
       name: 'New Group',
       order,
     })
