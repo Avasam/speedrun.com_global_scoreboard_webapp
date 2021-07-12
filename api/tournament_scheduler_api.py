@@ -44,11 +44,11 @@ def get_schedule(id: str):
 @authentication_required
 def post_schedule(current_user: Player):
     data: Dict[str, Any] = request.get_json()
-    error_message, name, is_active, deadline, time_slots = __validate_create_schedule(data)
+    error_message, name, is_active, deadline, time_slots, order = __validate_create_schedule(data)
     if error_message is not None:
         return jsonify({'message': error_message, 'authenticated': True}), 400
 
-    return str(current_user.create_schedule(name, is_active, deadline, time_slots)), 201
+    return str(current_user.create_schedule(name, is_active, deadline, time_slots, order)), 201
 
 
 @api.route('/schedules/<id>', methods=('PUT',))
@@ -277,6 +277,7 @@ def __validate_create_schedule(data: Dict[str, Any]) -> Tuple[Optional[str], str
     deadline = ''
     time_slots = []
     time_slot = []
+    order = None
     try:
         name = data['name']
     except KeyError:
@@ -290,9 +291,15 @@ def __validate_create_schedule(data: Dict[str, Any]) -> Tuple[Optional[str], str
     except KeyError:
         error_message += 'deadline has to be defined'
     try:
+        order = int(data['order'])
+    except ValueError:
+        'order has to be a number'
+    except KeyError:
+        pass
+
+    try:
         time_slots = data['timeSlots']
     except KeyError:
-
         error_message += 'timeSlots has to be defined'
     for time_slot in time_slots:
         try:
@@ -308,6 +315,6 @@ def __validate_create_schedule(data: Dict[str, Any]) -> Tuple[Optional[str], str
         except KeyError:
             error_message += 'timeSlots.participantsPerEntry has to be defined'
 
-    return None if error_message == '' else error_message, name, is_active, deadline, time_slots
+    return None if error_message == '' else error_message, name, is_active, deadline, time_slots, order
 
 # endregion

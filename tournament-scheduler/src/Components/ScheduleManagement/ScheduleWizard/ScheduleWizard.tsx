@@ -8,8 +8,9 @@ import { useState } from 'react'
 import TimeSlotRow from './TimeSlotRow'
 import DisableDashlane from 'src/Components/DisableDashlane'
 import type { Schedule, ScheduleDto } from 'src/Models/Schedule'
-import { createDefaultTimeSlot, TimeSlot } from 'src/Models/TimeSlot'
+import { TimeSlot } from 'src/Models/TimeSlot'
 import { DEADLINE_FORMAT, diffDays, startOfDay } from 'src/utils/Date'
+import type { NonFunctionProperties } from 'src/utils/ObjectUtils'
 import { getDeadlineDueText } from 'src/utils/ScheduleHelper'
 
 const calendarIconStyle: SxProps<Theme> = {
@@ -30,11 +31,11 @@ type ScheduleWizardProps = {
 
 export const ScheduleWizard = (props: ScheduleWizardProps) => {
   const [currentFocus, setCurrentFocus] = useState<TimeSlot>()
-  const [schedule, setSchedule] = useState(props.schedule.clone())
-  const refreshTimeSlots = () => setSchedule({ ...schedule } as Schedule)
+  const [schedule, setSchedule] = useState<NonFunctionProperties<Schedule>>(props.schedule.deepCopy())
+  const refreshTimeSlots = () => setSchedule({ ...schedule })
 
   const handleCancel = () => {
-    setSchedule(props.schedule.clone())
+    setSchedule(props.schedule.deepCopy())
     props.onCancel()
   }
 
@@ -56,7 +57,7 @@ export const ScheduleWizard = (props: ScheduleWizardProps) => {
   }
 
   const addNewTimeSlot = () => {
-    const newTimeSlot = createDefaultTimeSlot()
+    const newTimeSlot = TimeSlot.createDefault()
     schedule.timeSlots.unshift(newTimeSlot)
     setCurrentFocus(newTimeSlot)
     schedule.timeSlots.sort(TimeSlot.compareFn)
@@ -69,7 +70,7 @@ export const ScheduleWizard = (props: ScheduleWizardProps) => {
   }
 
   const duplicateTimeSlot = (timeSlot: TimeSlot, position: number) => {
-    schedule.timeSlots.splice(position, 0, { ...timeSlot, id: -1, registrations: [] })
+    schedule.timeSlots.splice(position, 0, { ...timeSlot, id: -Date.now(), registrations: [] })
     refreshTimeSlots()
   }
 
@@ -97,7 +98,7 @@ export const ScheduleWizard = (props: ScheduleWizardProps) => {
             error={!schedule.name}
             label={`Name (${props.schedule.name})`}
             value={schedule.name}
-            onChange={event => setSchedule(schedule.clone({ name: event.target.value }))}
+            onChange={event => setSchedule({ ...schedule, name: event.target.value })}
           />
           <Stack direction='row' flexWrap='wrap'>
             <FormControlLabel
@@ -105,7 +106,7 @@ export const ScheduleWizard = (props: ScheduleWizardProps) => {
               control={
                 <Checkbox
                   checked={schedule.active}
-                  onChange={event => setSchedule(schedule.clone({ active: event.target.checked }))}
+                  onChange={event => setSchedule({ ...schedule, active: event.target.checked })}
                 />
               }
             />
@@ -115,7 +116,7 @@ export const ScheduleWizard = (props: ScheduleWizardProps) => {
               inputFormat={DEADLINE_FORMAT}
               value={schedule.deadline}
               disableCloseOnSelect
-              onChange={date => setSchedule(schedule.clone({ deadline: date == null ? null : startOfDay(date) }))}
+              onChange={date => setSchedule({ ...schedule, deadline: date == null ? null : startOfDay(date) })}
               disablePast={earliestTimeslotDate > new Date()}
               showTodayButton
               clearable
@@ -160,7 +161,7 @@ export const ScheduleWizard = (props: ScheduleWizardProps) => {
 
           {schedule.timeSlots.map((timeSlot, index) =>
             <TimeSlotRow
-              key={`time-slot-${index}-${timeSlot.id}`}
+              key={`time-slot-${timeSlot.id}`}
               id={`${index}-${timeSlot.id}`}
               schedule={schedule}
               timeSlot={timeSlot}

@@ -15,6 +15,7 @@ import type { Schedule } from 'src/Models/Schedule'
 import type { TimeSlot } from 'src/Models/TimeSlot'
 import { minutesStep } from 'src/Models/TimeSlot'
 import { TIMESLOT_FORMAT } from 'src/utils/Date'
+import type { NonFunctionProperties } from 'src/utils/ObjectUtils'
 import { createProxy } from 'src/utils/ObjectUtils'
 
 const MIN_YEAR = 2000
@@ -44,7 +45,7 @@ const numberInputsStyle = {
 } as SxProps<Theme>
 
 type TimeSlotRowProps = {
-  schedule: Schedule
+  schedule: NonFunctionProperties<Schedule>
   timeSlot: TimeSlot
   id: string
   onEditTimeSlotDateTime: (date: Date | null) => void
@@ -131,7 +132,7 @@ const TimeSlotRow = (props: TimeSlotRowProps) => {
             style={{ width: '222px', minWidth: '222px' }} // Enough to fit 'Wed Jun 22nd 2022, 22:22'
           />}
       />
-      <Stack direction='row' spacing={1.5}>
+      <Stack direction='row' spacing={1.5} alignItems='center'>
         <TextField
           id={`maximum-entries-${props.id}`}
           label='Maximum entries'

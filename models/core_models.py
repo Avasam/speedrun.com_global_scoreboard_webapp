@@ -189,14 +189,16 @@ class Player(db.Model):
         name: str,
         is_active: bool,
         deadline: Optional[str],
-        time_slots: List[Dict[str, str]]
+        time_slots: List[Dict[str, str]],
+        order: int = -1
     ) -> int:
         new_schedule = Schedule(
             name=name,
             owner_id=self.user_id,
             registration_key=str(uuid.uuid4()),
             is_active=is_active,
-            deadline=None if deadline is None else datetime.strptime(deadline, DATETIME_FORMAT))
+            deadline=None if deadline is None else datetime.strptime(deadline, DATETIME_FORMAT),
+            order=order)
         db.session.add(new_schedule)
         db.session.flush()
 
