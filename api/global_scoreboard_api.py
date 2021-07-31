@@ -48,13 +48,17 @@ def update_player(name_or_id: str):
         return error_message, 500
 
 
-def __do_update_player_bypass_restrictions(name_or_id: str):
+def __do_update_player_bypass_restrictions(name_or_id: str, current_user: Optional[Player] = None):
     try:
         result = get_updated_user(name_or_id)
         return jsonify(result), 400 if result["state"] == "warning" else 200
     except UnderALotOfPressure:
         # Meme code for meme error
         return "", 418
+    finally:
+        # Upon update completing, allow the user to update again
+        if (current_user):
+            __currently_updating_from.pop(current_user.user_id, None)
 
 
 __currently_updating_from: Dict[str, datetime] = {}
@@ -82,17 +86,7 @@ def __do_update_player(current_user: Player, name_or_id: str):
     __currently_updating_from[current_user.user_id] = now
     __currently_updating_to[name_or_id] = now
 
-    try:
-        # Actually do the update process
-        result = get_updated_user(name_or_id)
-    except UnderALotOfPressure:
-        # Meme code for meme error
-        return "", 418
-    finally:
-        # Upon update completing, allow the user to update again
-        __currently_updating_from.pop(current_user.user_id, None)
-
-    return jsonify(result), 400 if result["state"] == "warning" else 200
+    return __do_update_player_bypass_restrictions(name_or_id, current_user=current_user)
 
 
 @api.route('/players/current/friends', methods=('GET',))

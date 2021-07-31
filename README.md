@@ -62,9 +62,8 @@ Note: The soft cutoff works great on games such as Barney. But is too punishing 
 ## Dev environment setup
 
 Get yourself a [MySQL server](https://dev.mysql.com/downloads/mysql/) (as of 2021/06/01, PythonAnywhere uses version 5.7.27)  
-Install [Python](https://www.python.org/downloads/) 3.7 or 3.8 (but not 3.9 !)  
-Install PIP (this should come bundled with python 3.4+)  
-Run this command in a terminal: `pip3 install flask flask_cors flask_sqlalchemy sqlalchemy httplib2 simplejson mysql-connector requests pyjwt`  
+Install [Python](https://www.python.org/downloads/) 3.7 or above (validated up to 3.9)  
+Run this command in a terminal: `pip3 install -r requirements.txt`  
 Copy `configs.template.py` as `configs.py` and update the file as needed.  
 If needed, copy `.env.development` as `.env.development.local` and update the file.  
 
@@ -75,4 +74,4 @@ If needed, copy `.env.development` as `.env.development.local` and update the fi
 
 These steps are missing setting up a virtual environment, but if you care about that, you'll know how to set it up yourself. In any case you can let me know if you have issues setting up your dev environment.
 
-[![Dependabot status](https://api.dependabot.com/badges/status?host=github&repo=Avasam/speedrun.com_global_scoreboard_webapp)](https://github.com/dependabot/dependabot-core/issues/1912)
+<!-- [![Dependabot status](https://api.dependabot.com/badges/status?host=github&repo=Avasam/speedrun.com_global_scoreboard_webapp)](https://github.com/dependabot/dependabot-core/issues/1912) -->

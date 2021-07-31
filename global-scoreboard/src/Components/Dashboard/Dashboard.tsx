@@ -214,11 +214,11 @@ const Dashboard = (props: DashboardProps) => {
             <p>You know the drill...</p>
             <p>
               <img src='https://speedrun.com/themes/Default/1st.png' alt='' />
+              <img src='https://brand.twitch.tv/assets/emotes/lib/kappa.png' alt='Kappa' height='64px' />
               <br />
-              <img src='https://speedrun.com/themes/Default/logo.png' alt='speedrun.com' style={{ width: 384 }} />
+              <img src='https://speedrun.com/themes/Default/logo.png' alt='speedrun.com' width='384px' />
             </p>
             <p>Oops! The site&apos;s under a lot of pressure right now. Please try again in a minute.</p>
-            <img src='https://brand.twitch.tv/assets/emotes/lib/kappa.png' alt='Kappa' />
           </div>)
 
           break
@@ -226,7 +226,7 @@ const Dashboard = (props: DashboardProps) => {
           setAlertMessage(`Error ${StatusCodes.GATEWAY_TIMEOUT}: ${ReasonPhrases.GATEWAY_TIMEOUT}. ` +
             'The webworker probably timed out, which can happen if updating takes more than 5 minutes. ' +
             'Please try again as next attempt should take less time since ' +
-            'all calls to speedrun.com are cached for a day or until server restart.')
+            'all calls to speedrun.com are cached for a day.')
 
           break
         case StatusCodes.CONFLICT:
