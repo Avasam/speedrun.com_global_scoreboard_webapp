@@ -116,13 +116,8 @@ def clean_old_cache():
     print(f"   {__cache_count} cached responses.")
     if (__cache_count == 0 or configs.skip_cache_cleanup):
         print("   Skipping expired cache removal.")
-    # TODO: Check for filesize instead
-    # elif (__cache_count < 4096):
     else:
         remove_expired_responses()
-    # else:
-    #     print("   Clearing cache...")
-    #     session.cache.clear()
 
 
 session = CachedSession(
