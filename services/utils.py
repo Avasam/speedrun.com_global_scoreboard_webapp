@@ -6,7 +6,6 @@ from math import ceil, floor, sqrt
 from multiprocessing import BoundedSemaphore  # , synchronize
 from random import randint
 from requests.exceptions import ConnectionError, HTTPError
-from requests_cache.cache_keys import url_to_key
 from requests_cache.session import CachedSession
 from simplejson.scanner import JSONDecodeError as SimpleJSONDecodeError
 from sqlite3 import OperationalError
@@ -15,6 +14,9 @@ from time import sleep
 from typing import Any, Dict, List, Optional, Union
 from urllib.parse import parse_qs, urlparse
 import configs
+from glob import glob
+from os import unlink
+from os.path import isfile, join
 import traceback
 
 RATE_LIMIT = 200
@@ -86,25 +88,14 @@ class RatedSemaphore(ThreadingBoundedSemaphore):  # synchronize.BoundedSemaphore
     __enter__ = acquire
 
 
-def remove_expired_responses():
-    try:
-        print("   Removing expired responses...")
-        session.cache.remove_expired_responses()
-        print("Done")
-    except OperationalError:
-        print("'too many SQL variables', nuking the cache instead")
-        session.cache.clear()
-
-
 def clear_cache_for_user_async(userId: str):
     def clear_cache_thread():
         try:
             print(f"Deleting cache specific to user '{userId}'...")
-            session.cache.bulk_delete(
-                [url_to_key(url, session.cache.ignored_parameters)
-                    for url in session.cache.urls
-                    if userId in url])
-            remove_expired_responses()
+            session.cache.delete_urls([url for url in session.cache.urls if userId in url])
+            print("Removing expired responses...")
+            session.cache.remove_expired_responses()
+            print("Done")
         except Exception:
             print(f"Something went wrong while deleting cache for '{userId}'")
             raise
@@ -117,7 +108,9 @@ def clean_old_cache():
     if (__cache_count == 0 or configs.skip_cache_cleanup):
         print("   Skipping expired cache removal.")
     else:
-        remove_expired_responses()
+        print("   Removing expired responses...")
+        session.cache.remove_expired_responses()
+        print("   Done")
 
 
 session = CachedSession(
@@ -127,7 +120,6 @@ session = CachedSession(
     backend=configs.cached_session_backend,
     fast_save=True,
     use_temp=True)
-# cache_name='/dev/shm/http_cache')
 clean_old_cache()
 rate_limit = RatedSemaphore(RATE_LIMIT, 60)  # 200 requests per minute
 
@@ -152,6 +144,9 @@ def get_file(
                 response = session.get(url, params=params, headers=headers)
             # "disk I/O erro" when going over PythonAnywhere's Disk Quota
             except OperationalError:
+                for filePath in glob('/tmp/.nfs*'):
+                    if isfile(filePath):
+                        unlink(filePath)
                 session.cache.clear()
                 response = session.get(url, params=params, headers=headers)
 
