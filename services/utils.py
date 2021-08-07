@@ -4,19 +4,19 @@ from datetime import timedelta
 from json.decoder import JSONDecodeError
 from math import ceil, floor, sqrt
 from multiprocessing import BoundedSemaphore  # , synchronize
+from os import unlink
+from os.path import isdir
 from random import randint
 from requests.exceptions import ConnectionError, HTTPError
 from requests_cache.session import CachedSession
 from simplejson.scanner import JSONDecodeError as SimpleJSONDecodeError
-from sqlite3 import OperationalError
+from sqlite3 import DatabaseError, OperationalError
+from tempfile import gettempdir
 from threading import BoundedSemaphore as ThreadingBoundedSemaphore, Timer, Thread
 from time import sleep
 from typing import Any, Dict, List, Optional, Union
 from urllib.parse import parse_qs, urlparse
 import configs
-from glob import glob
-from os import unlink
-from os.path import isfile, join
 import traceback
 
 RATE_LIMIT = 200
@@ -143,10 +143,10 @@ def get_file(
             try:
                 response = session.get(url, params=params, headers=headers)
             # "disk I/O erro" when going over PythonAnywhere's Disk Quota
-            except OperationalError:
-                for filePath in glob('/tmp/.nfs*'):
-                    if isfile(filePath):
-                        unlink(filePath)
+            except (DatabaseError, OperationalError, OSError):
+                # TODO: Try to check for available space first (<=5%),
+                # https://help.pythonanywhere.com/pages/DiskQuota
+                [unlink(dir) for dir in [gettempdir(), '~/.cache'] if isdir(dir)]
                 session.cache.clear()
                 response = session.get(url, params=params, headers=headers)
 

@@ -13,7 +13,7 @@ import { diffDays } from 'src/utils/Time'
 
 const currentTimeOnLoad = new Date()
 const columnClass = (lastUpdate: Date) => {
-  const daysSince = diffDays(lastUpdate, currentTimeOnLoad)
+  const daysSince = diffDays(currentTimeOnLoad, lastUpdate)
   if (daysSince >= Configs.lastUpdatedDays[2]) return 'daysSince'
   if (daysSince >= Configs.lastUpdatedDays[1]) return 'daysSince2'
   return ''
