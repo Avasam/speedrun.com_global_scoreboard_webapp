@@ -65,11 +65,11 @@ function registerValidSW(swUrl: string, config?: Config) {
   navigator.serviceWorker
     .register(swUrl)
     .then(registration => {
-      registration.onupdatefound = () => {
+      registration.addEventListener('updatefound', () => {
         const installingWorker = registration.installing
         if (installingWorker == null) return
 
-        installingWorker.onstatechange = () => {
+        installingWorker.addEventListener('statechange', () => {
           if (installingWorker.state !== 'installed') return
           if (navigator.serviceWorker.controller) {
             // At this point, the updated precached content has been fetched,
@@ -95,8 +95,8 @@ function registerValidSW(swUrl: string, config?: Config) {
               config.onSuccess(registration)
             }
           }
-        }
-      }
+        })
+      })
     })
     .catch(error => {
       console.error('Error during service worker registration:', error)

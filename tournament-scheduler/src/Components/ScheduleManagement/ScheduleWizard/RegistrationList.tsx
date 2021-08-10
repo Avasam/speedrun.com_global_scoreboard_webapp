@@ -68,6 +68,7 @@ const RegistrationList = (props: RegistrationListProps) => {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
+            {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
             <Button onClick={() => handleClose(false)} autoFocus>
               Cancel
             </Button>
