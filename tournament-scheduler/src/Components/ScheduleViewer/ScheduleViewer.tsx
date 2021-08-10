@@ -1,4 +1,4 @@
-import { Box, Container, Grid, List, ListItem, ListItemText, Paper, Typography, useTheme } from '@material-ui/core'
+import { Box, Container, FormLabel, Grid, List, ListItem, ListItemText, Paper, Typography, useTheme } from '@material-ui/core'
 import { StatusCodes } from 'http-status-codes'
 import { useEffect, useState } from 'react'
 
@@ -54,7 +54,7 @@ const ScheduleViewer = (props: ScheduleViewerProps) => {
       : <Box textAlign='left' width={!props.shownInGroup ? 'fit-content' : '100%'} margin='auto'>
         {/* Offers a background in embedded */}
         <Paper style={{ boxShadow: 'none', background: embedded ? theme.palette.background.default : 'transparent' }}>
-          <label>Schedule for: {schedule.name}</label>
+          <FormLabel>Schedule for: {schedule.name}</FormLabel>
           {!props.shownInGroup && TimeZoneMessage}
           {schedule.active
             ? schedule.deadline && <p>

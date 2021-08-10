@@ -1,7 +1,7 @@
 {
   "plugins": [
     "react-hooks",
-    // "jsx-a11y",
+    "jsx-a11y",
     "switch-case",
     "prefer-arrow",
     "simple-import-sort",
@@ -13,7 +13,7 @@
     "plugin:@typescript-eslint/all",
     "plugin:react/recommended",
     "plugin:react-hooks/recommended",
-    // "plugin:jsx-a11y/strict",
+    "plugin:jsx-a11y/strict",
     "plugin:sonarjs/recommended",
     "plugin:switch-case/recommended",
     "plugin:unicorn/recommended"

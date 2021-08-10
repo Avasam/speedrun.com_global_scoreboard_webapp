@@ -139,7 +139,7 @@ const ScheduleRegistration = (props: ScheduleRegistrationProps) => {
       </div>
       : <Card>
         <CardContent style={{ textAlign: 'left' }}>
-          <label>Schedule for: {scheduleState.name}</label>
+          <FormLabel>Schedule for: {scheduleState.name}</FormLabel>
           <br />
           <Link component={RouterLink} to={`/view/${scheduleState.id}`}>
             Click here to view the current registrations
