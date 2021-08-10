@@ -18,6 +18,7 @@ type LoginModalProps = {
 }
 
 const LoginModal = (props: LoginModalProps) => {
+  const [loading, setLoading] = useState(false)
   const [srcApiKeyInput, setSrcApiKeyInput] = useState('')
   const [loginErrorMessage, setLoginErrorMessage] = useState('')
 
@@ -27,6 +28,7 @@ const LoginModal = (props: LoginModalProps) => {
         '\nClick "What\'s my key?" or fill in the interactive link below to find your key.')
       return
     }
+    setLoading(true)
     setLoginErrorMessage('')
     apiPost('login', { srcApiKey: srcApiKeyInput })
       .then(res => res.json())
@@ -45,6 +47,7 @@ const LoginModal = (props: LoginModalProps) => {
           console.error(err)
         }
       })
+      .finally(() => setLoading(false))
   }
 
   const handleSrcApiKeyChange: ChangeEventHandler<HTMLInputElement> = event =>
@@ -80,7 +83,7 @@ const LoginModal = (props: LoginModalProps) => {
 
         <Form.Group className='mb-3'>
           <Col className='d-grid' xs={{ span: 6, offset: 3 }}>
-            <Button type='submit' variant='success' onClick={() => attemptLogin()}>Log in</Button>
+            <Button type='submit' variant='success' disabled={loading} onClick={attemptLogin}>Log in</Button>
           </Col>
         </Form.Group>
 

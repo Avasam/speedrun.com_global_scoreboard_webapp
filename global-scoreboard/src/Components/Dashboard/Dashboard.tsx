@@ -12,6 +12,7 @@ import { apiDelete, apiGet, apiPost, apiPut } from 'src/fetchers/Api'
 import Configs from 'src/Models/Configs'
 import type Player from 'src/Models/Player'
 import type UpdateRunnerResult from 'src/Models/UpdateRunnerResult'
+import math from 'src/utils/Math'
 
 type DashboardProps = {
   currentUser: Player | null | undefined
@@ -182,17 +183,17 @@ const Dashboard = (props: DashboardProps) => {
       setAlertMessage(`${err.name}: ${err.message}`)
     } else {
       temporaryAlertVariant = 'warning'
-      const conflictCase = (error: string) => {
-        switch (error) {
+      const conflictCase = (error: { messageKey: string, timeLeft: number }) => {
+        const tryAgain = `Please try again in ${Math.ceil(error.timeLeft / math.SECONDS_IN_MINUTE)} minutes.`
+        switch (error.messageKey) {
           case 'current_user':
-            setAlertMessage('It seems you are already updating a runner. Please try again in 5 minutes.')
+            setAlertMessage(`It seems you are already updating a runner. ${tryAgain}`)
             break
           case 'name_or_id':
-            setAlertMessage('It seems this runner is already being updated (possibly by someone else). ' +
-              'Please try again in 5 minutes.')
+            setAlertMessage(`It seems this runner is already being updated (possibly by someone else). ${tryAgain}`)
             break
           default:
-            setAlertMessage(error)
+            setAlertMessage(`${error.messageKey} ${tryAgain}`)
         }
       }
       const defaultCase = (error: string) => {
@@ -213,24 +214,23 @@ const Dashboard = (props: DashboardProps) => {
           setAlertMessage(<div>
             <p>You know the drill...</p>
             <p>
-              <img src='https://speedrun.com/themes/Default/1st.png' alt='' />
+              <img src='https://speedrun.com/themes/Default/1st.png' alt='SRC logo' />
+              <img src='https://brand.twitch.tv/assets/emotes/lib/kappa.png' alt='Kappa' height='64px' />
               <br />
-              <img src='https://speedrun.com/themes/Default/logo.png' alt='speedrun.com' style={{ width: 384 }} />
+              <img src='https://speedrun.com/themes/Default/logo.png' alt='speedrun.com' width='384px' />
             </p>
             <p>Oops! The site&apos;s under a lot of pressure right now. Please try again in a minute.</p>
-            <img src='https://brand.twitch.tv/assets/emotes/lib/kappa.png' alt='Kappa' />
           </div>)
 
           break
         case StatusCodes.GATEWAY_TIMEOUT:
           setAlertMessage(`Error ${StatusCodes.GATEWAY_TIMEOUT}: ${ReasonPhrases.GATEWAY_TIMEOUT}. ` +
             'The webworker probably timed out, which can happen if updating takes more than 5 minutes. ' +
-            'Please try again as next attempt should take less time since ' +
-            'all calls to speedrun.com are cached for a day or until server restart.')
+            'Please try again as all calls to speedrun.com are cached for a day.')
 
           break
         case StatusCodes.CONFLICT:
-          void err.text().then(conflictCase)
+          void err.json().then(conflictCase)
           break
         default:
           void err.text().then(defaultCase)

@@ -1,42 +1,38 @@
-from collections import Counter
 from datetime import datetime
 from math import exp, floor, pi
 from models.game_search_models import GameValues
 from models.core_models import db, Player
-from models.global_scoreboard_models import PointsDistributionDto, Run, SrcRequest, User
-from time import strftime
-from typing import Dict, List, Union
-from threading import Thread
+from models.global_scoreboard_models import PointsDistributionDto, Run, User
+from re import sub
 from services.user_updater_helpers import BasicJSONType, extract_valid_personal_bests, get_probability_terms, \
     get_subcategory_variables, keep_runs_before_soft_cutoff, MIN_LEADERBOARD_SIZE, update_runner_in_database, \
     extract_top_runs_and_score, extract_sorted_valid_runs_from_leaderboard
-from services.utils import start_and_wait_for_threads, \
-    SpeedrunComError, UnhandledThreadException, UserUpdaterError
+from services.utils import clear_cache_for_user_async, get_file, get_paginated_response, MAXIMUM_RESULTS_PER_PAGE, \
+    SpeedrunComError, start_and_wait_for_threads, UserUpdaterError
+from time import strftime
+from typing import Dict, List, Union
 from urllib.parse import unquote
 import configs
 import httplib2
-import re
 import requests
-import traceback
 
 TIME_BONUS_DIVISOR = 3600 * 12  # 12h (1/2 day) for +100%
 
 
-def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int, PointsDistributionDto]]:
+def get_updated_user(user_id: str) -> Dict[str, Union[str, None, float, int, PointsDistributionDto]]:
     """Called from flask_app and AutoUpdateUsers.run()"""
-    global threads_exceptions
-    # threads_exceptions: List[Exception] = []
-    threads_exceptions = []
-    text_output: str = p_user_id
+    text_output: str = user_id
     result_state: str = "info"
 
     try:
-        user = User(p_user_id)
+        user = User(user_id)
         print(f"Update request for: {user._name}")
 
         try:
             __set_user_code_and_name(user)
-        except SpeedrunComError:
+        except SpeedrunComError as exception:
+            if not exception.args[0]['error'].startswith("404"):
+                raise
             # ID doesn't exists on speedrun.com but it does in the database, remove it
             player = Player.get(user._name)
             if player:
@@ -56,37 +52,23 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int, P
             player = Player.get(user._id)
 
             # If user doesn't exists or enough time passed since last update
-            if not player or \
-                not player.last_update or \
-                (datetime.now() - player.last_update).days >= configs.last_updated_days[0] or \
-                    configs.bypass_update_restrictions:
-
+            if (
+                not player or
+                not player.last_update or
+                (datetime.now() - player.last_update).days >= configs.last_updated_days[0] or
+                configs.bypass_update_restrictions
+            ):
                 __set_user_points(user)
-
-                if not threads_exceptions:
-                    text_output, result_state = update_runner_in_database(player, user)
-                else:
-                    errors_str = "Please report to: https://github.com/Avasam/Global_Speedrunning_Scoreboard/issues\n" \
-                        "\nNot uploading data as some errors were caught during execution:\n"
-                    if len(threads_exceptions) == 1:
-                        raise UnhandledThreadException(threads_exceptions[0]["error"] +
-                                                       "\n" +
-                                                       errors_str +
-                                                       str(threads_exceptions[0]["details"]))
-                    else:
-                        error_str_items = Counter(
-                            [f"Error: {e['error']}\n{e['details']}"
-                             for e in threads_exceptions]) \
-                            .items()
-                        for error, count in error_str_items:
-                            errors_str += f"[x{count}] {error}\n"
-                        raise UnhandledThreadException(f"Multiple Unhandled Exceptions in threads\n{errors_str}")
+                text_output, result_state = update_runner_in_database(player, user)
             else:
                 cant_update_time = configs.last_updated_days[0]
                 text_output = f"This user has already been updated in the past {cant_update_time} day" \
                     "s" if cant_update_time != 1 else ""
                 result_state = "warning"
 
+        # When we can finally successfully update a player, clear the cache of their specific responses
+        if not configs.skip_cache_cleanup:
+            clear_cache_for_user_async(user._id)
         return {
             'userId': user._id,
             'name': user._name,
@@ -108,7 +90,7 @@ def get_updated_user(p_user_id: str) -> Dict[str, Union[str, None, float, int, P
 
 def __set_user_code_and_name(user: User) -> None:
     url = "https://www.speedrun.com/api/v1/users/{user}".format(user=user._id)
-    infos = SrcRequest.get_cached_response_or_new(url)
+    infos = get_file(url, {}, True)
 
     user._id = infos["data"]["id"]
     location = infos["data"]["location"]
@@ -125,75 +107,66 @@ def __set_user_code_and_name(user: User) -> None:
 
 
 def __set_user_points(user: User) -> None:
-    global threads_exceptions
     counted_runs: List[Run] = []
 
     def set_points_thread(pb: BasicJSONType) -> None:
-        try:
-            if threads_exceptions:
-                # Don't keep going if previous threads already threw something
-                print("Aborted thread due to previous thread exceptions")
-                return
-            pb_subcategory_variables = get_subcategory_variables(pb)
+        pb_subcategory_variables = get_subcategory_variables(pb)
 
-            pb_level_id = pb["level"]["data"]["id"] if pb["level"]["data"] else ""
-            pb_level_name = pb["level"]["data"]["name"] if pb["level"]["data"] else ""
-            run: Run = Run(pb["id"],
-                           pb["times"]["primary_t"],
-                           pb["game"]["data"]["id"],
-                           pb["game"]["data"]["names"]["international"],
-                           pb["category"],
-                           pb_subcategory_variables,
-                           pb_level_id,
-                           pb_level_name,
-                           len(pb["game"]["data"]["levels"]["data"]))
-            __set_run_points(run)
+        pb_level_id = pb["level"]["data"]["id"] if pb["level"]["data"] else ""
+        pb_level_name = pb["level"]["data"]["name"] if pb["level"]["data"] else ""
+        run: Run = Run(pb["id"],
+                       pb["times"]["primary_t"],
+                       pb["game"]["data"]["id"],
+                       pb["game"]["data"]["names"]["international"],
+                       pb["category"],
+                       pb_subcategory_variables,
+                       pb_level_id,
+                       pb_level_name,
+                       len(pb["game"]["data"]["levels"]["data"]))
+        __set_run_points(run)
 
-            # If a category has already been counted, only keep the one that's worth the most.
-            # This can happen in leaderboards with coop runs or subcategories.
-            if run._points > 0:
-                for i, counted_run in enumerate(counted_runs):
-                    if counted_run == run:
-                        if run._points > counted_run._points:
-                            counted_runs[i] = run
-                        break
-                else:
-                    counted_runs.append(run)
+        # If a category has already been counted, only keep the one that's worth the most.
+        # This can happen in leaderboards with coop runs or subcategories.
+        if run._points > 0:
+            for i, counted_run in enumerate(counted_runs):
+                if counted_run == run:
+                    if run._points > counted_run._points:
+                        counted_runs[i] = run
+                    break
+            else:
+                counted_runs.append(run)
 
-            # Used to allow searching for games by their worth
-            # Run should be worth more than 1 point, not be a level and be made by WR holder
-            if run._points >= 1 and not run.level and run._is_wr_time:
-                # TODO : Current issues with subcategories where they try to create at the same time bc in two threads
-                # Solution 1: Include subcategories as part of PRIMARY key
-                # Solution 2: Batch create/update AFTER all threads are done running
-                GameValues.create_or_update(
-                    run_id=run.id_,
-                    game_id=run.game,
-                    category_id=run.category,
-                    platform_id=pb["system"]["platform"],
-                    wr_time=floor(run.primary_t),
-                    wr_points=floor(run._points),
-                    mean_time=floor(run._mean_time),
-                )
-
-        except UserUpdaterError as exception:
-            threads_exceptions.append(exception.args[0])
-        except Exception:
-            threads_exceptions.append({"error": "Unhandled exception in thread", "details": traceback.format_exc()})
+        # Used to allow searching for games by their worth
+        # Run should be worth more than 1 point, not be a level and be made by WR holder
+        if run._points >= 1 and not run.level and run._is_wr_time:
+            # TODO : Current issues with subcategories where they try to create at the same time bc in two threads
+            # Solution 1: Include subcategories as part of PRIMARY key
+            # Solution 2: Batch create/update AFTER all threads are done running
+            GameValues.create_or_update(
+                run_id=run.id_,
+                game_id=run.game,
+                category_id=run.category,
+                platform_id=pb["system"]["platform"],
+                wr_time=floor(run.primary_t),
+                wr_points=floor(run._points),
+                mean_time=floor(run._mean_time),
+            )
 
     if user._banned:
         user._points = 0
         return
 
-    url = "https://www.speedrun.com/api/v1/runs?user={user}&status=verified" \
-        "&embed=level,game.levels,game.variables&max={pagesize}" \
-        .format(user=user._id, pagesize=200)
-    runs: List[BasicJSONType] = SrcRequest.get_paginated_response(url)["data"]
+    url = "https://www.speedrun.com/api/v1/runs"
+    params = {
+        "user": user._id,
+        "status": "verified",
+        "embed": "level,game.levels,game.variables",
+        "max": MAXIMUM_RESULTS_PER_PAGE,
+    }
+    runs: List[BasicJSONType] = get_paginated_response(url, params)["data"]
     runs = extract_valid_personal_bests(runs)
 
-    threads = [Thread(target=set_points_thread, args=(run,))
-               for run in runs]
-    start_and_wait_for_threads(threads)
+    start_and_wait_for_threads(set_points_thread, runs)
 
     # Sum up the runs' score, only the top 60 will end up giving points
     top_runs, lower_runs = extract_top_runs_and_score(counted_runs)
@@ -205,18 +178,18 @@ def __set_run_points(run: Run) -> None:
     run._points = 0
     # If the run is an Individual Level, adapt the request url
     lvl_cat_str = "level/{level}/".format(level=run.level) if run.level else "category/"
-    url = "https://www.speedrun.com/api/v1/leaderboards/{game}/" \
-        "{lvl_cat_str}{category}?video-only=true&embed=players".format(
-            game=run.game,
-            lvl_cat_str=lvl_cat_str,
-            category=run.category)
+    url = "https://www.speedrun.com/api/v1/leaderboards/{game}/{lvl_cat_str}{category}".format(
+        game=run.game,
+        lvl_cat_str=lvl_cat_str,
+        category=run.category)
+    params = {"video-only": True, "embed": "players"}
     for var_id, var_value in run.variables.items():
-        url += "&var-{id}={value}".format(id=var_id, value=var_value)
+        params[f"var-{var_id}"] = var_value
     try:
-        leaderboard = SrcRequest.get_cached_response_or_new(url)
+        leaderboard = get_file(url, params, True)
     # If SRC returns 404 here, most likely the run references a category or level that does not exist anymore
     except SpeedrunComError as exception:
-        if exception.args[0]['error'] == "404 (speedrun.com)":
+        if exception.args[0]['error'].startswith("404"):
             return
         else:
             raise
@@ -273,7 +246,7 @@ def __set_run_points(run: Run) -> None:
     run._points = (exp(e_exponent) - 1) * 10 * length_bonus * run.level_fraction
 
     # Set category name
-    run.category_name = re.sub(
+    run.category_name = sub(
         r"((\d\d)$|Any)(?!%)",
         r"\1%",
         unquote(leaderboard["data"]["weblink"].split('#')[1])

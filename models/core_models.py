@@ -44,11 +44,11 @@ class Player(db.Model):
         try:  # Get user from speedrun.com using the API key
             data = get_file(
                 "https://www.speedrun.com/api/v1/profile",
-                {"X-API-Key": api_key}
+                headers={"X-API-Key": api_key}
             )["data"]
-        except SpeedrunComError:
-            return None, 'Invalid SRC API key'
         except UserUpdaterError as exception:
+            if isinstance(exception, SpeedrunComError) and exception.args[0]['error'].startswith("403"):
+                return None, 'Invalid SRC API key'
             return None, f"Error: {exception.args[0]['error']}\n{exception.args[0]['details']}"
         except Exception:
             print("\nError: Unknown\n{}".format(traceback.format_exc()))
