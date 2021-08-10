@@ -1,71 +1,7 @@
 from __future__ import annotations
-from datetime import datetime, timedelta
-from math import ceil, floor
-from services.utils import get_file, map_to_dto, UserUpdaterError
+from math import ceil
+from services.utils import map_to_dto
 from typing import Dict, List, Optional, Union
-from urllib import parse
-import configs
-
-memoized_requests: Dict[str, SrcRequest] = {}
-
-
-class SrcRequest():
-    global memoized_requests
-    result: dict
-    timestamp: datetime
-
-    def __init__(self, result: dict, timestamp: datetime):
-        self.result = result
-        self.timestamp = timestamp
-
-    @staticmethod
-    def get_cached_response_or_new(url: str) -> dict:
-        today = datetime.utcnow()
-        yesterday = today - timedelta(days=configs.last_updated_days[0])
-
-        try:
-            cached_request = memoized_requests[url]
-        except KeyError:
-            cached_request = None
-        if (cached_request and cached_request.timestamp >= yesterday):
-            return cached_request.result
-        else:
-            result = get_file(url)
-            memoized_requests[url] = SrcRequest(result, today)
-            return result
-
-    @staticmethod
-    def get_paginated_response(url: str) -> dict:
-        summed_results = {"data": []}
-        next_url = url
-        while next_url:
-            max_param = parse.parse_qs(parse.urlparse(next_url).query).get('max')
-            results_per_page = int(max_param[0]) if max_param else 20
-
-            # Get the next page of results ...
-            while True:
-                try:
-                    result = get_file(next_url)
-                    break
-                # If it failed, try again with a smaller page.
-                # The usual suspects:
-                # - Otterstone_Gamer, qjn1wzw8 --> /6 (400-433) still fails
-                # - Cmdr, 48g5vo7j
-                # - SRGTsilent, v8l3eq48
-                except UserUpdaterError as exception:
-                    if exception.args[0]['error'] != "HTTPError 500" or results_per_page < 20:
-                        raise exception
-                    reduced_results_per_page = floor(results_per_page / 7)
-                    print("SRC returned 500 for a paginated request. "
-                          f"Reducing the max results per page from {results_per_page} to {reduced_results_per_page}")
-                    next_url = next_url.replace(f"max={results_per_page}", f"max={reduced_results_per_page}")
-                    results_per_page = reduced_results_per_page
-
-            # ... and combine it with previous ones
-            next_url = next((link["uri"] for link in result["pagination"]["links"] if link["rel"] == "next"), None)
-            summed_results["data"] += result["data"]
-
-        return summed_results
 
 
 class Run:

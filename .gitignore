@@ -63,6 +63,7 @@ local_settings.py
 # Flask stuff:
 instance/
 .webassets-cache
+http_cache.*
 
 # Scrapy stuff:
 .scrapy
@@ -110,6 +111,17 @@ ENV/
 # Logs
 *.log
 .log*
+
+# Configs
+configs.py
+local.*
+*.local
+
+# Dependencies
+*/node_modules
+*/.pnp
+.pnp.js
+!*/dependencies/**
 
 # =========================
 # Operating System Files
@@ -170,14 +182,3 @@ $RECYCLE.BIN/
 
 # mypy
 .mypy_cache/
-
-# configs
-configs.py
-local.*
-*.local
-
-# dependencies
-*/node_modules
-*/.pnp
-.pnp.js
-!*/dependencies/**
