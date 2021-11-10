@@ -46,21 +46,6 @@
     "patch-package": "^6.4.7",
     "typescript": "^4.4.4"
   },
-  "eslintConfig": {
-    "extends": [
-      "../.eslintrc.json",
-      "react-app"
-    ],
-    "parser": "@typescript-eslint/parser",
-    "parserOptions": {
-      "project": "./tsconfig.json"
-    },
-    "rules": {
-      "@typescript-eslint/no-unsafe-argument": "off",
-      "@typescript-eslint/restrict-template-expressions": "off",
-      "@typescript-eslint/no-unsafe-return": "off"
-    }
-  },
   "//": "browserslist (first 3): https://next.material-ui.com/guides/migration-v4/#supported-browsers-and-node-versions",
   "browserslist": {
     "production": [
