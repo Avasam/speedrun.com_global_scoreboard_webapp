@@ -14,11 +14,12 @@ const ScoreTitle = () => <>
   {'Score '}
   <span onClick={stopPropagation} onKeyPress={stopPropagation} role='button' tabIndex={0}>
     <OverlayTrigger
-      placement='top'
       overlay={
         <Tooltip id='rankInfo'>Click on a blue score for a detailed view</Tooltip>
       }
-    ><FaInfoCircle />
+      placement='top'
+    >
+      <FaInfoCircle />
     </OverlayTrigger>
   </span>
 </>

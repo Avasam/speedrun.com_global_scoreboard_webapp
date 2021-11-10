@@ -2,17 +2,17 @@ import type { ChangeEventHandler, FormEvent } from 'react'
 import { useState } from 'react'
 import { Button, Form, InputGroup } from 'react-bootstrap'
 
-import { apiGet } from 'src/fetchers/Api'
-import type { DataArray, SrcLeaderboard, SrcRun, SrcVariable } from 'src/Models/SrcResponse'
-import math from 'src/utils/Math'
-import { secondsToTimeString } from 'src/utils/Time'
+import { apiGet } from 'src/fetchers/api'
+import type { DataArray, SpeedruncomLeaderboard, SpeedruncomRun, SpeedruncomVariable } from 'src/Models/SpeedruncomResponse'
+import math from 'src/utils/math'
+import { secondsToTimeString } from 'src/utils/time'
 
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers
 const TIME_BONUS_DIVISOR = math.SECONDS_IN_HOUR * 12 // 12h (1/2 day) for +100%
 
 // eslint-disable-next-line unicorn/prevent-abbreviations
-const addVarToValuesKeys = (values: SrcRun['data']['values']) => {
-  const newDict: SrcRun['data']['values'] = {}
+const addVarToValuesKeys = (values: SpeedruncomRun['data']['values']) => {
+  const newDict: SpeedruncomRun['data']['values'] = {}
   for (const key in values) {
     newDict[`var-${key}`] = values[key]
   }
@@ -20,8 +20,8 @@ const addVarToValuesKeys = (values: SrcRun['data']['values']) => {
   return newDict
 }
 
-const filterSubCatVariables = (variables: SrcRun['data']['values'], subCategories: string[]) => {
-  const newVariables: SrcRun['data']['values'] = {}
+const filterSubCatVariables = (variables: SpeedruncomRun['data']['values'], subCategories: string[]) => {
+  const newVariables: SpeedruncomRun['data']['values'] = {}
   for (const key of Object.keys(variables)) {
     if (!subCategories.includes(key)) continue
     newVariables[key] = variables[key]
@@ -36,8 +36,8 @@ const getRunDetails = (runId: string) =>
     {},
     false
   )
-    .then<SrcRun>(res => res.json())
-    .then(res => res.data)
+    .then<SpeedruncomRun>(response => response.json())
+    .then(response => response.data)
 
 const getGameSubCategories = (gameId: string) =>
   apiGet(
@@ -45,21 +45,20 @@ const getGameSubCategories = (gameId: string) =>
     {},
     false
   )
-    .then<DataArray<SrcVariable>>(res => res.json())
-    .then(res =>
-      res
-        .data
-        .filter(variable => variable['is-subcategory'])
-        .map(variable => variable.id))
+    .then<DataArray<SpeedruncomVariable>>(response => response.json())
+    .then(response => response
+      .data
+      .filter(variable => variable['is-subcategory'])
+      .map(variable => variable.id))
 
-const getLeaderboardRuns = (gameId: string, categoryId: string, subCategories: SrcRun['data']['values']) =>
+const getLeaderboardRuns = (gameId: string, categoryId: string, subCategories: SpeedruncomRun['data']['values']) =>
   apiGet(
     `https://www.speedrun.com/api/v1/leaderboards/${gameId}/category/${categoryId}`,
     { 'video-only': true, ...addVarToValuesKeys(subCategories) },
     false
   )
-    .then<SrcLeaderboard>(res => res.json())
-    .then(res => res.data.runs.map(run => run.run))
+    .then<SpeedruncomLeaderboard>(response => response.json())
+    .then(response => response.data.runs.map(run => run.run))
 
 const ScoreDropCalculator = () => {
   const [runId, setRunId] = useState('')
@@ -149,33 +148,55 @@ const ScoreDropCalculator = () => {
         </Form.Label>
         <InputGroup>
           <Form.Control
-            required
-            placeholder='Run ID'
-            onChange={handleOnChange}
-            disabled={updating}
             aria-describedby='calculate score drop'
+            disabled={updating}
+            onChange={handleOnChange}
+            placeholder='Run ID'
+            required
           />
           <Button
-            type='submit'
             disabled={updating || !runId}
             onClick={onCalculate}
-          >Calculate</Button>
+            type='submit'
+          >
+            Calculate
+          </Button>
         </InputGroup>
       </Form.Group>
     </Form>
     {requiredTime !== null && (
       Number.isFinite(requiredTime)
         ? <>
-          <span>The run &apos;{calculatedRunId}&apos; is currently worth {calculatedRunScore} points. </span>
+          <span>
+            The run &apos;
+            {calculatedRunId}
+            &apos; is currently worth
+            {calculatedRunScore}
+            {' points. '}
+          </span>
           {requiredNewPlayers > 1
-            ? <span>To reduce it, the WR of {secondsToTimeString(requiredTime)} needs to be beaten
-              <strong> {requiredNewPlayers} times</strong>.</span>
-            : <span>To reduce it, a new run would need a time of
-              <strong> {secondsToTimeString(requiredTime)}</strong> or less.</span>
-          }</>
+            ? <span>
+              To reduce it, the WR of
+              {secondsToTimeString(requiredTime)}
+              {' '}
+              needs to be beaten
+              <strong>{` ${requiredNewPlayers} times`}</strong>
+              {/**/}
+              .
+            </span>
+            : <span>
+              To reduce it, a new run would need a time of
+              {' '}
+              <strong>{secondsToTimeString(requiredTime)}</strong>
+              {' '}
+              or less.
+            </span>}
+        </>
         : <span>
           The required time to reduce the points of the run
-          &apos;{calculatedRunId}&apos; could not be calculated.
+          &apos;
+          {calculatedRunId}
+          &apos; could not be calculated.
           Either because the leaderboard has less than 4 runners,
           it is an individual level, or something just went wrong.
         </span>

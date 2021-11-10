@@ -11,6 +11,8 @@
 /* eslint-disable unicorn/prevent-abbreviations */
 /* eslint-disable extra-rules/no-commented-out-code */
 /* eslint-disable max-len */
+/* eslint-disable max-lines */
+/* eslint-disable no-restricted-globals */
 
 // Origin: https://gitlab.com/fluidattacks/integrates/-/blob/master/integrates/front/src/typings/react-bootstrap-table-2/index.d.ts
 // Modified:
@@ -157,9 +159,9 @@ interface RemoteProps {
   sort?: boolean
 }
 interface CustomFilterProps extends FilterProps<TODO> {
-  type?: TODO//: FILTER_TYPES.NUMBER,  // default is FILTER_TYPES.TEXT
-  comparator?: PredefinedComparatorTypes//: Comparator.EQ, // only work if type is FILTER_TYPES.SELECT
-  caseSensitive?: boolean//false, // default is true
+  type?: TODO// : FILTER_TYPES.NUMBER,  // default is FILTER_TYPES.TEXT
+  comparator?: PredefinedComparatorTypes// : Comparator.EQ, // only work if type is FILTER_TYPES.SELECT
+  caseSensitive?: boolean// false, // default is true
 }
 type FilterFunction<Type extends TODO> = (val: Type) => TODO
 type NumberFilterFunction = (val: { number: number | '', comparator: PredefinedComparatorTypes }) => TODO

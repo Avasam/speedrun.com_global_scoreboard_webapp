@@ -1,6 +1,5 @@
-/* eslint-disable unicorn/prefer-spread */
 import type { FC } from 'react'
-import { createContext, useEffect, useRef, useState } from 'react'
+import { createContext, useEffect, useMemo, useRef, useState } from 'react'
 
 // TODO: Get through api: https://bootswatch.com/api/5.json
 export const THEMES = [
@@ -69,14 +68,17 @@ const ThemeProvider: FC = ({ children }) => {
     document.head.insertBefore(bootswatchStyleRef.current, bootstrapStyle.nextSibling)
   })
 
-  const saveTheme = (theme: Themes) => {
-    if (!bootswatchStyleRef.current) return
-    setHref(bootswatchStyleRef.current, theme)
-    setpreferedBootstrapTheme(theme)
-    localStorage.setItem('preferedBootstrapTheme', theme)
-  }
+  const value = useMemo(() => {
+    const saveTheme = (theme: Themes) => {
+      if (!bootswatchStyleRef.current) return
+      setHref(bootswatchStyleRef.current, theme)
+      setpreferedBootstrapTheme(theme)
+      localStorage.setItem('preferedBootstrapTheme', theme)
+    }
+    return [preferedBootstrapTheme, saveTheme] as [typeof preferedBootstrapTheme, typeof saveTheme]
+  }, [preferedBootstrapTheme])
 
-  return <ThemeContext.Provider value={[preferedBootstrapTheme, saveTheme]}>
+  return <ThemeContext.Provider value={value}>
     <div data-theme={preferedBootstrapTheme}>
       {children}
     </div>

@@ -1,16 +1,16 @@
-import { Button, Card, CardActions, CardContent, Container, FormControl, FormGroup, FormLabel, InputLabel, Link, MenuItem, Select, TextField, Typography } from '@material-ui/core'
-import type { SelectInputProps } from '@material-ui/core/Select/SelectInput'
+import { Button, Card, CardActions, CardContent, Container, FormControl, FormGroup, FormLabel, InputLabel, Link, MenuItem, Select, TextField, Typography } from '@mui/material'
+import type { SelectInputProps } from '@mui/material/Select/SelectInput'
 import { StatusCodes } from 'http-status-codes'
 import { useEffect, useState } from 'react'
 import { Link as RouterLink, useHistory } from 'react-router-dom'
 
 import DisableDashlane from 'src/Components/DisableDashlane'
-import { apiGet, apiPost } from 'src/fetchers/Api'
+import { apiGet, apiPost } from 'src/fetchers/api'
 import type { ScheduleDto } from 'src/Models/Schedule'
 import { Schedule } from 'src/Models/Schedule'
 import { TimeSlot } from 'src/Models/TimeSlot'
-import { addTime, diffDays, fancyFormat } from 'src/utils/Date'
-import { getDeadlineDueText } from 'src/utils/ScheduleHelper'
+import { addTime, diffDays, fancyFormat } from 'src/utils/date'
+import { getDeadlineDueText } from 'src/utils/scheduleHelper'
 
 type ScheduleRegistrationProps = {
   registrationId?: string
@@ -30,11 +30,11 @@ const entriesLeftText = (timeSlot: TimeSlot) => {
 
 const getSchedule = (id: number, registrationKey: string) =>
   apiGet(`schedules/${id}`, { registrationKey })
-    .then(res => res.json().then((scheduleDto: ScheduleDto) => new Schedule(scheduleDto)))
+    .then(response => response.json().then((scheduleDto: ScheduleDto) => new Schedule(scheduleDto)))
 
 const postRegistration = (timeSlotId: number, participants: string[], registrationKey: string) =>
   apiPost(`time-slots/${timeSlotId}/registrations`, { participants, registrationKey })
-    .then(res => res.json())
+    .then(response => response.json())
 
 const ScheduleRegistration = (props: ScheduleRegistrationProps) => {
   const [scheduleState, setScheduleState] = useState<Schedule | null | undefined>()
@@ -72,11 +72,11 @@ const ScheduleRegistration = (props: ScheduleRegistrationProps) => {
         schedule.timeSlots.sort(TimeSlot.compareFn)
         setScheduleState(schedule)
       })
-      .catch((err: Response) => {
-        if (err.status === StatusCodes.NOT_FOUND) {
+      .catch((error: Response) => {
+        if (error.status === StatusCodes.NOT_FOUND) {
           setScheduleState(null)
         } else {
-          console.error(err)
+          console.error(error)
         }
       })
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -87,7 +87,7 @@ const ScheduleRegistration = (props: ScheduleRegistrationProps) => {
     console.info('New registrationId:', props.registrationId)
     localStorage.setItem('registrationId', props.registrationId)
     history.push('/register')
-    return <></>
+    return <>{undefined}</>
   }
 
   const selectTimeSlot: SelectInputProps['onChange'] = event => {
@@ -109,8 +109,8 @@ const ScheduleRegistration = (props: ScheduleRegistrationProps) => {
       splitIdFromRegistrationKey()[1]
     )
       .then(() => history.push(`/view/${scheduleState?.id}`))
-      .catch((err: Response) => {
-        if (err.status === StatusCodes.INSUFFICIENT_STORAGE) {
+      .catch((error: Response) => {
+        if (error.status === StatusCodes.INSUFFICIENT_STORAGE) {
           if (!scheduleState) {
             return
           }
@@ -121,10 +121,10 @@ const ScheduleRegistration = (props: ScheduleRegistrationProps) => {
             registrationLink: scheduleState.registrationLink,
           })
           setSelectedTimeSlot(scheduleState.timeSlots[index])
-          void err.json().then((response: { message: string, authenticated: boolean }) =>
+          void error.json().then((response: { message: string, authenticated: boolean }) =>
             setErrorMessage(response.message))
         } else {
-          console.error(err)
+          console.error(error)
         }
       })
   }
@@ -135,11 +135,18 @@ const ScheduleRegistration = (props: ScheduleRegistrationProps) => {
     <DisableDashlane />
     {!scheduleState
       ? scheduleState === null && <div>
-        Sorry. `<code>{props.registrationId}</code>` does not lead to an existing registration form.
+        Sorry. `
+        {/**/}
+        <code>{props.registrationId}</code>
+        {/**/}
+        ` does not lead to an existing registration form.
       </div>
       : <Card>
         <CardContent style={{ textAlign: 'left' }}>
-          <FormLabel>Schedule for: {scheduleState.name}</FormLabel>
+          <FormLabel>
+            Schedule for:
+            {scheduleState.name}
+          </FormLabel>
           <br />
           <Link component={RouterLink} to={`/view/${scheduleState.id}`}>
             Click here to view the current registrations
@@ -147,18 +154,26 @@ const ScheduleRegistration = (props: ScheduleRegistrationProps) => {
           <span style={{ display: 'block' }}>All dates and times are given in your local timezone.</span>
 
           {!scheduleState.active
-            ? <div><br />Sorry. This schedule is currently inactive and registration is closed.</div>
+            ? <div>
+              <br />
+              Sorry. This schedule is currently inactive and registration is closed.
+            </div>
             : scheduleState.deadline && scheduleState.deadline < new Date()
               ? <div>
-                <br />Sorry. Registrations for this schedule are over (Deadline:
-                {` ${fancyFormat(addTime(-1, 'Seconds', scheduleState.deadline))}`}).
+                <br />
+                Sorry. Registrations for this schedule are over (Deadline:
+                {` ${fancyFormat(addTime(-1, 'Seconds', scheduleState.deadline))}`}
+                ).
               </div>
               : <FormGroup>
-                {scheduleState.deadline && <div><br />{
-                  `Registration deadline: ${fancyFormat(addTime(-1, 'Seconds', scheduleState.deadline))
-                  } (${getDeadlineDueText(deadlineDaysLeft)})`}
+                {scheduleState.deadline && <div>
+                  <br />
+                  {
+                    `Registration deadline: ${fancyFormat(addTime(-1, 'Seconds', scheduleState.deadline))
+                    } (${getDeadlineDueText(deadlineDaysLeft)})`
+                  }
                 </div>}
-                <FormControl variant='outlined' style={{ margin: '16px 0' }}>
+                <FormControl style={{ margin: '16px 0' }} variant='outlined'>
                   <InputLabel
                     id='time-slot-select-label'
                     style={{ paddingRight: `${timeSlotLabelPaddingRight}px` }}
@@ -166,17 +181,17 @@ const ScheduleRegistration = (props: ScheduleRegistrationProps) => {
                     Choose your time slot amongst the following
                   </InputLabel>
                   <Select
-                    labelId='time-slot-select-label'
                     id='time-slot-select'
-                    value={selectedTimeSlot?.id ?? ''}
-                    onChange={selectTimeSlot}
                     label='Choose your time slot amongst the following'
+                    labelId='time-slot-select-label'
+                    onChange={selectTimeSlot}
+                    value={selectedTimeSlot?.id ?? ''}
                   >
                     {scheduleState.timeSlots.map(timeSlot =>
                       <MenuItem
+                        disabled={entriesLeft(timeSlot) <= 0 || timeSlot.dateTime <= new Date()}
                         key={`timeslot-${timeSlot.id}`}
                         value={timeSlot.id}
-                        disabled={entriesLeft(timeSlot) <= 0 || timeSlot.dateTime <= new Date()}
                       >
                         {`${fancyFormat(timeSlot.dateTime)} (${entriesLeftText(timeSlot)})`}
                       </MenuItem>)}
@@ -202,13 +217,10 @@ const ScheduleRegistration = (props: ScheduleRegistrationProps) => {
                       }
                     )}
                   </>}
-              </FormGroup>
-          }
+              </FormGroup>}
         </CardContent>
         <CardActions>
           <Button
-            size='small'
-            variant='contained'
             disabled={
               !formValidity ||
               !selectedTimeSlot ||
@@ -218,15 +230,17 @@ const ScheduleRegistration = (props: ScheduleRegistrationProps) => {
               formValidity &&
               selectedTimeSlot &&
               entriesLeft(selectedTimeSlot) > 0 &&
-              sendRegistrationForm()
-            }
+              sendRegistrationForm()}
+            size='small'
+            variant='contained'
           >
-            Sign {selectedTimeSlot?.participantsPerEntry === 1 ? 'me' : 'us'} up!
+            Sign
+            {selectedTimeSlot?.participantsPerEntry === 1 ? ' me ' : ' us '}
+            up!
           </Button>
           <Typography color='error'>{errorMessage}</Typography>
         </CardActions>
-      </Card>
-    }
+      </Card>}
 
   </Container>
 }

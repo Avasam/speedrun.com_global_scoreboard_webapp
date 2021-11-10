@@ -1,22 +1,26 @@
-import type { Theme } from '@material-ui/core'
-import { Card, CardContent, Collapse, IconButton, ListItem, ListItemText, Stack, TextField, Typography } from '@material-ui/core'
-import { Clear, Event, ExpandLess, ExpandMore, FileCopy } from '@material-ui/icons'
-import { MobileDateTimePicker } from '@material-ui/lab'
-import type { SxProps } from '@material-ui/system'
+import Clear from '@mui/icons-material/Clear'
+import Event  from '@mui/icons-material/Event'
+import  ExpandLess from '@mui/icons-material/ExpandLess'
+import ExpandMore  from '@mui/icons-material/ExpandMore'
+import  FileCopy from '@mui/icons-material/FileCopy'
+import { MobileDateTimePicker } from '@mui/lab'
+import type { Theme } from '@mui/material'
+import { Card, CardContent, Collapse, IconButton, ListItem, ListItemText, Stack, TextField, Typography } from '@mui/material'
+import type { SxProps } from '@mui/system'
 import type { MouseEventHandler } from 'react'
 import { useState } from 'react'
 
 import NonZeroNumberInput from './NonZeroNumberInput'
 import RegistrationList from './RegistrationList'
-import { apiDelete, apiPut } from 'src/fetchers/Api'
+import { apiDelete, apiPut } from 'src/fetchers/api'
 import type { RegistrationProxy } from 'src/Models/Registration'
 import type Registration from 'src/Models/Registration'
 import type { Schedule } from 'src/Models/Schedule'
 import type { TimeSlot } from 'src/Models/TimeSlot'
 import { minutesStep } from 'src/Models/TimeSlot'
-import { TIMESLOT_FORMAT } from 'src/utils/Date'
-import type { NonFunctionProperties } from 'src/utils/ObjectUtils'
-import { createProxy } from 'src/utils/ObjectUtils'
+import { TIMESLOT_FORMAT } from 'src/utils/date'
+import type { NonFunctionProperties } from 'src/utils/objectUtils'
+import { createProxy } from 'src/utils/objectUtils'
 
 const MIN_YEAR = 2000
 export const FOCUS_CLASS = 'time-slot-focus'
@@ -107,63 +111,68 @@ const TimeSlotRow = (props: TimeSlotRowProps) => {
   }
 
   return <Card
-    raised={true}
-    sx={{ borderStyle: props.isCurrentFocus ? 'groove' : 'none' }}
     onClick={props.onFocus}
+    raised
+    sx={{ borderStyle: props.isCurrentFocus ? 'groove' : 'none' }}
   >
-    <CardContent component={Stack} direction='row' sx={numberInputsStyle} flexWrap='wrap-reverse'>
+    <CardContent component={Stack} direction='row' flexWrap='wrap-reverse' sx={numberInputsStyle}>
       <MobileDateTimePicker
-        label='Date and time'
-        inputFormat={TIMESLOT_FORMAT}
-        value={props.timeSlot.dateTime}
-        disableCloseOnSelect
-        onChange={date => props.onEditTimeSlotDateTime(date)}
-        minDate={new Date(MIN_YEAR, 0)}
-        disablePast={props.timeSlot.id <= -1}
-        showTodayButton
-        ampm={false}
-        minutesStep={minutesStep}
         InputProps={{ endAdornment: <Event /> }}
+        ampm={false}
+        disableCloseOnSelect
+        disablePast={props.timeSlot.id <= -1}
+        inputFormat={TIMESLOT_FORMAT}
+        label='Date and time'
+        minDate={new Date(MIN_YEAR, 0)}
+        minutesStep={minutesStep}
+        onChange={date => props.onEditTimeSlotDateTime(date)}
         renderInput={params =>
           <TextField
             {...params}
-            id={`time-slot-date-${props.id}`}
             error={!!props.schedule.deadline && props.timeSlot.dateTime < props.schedule.deadline}
+            id={`time-slot-date-${props.id}`}
             style={{ width: '222px', minWidth: '222px' }} // Enough to fit 'Wed Jun 22nd 2022, 22:22'
           />}
+        showTodayButton
+        value={props.timeSlot.dateTime}
       />
-      <Stack direction='row' spacing={1.5} alignItems='center'>
+      <Stack alignItems='center' direction='row' spacing={1.5}>
         <TextField
           id={`maximum-entries-${props.id}`}
-          label='Maximum entries'
-          type='tel'
           inputProps={{ min: '1', inputComponent: { NonZeroNumberInput } }}
-          onFocus={event => event.target.select()}
-          value={props.timeSlot.maximumEntries}
+          label='Maximum entries'
           onChange={event => props.onEditTimeSlotMaximumEntries(Number.parseInt(event.target.value, 10) || 1)}
+          onFocus={event => event.target.select()}
+          type='tel'
+          value={props.timeSlot.maximumEntries}
         />
         <TextField
           id={`participants-per-entry-${props.id}`}
-          label='Participants per entry'
-          type='tel'
           inputProps={{ min: '1', inputComponent: { NonZeroNumberInput } }}
-          onFocus={event => event.target.select()}
-          value={props.timeSlot.participantsPerEntry}
+          label='Participants per entry'
           onChange={event => props.onEditTimeSlotparticipantsPerEntry(Number.parseInt(event.target.value, 10) || 1)}
+          onFocus={event => event.target.select()}
+          type='tel'
+          value={props.timeSlot.participantsPerEntry}
         />
         <IconButton
           aria-label='duplicate time slot'
           component='button'
           onClick={() => props.onDuplicateTimeSlot()}
-        ><FileCopy /></IconButton>
+          size='large'
+        >
+          <FileCopy />
+        </IconButton>
         {props.schedule.timeSlots.length > 1 &&
-          <IconButton
-            className='error'
-            aria-label='remove time slot'
-            component='button'
-            onClick={handleDelete}
-          ><Clear /></IconButton>
-        }
+        <IconButton
+          aria-label='remove time slot'
+          color='error'
+          component='button'
+          onClick={handleDelete}
+          size='large'
+        >
+          <Clear />
+        </IconButton>}
       </Stack>
     </CardContent>
     <CardContent>
@@ -175,27 +184,32 @@ const TimeSlotRow = (props: TimeSlotRowProps) => {
                 ? 'error'
                 : undefined}
             >
-              ({props.timeSlot.registrations.length} / {props.timeSlot.maximumEntries}
-              &nbsp;entr{props.timeSlot.registrations.length === 1 ? 'y' : 'ies'})
+              (
+              {props.timeSlot.registrations.length}
+              {' / '}
+              {props.timeSlot.maximumEntries}
+              {' entr'}
+              {props.timeSlot.registrations.length === 1 ? 'y' : 'ies'}
+              )
             </Typography>
           }
         />
         {open ? <ExpandLess /> : <ExpandMore />}
       </ListItem>
-      <Collapse in={open} timeout='auto' unmountOnExit style={{ paddingLeft: '16px' }}>
+      <Collapse in={open} style={{ paddingLeft: '16px' }} timeout='auto' unmountOnExit>
         <Stack direction='row'>
           {props.timeSlot.registrations.length === 0
             ? <span>No one registered for this time slot yet.</span>
             : registrationsProxy.map((registrationProxy, index) =>
               <RegistrationList
-                key={`registration-${registrationProxy.id}`}
-                registration={registrationProxy}
                 index={index}
-                participantsPerEntry={props.timeSlot.participantsPerEntry}
+                key={`registration-${registrationProxy.id}`}
                 onDelete={handleRemoveRegistrations}
-                onSave={handleSaveRegistrations}
-                onReset={handleResetRegistrations}
                 onParticipantNameChange={handleParticipantNameChange}
+                onReset={handleResetRegistrations}
+                onSave={handleSaveRegistrations}
+                participantsPerEntry={props.timeSlot.participantsPerEntry}
+                registration={registrationProxy}
               />)}
         </Stack>
       </Collapse>

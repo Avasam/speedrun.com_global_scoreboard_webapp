@@ -61,7 +61,7 @@
   border-bottom-right-radius: 0.25rem;
 }
 
-.src-api-key-link .form-control {
+.speedruncom-api-key-link .form-control {
   padding: 0.375rem;
   text-align: center;
 }
@@ -85,11 +85,11 @@
     margin-top: -1px;
   }
 
-  .input-group > .input-group-text+.form-control.form-control[name="src-api-key"] {
+  .input-group > .input-group-text+.form-control.form-control[name="speedruncom-api-key"] {
     border-top-right-radius: 0.25rem;
   }
 
-  .src-api-key-link.input-group > .btn.btn:first-child {
+  .speedruncom-api-key-link.input-group > .btn.btn:first-child {
     border-top-right-radius: 0.25rem;
     border-bottom-left-radius: 0;
     margin-bottom: -1px;

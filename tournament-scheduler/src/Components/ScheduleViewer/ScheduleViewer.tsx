@@ -1,14 +1,14 @@
-import { Box, Container, FormLabel, Grid, List, ListItem, ListItemText, Paper, Typography, useTheme } from '@material-ui/core'
+import { Box, Container, FormLabel, Grid, List, ListItem, ListItemText, Paper, Typography, useTheme } from '@mui/material'
 import { StatusCodes } from 'http-status-codes'
 import { useEffect, useState } from 'react'
 
 import AddScheduleToCalendarButton from './AddScheduleToCalendarButton'
-import { apiGet } from 'src/fetchers/Api'
+import { apiGet } from 'src/fetchers/api'
 import type { ScheduleDto } from 'src/Models/Schedule'
 import { Schedule } from 'src/Models/Schedule'
 import { TimeSlot } from 'src/Models/TimeSlot'
-import { diffDays, fancyFormat } from 'src/utils/Date'
-import { getDeadlineDueText } from 'src/utils/ScheduleHelper'
+import { diffDays, fancyFormat } from 'src/utils/date'
+import { getDeadlineDueText } from 'src/utils/scheduleHelper'
 
 const embedded = typeof new URLSearchParams(window.location.search).get('embedded') == 'string'
 
@@ -19,8 +19,8 @@ type ScheduleViewerProps = {
 
 const getSchedule = (id: number) =>
   apiGet(`schedules/${id}`)
-    .then(res =>
-      res.json().then((scheduleDto: ScheduleDto) => {
+    .then(response =>
+      response.json().then((scheduleDto: ScheduleDto) => {
         const newSchedule = new Schedule(scheduleDto)
         newSchedule.timeSlots.sort(TimeSlot.compareFn)
         return newSchedule
@@ -35,11 +35,11 @@ const ScheduleViewer = (props: ScheduleViewerProps) => {
   useEffect(() => {
     getSchedule(props.scheduleId)
       .then(setSchedule)
-      .catch((err: Response) => {
-        if (err.status === StatusCodes.NOT_FOUND || err.status === StatusCodes.BAD_REQUEST) {
+      .catch((error: Response) => {
+        if (error.status === StatusCodes.NOT_FOUND || error.status === StatusCodes.BAD_REQUEST) {
           setSchedule(null)
         } else {
-          console.error(err)
+          console.error(error)
         }
       })
   }, [props.scheduleId])
@@ -50,29 +50,57 @@ const ScheduleViewer = (props: ScheduleViewerProps) => {
 
   return <Container maxWidth='md'>
     {!schedule
-      ? schedule === null && <div>Sorry. `<code>{props.scheduleId}</code>` is not a valid schedule id.</div>
-      : <Box textAlign='left' width={!props.shownInGroup ? 'fit-content' : '100%'} margin='auto'>
+      ? schedule === null && <div>
+        Sorry. `
+        {/**/}
+        <code>{props.scheduleId}</code>
+        {/**/}
+        ` is not a valid schedule id.
+      </div>
+      : <Box margin='auto' textAlign='left' width={!props.shownInGroup ? 'fit-content' : '100%'}>
         {/* Offers a background in embedded */}
         <Paper style={{ boxShadow: 'none', background: embedded ? theme.palette.background.default : 'transparent' }}>
-          <FormLabel>Schedule for: {schedule.name}</FormLabel>
+          <FormLabel>
+            Schedule for:
+            {schedule.name}
+          </FormLabel>
           {!props.shownInGroup && TimeZoneMessage}
           {schedule.active
             ? schedule.deadline && <p>
-              Registrations {deadlineDaysLeft > 0 ? 'are closing' : 'closed'} {getDeadlineDueText(deadlineDaysLeft)}.
+              Registrations
+              {deadlineDaysLeft > 0 ? ' are closing ' : ' closed '}
+              {getDeadlineDueText(deadlineDaysLeft)}
+              .
             </p>
-            : <p>This schedule is currently inactive and registration is closed.</p>
-          }
+            : <p>This schedule is currently inactive and registration is closed.</p>}
           {timeslots.length === 0 && <p>There are no registrations for this schedule.</p>}
         </Paper>
 
         {timeslots.map(timeSlot =>
-          <Paper key={`timeslot-${timeSlot.id}`} elevation={24}>
+          <Paper elevation={24} key={`timeslot-${timeSlot.id}`}>
             <List
               subheader={
                 <Paper
-                  elevation={4}
                   component={ListItemText}
+                  elevation={4}
                   primary={fancyFormat(timeSlot.dateTime)}
+                  secondary={<>
+                    <span>
+                      (
+                      {timeSlot.registrations.length}
+                      {' '}
+                      /
+                      {' '}
+                      {timeSlot.maximumEntries}
+                      {' '}
+                      entr
+                      {
+                        timeSlot.registrations.length === 1 ? 'y' : 'ies'
+                      }
+                      )
+                    </span>
+                    <AddScheduleToCalendarButton schedule={schedule} timeSlot={timeSlot} />
+                  </>}
                   secondaryTypographyProps={{
                     component: 'span',
                     display: 'flex',
@@ -80,27 +108,19 @@ const ScheduleViewer = (props: ScheduleViewerProps) => {
                     justifyContent: 'space-between',
                     alignItems: 'baseline',
                   }}
-                  secondary={<>
-                    <span>
-                      ({timeSlot.registrations.length} / {timeSlot.maximumEntries} entr{
-                        timeSlot.registrations.length === 1 ? 'y' : 'ies'})
-                    </span>
-                    <AddScheduleToCalendarButton timeSlot={timeSlot} schedule={schedule} />
-                  </>}
                 />
               }
             >
               {(timeSlot.participantsPerEntry <= 1 || timeSlot.registrations.length === 1) &&
-                <ListItemText secondary='Participants' />
-              }
+                <ListItemText secondary='Participants' />}
               {/* TODO: Maybe use a dynamic grid instead of flexes here. Especially when there's only one list */}
               <Grid container>
                 {timeSlot.registrations.map((registration, registrationIndex) =>
                   <List
                     component={Grid}
+                    disablePadding
                     item
                     key={`registration-${registration.id}`}
-                    disablePadding
                     style={timeSlot.registrations.length === 1
                       ? {
                         display: 'flex',
@@ -115,7 +135,7 @@ const ScheduleViewer = (props: ScheduleViewerProps) => {
                     }
                   >
                     {registration.participants.map((participant, participantIndex) =>
-                      <ListItem key={`participant-${participantIndex}`}>
+                      <ListItem key={`participant-${participant}`}>
                         <ListItemText
                           primary={
                             `${(timeSlot.participantsPerEntry <= 1
@@ -128,10 +148,8 @@ const ScheduleViewer = (props: ScheduleViewerProps) => {
                   </List>)}
               </Grid>
             </List>
-          </Paper>)
-        }
-      </Box >
-    }
+          </Paper>)}
+      </Box >}
 
   </Container >
 }

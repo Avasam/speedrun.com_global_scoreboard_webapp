@@ -1,9 +1,9 @@
 import type IOrderable from './IOrderable'
 import type { TimeSlotDto } from './TimeSlot'
 import { TimeSlot } from './TimeSlot'
-import { nextDayFlat } from 'src/utils/Date'
-import type { NonFunctionProperties } from 'src/utils/ObjectUtils'
-import { createProxy } from 'src/utils/ObjectUtils'
+import { nextDayFlat } from 'src/utils/date'
+import type { NonFunctionProperties } from 'src/utils/objectUtils'
+import { createProxy } from 'src/utils/objectUtils'
 
 export type ScheduleDto = IOrderable & {
   id: number
@@ -25,9 +25,6 @@ export class Schedule implements IOrderable {
   name: string
   active: boolean
   registrationKey: string
-  get registrationLink(): string {
-    return `${window.location.origin}${process.env.PUBLIC_URL}/register/${this.id}-${this.registrationKey}`
-  }
   deadline: Date | null
   timeSlots: TimeSlot[]
   order: number
@@ -42,6 +39,10 @@ export class Schedule implements IOrderable {
     this.timeSlots = dto.timeSlots.map(timeSlotDto => new TimeSlot(timeSlotDto))
     this.order = dto.order
     this.groupId = dto.groupId ?? null
+  }
+
+  get registrationLink(): string {
+    return `${window.location.origin}${process.env.PUBLIC_URL}/register/${this.id}-${this.registrationKey}`
   }
 
   static compareFn = (a: ScheduleCompareProps, b: ScheduleCompareProps) => {

@@ -1,5 +1,5 @@
 import type Registration from './Registration'
-import { floorToMinutesStep, nextDay } from 'src/utils/Date'
+import { floorToMinutesStep, nextDay } from 'src/utils/date'
 
 export const minutesStep = 5
 

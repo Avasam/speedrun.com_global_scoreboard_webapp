@@ -1,4 +1,4 @@
-export type SrcGame = {
+export type SpeedruncomGame = {
   data: {
     id: string
     names: {
@@ -7,17 +7,17 @@ export type SrcGame = {
   }
 }
 
-export type SrcCategory = {
+export type SpeedruncomCategory = {
   data: {
     id: string
     name: string
   }
 }
 
-export type EmbeddedSrcRun = {
+export type EmbeddedSpeedruncomRun = {
   data: {
-    game: SrcGame
-    category: SrcCategory
+    game: SpeedruncomGame
+    category: SpeedruncomCategory
     times: {
       primary_t: number
     }
@@ -25,7 +25,7 @@ export type EmbeddedSrcRun = {
   }
 }
 
-export type SrcRun = {
+export type SpeedruncomRun = {
   data: {
     game: string
     category: string
@@ -36,15 +36,15 @@ export type SrcRun = {
   }
 }
 
-export type SrcLeaderboard = {
+export type SpeedruncomLeaderboard = {
   data: {
     runs: {
-      run: SrcRun['data']
+      run: SpeedruncomRun['data']
     }[]
   }
 }
 
-export type SrcVariable = {
+export type SpeedruncomVariable = {
   data: {
     id: string
     'is-subcategory': boolean

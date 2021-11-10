@@ -23,21 +23,23 @@ const UpdateRunnerForm = (props: UpdateRunnerFormProps) => {
         <Form.Label>Update runner:</Form.Label>
         <InputGroup>
           <Form.Control
-            required
-            placeholder={props.currentUser ? 'Name or ID' : 'Please log in first'}
-            onChange={handleOnChange}
-            disabled={process.env.REACT_APP_BYPASS_UPDATE_RESTRICTIONS !== 'true' &&
-              (props.updating || !props.currentUser)}
             aria-describedby='update user name or id'
             data-lpignore='true'
+            disabled={process.env.REACT_APP_BYPASS_UPDATE_RESTRICTIONS !== 'true' &&
+              (props.updating || !props.currentUser)}
+            onChange={handleOnChange}
+            placeholder={props.currentUser ? 'Name or ID' : 'Please log in first'}
+            required
           />
           <Button
-            id='update-runner-button'
-            type='submit'
             disabled={process.env.REACT_APP_BYPASS_UPDATE_RESTRICTIONS !== 'true' &&
               (props.updating || !props.currentUser || !updateUserNameOrId)}
+            id='update-runner-button'
             onClick={() => props.onUpdate(updateUserNameOrId.trim())}
-          >Update</Button>
+            type='submit'
+          >
+            Update
+          </Button>
         </InputGroup>
       </Form.Group>
     </Form>

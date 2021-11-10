@@ -21,10 +21,10 @@ const FriendButton = (props: FriendButtonProps) => {
 
   return <Button
     className='friend-button'
-    variant='link'
     onClick={handleBefriendUnfriend}
     onMouseEnter={() => setIsHovered(true)}
     onMouseLeave={() => setIsHovered(false)}
+    variant='link'
   >
     {
       props.isFriend

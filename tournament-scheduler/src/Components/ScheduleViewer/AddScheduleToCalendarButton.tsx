@@ -1,10 +1,10 @@
 import AddToCalendar from '@culturehq/add-to-calendar'
-import { Button } from '@material-ui/core'
+import { Button } from '@mui/material'
 
 import type { Schedule } from 'src/Models/Schedule'
 import type { TimeSlot } from 'src/Models/TimeSlot'
-import { addTime } from 'src/utils/Date'
-import { buildCalendarEventDescription, buildCalendarEventTitle } from 'src/utils/ScheduleHelper'
+import { addTime } from 'src/utils/date'
+import { buildCalendarEventDescription, buildCalendarEventTitle } from 'src/utils/scheduleHelper'
 
 type AddScheduleToCalendarProps = {
   schedule: Schedule
@@ -14,7 +14,9 @@ type AddScheduleToCalendarProps = {
 const AddScheduleToCalendarButton = (props: AddScheduleToCalendarProps) =>
   <Button
     // <button> cannot appear as a descendant of <button>
+    color='inherit'
     component='span'
+    size='small'
     sx={{
       padding: '0',
       // TODO: Make paper colored buttons
@@ -24,12 +26,9 @@ const AddScheduleToCalendarButton = (props: AddScheduleToCalendarProps) =>
         backgroundColor: 'rgba(255, 255, 255, 0.08)',
       },
     }}
-    size='small'
     variant='contained'
-    color='inherit'
   >
     <AddToCalendar
-      filename={buildCalendarEventTitle(props.timeSlot, props.schedule)}
       event={{
         name: buildCalendarEventTitle(props.timeSlot, props.schedule),
         details: buildCalendarEventDescription(props.timeSlot, props.schedule),
@@ -37,6 +36,9 @@ const AddScheduleToCalendarButton = (props: AddScheduleToCalendarProps) =>
         startsAt: props.timeSlot.dateTime.toISOString(),
         endsAt: addTime(1, 'Hours', props.timeSlot.dateTime).toISOString(),
       }}
-    >Add to calendar</AddToCalendar>
+      filename={buildCalendarEventTitle(props.timeSlot, props.schedule)}
+    >
+      Add to calendar
+    </AddToCalendar>
   </Button>
 export default AddScheduleToCalendarButton

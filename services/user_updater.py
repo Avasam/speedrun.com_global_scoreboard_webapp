@@ -187,7 +187,7 @@ def __set_run_points(run: Run) -> None:
         params[f"var-{var_id}"] = var_value
     try:
         leaderboard = get_file(url, params, True)
-    # If SRC returns 404 here, most likely the run references a category or level that does not exist anymore
+    # If SR.C returns 404 here, most likely the run references a category or level that does not exist anymore
     except SpeedrunComError as exception:
         if exception.args[0]['error'].startswith("404"):
             return
