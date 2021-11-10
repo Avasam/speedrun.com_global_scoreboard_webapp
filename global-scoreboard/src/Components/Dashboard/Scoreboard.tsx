@@ -18,7 +18,7 @@ import sortCaret from './TableElements/SortCarret'
 import Configs from 'src/Models/Configs'
 import type { PlayerField } from 'src/Models/Player'
 import type Player from 'src/Models/Player'
-import { diffDays } from 'src/utils/Time'
+import { diffDays } from 'src/utils/time'
 
 let getSortOrder: () => SortOrder | undefined
 const currentTimeOnLoad = new Date()
@@ -44,11 +44,11 @@ const nameFormatter: ColumnFormatter<Player, FormatExtraDataProps> = (_cell, row
   row &&
   formatExtraData &&
   <PlayerNameCell
-    player={row}
-    isFriend={formatExtraData.friends.some(friend => friend.userId === row.userId) || false}
-    isCurrentUser={formatExtraData.currentUser?.userId === row.userId}
-    handleOnUnfriend={formatExtraData.handleOnUnfriend}
     handleOnBefriend={formatExtraData.handleOnBefriend}
+    handleOnUnfriend={formatExtraData.handleOnUnfriend}
+    isCurrentUser={formatExtraData.currentUser?.userId === row.userId}
+    isFriend={formatExtraData.friends.some(friend => friend.userId === row.userId) || false}
+    player={row}
   />
 
 const scoreHeaderFormatter = () =>
@@ -114,10 +114,14 @@ const rowClasses = (row: Player | undefined, currentUser: Player | null, friends
 const Legend = () =>
   <span className='legend'>
     <br />
-    <FormLabel>Updated:</FormLabel>{' '}
-    <span className='daysSince0'>This&nbsp;week</span>{', '}
-    <span className='daysSince1'>This&nbsp;month</span>{', '}
-    <span className='daysSince2'>In&nbsp;the&nbsp;last&nbsp;3&nbsp;months</span>{', '}
+    <FormLabel>Updated:</FormLabel>
+    {' '}
+    <span className='daysSince0'>This&nbsp;week</span>
+    {', '}
+    <span className='daysSince1'>This&nbsp;month</span>
+    {', '}
+    <span className='daysSince2'>In&nbsp;the&nbsp;last&nbsp;3&nbsp;months</span>
+    {', '}
     <span className='daysSince'>Over&nbsp;3&nbsp;months&nbsp;ago</span>
   </span>
 
@@ -169,10 +173,16 @@ const Scoreboard = forwardRef<ScoreboardRef, ScoreboardProps>((props, ref) => {
   const boostrapTableRef = useRef<BootstrapTable>(null)
   const [pageState, goToPage] = useState<number | undefined>()
 
+  const noDataIndication = () =>
+    props.players.length === 0
+      ? <Spinner animation='border' role='scoreboard' variant='primary'>
+        <span className='visually-hidden'>Building the Scoreboard. Please wait...</span>
+      </Spinner>
+      : <span>No matching records found</span>
+
   getSortOrder = () => boostrapTableRef.current?.sortContext.state.sortOrder
   return <ToolkitProvider
-    keyField='userId'
-    data={props.players}
+    bootstrap4
     columns={columns.map(column => {
       const formatExtraData: FormatExtraDataProps = {
         currentUser: props.currentUser,
@@ -183,8 +193,9 @@ const Scoreboard = forwardRef<ScoreboardRef, ScoreboardProps>((props, ref) => {
 
       return { ...column, formatExtraData, sortCaret }
     })}
+    data={props.players}
+    keyField='userId'
     search
-    bootstrap4
   >
     {(toolkitprops: ToolkitProviderProps) =>
       <PaginationProvider
@@ -200,32 +211,26 @@ const Scoreboard = forwardRef<ScoreboardRef, ScoreboardProps>((props, ref) => {
         {(({ paginationProps, paginationTableProps }) =>
           <>
             <Row className='gx-0'>
-              <Col xs='auto' className='mb-2 me-auto'>
+              <Col className='mb-2 me-auto' xs='auto'>
                 <Search.SearchBar ref={searchBarRef} {...toolkitprops.searchProps} />
               </Col>
-              <Col xs='auto' className='mb-2'>
+              <Col className='mb-2' xs='auto'>
                 <SizePerPageDropdownStandalone {...paginationProps} />
               </Col>
             </Row>
             <div className='panel panel-default'>
               <BootstrapTable
                 ref={boostrapTableRef}
-                wrapperClasses='table-responsive'
-                striped
                 rowClasses={(row?: Player) => rowClasses(row, props.currentUser, props.friends ?? [])}
+                striped
+                wrapperClasses='table-responsive'
                 {...toolkitprops.baseProps}
                 {...paginationTableProps}
-                noDataIndication={() =>
-                  props.players.length === 0
-                    ? <Spinner animation='border' variant='primary' role='scoreboard'>
-                      <span className='visually-hidden'>Building the Scoreboard. Please wait...</span>
-                    </Spinner>
-                    : <span>No matching records found</span>
-                }
                 defaultSorted={[{
                   dataField: 'score',
                   order: 'desc',
                 }]}
+                noDataIndication={noDataIndication}
               />
             </div>
             <div>
@@ -235,8 +240,7 @@ const Scoreboard = forwardRef<ScoreboardRef, ScoreboardProps>((props, ref) => {
             </div>
           </>
         )}
-      </PaginationProvider>
-    }
+      </PaginationProvider>}
   </ToolkitProvider>
 })
 Scoreboard.displayName = 'Scoreboad'

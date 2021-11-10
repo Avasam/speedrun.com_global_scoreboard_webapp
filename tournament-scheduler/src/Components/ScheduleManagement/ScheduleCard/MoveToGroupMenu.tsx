@@ -1,5 +1,5 @@
-import { IconButton, Menu, MenuItem } from '@material-ui/core'
-import { DriveFileMove } from '@material-ui/icons'
+import DriveFileMove from '@mui/icons-material/DriveFileMove'
+import { IconButton, Menu, MenuItem } from '@mui/material'
 import { useState } from 'react'
 
 import type { ScheduleGroup } from 'src/Models/Schedule'
@@ -16,31 +16,31 @@ const MoveToGroupMenu = (props: MoveToGroupMenuProps) => {
 
   return <>
     <IconButton
-      id='move-button'
       aria-controls='move-menu'
-      aria-haspopup='true'
       aria-expanded={open ? 'true' : undefined}
-      size='small'
+      aria-haspopup='true'
+      id='move-button'
       onClick={event => setAnchorElement(event.currentTarget)}
+      size='small'
     >
       <DriveFileMove />
     </IconButton>
     <Menu
-      id='move-menu'
-      anchorEl={anchorElement}
-      open={open}
-      onClose={handleClose}
       MenuListProps={{
         'aria-labelledby': 'move-button',
       }}
+      anchorEl={anchorElement}
+      id='move-menu'
+      onClose={handleClose}
+      open={open}
     >
       {props.possibleGroups.map(group =>
         <MenuItem
+          key={`move-to-${group.id}`}
           onClick={() => {
             props.onMoveToGroup(group.id)
             handleClose()
           }}
-          key={`move-to-${group.id}`}
           value={group.id}
         >
           {group.name}

@@ -9,7 +9,7 @@ type GenericModalProps = {
 }
 
 const GenericModal = (props: GenericModalProps) =>
-  <Modal show={props.show} onHide={props.onHide}>
+  <Modal onHide={props.onHide} show={props.show}>
     <Modal.Header closeButton>
       <Modal.Title>{props.title}</Modal.Title>
     </Modal.Header>

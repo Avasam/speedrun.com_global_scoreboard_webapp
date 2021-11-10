@@ -122,6 +122,8 @@ local.*
 */.pnp
 .pnp.js
 !*/dependencies/**
+/package-lock.json
+**/src/react-app-env.d.ts
 
 # =========================
 # Operating System Files

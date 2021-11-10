@@ -1,7 +1,7 @@
-import { AppBar, Box, Button, CssBaseline, IconButton, Link, Stack, Toolbar, Typography, useMediaQuery } from '@material-ui/core'
-import { ThemeProvider } from '@material-ui/core/styles'
-import Brightness4 from '@material-ui/icons/Brightness4'
-import Brightness7 from '@material-ui/icons/Brightness7'
+import Brightness4 from '@mui/icons-material/Brightness4'
+import Brightness7 from '@mui/icons-material/Brightness7'
+import { AppBar, Box, Button, CssBaseline, IconButton, Link, Stack, Toolbar, Typography, useMediaQuery } from '@mui/material'
+import { StyledEngineProvider, ThemeProvider } from '@mui/material/styles'
 import { StatusCodes } from 'http-status-codes'
 import { useEffect, useState } from 'react'
 import { Link as RouterLink, Route, Switch, useLocation } from 'react-router-dom'
@@ -11,11 +11,11 @@ import ScheduleManagement from './ScheduleManagement/ScheduleManagement'
 import ScheduleRegistration from './ScheduleRegistration'
 import ScheduleGroupViewer from './ScheduleViewer/ScheduleGroupViewer'
 import ScheduleViewer from './ScheduleViewer/ScheduleViewer'
-import { apiGet } from 'src/fetchers/Api'
+import { apiGet } from 'src/fetchers/api'
 import type User from 'src/Models/User'
 import darkTheme from 'src/styles/dark.theme'
 import lightTheme from 'src/styles/light.theme'
-import copyToClipboard from 'src/utils/Clipboard'
+import copyToClipboard from 'src/utils/clipboard'
 
 type Themes = 'dark' | 'light'
 type StylesOverrides = { body: { background: string } }
@@ -25,7 +25,7 @@ if (embedded) {
   (darkTheme.components?.MuiCssBaseline?.styleOverrides as unknown as StylesOverrides).body.background = 'transparent'
 }
 
-const getCurrentUser = () => apiGet('users/current').then(res => res.json())
+const getCurrentUser = () => apiGet('users/current').then(response => response.json())
 
 const logout = (setCurrentUser: (user: null) => void) => {
   setCurrentUser(null)
@@ -40,7 +40,7 @@ const App = () => {
       const newLink = `${window.location.origin}${process.env.PUBLIC_URL}/${param}/${oldParamValue}`
       console.warn(`Old ${param} param found in URL, redirecting to:`, newLink)
       copyToClipboard(newLink).finally(() => window.location.href = newLink)
-      return <></>
+      return <>{undefined}</>
     }
   }
 
@@ -50,13 +50,13 @@ const App = () => {
 
   useEffect(() => {
     getCurrentUser()
-      .then((res: { user: User | undefined }) => res.user)
+      .then((response: { user: User | undefined }) => response.user)
       .then(setCurrentUser)
-      .catch((err: Response) => {
-        if (err.status === StatusCodes.UNAUTHORIZED) {
+      .catch((error: Response) => {
+        if (error.status === StatusCodes.UNAUTHORIZED) {
           setCurrentUser(null)
         } else {
-          console.error(err)
+          console.error(error)
         }
       })
   }, [])
@@ -69,102 +69,135 @@ const App = () => {
     localStorage.setItem('preferedMaterialTheme', theme)
   }
 
-  return <ThemeProvider theme={preferedMaterialTheme === 'light' ? lightTheme : darkTheme}>
-    <CssBaseline />
-    <Stack style={{ height: '100%', textAlign: 'center' }}>
-      {!embedded &&
-        <AppBar position='static' enableColorOnDark>
-          <Toolbar>
+  return (
+    <StyledEngineProvider injectFirst>
+      <ThemeProvider theme={preferedMaterialTheme === 'light' ? lightTheme : darkTheme}>
+        <CssBaseline />
+        <Stack style={{ height: '100%', textAlign: 'center' }}>
+          {!embedded &&
+            <AppBar enableColorOnDark position='static'>
+              <Toolbar>
+                <Link
+                  component={RouterLink}
+                  style={{ height: 'auto', width: 'auto' }}
+                  to='/'
+                >
+                  {(currentUser || isMobileSize || location.pathname !== '/') &&
+                    <IconButton size='large'>
+                      <img
+                        alt='logo'
+                        src={`${window.location.origin}/assets/images/favicon.webp`}
+                        style={{
+                          height: !currentUser && isMobileSize ? 'auto' : '40px',
+                          maxWidth: '90px', // Enough to fit title at minimum supported width
+                        }}
+                      />
+                    </IconButton>}
+                </Link>
+                <Typography variant={currentUser || isMobileSize ? 'h4' : 'h2'}>Tournament Scheduler</Typography>
+                <Stack alignItems='center' direction='row' flexWrap='wrap' justifyContent='flex-end' spacing={2}>
+                  {preferedMaterialTheme === 'dark'
+                    ? <IconButton
+                      color='default'
+                      onClick={() => saveTheme('light')}
+                      size='large'
+                    >
+                      <Brightness7 />
+                    </IconButton>
+                    : <IconButton
+                      color='default'
+                      onClick={() => saveTheme('dark')}
+                      size='large'
+                    >
+                      <Brightness4 />
+                    </IconButton>}
+                  {currentUser &&
+                    <Button
+                      color='secondary'
+                      onClick={() => logout(setCurrentUser)}
+                      size='small'
+                      variant='contained'
+                    >
+                      Logout
+                    </Button>}
+                </Stack>
+              </Toolbar>
+            </AppBar>}
+
+          <Box sx={{
+            flex: 1,
+            overflow: 'auto',
+          }}
+          >
+            <Switch>
+              <Route
+                exact
+                path='/view/:scheduleId'
+                render={routeProps => <ScheduleViewer scheduleId={Number(routeProps.match.params.scheduleId)} />}
+              />
+              <Route
+                path='/view/group/:groupId'
+                render={routeProps => <ScheduleGroupViewer groupId={Number(routeProps.match.params.groupId)} />}
+              />
+              <Route
+                path='/register/:registrationId?'
+                render={routeProps => <ScheduleRegistration {...routeProps.match.params} />}
+              />
+              {currentUser !== undefined &&
+                <Route
+                  render={currentUser
+                    ? () => <ScheduleManagement currentUser={currentUser} />
+                    : () => <LoginForm onLogin={setCurrentUser} />}
+                />}
+            </Switch>
+          </Box>
+
+          <footer>
+            &copy;
+            {' '}
             <Link
-              component={RouterLink}
-              to='/'
-              style={{ height: 'auto', width: 'auto' }}
+              href='https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/main/LICENSE'
+              target='about'
             >
-              {(currentUser || isMobileSize || location.pathname !== '/') &&
-                <IconButton>
-                  <img
-                    style={{
-                      height: !currentUser && isMobileSize ? 'auto' : '40px',
-                      maxWidth: '90px', // Enough to fit title at minimum supported width
-                    }}
-                    alt='logo'
-                    src={`${window.location.origin}/assets/images/favicon.webp`}
-                  />
-                </IconButton>
-              }
+              Copyright
             </Link>
-            <Typography variant={currentUser || isMobileSize ? 'h4' : 'h2'}>Tournament Scheduler</Typography>
-            <Stack direction='row' spacing={2} flexWrap='wrap' justifyContent='flex-end' alignItems='center'>
-              {preferedMaterialTheme === 'dark'
-                ? <IconButton color='default' onClick={() => saveTheme('light')}><Brightness7 /></IconButton>
-                : <IconButton color='default' onClick={() => saveTheme('dark')}><Brightness4 /></IconButton>
-              }
-              {currentUser &&
-                <Button
-                  size='small'
-                  variant='contained'
-                  color='secondary'
-                  onClick={() => logout(setCurrentUser)}
-                >Logout</Button>
-              }
-            </Stack>
-          </Toolbar>
-        </AppBar>
-      }
-
-      <Box sx={{
-        flex: 1,
-        overflow: 'auto',
-      }}>
-        <Switch>
-          <Route
-            exact
-            path='/view/:scheduleId'
-            render={routeProps => <ScheduleViewer scheduleId={Number(routeProps.match.params.scheduleId)} />}
-          />
-          <Route
-            path='/view/group/:groupId'
-            render={routeProps => <ScheduleGroupViewer groupId={Number(routeProps.match.params.groupId)} />}
-          />
-          <Route
-            path='/register/:registrationId?'
-            render={routeProps => <ScheduleRegistration {...routeProps.match.params} />}
-          />
-          {currentUser !== undefined &&
-            <Route
-              render={currentUser
-                ? () => <ScheduleManagement currentUser={currentUser} />
-                : () => <LoginForm onLogin={setCurrentUser} />
-              } />
-          }
-        </Switch>
-      </Box>
-
-      <footer>
-        &copy; <Link
-          href='https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/main/LICENSE'
-          target='about'
-        >Copyright</Link> {new Date().getFullYear()} by <Link
-          href='https://github.com/Avasam/'
-          target='about'
-        >Samuel Therrien</Link> (
-        <Link href='https://www.twitch.tv/Avasam' target='about'>
-          Avasam<img
-            height='14'
-            alt='Twitch'
-            src='https://static.twitchcdn.net/assets/favicon-32-d6025c14e900565d6177.png'
-          ></img>
-        </Link>).
-        Powered by <Link
-          href='https://www.speedrun.com/'
-          target='src'
-        >speedrun.com</Link> and <Link
-          href='https://www.pythonanywhere.com/'
-          target='about'
-        >PythonAnywhere</Link>
-      </footer>
-    </Stack>
-  </ThemeProvider>
+            {` ${new Date().getFullYear()} by `}
+            <Link
+              href='https://github.com/Avasam/'
+              target='about'
+            >
+              Samuel Therrien
+            </Link>
+            {' ('}
+            <Link href='https://www.twitch.tv/Avasam' target='about'>
+              Avasam
+              {/**/}
+              <img
+                alt='Twitch'
+                height='14'
+                src='https://static.twitchcdn.net/assets/favicon-32-d6025c14e900565d6177.png'
+              />
+            </Link>
+            ).
+            Powered by
+            <Link
+              href='https://www.speedrun.com/'
+              target='speedruncom'
+            >
+              speedrun.com
+            </Link>
+            {' and'}
+            <Link
+              href='https://www.pythonanywhere.com/'
+              target='about'
+            >
+              PythonAnywhere
+            </Link>
+          </footer>
+        </Stack>
+      </ThemeProvider>
+    </StyledEngineProvider>
+  )
 }
 
 export default App

@@ -1,0 +1,25 @@
+{
+  "extends": [
+    "beslogic/mui"
+  ],
+  "overrides": [
+    {
+      "files": [
+        "**/[Mm]odels/**",
+        "**/[Cc]omponents/**",
+        "**/[Dd]aos/**"
+      ],
+      "rules": {
+        "unicorn/filename-case": [
+          "error",
+          {
+            "case": "pascalCase"
+          }
+        ]
+      }
+    }
+  ],
+  "parserOptions": {
+    "project": "tsconfig.json"
+  }
+}

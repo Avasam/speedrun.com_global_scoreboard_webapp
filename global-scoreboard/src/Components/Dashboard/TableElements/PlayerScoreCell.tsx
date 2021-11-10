@@ -5,7 +5,7 @@ import { Button } from 'react-bootstrap'
 
 import { renderScoreTable } from 'src/Components/Dashboard/UpdateMessage'
 import GenericModal from 'src/Components/GenericModal'
-import { apiGet } from 'src/fetchers/Api'
+import { apiGet } from 'src/fetchers/api'
 import type Player from 'src/Models/Player'
 import type { RunResult } from 'src/Models/UpdateRunnerResult'
 
@@ -20,8 +20,8 @@ const PlayerScoreCell = (props: PlayerScoreCellProps) => {
   const handleShow = () =>
     props.player.scoreDetails === undefined
       ? apiGet(`players/${props.player.userId}/score-details`)
-        .then(res =>
-          res.json().then((scoreDetails: RunResult[][]) => {
+        .then(response =>
+          response.json().then((scoreDetails: RunResult[][]) => {
             props.player.scoreDetails = scoreDetails
             setShow(true)
           }))
@@ -32,22 +32,21 @@ const PlayerScoreCell = (props: PlayerScoreCellProps) => {
     ? <span>{props.player.score}</span>
     : <>
       <Button
-        variant='link'
         onClick={handleShow}
+        variant='link'
       >
         {props.player.score}
       </Button>
       <GenericModal
-        show={show}
         onHide={handleClose}
+        show={show}
         title={`Runner: ${props.player.name} (${props.player.userId}), ${props.player.score} pts`}
       >
         <div className='alert alert-success'>
           {props.player.scoreDetails
             ? renderScoreTable(props.player.scoreDetails)
             : 'No details available. ' +
-            `You can update ${props.player.name} (${props.player.userId}) to get more details about their runs.`
-          }
+            `You can update ${props.player.name} (${props.player.userId}) to get more details about their runs.`}
         </div>
       </GenericModal>
     </>

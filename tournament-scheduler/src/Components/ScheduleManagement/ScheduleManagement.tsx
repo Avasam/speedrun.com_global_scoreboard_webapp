@@ -1,26 +1,27 @@
-import { Button, Container, Stack, Typography } from '@material-ui/core'
-import { CreateNewFolder, NoteAdd } from '@material-ui/icons'
-import { useEffect, useState } from 'react'
+import CreateNewFolder from '@mui/icons-material/CreateNewFolder'
+import NoteAdd from '@mui/icons-material/NoteAdd'
+import { Button, Container, Stack, Typography } from '@mui/material'
+import { memo, useEffect, useState } from 'react'
 
 import ScheduleCard from './ScheduleCard/ScheduleCard'
 import ScheduleGroupCard from './ScheduleCard/ScheduleGroupCard'
 import { ScheduleWizard } from './ScheduleWizard/ScheduleWizard'
-import { apiDelete, apiGet, apiPost, apiPut } from 'src/fetchers/Api'
+import { apiDelete, apiGet, apiPost, apiPut } from 'src/fetchers/api'
 import type { ScheduleDto, ScheduleGroupDto, ScheduleOrderDto } from 'src/Models/Schedule'
 import { isGroup, Schedule, ScheduleGroup } from 'src/Models/Schedule'
 import { TimeSlot } from 'src/Models/TimeSlot'
 import type User from 'src/Models/User'
-import { arrayMove } from 'src/utils/ObjectUtils'
+import { arrayMove } from 'src/utils/objectUtils'
 
 const getSchedules = () =>
   apiGet('schedules')
-    .then(res =>
-      res.json().then((scheduleDtos: ScheduleDto[] | undefined) =>
+    .then(response =>
+      response.json().then((scheduleDtos: ScheduleDto[] | undefined) =>
         scheduleDtos?.map(scheduleDto => new Schedule(scheduleDto)) ?? []))
 
 const postSchedules = (schedule: ScheduleDto) =>
   apiPost('schedules', schedule)
-    .then<number>(res => res.json())
+    .then<number>(response => response.json())
 
 const putSchedule = (schedule: ScheduleDto) =>
   apiPut(`schedules/${schedule.id}`, schedule)
@@ -36,13 +37,13 @@ const putScheduleOrder = (scheduleOrderDtos: ScheduleOrderDto[]) =>
 
 const getGroups = () =>
   apiGet('schedule_groups')
-    .then(res =>
-      res.json().then((scheduleGroupDtos: ScheduleGroupDto[] | undefined) =>
+    .then(response =>
+      response.json().then((scheduleGroupDtos: ScheduleGroupDto[] | undefined) =>
         scheduleGroupDtos?.map(scheduleGroupDto => new ScheduleGroup(scheduleGroupDto)) ?? []))
 
 const postGroups = (scheduleGroup: ScheduleGroupDto) =>
   apiPost('schedule_groups', scheduleGroup)
-    .then<number>(res => res.json())
+    .then<number>(response => response.json())
 
 const putGroup = (scheduleGroup: ScheduleGroupDto) =>
   apiPut(`schedule_groups/${scheduleGroup.id}`, scheduleGroup)
@@ -128,7 +129,7 @@ const ScheduleManagement = (props: ScheduleManagementProps) => {
     const currentIndex = source.indexOf(schedule)
     arrayMove(source, currentIndex, currentIndex + upDown)
     // Reassign the order property, wich will be used to render things in the right order
-    for (let i = 0; i < source.length; i++) source[i].order = i + 1
+    for (let index = 0; index < source.length; index++) source[index].order = index + 1
     void putScheduleOrder(
       source.map(scheduleOrGroup => ({
         isGroup: isGroup(scheduleOrGroup),
@@ -153,80 +154,82 @@ const ScheduleManagement = (props: ScheduleManagementProps) => {
     [schedules, groups]
   )
 
-  const ScheduleCardFromGroup = (params: ScheduleCardFromGroupProps) =>
+  const ScheduleCardFromGroup = memo((params: ScheduleCardFromGroupProps) =>
     <ScheduleCard
+      isFirst={params.index === 0}
+      isLast={params.index === params.parent.length - 1}
       key={`schedule-${params.schedule.id}`}
       onDelete={handleDelete}
       onEdit={handleEdit}
-      schedule={params.schedule}
       onMove={(moved, upDown) => handleMoveSchedule(params.parent, moved, upDown)}
-      isFirst={params.index === 0}
-      isLast={params.index === params.parent.length - 1}
       onMoveToGroup={groupId => handleMoveToGroup(params.schedule, groupId)}
       possibleGroups={[
         // Note: null represents root. This is a fake group
         { ...ScheduleGroup.createDefault(), id: null, name: 'Ungroup' } as unknown as ScheduleGroup,
         ...schedulesAndGroups,
-      ].filter(group => isGroup(group) && group.id !== params.schedule.groupId) as ScheduleGroup[]
-      }
-    />
+      ].filter(group => isGroup(group) && group.id !== params.schedule.groupId) as ScheduleGroup[]}
+      schedule={params.schedule}
+    />)
+  ScheduleCardFromGroup.displayName = 'ScheduleCardFromGroup'
 
   return currentSchedule
     ? <ScheduleWizard
-      schedule={currentSchedule}
-      onSave={handleSave}
       onCancel={() => setCurrentSchedule(undefined)}
+      onSave={handleSave}
+      schedule={currentSchedule}
     />
     : <Container
       component={Stack}
       spacing={2}
       sx={{ '.MuiPaper-root > .MuiCardActions-root>:not(:first-of-type)': { marginLeft: 0 } }}
     >
-      <Typography>Welcome {props.currentUser.name} ! You can manage your schedules below</Typography>
+      <Typography>
+        {`Welcome ${props.currentUser.name} ! You can manage your schedules below`}
+      </Typography>
 
       <Stack direction='row' spacing={2}>
         <Button
           fullWidth
-          variant='contained'
-          startIcon={<CreateNewFolder />}
           onClick={handleCreateGroup}
+          startIcon={<CreateNewFolder />}
+          variant='contained'
         >
           Create new Group
         </Button>
         <Button
           fullWidth
-          variant='contained'
-          startIcon={<NoteAdd />}
           onClick={() => handleEdit(Schedule.createDefault(getDefaultOrder()))}
+          startIcon={<NoteAdd />}
+          variant='contained'
         >
           Create new Schedule
         </Button>
       </Stack>
 
-      {schedulesAndGroups.map((scheduleOrGroup, i) =>
+      {schedulesAndGroups.map((scheduleOrGroup, index) =>
         isGroup(scheduleOrGroup)
           ? <ScheduleGroupCard
-            key={`group-${scheduleOrGroup.id}`}
             group={scheduleOrGroup}
-            onMove={(moved, upDown) => handleMoveSchedule(schedulesAndGroups, moved, upDown)}
-            isFirst={i === 0}
-            isLast={i === schedulesAndGroups.length - 1}
+            isFirst={index === 0}
+            isLast={index === schedulesAndGroups.length - 1}
+            key={`group-${scheduleOrGroup.id}`}
             onDelete={handleDeleteGroup}
             onEdit={newName => handleEditGroup(scheduleOrGroup, newName)}
+            onMove={(moved, upDown) => handleMoveSchedule(schedulesAndGroups, moved, upDown)}
           >
-            {scheduleOrGroup.schedules.map((schedule, index) =>
+            {scheduleOrGroup.schedules.map((schedule, index_) =>
               <ScheduleCardFromGroup
+                index={index_}
                 key={`schedule-${schedule.id}`}
-                schedule={schedule}
                 parent={scheduleOrGroup.schedules}
-                index={index}
+                schedule={schedule}
               />)}
           </ScheduleGroupCard>
           : <ScheduleCardFromGroup
+            index={index}
             key={`schedule-${scheduleOrGroup.id}`}
-            schedule={scheduleOrGroup}
             parent={schedulesAndGroups}
-            index={i}
+            schedule={scheduleOrGroup}
           />)}
     </Container>
 }

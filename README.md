@@ -30,7 +30,7 @@ That being said, go out there and challenge your friends by showing them how man
 The score is calculated by summing up every valid PB of a user according to a formula which goes as follow:
 
 1. Check if the run is valid. If not, the run is immediatly worth 0 points:
-    - The user (or any, for multipler) is not banned from SRC
+    - The user (or any, for multipler) is not banned from SR.C
     - Is not a multi-game run
     - Has video/image verification
     - The leaderboard (for the current sub-category) has at least 3 runs

@@ -48,7 +48,7 @@ class Player(db.Model):
             )["data"]
         except UserUpdaterError as exception:
             if isinstance(exception, SpeedrunComError) and exception.args[0]['error'].startswith("403"):
-                return None, 'Invalid SRC API key'
+                return None, 'Invalid SR.C API key'
             return None, f"Error: {exception.args[0]['error']}\n{exception.args[0]['details']}"
         except Exception:
             print("\nError: Unknown\n{}".format(traceback.format_exc()))
@@ -56,7 +56,7 @@ class Player(db.Model):
 
         user_id: Optional[str] = data["id"]
         if not user_id:  # Confirms wether the API key is valid
-            return None, 'Invalid SRC API key'
+            return None, 'Invalid SR.C API key'
 
         user_name: str = data["names"]["international"]
         print(f"Logging in '{user_id}' ({user_name})")

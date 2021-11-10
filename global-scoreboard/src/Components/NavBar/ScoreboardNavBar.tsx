@@ -11,6 +11,16 @@ import type { Themes } from 'src/Components/ThemeProvider'
 import { DARK_THEMES, LIGHT_THEMES, ThemeContext } from 'src/Components/ThemeProvider'
 import type Player from 'src/Models/Player'
 
+const ThemeDropDownItem = ({ theme }: { theme: Themes }) => {
+  const [, setTheme] = useContext(ThemeContext)
+
+  return <Dropdown.Item onClick={() => setTheme(theme)}>
+    {theme}
+    {' '}
+    {localStorage.getItem('preferedBootstrapTheme') === theme && <FontAwesomeIcon icon={faStar} />}
+  </Dropdown.Item>
+}
+
 type LoginInfoProps = {
   username: string | null | undefined
   onLogin: (currentUser: Player) => void
@@ -19,7 +29,6 @@ type LoginInfoProps = {
 
 const LoginInfo = (props: LoginInfoProps) => {
   const [show, setShow] = useState(false)
-  const [, setTheme] = useContext(ThemeContext)
 
   const handleClose = () => setShow(false)
   const handleShow = () => setShow(true)
@@ -28,21 +37,18 @@ const LoginInfo = (props: LoginInfoProps) => {
     handleClose()
   }
 
-  const ThemeDropDownItem = ({ theme }: { theme: Themes }) =>
-    <Dropdown.Item onClick={() => setTheme(theme)}>
-      {theme} {localStorage.getItem('preferedBootstrapTheme') === theme && <FontAwesomeIcon icon={faStar} />}
-    </Dropdown.Item>
-
   return <div className='login-info'>
     {props.username
-      ? <Navbar.Text>Logged in as {props.username}</Navbar.Text>
-      : <LoginModal show={show} onClose={handleClose} onLogin={handleLogin} />
-    }
+      ? <Navbar.Text>
+        Logged in as
+        {props.username}
+      </Navbar.Text>
+      : <LoginModal onClose={handleClose} onLogin={handleLogin} show={show} />}
 
     <div>
       {props.username
-        ? <Button type='submit' variant='danger' onClick={props.onLogout}>Log out</Button>
-        : <Button id='open-login-modal-button' variant='success' onClick={handleShow}>Log in</Button>}
+        ? <Button onClick={props.onLogout} type='submit' variant='danger'>Log out</Button>
+        : <Button id='open-login-modal-button' onClick={handleShow} variant='success'>Log in</Button>}
 
       <Dropdown align='end'>
         <Dropdown.Toggle >
@@ -56,7 +62,9 @@ const LoginInfo = (props: LoginInfoProps) => {
           {DARK_THEMES.map(theme => <ThemeDropDownItem key={`theme-${theme}`} theme={theme} />)}
           <Dropdown.Divider />
           <Dropdown.Header>
-            Powered by <a href='https://bootswatch.com/' target='about'>Bootswatch</a>
+            Powered by
+            {' '}
+            <a href='https://bootswatch.com/' target='about'>Bootswatch</a>
           </Dropdown.Header>
         </Dropdown.Menu>
       </Dropdown>
@@ -65,7 +73,7 @@ const LoginInfo = (props: LoginInfoProps) => {
 }
 
 const ScoreboardNavBar = (props: LoginInfoProps) =>
-  <Navbar collapseOnSelect expand='md' bg='dark' variant='dark'>
+  <Navbar bg='dark' collapseOnSelect expand='md' variant='dark'>
     <Container>
       <Navbar.Brand as={Link} to='/'>Ava&apos;s speedrunning global scoreboard</Navbar.Brand>
       <Navbar.Toggle aria-controls='basic-navbar-nav' />
@@ -75,19 +83,24 @@ const ScoreboardNavBar = (props: LoginInfoProps) =>
           <Nav.Link
             href='https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/main/README.md'
             target='about'
-          >About</Nav.Link>
+          >
+            About
+          </Nav.Link>
           <Nav.Link
-            to='/game-search'
             as={Link}
-          >Game Search</Nav.Link>
+            to='/game-search'
+          >
+            Game Search
+          </Nav.Link>
           <Nav.Link
             href='https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/issues'
             target='about'
-          >Report a bug, issue or suggestion</Nav.Link>
+          >
+            Report a bug, issue or suggestion
+          </Nav.Link>
         </Nav>
         {props.username !== undefined &&
-          <LoginInfo {...props} />
-        }
+          <LoginInfo {...props} />}
       </Navbar.Collapse>
     </Container>
   </Navbar>

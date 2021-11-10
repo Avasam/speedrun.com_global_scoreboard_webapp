@@ -9,7 +9,7 @@ import PlayerScoreCell from 'src/Components/Dashboard/TableElements/PlayerScoreC
 import ScoreTitle from 'src/Components/Dashboard/TableElements/ScoreTitle'
 import Configs from 'src/Models/Configs'
 import type Player from 'src/Models/Player'
-import { diffDays } from 'src/utils/Time'
+import { diffDays } from 'src/utils/time'
 
 const currentTimeOnLoad = new Date()
 const columnClass = (lastUpdate: Date) => {
@@ -28,7 +28,7 @@ export type QuickViewProps = {
 }
 
 const QuickView = (props: QuickViewProps) =>
-  <Table responsive striped size='sm' className='quick-view'>
+  <Table className='quick-view' responsive size='sm' striped>
     <thead>
       <tr>
         <th>Rank</th>
@@ -49,26 +49,26 @@ const QuickView = (props: QuickViewProps) =>
               <td className={columnClass(player.lastUpdate)}>{player.rank}</td>
               <td>
                 <PlayerNameCell
-                  player={player}
-                  isFriend={true}
-                  isCurrentUser={player === props.currentUser}
-                  handleOnUnfriend={props.onUnfriend}
                   handleOnBefriend={props.onUnfriend}
+                  handleOnUnfriend={props.onUnfriend}
+                  isCurrentUser={player === props.currentUser}
+                  isFriend
+                  player={player}
                 />
               </td>
               <td>
                 <PlayerScoreCell player={player} />
                 <Button
-                  variant='link'
                   onClick={() => props.currentUser && props.onJumpToPlayer(player.userId)}
+                  variant='link'
                 >
                   <FontAwesomeIcon icon={faArrowAltCircleRight} />
                 </Button>
               </td>
             </tr>)
           : <>
-            <tr className='highlight-current-user' id='preview-0'><td colSpan={3}></td></tr>
-            <tr className='highlight-friend' id='preview-1'><td colSpan={3}></td></tr>
+            <tr className='highlight-current-user' id='preview-0'><td colSpan={3} /></tr>
+            <tr className='highlight-friend' id='preview-1'><td colSpan={3} /></tr>
           </>
       }
     </tbody>

@@ -265,7 +265,7 @@ def get_paginated_response(url: str, params: Dict[str, Union[str, int, bool]]) -
                 if exception.args[0]['error'] != "HTTPError 500" or results_per_page <= MINIMUM_RESULTS_PER_PAGE:
                     raise
                 reduced_results_per_page = max(floor(results_per_page / sqrt(7)), MINIMUM_RESULTS_PER_PAGE)
-                print("SRC returned 500 for a paginated request. Reducing the max results per page "
+                print("SR.C returned 500 for a paginated request. Reducing the max results per page "
                       f"from {results_per_page} to {reduced_results_per_page}")
                 update_next_params(reduced_results_per_page, False)
 

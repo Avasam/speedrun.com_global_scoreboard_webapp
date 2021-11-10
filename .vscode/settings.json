@@ -3,7 +3,8 @@
     "*.json": "json",
     "extensions.json": "jsonc",
     "settings.json": "jsonc",
-    ".eslintrc.json": "jsonc",
+    ".eslintrc*.json": "jsonc",
+    "tsconfig*.json": "jsonc",
     // "*.html": "jinja-html"
     "*.html": "html"
   },
@@ -18,17 +19,59 @@
   },
   "editor.detectIndentation": false,
   "editor.tabSize": 2,
-  "[python]": {
-    "editor.tabSize": 4,
-  },
   "editor.formatOnSave": true,
-  "javascript.preferences.quoteStyle": "single",
-  "typescript.preferences.quoteStyle": "single",
-  "html.format.wrapAttributes": "auto",
+  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
   "editor.codeActionsOnSave": {
     "source.fixAll": true,
     "source.fixAll.eslint": true,
     "source.fixAll.markdownlint": true
+  },
+  "javascript.preferences.quoteStyle": "single",
+  "typescript.preferences.quoteStyle": "single",
+  "html.format.wrapAttributes": "auto",
+  "typescript.tsdk": "./tournament-scheduler/node_modules/typescript/lib",
+  "javascript.format.semicolons": "remove",
+  "typescript.format.semicolons": "remove",
+  "eslint.validate": [
+    "typescript",
+    "typescriptreact"
+  ],
+  "eslint.workingDirectories": [
+    {
+      "mode": "auto"
+    }
+  ],
+  "files.insertFinalNewline": true,
+  "trailing-spaces.includeEmptyLines": true,
+  "trailing-spaces.trimOnSave": true,
+  "trailing-spaces.syntaxIgnore": [
+    "markdown"
+  ],
+  "javascript.preferences.importModuleSpecifier": "non-relative",
+  "typescript.preferences.importModuleSpecifier": "non-relative",
+  "files.exclude": {
+    "*.zip": true,
+    "**/node_modules": false,
+    "**/build": true,
+    "**/dist/**/*.js": true,
+    "**/dist/**/*.map": true,
+    "**/src/react-app-env.d.ts": true,
+    "**/__pycache__/": true,
+  },
+  // Copy those over to your user settings
+  "sonarlint.rules": {
+    "python:S1192": {
+      "level": "off"
+    },
+    "python:S3776": {
+      "level": "off"
+    },
+    "python:S107": {
+      "level": "off"
+    },
+  },
+  "[python]": {
+    "editor.tabSize": 4,
   },
   "python.linting.pylintEnabled": false,
   // Using flake8 as other linters are incomplete or have false positives with Requests
@@ -42,42 +85,4 @@
   "python.formatting.autopep8Args": [
     "--max-line-length=120"
   ],
-  "typescript.tsdk": "./tournament-scheduler/node_modules/typescript/lib",
-  "javascript.format.semicolons": "remove",
-  "typescript.format.semicolons": "remove",
-  "eslint.validate": [
-    "typescript",
-    "typescriptreact"
-  ],
-  "eslint.workingDirectories": [
-    {
-      "mode": "auto"
-    }
-  ],
-  // Copy those over to your user settings
-  "sonarlint.rules": {
-    "python:S1192": {
-      "level": "off"
-    },
-    "python:S3776": {
-      "level": "off"
-    },
-    "python:S107": {
-      "level": "off"
-    },
-  },
-  "files.insertFinalNewline": true,
-  "trailing-spaces.includeEmptyLines": true,
-  "trailing-spaces.trimOnSave": true,
-  "trailing-spaces.syntaxIgnore": [
-    "markdown"
-  ],
-  "javascript.preferences.importModuleSpecifier": "non-relative",
-  "typescript.preferences.importModuleSpecifier": "non-relative",
-  "files.exclude": {
-    "**/__pycache__/": true,
-    "*.zip": true,
-    "**/node_modules": true,
-    "**/build": true,
-  },
 }
