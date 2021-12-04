@@ -1,0 +1,35 @@
+# https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions
+name: Lint and build Global Scoreboard
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'global-scoreboard/'
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'global-scoreboard/'
+jobs:
+  ESLint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ${{ github.repository }}/${{ github.ref }}
+        uses: actions/checkout@v2
+      - name: Set up Node
+        uses: actions/setup-node@v2
+      - run: cd global-scoreboard
+      - run: npm ci
+      - run: npm run lint
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ${{ github.repository }}/${{ github.ref }}
+        uses: actions/checkout@v2
+      - name: Set up Node
+        uses: actions/setup-node@v2
+      - run: cd global-scoreboard
+      - run: npm ci --production
+      - run: npm run build:prod

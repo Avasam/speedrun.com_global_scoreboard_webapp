@@ -6,23 +6,6 @@
   "parserOptions": {
     "project": "tsconfig.json"
   },
-  "overrides": [
-    {
-      "files": [
-        "**/[Mm]odels/**",
-        "**/[Cc]omponents/**",
-        "**/[Dd]aos/**"
-      ],
-      "rules": {
-        "unicorn/filename-case": [
-          "error",
-          {
-            "case": "pascalCase"
-          }
-        ]
-      }
-    }
-  ],
   "rules": {
     // Ok with Bootstrap
     "react/forbid-component-props": "off"

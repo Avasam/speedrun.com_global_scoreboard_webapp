@@ -1,3 +1,5 @@
+# Reconsider Dependabot if they ever add grouped updates: https://github.com/dependabot/dependabot-core/issues/1190
+
 # To get started with Dependabot version updates, you'll need to specify which
 # package ecosystems to update and where the package manifests are located.
 # Please see the documentation for all configuration options:
@@ -47,7 +49,7 @@ updates:
       # https://github.com/dependabot/dependabot-core/issues/3891
         update-types: ["version-update:semver-patch", "version-update:semver-minor"]
     versioning-strategy: increase-if-necessary
-    
+
   # Check for updates to GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
