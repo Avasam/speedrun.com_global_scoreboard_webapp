@@ -1,31 +1,32 @@
 #!/usr/bin/python3.9
 # -*- coding: utf-8 -*-
+"""
+Ava's Global Speedrunning Scoreboard
+Copyright (C) 2020 Samuel Therrien
 
-##########################################################################
-# Ava's Global Speedrunning Scoreboard
-# Copyright (C) 2020 Samuel Therrien
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published
-# by the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-# Contact:
-# samuel.06@hotmail.com
-##########################################################################
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+Contact:
+samuel.06@hotmail.com
+"""
+
+from flask import Flask, send_file, send_from_directory, redirect, url_for
+
 from api.core_api import api as core_api
 from api.game_search_api import api as game_search_api
 from api.global_scoreboard_api import api as global_scoreboard_api
 from api.tournament_scheduler_api import api as tournament_scheduler_api
-from flask import Flask, send_file, send_from_directory, redirect, url_for
 from models.core_models import db
 import configs
 
@@ -55,34 +56,34 @@ app.config["SQLALCHEMY_POOL_RECYCLE"] = 299
 app.config["SQLALCHEMY_POOL_SIZE"] = 3  # PythonAnywhere allows 3 connections per webworker
 app.config["SQLALCHEMY_MAX_OVERFLOW"] = 0
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = configs.sql_track_modifications
-db.app = app
+db.app = app  # type: ignore # TODO: Raise issue upstream
 db.init_app(app)
 
 
-@app.route('/global-scoreboard/', defaults={'asset': 'index.html'})
-@app.route('/global-scoreboard/<path:asset>', methods=["GET"])
+@app.route("/global-scoreboard/", defaults={"asset": "index.html"})
+@app.route("/global-scoreboard/<path:asset>", methods=["GET"])
 def global_scoreboard(asset: str):
-    if asset[:6] == 'static':
-        return send_from_directory('global-scoreboard/build/', asset)
-    return send_file('global-scoreboard/build/index.html')
+    if asset[:6] == "static":
+        return send_from_directory("global-scoreboard/build/", asset)
+    return send_file("global-scoreboard/build/index.html")
 
 
-@app.route('/tournament-scheduler/', defaults={'asset': 'index.html'})
-@app.route('/tournament-scheduler/<path:asset>', methods=["GET"])
+@app.route("/tournament-scheduler/", defaults={"asset": "index.html"})
+@app.route("/tournament-scheduler/<path:asset>", methods=["GET"])
 def tournament_scheduler(asset: str):
-    if asset[:6] == 'static':
-        return send_from_directory('tournament-scheduler/build/', asset)
-    return send_file('tournament-scheduler/build/index.html')
+    if asset[:6] == "static":
+        return send_from_directory("tournament-scheduler/build/", asset)
+    return send_file("tournament-scheduler/build/index.html")
 
 
-@app.route('/', methods=["GET"])
+@app.route("/", methods=["GET"])
 def index():
-    return redirect(url_for('global_scoreboard'))
+    return redirect(url_for("global_scoreboard"))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     if configs.flask_environment == "development":
-        print(' * Running on http://localhost:5000/ (Press CTRL+C to quit)')
-        app.run(host='0.0.0.0')
+        print(" * Running on http://localhost:5000/ (Press CTRL+C to quit)")
+        app.run(host="0.0.0.0")  # nosec
     else:
         app.run()

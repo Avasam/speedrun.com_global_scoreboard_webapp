@@ -1,4 +1,5 @@
 // Note: Let's stay as close to the original types as possible, even if they're vague
+/* eslint-disable react/no-unused-class-component-methods */
 /* eslint-disable @typescript-eslint/no-duplicate-imports */
 /* eslint-disable @typescript-eslint/sort-type-union-intersection-members */
 /* eslint-disable @typescript-eslint/ban-types */

@@ -36,4 +36,4 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v2
       - run: npm ci
-      - run: npm run build:prod
+      - run: npm run build

@@ -2,46 +2,54 @@
 Provides the core API endpoints for consuming and producing REST requests and
 responses. Like login and user management.
 """
-from api.api_wrappers import authentication_required
+from typing import Any, Optional, Union
+
 from datetime import datetime, timedelta
 from flask import Blueprint, current_app, jsonify, request
-from models.tournament_scheduler_models import Player
-from typing import Any, Dict, List, Union
-import configs
 import jwt
 
+from api.api_wrappers import authentication_required
+from models.tournament_scheduler_models import Player
+import configs
+
 # TODO: use and typecheck / typeguard JSONType
-__JSONTypeBase = Union[str, int, float, bool, None, Dict[str, Any], List[Any]]
-JSONType = Union[str, int, float, bool, None, Dict[str, __JSONTypeBase], List[__JSONTypeBase]]
+__JSONTypeBase = Union[str, int, float, bool, None, dict[str, Any], list[Any]]
+JSONObjectType = dict[str, __JSONTypeBase]
+JSONType = Union[str, int, float, bool, None, JSONObjectType, list[__JSONTypeBase]]
 
-api = Blueprint('core_api', __name__)
+api = Blueprint("core_api", __name__)
 
 
-@api.route('/login', methods=('POST',))
+@api.route("/login", methods=("POST",))
 def login():
-    data: Dict[str, Any] = request.get_json()
-    player, error_message = Player.authenticate(data['speedruncomApiKey'])
+    data: Optional[JSONObjectType] = request.get_json()
+    try:
+        api_key = data["speedruncomApiKey"] if data else ""
+        assert(isinstance(api_key, str))
+    except (KeyError) as error:
+        return jsonify({"message": str(error), "authenticated": False}), 400
+    player, error_message = Player.authenticate(api_key)
 
     if not player:
-        return jsonify({'message': error_message, 'authenticated': False}), 401
+        return jsonify({"message": error_message, "authenticated": False}), 401
 
     token: str = jwt.encode({
-        'sub': player.user_id,
-        'iat': datetime.utcnow(),
-        'exp': datetime.utcnow() + timedelta(days=1)},
-        current_app.config['SECRET_KEY'])
+        "sub": player.user_id,
+        "iat": datetime.utcnow(),
+        "exp": datetime.utcnow() + timedelta(days=1)},
+        current_app.config["SECRET_KEY"])
     # Note: https://github.com/jpadilla/pyjwt/issues/529
-    if type(token) is bytes:
-        token = token.decode('UTF-8')
+    if isinstance(token, bytes):
+        token = token.decode("UTF-8")
     return jsonify({
-        'token': token,
-        'user': {
-            'userId': player.user_id,
-            'name': player.name,
+        "token": token,
+        "user": {
+            "userId": player.user_id,
+            "name": player.name,
         }})
 
 
-@api.route('/configs', methods=('GET',))
+@api.route("/configs", methods=("GET",))
 def get_configs():
     return jsonify({
         "bypassUpdateRestrictions": configs.bypass_update_restrictions,
@@ -49,11 +57,11 @@ def get_configs():
     })
 
 
-@api.route('/users/current', methods=('GET',))
+@api.route("/users/current", methods=("GET",))
 @authentication_required
 def get_user_current(current_user: Player):
     return jsonify({
-        'user': {
-            'userId': current_user.user_id,
-            'name': current_user.name,
+        "user": {
+            "userId": current_user.user_id,
+            "name": current_user.name,
         }})
