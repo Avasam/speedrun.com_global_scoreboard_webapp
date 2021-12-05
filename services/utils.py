@@ -19,7 +19,7 @@ import traceback
 
 from requests.exceptions import ConnectionError as RequestsConnectionError, HTTPError
 from requests_cache.session import CachedSession
-from simplejson.scanner import JSONDecodeError as SimpleJSONDecodeError
+from simplejson.errors import JSONDecodeError as SimpleJSONDecodeError
 
 import configs
 
