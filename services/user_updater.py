@@ -1,25 +1,27 @@
+from typing import Union
+
 from datetime import datetime
 from math import exp, floor, pi
+from re import sub
+from time import strftime
+from urllib.parse import unquote
+import httplib2
+import requests
+
 from models.game_search_models import GameValues
 from models.core_models import db, Player
 from models.global_scoreboard_models import PointsDistributionDto, Run, User
-from re import sub
 from services.user_updater_helpers import BasicJSONType, extract_valid_personal_bests, get_probability_terms, \
     get_subcategory_variables, keep_runs_before_soft_cutoff, MIN_LEADERBOARD_SIZE, update_runner_in_database, \
     extract_top_runs_and_score, extract_sorted_valid_runs_from_leaderboard
 from services.utils import clear_cache_for_user_async, get_file, get_paginated_response, MAXIMUM_RESULTS_PER_PAGE, \
     SpeedrunComError, start_and_wait_for_threads, UserUpdaterError
-from time import strftime
-from typing import Dict, List, Union
-from urllib.parse import unquote
 import configs
-import httplib2
-import requests
 
 TIME_BONUS_DIVISOR = 3600 * 12  # 12h (1/2 day) for +100%
 
 
-def get_updated_user(user_id: str) -> Dict[str, Union[str, None, float, int, PointsDistributionDto]]:
+def get_updated_user(user_id: str) -> dict[str, Union[str, None, float, int, PointsDistributionDto]]:
     """Called from flask_app and AutoUpdateUsers.run()"""
     text_output: str = user_id
     result_state: str = "info"
@@ -31,18 +33,18 @@ def get_updated_user(user_id: str) -> Dict[str, Union[str, None, float, int, Poi
         try:
             __set_user_code_and_name(user)
         except SpeedrunComError as exception:
-            if not exception.args[0]['error'].startswith("404"):
+            if not exception.args[0]["error"].startswith("404"):
                 raise
             # ID doesn't exists on speedrun.com but it does in the database, remove it
             player = Player.get(user._name)
             if player:
-                text_output = (f"User ID \"{user._id}\" not found on speedrun.com. "
+                text_output = (f"User ID '{user._id}' not found on speedrun.com. "
                                "\nRemoved them from the database.")
                 result_state = "warning"
                 db.session.delete(player)
                 db.session.commit()
             else:
-                text_output = (f"User \"{user._id}\" not found. "
+                text_output = (f"User '{user._id}' not found. "
                                "\nMake sure the name or ID is typed properly. "
                                "It's possible the user you're looking for changed their name. "
                                "In case of doubt, use their ID.")
@@ -53,10 +55,10 @@ def get_updated_user(user_id: str) -> Dict[str, Union[str, None, float, int, Poi
 
             # If user doesn't exists or enough time passed since last update
             if (
-                not player or
-                not player.last_update or
-                (datetime.now() - player.last_update).days >= configs.last_updated_days[0] or
-                configs.bypass_update_restrictions
+                not player
+                or not player.last_update
+                or (datetime.now() - player.last_update).days >= configs.last_updated_days[0]
+                or configs.bypass_update_restrictions
             ):
                 __set_user_points(user)
                 text_output, result_state = update_runner_in_database(player, user)
@@ -70,15 +72,15 @@ def get_updated_user(user_id: str) -> Dict[str, Union[str, None, float, int, Poi
         if not configs.skip_cache_cleanup:
             clear_cache_for_user_async(user._id)
         return {
-            'userId': user._id,
-            'name': user._name,
-            'countryCode': user._country_code,
-            'score': floor(user._points),
-            'lastUpdate': strftime("%Y-%m-%d %H:%M"),
-            'rank': None,
-            'scoreDetails': user.get_points_distribution_dto(),
-            'message': text_output,
-            'state': result_state,
+            "userId": user._id,
+            "name": user._name,
+            "countryCode": user._country_code,
+            "score": floor(user._points),
+            "lastUpdate": strftime("%Y-%m-%d %H:%M"),
+            "rank": None,
+            "scoreDetails": user.get_points_distribution_dto(),
+            "message": text_output,
+            "state": result_state,
         }
 
     except httplib2.ServerNotFoundError as exception:
@@ -107,7 +109,7 @@ def __set_user_code_and_name(user: User) -> None:
 
 
 def __set_user_points(user: User) -> None:
-    counted_runs: List[Run] = []
+    counted_runs: list[Run] = []
 
     def set_points_thread(pb: BasicJSONType) -> None:
         pb_subcategory_variables = get_subcategory_variables(pb)
@@ -161,9 +163,9 @@ def __set_user_points(user: User) -> None:
         "user": user._id,
         "status": "verified",
         "embed": "level,game.levels,game.variables",
-        "max": MAXIMUM_RESULTS_PER_PAGE,
+        "max": str(MAXIMUM_RESULTS_PER_PAGE),
     }
-    runs: List[BasicJSONType] = get_paginated_response(url, params)["data"]
+    runs: list[BasicJSONType] = get_paginated_response(url, params)["data"]
     runs = extract_valid_personal_bests(runs)
 
     start_and_wait_for_threads(set_points_thread, runs)
@@ -189,7 +191,7 @@ def __set_run_points(run: Run) -> None:
         leaderboard = get_file(url, params, True)
     # If SR.C returns 404 here, most likely the run references a category or level that does not exist anymore
     except SpeedrunComError as exception:
-        if exception.args[0]['error'].startswith("404"):
+        if exception.args[0]["error"].startswith("404"):
             return
         else:
             raise
@@ -229,7 +231,7 @@ def __set_run_points(run: Run) -> None:
         return
 
     # Scale all the adjusted deviations so that the mean is worth 1 but the worse stays 0...
-    # using the lowest time's deviation from before the "repeated times" fix!
+    # using the lowest time"s deviation from before the "repeated times" fix!
     # (runs not affected by the prior fix won't see any difference)
     pre_cutoff_lowest_deviation = pre_cutoff_worst_time - mean
     normalized_deviation = adjusted_deviation / pre_cutoff_lowest_deviation
@@ -249,8 +251,8 @@ def __set_run_points(run: Run) -> None:
     run.category_name = sub(
         r"((\d\d)$|Any)(?!%)",
         r"\1%",
-        unquote(leaderboard["data"]["weblink"].split('#')[1])
-        .rstrip('1')
+        unquote(leaderboard["data"]["weblink"].split("#")[1])
+        .rstrip("1")
         .replace("_", " ")
         .title()
     )

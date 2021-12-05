@@ -1,7 +1,9 @@
 from __future__ import annotations
+from typing import Optional, Union
+
 from math import ceil
+
 from services.utils import map_to_dto
-from typing import Dict, List, Optional, Union
 
 
 class Run:
@@ -28,7 +30,7 @@ class Run:
             game: str,
             game_name: str,
             category: str,
-            variables=None,
+            variables: Optional[dict[str, str]] = None,
             level: str = "",
             level_name: str = "",
             level_count: int = 0):
@@ -47,32 +49,33 @@ class Run:
         return f"Run: <Game: {self.game}, " \
                f"Category: {self.category}, {level_str}{self.variables} {ceil(self._points * 100) / 100}>"
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: object) -> bool:
         """
         :type other: Run
         """
+        assert(isinstance(other, Run))
         return (self.category, self.level) == (other.category, other.level)
 
-    def __ne__(self, other) -> bool:
+    def __ne__(self, other: object) -> bool:
         """
         :type other: Run
         """
-        return not (self == other)
+        return not self == other
 
     def __hash__(self):
         return hash((self.category, self.level))
 
     def to_dto(self) -> dict[str, Union[str, float]]:
         return {
-            'gameName': self.game_name,
-            'categoryName': self.category_name,
-            'levelName': self.level_name,
-            'points': self._points,
-            'levelFraction': self.level_fraction
+            "gameName": self.game_name,
+            "categoryName": self.category_name,
+            "levelName": self.level_name,
+            "points": self._points,
+            "levelFraction": self.level_fraction
         }
 
 
-PointsDistributionDto = List[List[Dict[str, Union[str, int, bool]]]]
+PointsDistributionDto = list[list[dict[str, Union[str, int, bool]]]]
 
 
 class User:
@@ -81,7 +84,7 @@ class User:
     _id: str = ""
     _country_code: Optional[str] = None
     _banned: bool = False
-    _points_distribution: List[List[Run]] = [[], []]
+    _points_distribution: list[list[Run]] = [[], []]
 
     def __init__(self, id_or_name: str) -> None:
         self._id = id_or_name

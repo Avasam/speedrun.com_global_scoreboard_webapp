@@ -1,17 +1,19 @@
+from typing import Any
+
 from math import floor
-from models.core_models import Player
-from models.global_scoreboard_models import Run, User
 from time import strftime
-from typing import Any, Dict, List, Tuple
 import json
 
+from models.core_models import Player
+from models.global_scoreboard_models import Run, User
+
 GAMETYPE_MULTI_GAME = "rj1dy1o8"
-BasicJSONType = Dict[str, Any]
+BasicJSONType = dict[str, Any]
 MIN_LEADERBOARD_SIZE = 3  # This is just to optimize as the formula gives 0 points to leaderboards size < 3
 MIN_SAMPLE_SIZE = 60
 
 
-def extract_valid_personal_bests(runs: List[BasicJSONType]) -> List[BasicJSONType]:
+def extract_valid_personal_bests(runs: list[BasicJSONType]) -> list[BasicJSONType]:
     """
     Check if it's a valid run:
     - is over a minute (or an IL, we don't have access to the IL's fraction yet)
@@ -46,7 +48,7 @@ def extract_valid_personal_bests(runs: List[BasicJSONType]) -> List[BasicJSONTyp
 
 def extract_sorted_valid_runs_from_leaderboard(
         leaderboard: BasicJSONType,
-        level_fraction: float) -> List[BasicJSONType]:
+        level_fraction: float) -> list[BasicJSONType]:
     """
     Check if the run is valid:
     - none of the players are banned
@@ -95,14 +97,14 @@ def extract_sorted_valid_runs_from_leaderboard(
     return sorted(valid_runs, key=lambda r: r["run"]["times"]["primary_t"])
 
 
-def get_subcategory_variables(run: BasicJSONType) -> Dict[str, Dict[str, str]]:
+def get_subcategory_variables(run: BasicJSONType) -> dict[str, dict[str, str]]:
     """
     Produce a Dictionary of a run's sub-categories where:
     - key: variable id (ex: Framerate)
     - value: variable value (ex: 60 FPS, 144hz, Uncapped)
     """
     # Get a list of the game's subcategory variables
-    game_subcategory_ids: List[str] = [
+    game_subcategory_ids: list[str] = [
         game_variable["id"]
         for game_variable in run["game"]["data"]["variables"]["data"]
         if game_variable["is-subcategory"]
@@ -116,7 +118,7 @@ def get_subcategory_variables(run: BasicJSONType) -> Dict[str, Dict[str, str]]:
     }
 
 
-def get_probability_terms(pbs: List[BasicJSONType]):
+def get_probability_terms(pbs: list[BasicJSONType]):
     mean: float = 0.0
     sigma: float = 0.0
     population: int = 0
@@ -131,9 +133,9 @@ def get_probability_terms(pbs: List[BasicJSONType]):
     return mean, standard_deviation, population
 
 
-def keep_runs_before_soft_cutoff(runs: List[BasicJSONType]):
+def keep_runs_before_soft_cutoff(runs: list[BasicJSONType]):
     i: int = len(runs)
-    cut_off_80th_percentile: int = runs[int(i*0.8)]["run"]["times"]["primary_t"]
+    cut_off_80th_percentile: int = runs[int(i * 0.8)]["run"]["times"]["primary_t"]
     count: int = 0
     most_repeated_time_lowest_pos: int = 0
     most_repeated_time_count: int = 0
@@ -163,7 +165,7 @@ def keep_runs_before_soft_cutoff(runs: List[BasicJSONType]):
     return runs
 
 
-def extract_top_runs_and_score(runs: List[Run]) -> Tuple[List[Run], List[Run]]:
+def extract_top_runs_and_score(runs: list[Run]) -> tuple[list[Run], list[Run]]:
     top_runs, lesser_runs = [], []
     position = 0
 
@@ -185,10 +187,10 @@ def extract_top_runs_and_score(runs: List[Run]) -> Tuple[List[Run], List[Run]]:
         runs_to_transfer_weight = MIN_SAMPLE_SIZE - position
         runs_to_transfer_reversed = []
         for run in runs[::-1]:
-            if (runs_to_transfer_weight >= 1):
+            if runs_to_transfer_weight >= 1:
                 break
             next_weight = runs_to_transfer_weight + run.level_fraction
-            if (next_weight > 1):
+            if next_weight > 1:
                 continue
             runs_to_transfer_reversed.append(run)
 

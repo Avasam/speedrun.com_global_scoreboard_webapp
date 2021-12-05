@@ -1,19 +1,21 @@
 from __future__ import annotations
-from models.core_models import db, Player
+from typing import Optional, cast
+
 from sqlalchemy import orm
-from typing import Optional, Union
+
+from models.core_models import BaseModel, db
 
 
-class GameValues(db.Model):
+class GameValues(BaseModel):
     __tablename__ = "game_values"
 
-    game_id: str = db.Column(db.String(8), primary_key=True)
-    category_id: str = db.Column(db.String(8), primary_key=True)
-    run_id: str = db.Column(db.String(8), nullable=False)
-    platform_id: Optional[str] = db.Column(db.String(8))
-    wr_time: int = db.Column(db.Integer, nullable=False)
-    wr_points: int = db.Column(db.Integer, nullable=False)
-    mean_time: int = db.Column(db.Integer, nullable=False)
+    game_id = db.Column(db.String(8), primary_key=True)
+    category_id = db.Column(db.String(8), primary_key=True)
+    run_id = db.Column(db.String(8), nullable=False)
+    platform_id = db.Column(db.String(8))
+    wr_time = db.Column(db.Integer, nullable=False)
+    wr_points = db.Column(db.Integer, nullable=False)
+    mean_time = db.Column(db.Integer, nullable=False)
 
     @staticmethod
     def create_or_update(
@@ -58,23 +60,26 @@ class GameValues(db.Model):
         return game_values
 
     @staticmethod
-    def get(game_id: str, category_id: str) -> Optional[Player]:
+    def get(game_id: str, category_id: str):
         try:
-            return GameValues \
-                .query \
-                .filter(GameValues.game_id == game_id) \
-                .filter(GameValues.category_id == category_id) \
+            return cast(
+                GameValues,
+                GameValues
+                .query
+                .filter(GameValues.game_id == game_id)
+                .filter(GameValues.category_id == category_id)
                 .one()
+            )
         except orm.exc.NoResultFound:
             return None
 
-    def to_dto(self) -> dict[str, Union[str, int, None]]:
+    def to_dto(self):
         return {
-            'gameId': self.game_id,
-            'categoryId': self.category_id,
-            'platformId': self.platform_id,
-            'wrTime': self.wr_time,
-            'wrPoints': self.wr_points,
-            'meanTime': self.mean_time,
-            'runId': self.run_id,
+            "gameId": self.game_id,
+            "categoryId": self.category_id,
+            "platformId": self.platform_id,
+            "wrTime": self.wr_time,
+            "wrPoints": self.wr_points,
+            "meanTime": self.mean_time,
+            "runId": self.run_id,
         }

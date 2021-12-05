@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 # import os
 # IMPORTANT : DO NOT DO THIS IN PROD /!\
 # We're only doing it here because it's annoying to invalidate JWT tokens on refresh during development
@@ -15,9 +15,9 @@ cached_session_backend: Optional[str] = None
 
 # Custom settings
 bypass_update_restrictions: bool = True
-last_updated_days: List[int] = [7, 30, 91]
+last_updated_days: list[int] = [7, 30, 91]
 skip_cache_cleanup: bool = False
-http_retryable_errors: List[int] = [401, 420, 502]
+http_retryable_errors: list[int] = [401, 420, 502]
 
 # Database settings
 sql_track_modifications: bool = False

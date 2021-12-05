@@ -1,3 +1,5 @@
+from typing import Any, Literal, Optional, Union
+
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import nullcontext
 from datetime import timedelta
@@ -7,17 +9,18 @@ from multiprocessing import BoundedSemaphore  # , synchronize
 from os import unlink
 from os.path import isdir
 from random import randint
-from requests.exceptions import ConnectionError, HTTPError
-from requests_cache.session import CachedSession
-from simplejson.scanner import JSONDecodeError as SimpleJSONDecodeError
 from sqlite3 import DatabaseError, OperationalError
 from tempfile import gettempdir
 from threading import BoundedSemaphore as ThreadingBoundedSemaphore, Timer, Thread
 from time import sleep
-from typing import Any, Dict, List, Optional, Union
 from urllib.parse import parse_qs, urlparse
-import configs
 import traceback
+
+from requests.exceptions import ConnectionError as RequestsConnectionError, HTTPError
+from requests_cache.session import CachedSession
+from simplejson.scanner import JSONDecodeError as SimpleJSONDecodeError
+
+import configs
 
 RATE_LIMIT = 200
 HTTP_ERROR_RETRY_DELAY_MIN = ceil(RATE_LIMIT / 60)  # 1 / (period / limit)
@@ -37,17 +40,16 @@ executor = ThreadPoolExecutor(max_workers=MAX_THREADS_PER_WORKER)
 
 class UserUpdaterError(Exception):
     """ Usage: raise UserUpdaterError({"error":"On Status Label", "details":"Details of error"}) """
-    pass
+
+    args: tuple[dict[Literal["error", "details"], str], ...]
 
 
 class SpeedrunComError(UserUpdaterError):
     """ Usage: raise NotFoundError({"error":"`HTTP_STATUS_CODE` (speedrun.com)", "details":"Details of error"}) """
-    pass
 
 
 class UnderALotOfPressure(SpeedrunComError):
     """ Usage: raise NotFoundError({"error":"`HTTP_STATUS_CODE` (speedrun.com)", "details":"Details of error"}) """
-    pass
 
 
 class UnhandledThreadException(Exception):
@@ -116,7 +118,7 @@ def clean_old_cache():
 session = CachedSession(
     expire_after=timedelta(days=1),
     allowable_codes=(200, 500),
-    ignored_parameters=['status', 'video-only', 'embed'],
+    ignored_parameters=["status", "video-only", "embed"],
     backend=configs.cached_session_backend,
     fast_save=True,
     use_temp=True)
@@ -126,9 +128,9 @@ rate_limit = RatedSemaphore(RATE_LIMIT, 60)  # 200 requests per minute
 
 def get_file(
     url: str,
-    params: Dict[str, Union[str, int, bool]] = {},
+    params: dict[str, str] = {},
     cached=False,
-    headers: Dict[str, Any] = None
+    headers: dict[str, Any] = None
 ) -> dict:
     """
     Returns the content of "url" parsed as JSON dict.
@@ -142,15 +144,17 @@ def get_file(
         with nullcontext() if cached else session.cache_disabled():
             try:
                 response = session.get(url, params=params, headers=headers)
-            # "disk I/O erro" when going over PythonAnywhere's Disk Quota
+            # "disk I/O erro" when going over PythonAnywhere"s Disk Quota
             except (DatabaseError, OperationalError, OSError):
                 # TODO: Try to check for available space first (<=5%),
                 # https://help.pythonanywhere.com/pages/DiskQuota
-                [unlink(dir) for dir in [gettempdir(), '~/.cache'] if isdir(dir)]
+                for dir in [gettempdir(), "~/.cache"]:
+                    if isdir(dir):
+                        unlink(dir)
                 session.cache.clear()
                 response = session.get(url, params=params, headers=headers)
 
-        if (response.from_cache):
+        if response.from_cache:
             print(f"[CACHE] {response.url}")
             rate_limit._safe_release()
         else:
@@ -161,7 +165,7 @@ def get_file(
         try:
             with rate_limit:
                 response = get_request_cache_bust_if_disk_quota_exceeded()
-        except (ConnectionResetError, ConnectionError) as exception:  # Connexion error
+        except (ConnectionResetError, ConnectionError, RequestsConnectionError) as exception:  # Connexion error
             raise UserUpdaterError({
                 "error": "Can't establish connexion to speedrun.com. "
                 f"Please try again ({exception.__class__.__name__})",
@@ -187,18 +191,18 @@ def get_file(
                     raise UserUpdaterError({"error": f"HTTPError {response.status_code}",
                                             "details": exception.args[0]})
             else:  # ... we don't know why (elevate the exception)
-                print(f"ERROR/WARNING: response=({type(response)})\'{response}\'\n")
+                print(f"ERROR/WARNING: response=({type(response)})'{response}'\n")
                 raise UserUpdaterError(
                     {"error": "JSONDecodeError", "details": f"{exception.args[0]} in:\n{response}"})
 
         else:
             if "status" in json_data:  # Speedrun.com custom error
                 status = json_data["status"]
-                message = json_data['message']
+                message = json_data["message"]
                 if status in configs.http_retryable_errors:
-                    retry_delay = randint(HTTP_ERROR_RETRY_DELAY_MIN, HTTP_ERROR_RETRY_DELAY_MAX)
-                    if (status == 420):
-                        if ('too busy' in message):
+                    retry_delay = randint(HTTP_ERROR_RETRY_DELAY_MIN, HTTP_ERROR_RETRY_DELAY_MAX)  # nosec
+                    if status == 420:
+                        if "too busy" in message:
                             raise UnderALotOfPressure({"error": f"{response.status_code} (speedrun.com)",
                                                        "details": message})
                         print(f"Rate limit value: {rate_limit.get_value()}/{RATE_LIMIT}")
@@ -216,27 +220,44 @@ def params_from_url(url: str):
     if not url:
         return {}
     params = {k: v[0] for k, v in parse_qs(urlparse(url).query).items()}
-    if (not params.get("max")):
-        params['max'] = MINIMUM_RESULTS_PER_PAGE
+    if not params.get("max"):
+        params["max"] = str(MINIMUM_RESULTS_PER_PAGE)
     return params
 
 
-def get_paginated_response(url: str, params: Dict[str, Union[str, int, bool]]) -> dict:
+SpeedruncomResponsePagination = dict[
+    str,
+    dict[
+        Literal["links"],
+        list[
+            dict[
+                Literal["uri", "rel"],
+                str
+            ]
+        ]
+    ]
+]
+SpeedruncomResponseData = dict[Literal["data"], list[Any]]
+
+
+def get_paginated_response(url: str, params: dict[str, str]) -> dict:
     next_params = params
-    if (not next_params.get("max")):
-        next_params['max'] = MINIMUM_RESULTS_PER_PAGE
-    result = summed_results = {"data": []}
-    results_per_page = initial_results_per_page = int(next_params['max'])
+    if not next_params.get("max"):
+        next_params["max"] = str(MINIMUM_RESULTS_PER_PAGE)
+    result: SpeedruncomResponsePagination
+    summed_results: SpeedruncomResponseData = {"data": []}
+    results_per_page = initial_results_per_page = int(next_params["max"])
 
     def update_next_params(new_results_per_page: Optional[int] = None, take_next: bool = True):
         nonlocal next_params
         nonlocal results_per_page
-        if (take_next):
+        if take_next:
             next_params = params_from_url(next(
                 (link["uri"] for link in result["pagination"]["links"] if link["rel"] == "next"),
-                ''))
-        if (new_results_per_page and next_params):
-            next_params['max'] = results_per_page = new_results_per_page
+                ""))
+        if new_results_per_page and next_params:
+            results_per_page = new_results_per_page
+            next_params["max"] = str(new_results_per_page)
 
     while next_params:
         # Get the next page of results ...
@@ -244,7 +265,7 @@ def get_paginated_response(url: str, params: Dict[str, Union[str, int, bool]]) -
             try:
                 result = get_file(url, next_params, True)
                 # If it succeeds, slowly raise back up the page size
-                if (results_per_page < initial_results_per_page):
+                if results_per_page < initial_results_per_page:
                     increased_results_per_page = min(initial_results_per_page, ceil(results_per_page * 1.5))
                     print("Reduced request successfull. Increasing the max results per page "
                           f"from {results_per_page} back to {increased_results_per_page}")
@@ -262,7 +283,7 @@ def get_paginated_response(url: str, params: Dict[str, Union[str, int, bool]]) -
             # - Raid104, 18vw1rvj
             # - ShesChardcore, y8dzlz9j
             except UserUpdaterError as exception:
-                if exception.args[0]['error'] != "HTTPError 500" or results_per_page <= MINIMUM_RESULTS_PER_PAGE:
+                if exception.args[0]["error"] != "HTTPError 500" or results_per_page <= MINIMUM_RESULTS_PER_PAGE:
                     raise
                 reduced_results_per_page = max(floor(results_per_page / sqrt(7)), MINIMUM_RESULTS_PER_PAGE)
                 print("SR.C returned 500 for a paginated request. Reducing the max results per page "
@@ -276,18 +297,18 @@ def get_paginated_response(url: str, params: Dict[str, Union[str, int, bool]]) -
 
 
 def parse_str_to_bool(string_to_parse: Optional[str]) -> bool:
-    return string_to_parse is not None and string_to_parse.lower() == 'true'
+    return string_to_parse is not None and string_to_parse.lower() == "true"
 
 
 def parse_str_to_nullable_bool(string_to_parse: Optional[str]) -> Optional[bool]:
-    return None if string_to_parse is None else string_to_parse.lower() == 'true'
+    return None if string_to_parse is None else string_to_parse.lower() == "true"
 
 
-def map_to_dto(dto_mappable_object_list) -> List[Dict[str, Union[str, bool, int]]]:
+def map_to_dto(dto_mappable_object_list) -> list[dict[str, Union[str, bool, int]]]:
     return [dto_mappable_object.to_dto() for dto_mappable_object in dto_mappable_object_list]
 
 
-def start_and_wait_for_threads(fn, items: List):
+def start_and_wait_for_threads(fn, items: list):
     futures = []
     for item in items:
         while True:
@@ -296,7 +317,7 @@ def start_and_wait_for_threads(fn, items: List):
                 break
             except RuntimeError as exception:
                 print(exception)
-                if ("can't start new thread" not in str(exception)):
+                if "can't start new thread" not in str(exception):
                     raise
                 print(
                     f"RuntimeError: Can't start {len(executor._threads) + 1}th thread. "
@@ -309,10 +330,10 @@ def start_and_wait_for_threads(fn, items: List):
     except UnderALotOfPressure:
         raise
     except UserUpdaterError as exception:
-        raise UnhandledThreadException(exception.args[0]["error"] +
-                                       UNHANDLED_THREAD_EXCEPTION_MESSAGE +
-                                       str(exception.args[0]["details"]))
+        raise UnhandledThreadException(exception.args[0]["error"]
+                                       + UNHANDLED_THREAD_EXCEPTION_MESSAGE
+                                       + str(exception.args[0]["details"]))
     except Exception:
-        raise UnhandledThreadException("Unhandled exception in thread" +
-                                       UNHANDLED_THREAD_EXCEPTION_MESSAGE +
-                                       traceback.format_exc())
+        raise UnhandledThreadException("Unhandled exception in thread"
+                                       + UNHANDLED_THREAD_EXCEPTION_MESSAGE
+                                       + traceback.format_exc())

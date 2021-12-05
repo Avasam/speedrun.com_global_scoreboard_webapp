@@ -1,54 +1,63 @@
 from __future__ import annotations
-from datetime import datetime
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import or_, orm, text
-from typing import cast, Dict, List, Optional, Tuple, Union
-from services.utils import get_file, SpeedrunComError, UserUpdaterError
+from typing import cast, Optional, TYPE_CHECKING, Union
+
 import sys
 import traceback
 import uuid
+
+from datetime import datetime
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import or_, orm, text
+
+from services.utils import get_file, SpeedrunComError, UserUpdaterError
 
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 db = SQLAlchemy()
 
+if TYPE_CHECKING:
+    from flask_sqlalchemy.model import Model
+    BaseModel = db.make_declarative_base(Model)
+else:
+    BaseModel = db.Model
+
 friend = db.Table(
-    'friend',
+    "friend",
     db.Column(
-        'user_id',
+        "user_id",
         db.String(8),
-        db.ForeignKey('player.user_id')),
+        db.ForeignKey("player.user_id")),
     db.Column(
-        'friend_id',
+        "friend_id",
         db.String(8),
-        db.ForeignKey('player.user_id'))
+        db.ForeignKey("player.user_id"))
 )
 
 
-class Player(db.Model):
+class Player(BaseModel):
     __tablename__ = "player"
 
-    user_id: str = db.Column(db.String(8), primary_key=True)
-    name: str = db.Column(db.String(32), nullable=False)
+    user_id = db.Column(db.String(8), primary_key=True)
+    name = db.Column(db.String(32), nullable=False)
     # The biggest region code I found so far was "us/co/coloradosprings" at 21
-    country_code: Optional[str] = db.Column(db.String(24))
-    score: int = db.Column(db.Integer, nullable=False)
-    score_details: str = db.Column(db.String())
-    last_update: Optional[datetime] = db.Column(db.DateTime())
+    country_code = db.Column(db.String(24))
+    score = db.Column(db.Integer, nullable=False)
+    score_details = db.Column(db.String())
+    last_update = db.Column(db.DateTime())
     rank: Optional[int] = None
 
     schedules = db.relationship("Schedule", back_populates="owner")
 
     @staticmethod
-    def authenticate(api_key: str) -> Tuple[Optional[Player], Optional[str]]:
+    def authenticate(api_key: str) -> tuple[Optional[Player], Optional[str]]:
         try:  # Get user from speedrun.com using the API key
             data = get_file(
                 "https://www.speedrun.com/api/v1/profile",
                 headers={"X-API-Key": api_key}
             )["data"]
         except UserUpdaterError as exception:
-            if isinstance(exception, SpeedrunComError) and exception.args[0]['error'].startswith("403"):
-                return None, 'Invalid SR.C API key'
+            if isinstance(exception, SpeedrunComError) and exception.args[0]["error"].startswith("403"):
+                return None, "Invalid SR.C API key"
             return None, f"Error: {exception.args[0]['error']}\n{exception.args[0]['details']}"
         except Exception:
             print("\nError: Unknown\n{}".format(traceback.format_exc()))
@@ -56,7 +65,7 @@ class Player(db.Model):
 
         user_id: Optional[str] = data["id"]
         if not user_id:  # Confirms wether the API key is valid
-            return None, 'Invalid SR.C API key'
+            return None, "Invalid SR.C API key"
 
         user_name: str = data["names"]["international"]
         print(f"Logging in '{user_id}' ({user_name})")
@@ -68,8 +77,8 @@ class Player(db.Model):
         return player, None
 
     @staticmethod
-    def get(id: str) -> Player:
-        return Player.query.get(id)
+    def get(id: str):
+        return cast(Player, Player.query.get(id))
 
     @staticmethod
     def get_all():
@@ -91,22 +100,23 @@ class Player(db.Model):
             rank=player[5]) for player in db.engine.execute(sql).fetchall()]
 
     @staticmethod
-    def get_by_country_code(country_codes: List[str]):
-        def to_filtered_dto(player: Player) -> dict[str, Union[str, datetime, None]]:
+    def get_by_country_code(country_codes: list[str]):
+        def to_filtered_dto(player: Player):
             return {
-                'userId': player.user_id,
-                'name': player.name,
-                'countryCode': player.country_code,
-                'lastUpdate': player.last_update,
+                "userId": player.user_id,
+                "name": player.name,
+                "countryCode": player.country_code,
+                "lastUpdate": player.last_update,
             }
 
         country_code_queries = [y for x in [(
             Player.country_code == country_code,
-            Player.country_code.like(f'{country_code}/%')
+            Player.country_code.like(f"{country_code}/%")  # pylint: disable=no-member
         ) for country_code in country_codes]
             for y in x]
 
-        return [to_filtered_dto(player) for player in Player.query.filter(or_(*country_code_queries)).all()]
+        return [to_filtered_dto(cast(Player, player))
+                for player in Player.query.filter(or_(*country_code_queries)).all()]
 
     @staticmethod
     def create(user_id: str, name: str, **kwargs: Union[Optional[str], float, datetime]) -> Player:
@@ -116,9 +126,9 @@ class Player(db.Model):
         - score: int
         - last_update: Union[datetime, str]
         """
-        country_code = kwargs.get('country_code', None)
-        score = kwargs.get('score', 0)
-        last_update = kwargs.get('last_update', None)
+        country_code = kwargs.get("country_code", None)
+        score = kwargs.get("score", 0)
+        last_update = kwargs.get("last_update", None)
 
         player = Player(
             user_id=user_id,
@@ -131,7 +141,7 @@ class Player(db.Model):
 
         return player
 
-    def update(self, **kwargs: Union[Optional[str], float, datetime]) -> Player:
+    def update(self, **kwargs: Union[Optional[str], float, datetime]):
         """
         kwargs:
         - name: str
@@ -151,45 +161,42 @@ class Player(db.Model):
         db.session.commit()
         return True
 
-    def get_friends(self) -> List[Player]:
+    def get_friends(self) -> list[Player]:
         sql = text("SELECT f.friend_id, p.name, p.country_code, p.score, p.last_update FROM friend f "
                    "JOIN player p ON p.user_id = f.friend_id "
-                   "WHERE f.user_id = '{user_id}';"
-                   .format(user_id=self.user_id))
+                   "WHERE f.user_id = ':user_id';")
         return [Player(
             user_id=friend[0],
             name=friend[1],
             country_code=friend[2],
             score=friend[3],
-            last_update=friend[4]) for friend in db.engine.execute(sql).fetchall()]
+            last_update=friend[4])
+            for friend in db.engine.execute(sql, user_id=self.user_id).fetchall()]
 
     def befriend(self, friend_id: str) -> bool:
         if self.user_id == friend_id:
             return False
         sql = text("INSERT INTO friend (user_id, friend_id) "
-                   "VALUES ('{user_id}', '{friend_id}');"
-                   .format(
-                       user_id=self.user_id,
-                       friend_id=friend_id))
-        return db.engine.execute(sql).rowcount > 0
+                   "VALUES (':user_id', ':friend_id');")
+        return db.engine.execute(sql, user_id=self.user_id, friend_id=friend_id).rowcount > 0
 
     def unfriend(self, friend_id: str) -> bool:
         sql = text("DELETE FROM friend "
-                   "WHERE user_id = '{user_id}' AND friend_id = '{friend_id}';"
-                   .format(
-                       user_id=self.user_id,
-                       friend_id=friend_id))
-        return db.engine.execute(sql).rowcount > 0
+                   "WHERE user_id = ':user_id' AND friend_id=':friend_id'")
+        return db.engine.execute(sql, user_id=self.user_id, friend_id=friend_id).rowcount > 0
 
-    def get_schedules(self) -> List[Schedule]:
-        return Schedule.query.filter(Schedule.owner_id == self.user_id).all()
+    def get_schedules(self):
+        return cast(
+            list[Schedule],
+            Schedule.query.filter(Schedule.owner_id == self.user_id).all()
+        )
 
     def create_schedule(
         self,
         name: str,
         is_active: bool,
         deadline: Optional[str],
-        time_slots: List[Dict[str, str]],
+        time_slots: list[dict[str, str]],
         order: int = -1
     ) -> int:
         new_schedule = Schedule(
@@ -204,9 +211,9 @@ class Player(db.Model):
 
         new_time_slots = [TimeSlot(
             schedule_id=new_schedule.schedule_id,
-            date_time=datetime.strptime(time_slot['dateTime'], DATETIME_FORMAT),
-            maximum_entries=time_slot['maximumEntries'],
-            participants_per_entry=time_slot['participantsPerEntry'])
+            date_time=datetime.strptime(time_slot["dateTime"], DATETIME_FORMAT),
+            maximum_entries=time_slot["maximumEntries"],
+            participants_per_entry=time_slot["participantsPerEntry"])
             for time_slot in time_slots]
         db.session.bulk_save_objects(new_time_slots)
 
@@ -219,14 +226,17 @@ class Player(db.Model):
         name: str,
         is_active: bool,
         deadline: Optional[str],
-        time_slots: List[Dict[str, str]]
+        time_slots: list[dict[str, str]]
     ) -> bool:
         try:
-            schedule_to_update = Schedule \
-                .query \
-                .filter(Schedule.schedule_id == schedule_id) \
-                .filter(Schedule.owner_id == self.user_id) \
+            schedule_to_update = cast(
+                Schedule,
+                Schedule
+                .query
+                .filter(Schedule.schedule_id == schedule_id)
+                .filter(Schedule.owner_id == self.user_id)
                 .one()
+            )
         except orm.exc.NoResultFound:
             return False
 
@@ -241,7 +251,7 @@ class Player(db.Model):
             new_time_slot = None
             # If it already exists in session, use that one ...
             for existing_time_slot in schedule_to_update.time_slots:
-                if time_slot_to_edit['id'] == existing_time_slot.time_slot_id:
+                if time_slot_to_edit["id"] == existing_time_slot.time_slot_id:
                     new_time_slot = existing_time_slot
                     break
             # ... otherwise, create a brand new TimeSlot
@@ -249,9 +259,9 @@ class Player(db.Model):
                 new_time_slot = TimeSlot()
             # Do the necessary modifications
             new_time_slot.schedule_id = schedule_id
-            new_time_slot.date_time = datetime.strptime(time_slot_to_edit['dateTime'], DATETIME_FORMAT)
-            new_time_slot.maximum_entries = cast(int, time_slot_to_edit['maximumEntries'])
-            new_time_slot.participants_per_entry = cast(int, time_slot_to_edit['participantsPerEntry'])
+            new_time_slot.date_time = datetime.strptime(time_slot_to_edit["dateTime"], DATETIME_FORMAT)
+            new_time_slot.maximum_entries = cast(int, time_slot_to_edit["maximumEntries"])
+            new_time_slot.participants_per_entry = cast(int, time_slot_to_edit["participantsPerEntry"])
 
             new_time_slots.append(new_time_slot)
 
@@ -272,11 +282,14 @@ class Player(db.Model):
                 .filter(ScheduleGroup.group_id == group_id) \
                 .filter(ScheduleGroup.owner_id == self.user_id) \
                 .one()
-            schedule_to_update = Schedule \
-                .query \
-                .filter(Schedule.schedule_id == schedule_id) \
-                .filter(Schedule.owner_id == self.user_id) \
+            schedule_to_update = cast(
+                Schedule,
+                Schedule
+                .query
+                .filter(Schedule.schedule_id == schedule_id)
+                .filter(Schedule.owner_id == self.user_id)
                 .one()
+            )
         except orm.exc.NoResultFound:
             return False
 
@@ -297,28 +310,34 @@ class Player(db.Model):
         db.session.commit()
         return True
 
-    def update_schedule_order(self, schedule_orders: Dict[str, Union[bool, int]]) -> bool:
+    def update_schedule_order(self, schedule_orders: dict[str, Union[bool, int]]) -> bool:
         for schedule_order in schedule_orders:
             try:
-                print(schedule_order['order'], type(schedule_order['order']))
-                id_filter = ScheduleGroup.group_id if schedule_order['isGroup'] else Schedule.schedule_id
-                table = ScheduleGroup if schedule_order['isGroup'] else Schedule
-                to_update = table \
-                    .query \
-                    .filter(table.owner_id == self.user_id) \
-                    .filter(id_filter == schedule_order['id']) \
+                print(schedule_order["order"], type(schedule_order["order"]))
+                id_filter = ScheduleGroup.group_id if schedule_order["isGroup"] else Schedule.schedule_id
+                table = ScheduleGroup if schedule_order["isGroup"] else Schedule
+                to_update = cast(
+                    Union[ScheduleGroup, Schedule],
+                    table
+                    .query
+                    .filter(table.owner_id == self.user_id)
+                    .filter(id_filter == schedule_order["id"])
                     .one()
-                to_update.order = schedule_order['order']
+                )
+                to_update.order = schedule_order["order"]
             except orm.exc.NoResultFound:
                 continue
 
         db.session.commit()
         return True
 
-    def get_schedule_groups(self) -> List[ScheduleGroup]:
-        return ScheduleGroup.query.filter(ScheduleGroup.owner_id == self.user_id).all()
+    def get_schedule_groups(self):
+        return cast(
+            list[ScheduleGroup],
+            ScheduleGroup.query.filter(ScheduleGroup.owner_id == self.user_id).all()
+        )
 
-    def create_schedule_group(self, name: str, order: int) -> int:
+    def create_schedule_group(self, name: str, order: int):
         new_schedule_group = ScheduleGroup(name=name, order=order, owner_id=self.user_id)
         db.session.add(new_schedule_group)
 
@@ -332,11 +351,14 @@ class Player(db.Model):
         order: bool,
     ) -> bool:
         try:
-            schedule_group_to_update = ScheduleGroup \
-                .query \
-                .filter(ScheduleGroup.group_id == group_id) \
-                .filter(ScheduleGroup.owner_id == self.user_id) \
+            schedule_group_to_update = cast(
+                ScheduleGroup,
+                ScheduleGroup
+                .query
+                .filter(ScheduleGroup.group_id == group_id)
+                .filter(ScheduleGroup.owner_id == self.user_id)
                 .one()
+            )
         except orm.exc.NoResultFound:
             return False
 
@@ -358,12 +380,15 @@ class Player(db.Model):
         db.session.commit()
         return True
 
-    def update_registration(self, registration_id: int, participant_names: List[str]):
+    def update_registration(self, registration_id: int, participant_names: list[str]):
         try:
-            registration_to_update = Registration \
-                .query \
-                .filter(Registration.registration_id == registration_id) \
+            registration_to_update = cast(
+                Registration,
+                Registration
+                .query
+                .filter(Registration.registration_id == registration_id)
                 .one()
+            )
 
             Schedule \
                 .query \
@@ -400,10 +425,13 @@ class Player(db.Model):
 
     def delete_registration(self, registration_id: int) -> bool:
         try:
-            registration_to_delete: Registration = Registration \
-                .query \
-                .filter(Registration.registration_id == registration_id) \
+            registration_to_delete = cast(
+                Registration,
+                Registration
+                .query
+                .filter(Registration.registration_id == registration_id)
                 .one()
+            )
 
             Schedule \
                 .query \
@@ -422,16 +450,16 @@ class Player(db.Model):
     def get_id(self):
         return self.user_id
 
-    def to_dto(self) -> dict[str, Union[str, int, datetime, None]]:
+    def to_dto(self):
         return {
-            'userId': self.user_id,
-            'name': self.name,
-            'countryCode': self.country_code,
-            'score': self.score,
-            'lastUpdate': self.last_update,
-            'rank': self.rank,
+            "userId": self.user_id,
+            "name": self.name,
+            "countryCode": self.country_code,
+            "score": self.score,
+            "lastUpdate": self.last_update,
+            "rank": self.rank,
         }
 
 
-if 'models.tournament_scheduler_models' not in sys.modules:
+if "models.tournament_scheduler_models" not in sys.modules:
     from models.tournament_scheduler_models import Participant, Registration, Schedule, ScheduleGroup, TimeSlot
