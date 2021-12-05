@@ -31,6 +31,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r "scripts/requirements.txt"
           npm install -g pyright
+      - run: mv configs.template.py configs.py
       - name: Analysing the code with ${{ job.name }}
         run: pyright
   Pylint:
@@ -46,7 +47,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r "scripts/requirements.txt"
-      - run: mv configs.template.py configs.py
       - name: Analysing the code with ${{ job.name }}
         run: pylint --reports=y --output-format=colorized $(git ls-files '**/*.py*')
   Flake8:
