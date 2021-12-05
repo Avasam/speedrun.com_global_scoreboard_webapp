@@ -84,10 +84,15 @@ def get_updated_user(user_id: str) -> dict[str, Union[str, None, float, int, Poi
         }
 
     except httplib2.ServerNotFoundError as exception:
-        raise UserUpdaterError({"error": "Server not found",
-                                "details": f"{exception}\nPlease make sure you have an active internet connection"})
+        raise UserUpdaterError({
+            "error": "Server not found",
+            "details": f"{exception}\nPlease make sure you have an active internet connection"}
+        ) from exception
     except (requests.exceptions.ChunkedEncodingError, ConnectionAbortedError) as exception:
-        raise UserUpdaterError({"error": "Connexion interrupted", "details": exception})
+        raise UserUpdaterError({
+            "error": "Connexion interrupted",
+            "details": exception}
+        ) from exception
 
 
 def __set_user_code_and_name(user: User) -> None:
@@ -193,8 +198,7 @@ def __set_run_points(run: Run) -> None:
     except SpeedrunComError as exception:
         if exception.args[0]["error"].startswith("404"):
             return
-        else:
-            raise
+        raise
 
     valid_runs = extract_sorted_valid_runs_from_leaderboard(leaderboard["data"], run.level_fraction)
     len_valid_runs = len(valid_runs)

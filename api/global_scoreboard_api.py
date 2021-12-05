@@ -29,9 +29,9 @@ def get_all_players():
     return jsonify(Player.get_by_country_code(country_codes)), 200, {"Access-Control-Allow-Origin": "*"}
 
 
-@api.route("/players/<id>/score-details", methods=("GET",))
-def get_player_score_details(id: str):
-    player = Player.get(id)
+@api.route("/players/<user_id>/score-details", methods=("GET",))
+def get_player_score_details(user_id: str):
+    player = Player.get(user_id)
     if player:
         return player.score_details or ""
     return "", 404
@@ -73,8 +73,8 @@ __currently_updating_to: dict[str, datetime] = {}
 
 @authentication_required
 def __do_update_player(current_user: Player, name_or_id: str):
-    global __currently_updating_from
-    global __currently_updating_to
+    global __currently_updating_from  # pylint: disable=global-variable-not-assigned
+    global __currently_updating_to  # pylint: disable=global-variable-not-assigned
     now = datetime.now()
     minutes_5 = 5 * 60
     updating_from_seconds_left = minutes_5 - (now - __currently_updating_from[current_user.user_id]).total_seconds()
@@ -106,12 +106,12 @@ def get_friends_current(current_user: Player):
         return "", 400
 
 
-@api.route("/players/current/friends/<id>", methods=("PUT",))
+@api.route("/players/current/friends/<user_id>", methods=("PUT",))
 @authentication_required
-def put_friends_current(current_user: Player, id: str):
-    escaped_id = escape(id)
+def put_friends_current(current_user: Player, user_id: str):
+    escaped_id = escape(user_id)
     if not escaped_id.isalnum():
-        return jsonify({"message": "/id is not a valid user id", "authenticated": True}), 400
+        return jsonify({"message": "/user_id is not a valid user id", "authenticated": True}), 400
     if current_user.user_id == escaped_id:
         return "You can't add yourself as a friend!", 422
     try:
@@ -124,12 +124,12 @@ def put_friends_current(current_user: Player, id: str):
         return "You can't add yourself as a friend!", 422
 
 
-@api.route("/players/current/friends/<id>", methods=("DELETE",))
+@api.route("/players/current/friends/<user_id>", methods=("DELETE",))
 @authentication_required
-def delete_friends_current(current_user: Player, id: str):
-    escaped_id = escape(id)
+def delete_friends_current(current_user: Player, user_id: str):
+    escaped_id = escape(user_id)
     if not escaped_id.isalnum():
-        return jsonify({"message": "/id is not a valid user id", "authenticated": True}), 400
+        return jsonify({"message": "/user_id is not a valid user id", "authenticated": True}), 400
     if current_user.unfriend(escaped_id):
         return f"Successfully removed user ID '{escaped_id}' from your friends."
     return f"User ID '{escaped_id}' isn't one of your friends."

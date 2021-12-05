@@ -25,8 +25,9 @@ def login():
     data: Optional[JSONObjectType] = request.get_json()
     try:
         api_key = data["speedruncomApiKey"] if data else ""
-        assert(isinstance(api_key, str))
-    except (KeyError) as error:
+        if not isinstance(api_key, str):
+            raise TypeError("api_key is not a string")
+    except (KeyError, TypeError) as error:
         return jsonify({"message": str(error), "authenticated": False}), 400
     player, error_message = Player.authenticate(api_key)
 

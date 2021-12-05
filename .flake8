@@ -1,15 +1,11 @@
 [flake8]
 color=always
 max-line-length=120
-; Auto generated
-exclude=src/gen/
-; TODO: We want to configure this
-ignore=W503,N801,N802,N803,N806,N815,N816
-per-file-ignores =
-    ; imported but unused
-    ; line too long
-    ; mixed case
-    __init__.pyi:F401,E501,N816
-; TODO: Bring WAY down
-max-complexity=55
-inline-quotes = "
+ignores=Y015
+per-file-ignores=
+    ; Quotes
+    __init__.pyi:Q000
+; PyQt methods
+; TODO: Bring down to 15, same as SonarLint
+max-complexity=21
+inline-quotes="

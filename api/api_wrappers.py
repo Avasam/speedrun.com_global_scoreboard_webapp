@@ -1,5 +1,6 @@
-from flask import current_app, jsonify, request
 from functools import wraps
+
+from flask import current_app, jsonify, request
 import jwt
 
 from models.core_models import Player

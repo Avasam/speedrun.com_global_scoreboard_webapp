@@ -53,7 +53,8 @@ class Run:
         """
         :type other: Run
         """
-        assert(isinstance(other, Run))
+        if not isinstance(other, Run):
+            raise TypeError("other is not a Run")
         return (self.category, self.level) == (other.category, other.level)
 
     def __ne__(self, other: object) -> bool:

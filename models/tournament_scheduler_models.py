@@ -27,11 +27,11 @@ class Schedule(BaseModel):
     order = db.Column(db.Integer, nullable=False, default=-1)
 
     @staticmethod
-    def get(id: str):
-        return cast(Optional[Schedule], Schedule.query.get(id))
+    def get(schedule_id: int):
+        return cast(Optional[Schedule], Schedule.query.get(schedule_id))
 
     @staticmethod
-    def get_with_key(schedule_id: str, registration_key: str):
+    def get_with_key(schedule_id: int, registration_key: str):
         try:
             return cast(
                 Optional[Schedule],
@@ -66,13 +66,13 @@ class ScheduleGroup(BaseModel):
     order = db.Column(db.Integer, nullable=False, default=-1)
 
     @staticmethod
-    def get(id: str):
-        return cast(Optional[ScheduleGroup], ScheduleGroup.query.get(id))
+    def get(group_id: int):
+        return cast(Optional[ScheduleGroup], ScheduleGroup.query.get(group_id))
 
     @staticmethod
-    def get_schedules(id: str):
+    def get_schedules(group_id: int):
         try:
-            return cast(list[Schedule], Schedule.query.filter(Schedule.group_id == id).all())
+            return cast(list[Schedule], Schedule.query.filter(Schedule.group_id == group_id).all())
         except orm.exc.NoResultFound:
             return None
 
@@ -100,7 +100,7 @@ class TimeSlot(BaseModel):
         back_populates="timeslot")
 
     @staticmethod
-    def get_with_key(time_slot_id: str, registration_key: str) -> Optional[TimeSlot]:
+    def get_with_key(time_slot_id: int, registration_key: str) -> Optional[TimeSlot]:
         try:
             parent_schedule = cast(
                 Schedule,

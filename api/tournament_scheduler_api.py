@@ -2,11 +2,12 @@
 Provides the API endpoints for consuming and producing REST requests and
 responses within the Tournament Scheduler context
 """
-from typing import Any, Optional, Union
+from typing import Optional, Union
 
 from flask import Blueprint, jsonify, request
 
 from api.api_wrappers import authentication_required
+from api.core_api import JSONObjectType
 from models.core_models import Player
 from models.tournament_scheduler_models import Schedule, ScheduleGroup, TimeSlot
 from services.utils import map_to_dto
@@ -22,19 +23,18 @@ def get_all_schedules(current_user: Player):
     return jsonify(map_to_dto(current_user.get_schedules()))
 
 
-@api.route("/schedules/<id>", methods=("GET",))
-def get_schedule(id: str):
+@api.route("/schedules/<schedule_id>", methods=("GET",))
+def get_schedule(schedule_id: Union[str, int]):
     try:
-        schedule_id = int(id)
+        schedule_id = int(schedule_id)
     except ValueError:
-        return jsonify({"message": "/id is not a valid number", "authenticated": True}), 400
+        return jsonify({"message": "/schedule_id is not a valid number", "authenticated": True}), 400
 
     registration_key: Optional[str] = request.args.get("registrationKey")
 
-    if registration_key is None:
-        schedule = Schedule.get(schedule_id)
-    else:
-        schedule = Schedule.get_with_key(schedule_id, registration_key)
+    schedule = Schedule.get(schedule_id) \
+        if registration_key is None \
+        else Schedule.get_with_key(schedule_id, registration_key)
 
     if schedule is None:
         return "", 404
@@ -45,7 +45,7 @@ def get_schedule(id: str):
 @api.route("/schedules", methods=("POST",))
 @authentication_required
 def post_schedule(current_user: Player):
-    data: dict[str, Any] = request.get_json()
+    data: Optional[JSONObjectType] = request.get_json()
     error_message, name, is_active, deadline, time_slots, order = __validate_create_schedule(data)
     if error_message is not None:
         return jsonify({"message": error_message, "authenticated": True}), 400
@@ -53,16 +53,16 @@ def post_schedule(current_user: Player):
     return str(current_user.create_schedule(name, is_active, deadline, time_slots, order)), 201
 
 
-@api.route("/schedules/<id>", methods=("PUT",))
+@api.route("/schedules/<schedule_id>", methods=("PUT",))
 @authentication_required
-def put_schedule(current_user: Player, id: str):
+def put_schedule(current_user: Player, schedule_id: Union[str, int]):
     try:
-        schedule_id = int(id)
+        schedule_id = int(schedule_id)
     except ValueError:
-        return jsonify({"message": "/id is not a valid number", "authenticated": True}), 400
+        return jsonify({"message": "/schedule_id is not a valid number", "authenticated": True}), 400
 
-    data: dict[str, Any] = request.get_json()
-    error_message, name, is_active, deadline, time_slots, order = __validate_create_schedule(data)
+    data: Optional[JSONObjectType] = request.get_json()
+    error_message, name, is_active, deadline, time_slots, _ = __validate_create_schedule(data)
     if error_message is not None:
         return jsonify({"message": error_message, "authenticated": True}), 400
 
@@ -70,13 +70,13 @@ def put_schedule(current_user: Player, id: str):
     return "", 201 if update_success else 404
 
 
-@api.route("/schedules/<id>", methods=("DELETE",))
+@api.route("/schedules/<schedule_id>", methods=("DELETE",))
 @authentication_required
-def delete_schedule(current_user: Player, id: str):
+def delete_schedule(current_user: Player, schedule_id: Union[str, int]):
     try:
-        schedule_id = int(id)
+        schedule_id = int(schedule_id)
     except ValueError:
-        return jsonify({"message": "/id is not a valid number", "authenticated": True}), 400
+        return jsonify({"message": "/schedule_id is not a valid number", "authenticated": True}), 400
 
     delete_success = current_user.delete_schedule(schedule_id)
     return "", 204 if delete_success else 404
@@ -85,7 +85,9 @@ def delete_schedule(current_user: Player, id: str):
 @api.route("/schedules/order", methods=("PUT",))
 @authentication_required
 def put_schedule_order(current_user: Player):
-    data: dict[str, Union[bool, int]] = request.get_json()
+    data: Optional[list[JSONObjectType]] = request.get_json()
+    if not data:
+        return "missing data", 400
 
     update_success = current_user.update_schedule_order(data)
     return "", 201 if update_success else 404
@@ -95,15 +97,17 @@ def put_schedule_order(current_user: Player):
 # region ScheduleGroup
 
 
-@api.route("/schedules/<id>/group_id/<group_id>", methods=("PUT",))
+@api.route("/schedules/<schedule_id>/group_id/<group_id>", methods=("PUT",))
 @authentication_required
-def put_schedule_group_id(current_user: Player, id: int, group_id: Optional[int]):
+def put_schedule_group_id(current_user: Player, schedule_id: Union[str, int], group_id: Optional[int]):
     try:
-        schedule_id = int(id)
+        schedule_id = int(schedule_id)
     except ValueError:
-        return jsonify({"message": "/id is not a valid number", "authenticated": True}), 400
+        return jsonify({"message": "/schedule_id is not a valid number", "authenticated": True}), 400
     try:
-        group_id = None if group_id == "null" else int(group_id)
+        group_id = None \
+            if not group_id or group_id == "null" \
+            else int(group_id)
     except ValueError:
         return jsonify({"message": "/group_id is not a valid number", "authenticated": True}), 400
 
@@ -117,12 +121,12 @@ def get_all_schedule_groups(current_user: Player):
     return jsonify(map_to_dto(current_user.get_schedule_groups()))
 
 
-@api.route("/schedule_groups/<id>", methods=("GET",))
-def get_schedule_group(id: str):
+@api.route("/schedule_groups/<group_id>", methods=("GET",))
+def get_schedule_group(group_id: Union[str, int]):
     try:
-        group_id = int(id)
+        group_id = int(group_id)
     except ValueError:
-        return jsonify({"message": "/id is not a valid number", "authenticated": True}), 400
+        return jsonify({"message": "/group_id is not a valid number", "authenticated": True}), 400
 
     schedule_group = ScheduleGroup.get(group_id)
 
@@ -132,19 +136,19 @@ def get_schedule_group(id: str):
     return jsonify(schedule_group.to_dto())
 
 
-@api.route("/schedule_groups/<id>/schedules", methods=("GET",))
-def get_schedules_from_group(id: str):
+@api.route("/schedule_groups/<group_id>/schedules", methods=("GET",))
+def get_schedules_from_group(group_id: Union[str, int]):
     try:
-        group_id = int(id)
+        group_id = int(group_id)
     except ValueError:
-        return jsonify({"message": "/id is not a valid number", "authenticated": True}), 400
+        return jsonify({"message": "/group_id is not a valid number", "authenticated": True}), 400
     return jsonify(map_to_dto(ScheduleGroup.get_schedules(group_id)))
 
 
 @api.route("/schedule_groups", methods=("POST",))
 @authentication_required
 def post_schedule_group(current_user: Player):
-    data: dict[str, Any] = request.get_json()
+    data: Optional[JSONObjectType] = request.get_json()
     error_message, name, order = __validate_create_schedule_group(data)
     if error_message is not None:
         return jsonify({"message": error_message, "authenticated": True}), 400
@@ -152,14 +156,14 @@ def post_schedule_group(current_user: Player):
     return str(current_user.create_schedule_group(name, order)), 201
 
 
-@api.route("/schedule_groups/<id>", methods=("PUT",))
+@api.route("/schedule_groups/<group_id>", methods=("PUT",))
 @authentication_required
-def put_schedule_group(current_user: Player, id: str):
+def put_schedule_group(current_user: Player, group_id: Union[str, int]):
     try:
-        group_id = int(id)
+        group_id = int(group_id)
     except ValueError:
-        return jsonify({"message": "/id is not a valid number", "authenticated": True}), 400
-    data: dict[str, Any] = request.get_json()
+        return jsonify({"message": "/group_id is not a valid number", "authenticated": True}), 400
+    data: Optional[JSONObjectType] = request.get_json()
     error_message, name, order = __validate_create_schedule_group(data)
     if error_message is not None:
         return jsonify({"message": error_message, "authenticated": True}), 400
@@ -168,13 +172,13 @@ def put_schedule_group(current_user: Player, id: str):
     return "", 201 if update_success else 404
 
 
-@api.route("/schedule_groups/<id>", methods=("DELETE",))
+@api.route("/schedule_groups/<group_id>", methods=("DELETE",))
 @authentication_required
-def delete_schedule_group(current_user: Player, id: str):
+def delete_schedule_group(current_user: Player, group_id: Union[str, int]):
     try:
-        group_id = int(id)
+        group_id = int(group_id)
     except ValueError:
-        return jsonify({"message": "/id is not a valid number", "authenticated": True}), 400
+        return jsonify({"message": "/group_id is not a valid number", "authenticated": True}), 400
 
     delete_success = current_user.delete_schedule_group(group_id)
     return "", 204 if delete_success else 404
@@ -184,14 +188,14 @@ def delete_schedule_group(current_user: Player, id: str):
 # region Registration
 
 
-@api.route("/time-slots/<id>/registrations", methods=("POST",))
-def post_registration(id: str):
+@api.route("/time-slots/<time_slot_id>/registrations", methods=("POST",))
+def post_registration(time_slot_id: Union[str, int]):
     try:
-        registration_id = int(id)
+        registration_id = int(time_slot_id)
     except ValueError:
-        return jsonify({"message": "/id is not a valid number", "authenticated": True}), 400
+        return jsonify({"message": "/time_slot_id is not a valid number", "authenticated": True}), 400
 
-    data: dict[str, Any] = request.get_json()
+    data: Optional[JSONObjectType] = request.get_json()
     error_message, registration_key, participants = __validate_create_registration(data)
     if error_message is not None:
         return jsonify({"message": error_message, "authenticated": True}), 400
@@ -207,15 +211,15 @@ def post_registration(id: str):
     return str(time_slot.register_participant(participants)), 201
 
 
-@api.route("/registrations/<id>", methods=("PUT",))
+@api.route("/registrations/<registration_id>", methods=("PUT",))
 @authentication_required
-def put_registration(current_user: Player, id: str):
+def put_registration(current_user: Player, registration_id: Union[str, int]):
     try:
-        registration_id = int(id)
+        registration_id = int(registration_id)
     except ValueError:
-        return jsonify({"message": "/id is not a valid number", "authenticated": True}), 400
+        return jsonify({"message": "/registration_id is not a valid number", "authenticated": True}), 400
 
-    data: dict[str, Any] = request.get_json()
+    data: Optional[JSONObjectType] = request.get_json()
     error_message, _, participants = __validate_create_registration(data, False)
     if error_message is not None:
         return jsonify({"message": error_message, "authenticated": True}), 400
@@ -224,13 +228,13 @@ def put_registration(current_user: Player, id: str):
     return "", 201 if update_success else 404
 
 
-@api.route("/registrations/<id>", methods=("DELETE",))
+@api.route("/registrations/<registration_id>", methods=("DELETE",))
 @authentication_required
-def delete_registration(current_user: Player, id: str):
+def delete_registration(current_user: Player, registration_id: Union[str, int]):
     try:
-        registration_id = int(id)
+        registration_id = int(registration_id)
     except ValueError:
-        return jsonify({"message": "/id is not a valid number", "authenticated": True}), 400
+        return jsonify({"message": "/registration_id is not a valid number", "authenticated": True}), 400
 
     delete_success = current_user.delete_registration(registration_id)
     return "", 204 if delete_success else 404
@@ -240,17 +244,18 @@ def delete_registration(current_user: Player, id: str):
 # region Validation
 
 
-def __validate_create_registration(
-    data: dict[str, Any],
-    with_registration_key=True
-) -> tuple[Optional[str], str, list[str]]:
+def __validate_create_registration(data: Optional[JSONObjectType], with_registration_key=True):
     registration_key = ""
     participants = []
+    if not data:
+        return "missing data", registration_key, participants
     try:
-        registration_key = data["registrationKey"]
+        registration_key = str(data["registrationKey"])
     except KeyError:
         if with_registration_key:
             return "registrationKey has to be defined", registration_key, participants
+    if not isinstance(data["participants"], list):
+        return "participants has to be a list", registration_key, participants
     try:
         participants[:] = [x for x in data["participants"] if x]
     except KeyError:
@@ -258,21 +263,27 @@ def __validate_create_registration(
     return None, registration_key, participants
 
 
-def __validate_create_schedule_group(data: dict[str, Any]) -> tuple[Optional[str], str, int]:
+def __validate_create_schedule_group(data: Optional[JSONObjectType]):
     error_message = ""
-    order = ""
-    try:
-        name = data["name"]
-    except KeyError:
-        error_message += "name has to be defined"
-    try:
-        order = data["order"]
-    except KeyError:
-        error_message += "order has to be defined"
+    name = ""
+    order = None
+    if not data:
+        error_message += "missing data"
+    else:
+        try:
+            name = str(data["name"])
+        except KeyError:
+            error_message += "name has to be defined"
+        try:
+            order = int(str(data["order"]))
+        except KeyError:
+            error_message += "order has to be defined"
+        except ValueError:
+            error_message += "order has to be a number"
     return None if not error_message else error_message, name, order
 
 
-def __validate_create_schedule(data: dict[str, Any]) -> tuple[Optional[str], str, bool, str, list[dict]]:
+def __validate_create_schedule(data: Optional[JSONObjectType]):
     error_message = ""
     name = ""
     is_active = False
@@ -280,42 +291,50 @@ def __validate_create_schedule(data: dict[str, Any]) -> tuple[Optional[str], str
     time_slots = []
     time_slot = []
     order = None
-    try:
-        name = data["name"]
-    except KeyError:
-        error_message += "name has to be defined"
-    try:
-        is_active = data["active"] is True
-    except KeyError:
-        error_message += "active has to be defined"
-    try:
-        deadline = data["deadline"]
-    except KeyError:
-        error_message += "deadline has to be defined"
-    try:
-        order = int(data["order"])
-    except ValueError:
-        "order has to be a number"
-    except KeyError:
-        pass
+    if not data:
+        error_message += "missing data"
+    else:
+        try:
+            name = str(data["name"])
+        except KeyError:
+            error_message += "name has to be defined"
+        try:
+            is_active = data["active"] is True
+        except KeyError:
+            error_message += "active has to be defined"
+        try:
+            deadline = str(data["deadline"])
+        except KeyError:
+            error_message += "deadline has to be defined"
+        try:
+            order = int(str(data["order"]))
+        except KeyError:
+            error_message += "order has to be defined"
+        except ValueError:
+            error_message += "order has to be a number"
 
-    try:
-        time_slots = data["timeSlots"]
-    except KeyError:
-        error_message += "timeSlots has to be defined"
-    for time_slot in time_slots:
         try:
-            time_slot["dateTime"]
+            time_slots = data["timeSlots"]
         except KeyError:
-            error_message += "timeSlots.dateTime has to be defined"
-        try:
-            time_slot["maximumEntries"]
-        except KeyError:
-            error_message += "timeSlots.maximumEntries has to be defined"
-        try:
-            time_slot["participantsPerEntry"]
-        except KeyError:
-            error_message += "timeSlots.participantsPerEntry has to be defined"
+            error_message += "timeSlots has to be defined"
+
+    if not isinstance(time_slots, list):
+        time_slots = []
+        error_message += "timeSlots has to be a list"
+    else:
+        for time_slot in time_slots:
+            try:
+                time_slot["dateTime"]
+            except KeyError:
+                error_message += "timeSlots.dateTime has to be defined"
+            try:
+                time_slot["maximumEntries"]
+            except KeyError:
+                error_message += "timeSlots.maximumEntries has to be defined"
+            try:
+                time_slot["participantsPerEntry"]
+            except KeyError:
+                error_message += "timeSlots.participantsPerEntry has to be defined"
 
     return None if not error_message else error_message, name, is_active, deadline, time_slots, order
 

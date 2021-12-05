@@ -1,8 +1,6 @@
 # https://black.readthedocs.io/en/stable/usage_and_configuration/the_basics.html#configuration-via-a-file
 [tool.black]
 line-length = 120
-# Auto generated
-force-exclude = "src/gen/.*\\.py$"
 
 # https://github.com/hhatto/autopep8#usage
 # https://github.com/hhatto/autopep8#more-advanced-usage
@@ -16,8 +14,6 @@ aggressive = 3
 pythonPlatform = "Windows"
 typeCheckingMode = "basic"
 ignore = [
-  # Auto generated
-  "src/gen/",
   "typings/",
 ]
 reportMissingTypeStubs = "information"
@@ -36,11 +32,11 @@ reportUnknownMemberType = "none"
 # https://pylint.pycqa.org/en/latest/technical_reference/features.html
 [tool.pylint.REPORTS]
 # Just like default but any error will make drop to 9 or less
-evaluation="10.0 - error - ((float(warning + refactor + convention) / statement) * 10)"
+evaluation = "10.0 - error - ((float(warning + refactor + convention) / statement) * 10)"
 [tool.pylint.MASTER]
-fail-under=9.0
+fail-under = 9.0
 # Needed for Pylint to discover our own modules
-init-hook="import os, sys; sys.path.append(os.path.dirname('.'))"
+init-hook = "import os, sys; sys.path.append(os.path.dirname('.'))"
 # https://pylint.pycqa.org/en/latest/technical_reference/extensions.html
 load-plugins = [
   "pylint.extensions.emptystring",
@@ -72,28 +68,31 @@ load-plugins = [
 ignore-paths = [
   # Haven't looked into disabling specific rules per file
   "^typings/.*$",
-  # Auto generated
-  "^src/gen/.*$",
 ]
 # Dynamic/Generated members from SQLAlchemy
-ignored-classes=["scoped_session"]
-disable=[
+ignored-classes = ["scoped_session"]
+disable = [
   # No need to mention the fixmes
   "fixme",
   # Strings are ok. Pylance also doesn't seem to see our overriden Exception classes
-  "invalid-sequence-index"
-  ]
-extension-pkg-allow-list = ["PyQt6", "win32ui"]
+  "invalid-sequence-index",
+]
 
 [tool.pylint.FORMAT]
 max-line-length = 120
 
 [tool.pylint.'MESSAGES CONTROL']
+# Same as SonarLint
+max-complexity = 15
+max-branches = 15
+# https://pylint.pycqa.org/en/latest/user_guide/options.html#naming-styles
+module-naming-style = "any"
+# Can't make private class with PascalCase
+class-rgx = "_?_?[a-zA-Z]+?$"
+# https://github.com/PyCQA/pylint/issues/2018
+good-names = ["x", "y", "a0", "i", "t0", "t1", "fn", "pb", "wr"]
 disable = [
   "missing-docstring",
-  # TODO: We want to configure this
-  # https://pylint.pycqa.org/en/latest/user_guide/options.html#naming-styles
-  "invalid-name",
   # We group imports
   "wrong-import-position",
   # Already taken care of and grayed out. Also conflicts with Pylance reportIncompatibleMethodOverride

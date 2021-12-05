@@ -85,7 +85,7 @@ def extract_sorted_valid_runs_from_leaderboard(
         if not is_board_known_speedrun:
             if value < wr_time:
                 return []  # Score based leaderboard. No need to keep looking
-            elif value > wr_time:
+            if value > wr_time:
                 is_board_known_speedrun = True
 
         # Check if the run is valid
@@ -175,8 +175,9 @@ def extract_top_runs_and_score(runs: list[Run]) -> tuple[list[Run], list[Run]]:
         if position + run.level_fraction <= MIN_SAMPLE_SIZE:
             position += run.level_fraction
             return True
+        return False
 
-    for run in sorted(runs, key=lambda r: r._points / r.level_fraction, reverse=True):
+    for run in sorted(runs, key=lambda run: run._points / run.level_fraction, reverse=True):
         (top_runs if is_top_run(run) else lesser_runs).append(run)
 
     # Check if it's possible to replace a handful of ILs by a full run, starting backward.

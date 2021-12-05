@@ -1,3 +1,4 @@
+from types import TracebackType
 from typing import Any, Literal, Optional, Union
 
 from concurrent.futures import ThreadPoolExecutor
@@ -11,7 +12,7 @@ from os.path import isdir
 from random import randint
 from sqlite3 import DatabaseError, OperationalError
 from tempfile import gettempdir
-from threading import BoundedSemaphore as ThreadingBoundedSemaphore, Timer, Thread
+from threading import BoundedSemaphore as ThreadingBoundedSemaphore, Semaphore, Timer, Thread
 from time import sleep
 from urllib.parse import parse_qs, urlparse
 import traceback
@@ -63,9 +64,9 @@ class RatedSemaphore(ThreadingBoundedSemaphore):  # synchronize.BoundedSemaphore
         # super().__init__(limit)
         self.__semaphore = BoundedSemaphore(limit - 1)
         self.get_value = self.__semaphore.get_value
-        t = Timer(period, self._add_token_loop, kwargs=dict(time_delta=float(period) / limit))
-        t.daemon = True
-        t.start()
+        timer = Timer(period, self._add_token_loop, kwargs=dict(time_delta=float(period) / limit))
+        timer.daemon = True
+        timer.start()
 
     def _add_token_loop(self, time_delta):
         """Add token every time_delta seconds."""
@@ -79,27 +80,36 @@ class RatedSemaphore(ThreadingBoundedSemaphore):  # synchronize.BoundedSemaphore
         except ValueError:  # Ignore if already max possible value
             pass
 
-    def release(self, *args):
+    def release(
+        self: Semaphore,
+        n: int = 1
+    ) -> Optional[bool]:
         pass  # Do nothing (only time-based release() is allowed)
 
-    __exit__ = release
+    def __exit__(
+        self: Semaphore,
+        exc_type: Optional[type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType]
+    ) -> Optional[bool]:
+        pass  # Do nothing (only time-based release() is allowed)
 
-    def acquire(self, *args):
-        self.__semaphore.acquire(*args)
+    def acquire(self, blocking: bool = True, timeout: Optional[float] = None):
+        return self.__semaphore.acquire(blocking, timeout)
 
-    __enter__ = acquire
+    __enter__ = acquire  # type: ignore
 
 
-def clear_cache_for_user_async(userId: str):
+def clear_cache_for_user_async(user_id: str):
     def clear_cache_thread():
         try:
-            print(f"Deleting cache specific to user '{userId}'...")
-            session.cache.delete_urls([url for url in session.cache.urls if userId in url])
+            print(f"Deleting cache specific to user '{user_id}'...")
+            session.cache.delete_urls([url for url in session.cache.urls if user_id in url])
             print("Removing expired responses...")
             session.cache.remove_expired_responses()
             print("Done")
         except Exception:
-            print(f"Something went wrong while deleting cache for '{userId}'")
+            print(f"Something went wrong while deleting cache for '{user_id}'")
             raise
     Thread(target=clear_cache_thread).start()
 
@@ -128,7 +138,7 @@ rate_limit = RatedSemaphore(RATE_LIMIT, 60)  # 200 requests per minute
 
 def get_file(
     url: str,
-    params: dict[str, str] = {},
+    params: Optional[dict[str, str]] = None,
     cached=False,
     headers: dict[str, Any] = None
 ) -> dict:
@@ -170,7 +180,7 @@ def get_file(
                 "error": "Can't establish connexion to speedrun.com. "
                 f"Please try again ({exception.__class__.__name__})",
                 "details": exception,
-            })
+            }) from exception
 
         try:
             json_data = response.json()
@@ -185,15 +195,21 @@ def get_file(
                     sleep(HTTP_ERROR_RETRY_DELAY_MIN)
                     # No break or raise as we want to retry
                 elif response.status_code == 503:
-                    raise UnderALotOfPressure({"error": f"{response.status_code} (speedrun.com)",
-                                               "details": exception.args[0]})
+                    raise UnderALotOfPressure({
+                        "error": f"{response.status_code} (speedrun.com)",
+                        "details": exception.args[0]
+                    }) from exception
                 else:
-                    raise UserUpdaterError({"error": f"HTTPError {response.status_code}",
-                                            "details": exception.args[0]})
+                    raise UserUpdaterError({
+                        "error": f"HTTPError {response.status_code}",
+                        "details": exception.args[0]
+                    }) from exception
             else:  # ... we don't know why (elevate the exception)
                 print(f"ERROR/WARNING: response=({type(response)})'{response}'\n")
-                raise UserUpdaterError(
-                    {"error": "JSONDecodeError", "details": f"{exception.args[0]} in:\n{response}"})
+                raise UserUpdaterError({
+                    "error": "JSONDecodeError",
+                    "details": f"{exception.args[0]} in:\n{response}"
+                }) from exception
 
         else:
             if "status" in json_data:  # Speedrun.com custom error
@@ -330,10 +346,14 @@ def start_and_wait_for_threads(fn, items: list):
     except UnderALotOfPressure:
         raise
     except UserUpdaterError as exception:
-        raise UnhandledThreadException(exception.args[0]["error"]
-                                       + UNHANDLED_THREAD_EXCEPTION_MESSAGE
-                                       + str(exception.args[0]["details"]))
-    except Exception:
-        raise UnhandledThreadException("Unhandled exception in thread"
-                                       + UNHANDLED_THREAD_EXCEPTION_MESSAGE
-                                       + traceback.format_exc())
+        raise UnhandledThreadException(
+            exception.args[0]["error"]
+            + UNHANDLED_THREAD_EXCEPTION_MESSAGE
+            + str(exception.args[0]["details"])
+        ) from exception
+    except Exception as exception:
+        raise UnhandledThreadException(
+            "Unhandled exception in thread"
+            + UNHANDLED_THREAD_EXCEPTION_MESSAGE
+            + traceback.format_exc()
+        ) from exception

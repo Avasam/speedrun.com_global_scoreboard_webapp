@@ -8,6 +8,7 @@ import uuid
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_, orm, text
+from api.core_api import JSONObjectType
 
 from services.utils import get_file, SpeedrunComError, UserUpdaterError
 
@@ -59,7 +60,7 @@ class Player(BaseModel):
             if isinstance(exception, SpeedrunComError) and exception.args[0]["error"].startswith("403"):
                 return None, "Invalid SR.C API key"
             return None, f"Error: {exception.args[0]['error']}\n{exception.args[0]['details']}"
-        except Exception:
+        except Exception:  # pylint: disable=broad-except  # Do catch unknown errors
             print("\nError: Unknown\n{}".format(traceback.format_exc()))
             return None, traceback.format_exc()
 
@@ -77,8 +78,8 @@ class Player(BaseModel):
         return player, None
 
     @staticmethod
-    def get(id: str):
-        return cast(Player, Player.query.get(id))
+    def get(user_id: str):
+        return cast(Player, Player.query.get(user_id))
 
     @staticmethod
     def get_all():
@@ -197,8 +198,8 @@ class Player(BaseModel):
         is_active: bool,
         deadline: Optional[str],
         time_slots: list[dict[str, str]],
-        order: int = -1
-    ) -> int:
+        order: Optional[int]
+    ):
         new_schedule = Schedule(
             name=name,
             owner_id=self.user_id,
@@ -277,11 +278,12 @@ class Player(BaseModel):
         group_id: Optional[int]
     ) -> bool:
         try:
-            group_id is not None and ScheduleGroup \
-                .query \
-                .filter(ScheduleGroup.group_id == group_id) \
-                .filter(ScheduleGroup.owner_id == self.user_id) \
-                .one()
+            if group_id is not None:
+                ScheduleGroup \
+                    .query \
+                    .filter(ScheduleGroup.group_id == group_id) \
+                    .filter(ScheduleGroup.owner_id == self.user_id) \
+                    .one()
             schedule_to_update = cast(
                 Schedule,
                 Schedule
@@ -310,7 +312,7 @@ class Player(BaseModel):
         db.session.commit()
         return True
 
-    def update_schedule_order(self, schedule_orders: dict[str, Union[bool, int]]) -> bool:
+    def update_schedule_order(self, schedule_orders: list[JSONObjectType]) -> bool:
         for schedule_order in schedule_orders:
             try:
                 print(schedule_order["order"], type(schedule_order["order"]))
@@ -337,7 +339,7 @@ class Player(BaseModel):
             ScheduleGroup.query.filter(ScheduleGroup.owner_id == self.user_id).all()
         )
 
-    def create_schedule_group(self, name: str, order: int):
+    def create_schedule_group(self, name: str, order: Optional[int]):
         new_schedule_group = ScheduleGroup(name=name, order=order, owner_id=self.user_id)
         db.session.add(new_schedule_group)
 
@@ -348,7 +350,7 @@ class Player(BaseModel):
         self,
         group_id: int,
         name: str,
-        order: bool,
+        order: Optional[int],
     ) -> bool:
         try:
             schedule_group_to_update = cast(
