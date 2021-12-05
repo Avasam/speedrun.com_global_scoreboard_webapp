@@ -6,6 +6,7 @@ from typing import cast, Optional
 
 from datetime import datetime
 from flask import Blueprint, jsonify, request
+from markupsafe import escape
 from sqlalchemy import exc
 from sqlalchemy.sql.schema import Column
 from sqlalchemy.sql.sqltypes import String
@@ -108,27 +109,27 @@ def get_friends_current(current_user: Player):
 @api.route("/players/current/friends/<id>", methods=("PUT",))
 @authentication_required
 def put_friends_current(current_user: Player, id: str):
-    if not id.isalnum():
+    escaped_id = escape(id)
+    if not escaped_id.isalnum():
         return jsonify({"message": "/id is not a valid user id", "authenticated": True}), 400
-    if current_user.user_id == id:
+    if current_user.user_id == escaped_id:
         return "You can't add yourself as a friend!", 422
     try:
-        result = current_user.befriend(id)
+        result = current_user.befriend(escaped_id)
     except exc.IntegrityError:
-        return f"User ID '{id}' is already one of your friends."
+        return f"User ID '{escaped_id}' is already one of your friends."
     else:
         if result:
-            return f"Successfully added user ID '{id}' as a friend."
-        else:
-            return "You can't add yourself as a friend!", 422
+            return f"Successfully added user ID '{escaped_id}' as a friend."
+        return "You can't add yourself as a friend!", 422
 
 
 @api.route("/players/current/friends/<id>", methods=("DELETE",))
 @authentication_required
 def delete_friends_current(current_user: Player, id: str):
-    if not id.isalnum():
+    escaped_id = escape(id)
+    if not escaped_id.isalnum():
         return jsonify({"message": "/id is not a valid user id", "authenticated": True}), 400
-    if current_user.unfriend(id):
-        return f"Successfully removed user ID '{id}' from your friends."
-    else:
-        return f"User ID '{id}' isn't one of your friends."
+    if current_user.unfriend(escaped_id):
+        return f"Successfully removed user ID '{escaped_id}' from your friends."
+    return f"User ID '{escaped_id}' isn't one of your friends."

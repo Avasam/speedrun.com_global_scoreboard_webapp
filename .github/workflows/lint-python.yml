@@ -31,6 +31,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r "scripts/requirements.txt"
           npm install -g pyright
+      - run: mv configs.template.py configs.py
       - name: Analysing the code with ${{ job.name }}
         run: pyright
   Pylint:
@@ -62,6 +63,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r "scripts/requirements.txt"
+      - run: mv configs.template.py configs.py
       - name: Analysing the code with ${{ job.name }}
         run: flake8
   Bandit:
@@ -77,5 +79,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r "scripts/requirements.txt"
+      - run: mv configs.template.py configs.py
       - name: Analysing the code with ${{ job.name }}
         run: bandit -n 1 --severity-level medium --recursive .
