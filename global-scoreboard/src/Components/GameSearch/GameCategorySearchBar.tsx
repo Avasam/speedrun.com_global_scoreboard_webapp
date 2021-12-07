@@ -1,6 +1,6 @@
 import type { Dispatch, SetStateAction } from 'react'
 import { Form } from 'react-bootstrap'
-import type { SearchFieldProps, SearchProps } from 'react-bootstrap-table2-toolkit'
+import type { SearchBarProps } from 'react-bootstrap-table2-toolkit'
 
 import { apiGet, MAX_PAGINATION } from 'src/fetchers/api'
 import type { DataArray, SpeedruncomGame } from 'src/Models/SpeedruncomResponse'
@@ -9,7 +9,7 @@ import math from 'src/utils/math'
 type IdToNameMap = Record<string, string>
 
 type GameCategorySearchProps =
-  SearchFieldProps & SearchProps & {
+  SearchBarProps & {
     setGameMap: Dispatch<SetStateAction<IdToNameMap>>
   }
 

@@ -5,11 +5,10 @@ import './GameSearch.css'
 import type { ChangeEventHandler, Dispatch, SetStateAction } from 'react'
 import { useEffect, useState } from 'react'
 import { Col, Container, Form, FormGroup, FormLabel, InputGroup, Row, Spinner } from 'react-bootstrap'
-import type { Column, ColumnFormatter } from 'react-bootstrap-table-next'
+import type { ColumnDescription } from 'react-bootstrap-table-next'
 import BootstrapTable from 'react-bootstrap-table-next'
 import filterFactory, { Comparator, multiSelectFilter, numberFilter } from 'react-bootstrap-table2-filter'
 import paginationFactory, { PaginationListStandalone, PaginationProvider, PaginationTotalStandalone, SizePerPageDropdownStandalone } from 'react-bootstrap-table2-paginator'
-import type { ToolkitProviderProps } from 'react-bootstrap-table2-toolkit'
 import ToolkitProvider from 'react-bootstrap-table2-toolkit'
 import { Picky } from 'react-picky'
 
@@ -32,10 +31,11 @@ type FormatExtraDataProps = {
   setCategoryMap: Dispatch<SetStateAction<IdToNameMap>>
 }
 
-let platformFilter: SelectFilterFunction
-let minTimeFilter: NumberFilterFunction
-let maxTimeFilter: NumberFilterFunction
-const columns: Column[] = [
+type NumberFilter = (value: { number: number | '', comparator: Comparator }) => void
+let platformFilter: (value: string[]) => void
+let minTimeFilter: NumberFilter
+let maxTimeFilter: NumberFilter
+const columns: ColumnDescription<GameValueRow, FormatExtraDataProps>[] = [
   {
     dataField: 'runId',
     text: '',
@@ -45,32 +45,21 @@ const columns: Column[] = [
   {
     dataField: 'gameId',
     text: 'Game',
-    formatter: ((_, row, __, formatExtraData) =>
-      (row &&
-        formatExtraData &&
-        formatExtraData.gameMap[row.gameId]) ||
-      row?.gameId
-    ) as ColumnFormatter<GameValueRow, FormatExtraDataProps>,
+    formatter: (_, row, __, formatExtraData) => formatExtraData?.gameMap[row.gameId] ?? row.gameId,
   },
   {
     dataField: 'categoryId',
     text: 'Category',
-    formatter: ((_, row, __, formatExtraData) =>
-      (row &&
-        formatExtraData &&
-        formatExtraData.categoryMap[row.categoryId]) ||
-      row?.categoryId
-    ) as ColumnFormatter<GameValueRow, FormatExtraDataProps>,
+    formatter: (_, row, __, formatExtraData) => formatExtraData?.categoryMap[row.categoryId] ?? row.categoryId,
   },
   {
     dataField: 'platformId',
     text: 'Platform',
-    formatter: ((_, row, __, formatExtraData) =>
-      (row?.platformId &&
+    formatter: (_, row, __, formatExtraData) =>
+      (row.platformId &&
         formatExtraData &&
         formatExtraData.platforms[row.platformId]) ||
-      '-'
-    ) as ColumnFormatter<GameValueRow, FormatExtraDataProps>,
+      '-',
     filter: multiSelectFilter({
       options: {},
       getFilter: filter => platformFilter = filter,
@@ -82,10 +71,7 @@ const columns: Column[] = [
     text: 'WR Time',
     searchable: false,
     sort: true,
-    formatter: ((_, row) =>
-      row &&
-      secondsToTimeString(row.wrTime)
-    ) as ColumnFormatter<GameValueRow, void>,
+    formatter: (_, row) => secondsToTimeString(row.wrTime),
     filter: numberFilter({
       getFilter: filter => maxTimeFilter = filter,
       style: { 'display': 'none' },
@@ -96,10 +82,7 @@ const columns: Column[] = [
     text: 'WR Points/Time',
     searchable: false,
     sort: true,
-    formatter: ((_, row) =>
-      row &&
-      `${math.perSecondToPerMinute(row.wrPointsPerSecond)} pt/m`
-    ) as ColumnFormatter<GameValueRow, void>,
+    formatter: (_, row) => `${math.perSecondToPerMinute(row.wrPointsPerSecond)} pt/m`,
   },
   {
     dataField: 'wrPoints',
@@ -112,20 +95,14 @@ const columns: Column[] = [
     text: 'WR Points/Avg Time',
     searchable: false,
     sort: true,
-    formatter: ((_, row) =>
-      row &&
-      `${math.perSecondToPerMinute(row.meanPointsPerSecond)} pt/m`
-    ) as ColumnFormatter<GameValueRow, void>,
+    formatter: (_, row) => `${math.perSecondToPerMinute(row.meanPointsPerSecond)} pt/m`,
   },
   {
     dataField: 'meanTime',
     text: 'Avg Time',
     searchable: false,
     sort: true,
-    formatter: ((_, row) =>
-      row &&
-      secondsToTimeString(row.meanTime)
-    ) as ColumnFormatter<GameValueRow, FormatExtraDataProps>,
+    formatter: (_, row) => secondsToTimeString(row.meanTime),
     filter: numberFilter({
       getFilter: filter => minTimeFilter = filter,
       style: { 'display': 'none' },
@@ -216,7 +193,7 @@ const GameSearch = () => {
         searchFormatted: true,
       }}
     >
-      {(toolkitprops: ToolkitProviderProps) =>
+      {toolkitprops =>
         <PaginationProvider
           pagination={paginationFactory({
             ...defaultPaginationOptions,

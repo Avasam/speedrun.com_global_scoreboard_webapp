@@ -16,7 +16,7 @@ type FormatExtraDataProps = {
 
 const runIdFormatter: ColumnFormatter<GameValueRow, FormatExtraDataProps> =
   (_cell, row, _rowIndex, formatExtraData) => {
-    if (!row || !formatExtraData) return ''
+    if (!formatExtraData) return ''
     if (!formatExtraData.gameMap[row.gameId] || !formatExtraData.categoryMap[row.categoryId]) {
       void fetchValueNamesForRun(row.runId)
         .then(results => {

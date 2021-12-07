@@ -1,0 +1,89 @@
+diff --git a/node_modules/@types/react-bootstrap-table-next/index.d.ts b/node_modules/@types/react-bootstrap-table-next/index.d.ts
+index defb313..f17b5f0 100644
+--- a/node_modules/@types/react-bootstrap-table-next/index.d.ts
++++ b/node_modules/@types/react-bootstrap-table-next/index.d.ts
+@@ -58,7 +58,7 @@ declare enum FilterComparator {
+  */
+ export type SortOrder = 'asc' | 'desc';
+ 
+-export type ColumnSortValue<R, C = any> = (cell: C, row: R) => number | string | boolean | React.ReactText;
++export type ColumnSortValue<R, C = any> = (cell: C, row: R) => boolean | React.ReactText;
+ 
+ export type ColumnSortFunc<T, E extends keyof T = any> = (
+     a: T[E],
+@@ -104,14 +104,14 @@ export type HeaderFormatter<T extends object = any> = (
+         sortElement: JSX.Element;
+         filterElement: JSX.Element;
+     },
+-) => JSX.Element | string | number | React.ReactText;
++) => React.ReactNode;
+ 
+ export type ColumnFormatter<R, E = any, C = any> = (
+     cell: C,
+     row: R,
+     rowIndex: number,
+-    formatExtraData: E,
+-) => JSX.Element | string | boolean | React.ReactText;
++    formatExtraData?: E,
++) => React.ReactNode;
+ 
+ export interface ValidationResult {
+     async?: boolean | undefined;
+@@ -374,19 +374,23 @@ export interface PageButtonRendererOptions {
+     onPageChange: (page: number, sizePerPage: number) => void;
+ }
+ 
++// global-scoreboard\src\Components\Dashboard\TableElements\PaginationProps.tsx
+ export interface SizePerPageRendererOptions {
+     /**
+      * dropdown options
+      */
+-    options: Array<{ text: string; value: number }>;
++    // global-scoreboard\node_modules\react-bootstrap-table2-paginator\lib\src\page-resolver.jsL205
++    options: Array<{ text: string; page: number }>;
+     /**
+      * current size per page
+      */
+-    currentSizePerPage: number;
++    // react-bootstrap-table2-paginator\lib\src\size-per-page-dropdown-adapter.jsL88
++    currSizePerPage: string;
+     /**
+      * call it when you need to change size per page
+      */
+-    onSizePerPageChange: (page: number, sizePerPage: number) => void;
++    // react-bootstrap-table2-paginator\lib\src\size-per-page-dropdown-adapter.jsL66
++    onSizePerPageChange: (page: number) => void;
+ }
+ 
+ export interface SelectRowProps<T> {
+@@ -536,6 +540,8 @@ export interface SearchProps<T> {
+     defaultSearch?: string | undefined;
+     /* custom search method, return true if matched and false if not */
+     onColumnMatch?: ((searchProps: { searchText: string; value: any; column: any; row: T }) => boolean) | undefined;
++    onClear?: () => void
++    onSearch?: (searchText: string) => void
+ }
+ 
+ export interface ExpandColumnRendererProps {
+@@ -563,7 +569,7 @@ export interface ExpandRowProps<T, K = number> {
+     className?: string | ((isExpand: boolean, row: T, rowIndex: number) => string) | undefined;
+ }
+ 
+-export type TableColumnFilterProps<FT = any, T extends object = any> = Partial<{
++export type TableColumnFilterProps<FV = any, T extends object = any> = Partial<{
+     id: string;
+     /**
+      *  custom the input placeholder
+@@ -589,10 +595,10 @@ export type TableColumnFilterProps<FT = any, T extends object = any> = Partial<{
+     /*
+      * export filter function to allow users to access filter method externally.
+      */
+-    getFilter: (filter: FT) => void;
++    getFilter: (filter: (value: FV) => void | T[]) => void;
+ 
+     /**
+      * Register a listener which will be called when column filter being triggered. If you return an array value, react-bootstrap-table2 will adopt this value as the final filtered result.
+      */
+-    onFilter: (filterValue: FT) => void | T[];
++    onFilter: (filterValue: FV) => void | T[];
+ }>;
