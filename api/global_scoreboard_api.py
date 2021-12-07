@@ -2,7 +2,8 @@
 Provides the API endpoints for consuming and producing REST requests and
 responses within the Global Scoreboard context
 """
-from typing import cast, Optional
+from __future__ import annotations
+from typing import cast, Optional, TYPE_CHECKING
 
 from datetime import datetime
 from flask import Blueprint, jsonify, request
@@ -66,7 +67,8 @@ def __do_update_player_bypass_restrictions(name_or_id: str, current_user: Option
     return jsonify(result), 400 if result["state"] == "warning" else 200
 
 
-ColumnString = Column[String]  # pylint: disable=unsubscriptable-object
+if TYPE_CHECKING:
+    ColumnString = Column[String]  # pylint: disable=unsubscriptable-object
 __currently_updating_from: dict[ColumnString, datetime] = {}
 __currently_updating_to: dict[str, datetime] = {}
 

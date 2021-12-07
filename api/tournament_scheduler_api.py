@@ -7,8 +7,7 @@ from typing import Optional, Union
 from flask import Blueprint, jsonify, request
 
 from api.api_wrappers import authentication_required
-from api.core_api import JSONObjectType
-from models.core_models import Player
+from models.core_models import Player, JSONObjectType
 from models.tournament_scheduler_models import Schedule, ScheduleGroup, TimeSlot
 from services.utils import map_to_dto
 

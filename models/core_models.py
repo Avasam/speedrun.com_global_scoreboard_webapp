@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import cast, Optional, TYPE_CHECKING, Union
+from typing import Any, cast, Optional, TYPE_CHECKING, Union
 
 import sys
 import traceback
@@ -8,9 +8,13 @@ import uuid
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_, orm, text
-from api.core_api import JSONObjectType
 
 from services.utils import get_file, SpeedrunComError, UserUpdaterError
+
+# TODO: use and typecheck / typeguard JSONType
+__JSONTypeBase = Union[str, int, float, bool, None, dict[str, Any], list[Any]]
+JSONObjectType = dict[str, __JSONTypeBase]
+JSONType = Union[str, int, float, bool, None, JSONObjectType, list[__JSONTypeBase]]
 
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
