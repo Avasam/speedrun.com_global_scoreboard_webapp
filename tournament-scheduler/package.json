@@ -44,7 +44,7 @@
     "eslint-plugin-react-hooks": "^4.3.0",
     "http-proxy-middleware": "^2.0.1",
     "patch-package": "^6.4.7",
-    "react-scripts": "^4.0.3",
+    "react-scripts": "^5.0.0",
     "typescript": "^4.5.2"
   },
   "//": "browserslist (first 3): https://next.material-ui.com/guides/migration-v4/#supported-browsers-and-node-versions",
