@@ -31,7 +31,7 @@ function debounce<T>(fn: (...args: T[]) => void, time: number) {
 // Note: 500 is double the default table update
 const DEBOUNCE_TIME = math.MS_IN_SECOND * math.HALF
 
-const GameCategorySearch = (props: GameCategorySearchProps) => {
+const GameCategorySearchBar = (props: GameCategorySearchProps) => {
   const handleOnChange = debounce(
     (searchText: string) =>
       !searchText
@@ -60,4 +60,4 @@ const GameCategorySearch = (props: GameCategorySearchProps) => {
   </Form.Label>
 }
 
-export default GameCategorySearch
+export default GameCategorySearchBar

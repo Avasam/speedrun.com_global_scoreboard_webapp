@@ -2,7 +2,7 @@ import { Button, Card, CardActions, CardContent, Container, FormControl, FormGro
 import type { SelectInputProps } from '@mui/material/Select/SelectInput'
 import { StatusCodes } from 'http-status-codes'
 import { useEffect, useState } from 'react'
-import { Link as RouterLink, useHistory } from 'react-router-dom'
+import { Link as RouterLink, useNavigate } from 'react-router-dom'
 
 import DisableDashlane from 'src/Components/DisableDashlane'
 import { apiGet, apiPost } from 'src/fetchers/api'
@@ -42,7 +42,7 @@ const ScheduleRegistration = (props: ScheduleRegistrationProps) => {
   const [participants, setParticipants] = useState<string[]>([])
   const [formValidity, setFormValidity] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
-  const history = useHistory()
+  const navigate = useNavigate()
 
   // Take registrationLink from the localStorage
   const registrationId = localStorage.getItem('registrationId') ?? ''
@@ -86,7 +86,7 @@ const ScheduleRegistration = (props: ScheduleRegistrationProps) => {
   if (props.registrationId) {
     console.info('New registrationId:', props.registrationId)
     localStorage.setItem('registrationId', props.registrationId)
-    history.push('/register')
+    navigate('/register')
     return <>{undefined}</>
   }
 
@@ -108,7 +108,7 @@ const ScheduleRegistration = (props: ScheduleRegistrationProps) => {
       participants.slice(0, selectedTimeSlot.participantsPerEntry),
       splitIdFromRegistrationKey()[1]
     )
-      .then(() => history.push(`/view/${scheduleState?.id}`))
+      .then(() => navigate(`/view/${scheduleState?.id}`))
       .catch((error: Response) => {
         if (error.status === StatusCodes.INSUFFICIENT_STORAGE) {
           if (!scheduleState) {
@@ -121,8 +121,12 @@ const ScheduleRegistration = (props: ScheduleRegistrationProps) => {
             registrationLink: scheduleState.registrationLink,
           })
           setSelectedTimeSlot(scheduleState.timeSlots[index])
-          void error.json().then((response: { message: string, authenticated: boolean }) =>
-            setErrorMessage(response.message))
+          error
+            .json()
+            .then((response: { message: string, authenticated: boolean }) => setErrorMessage(response.message))
+            .catch((error_: Error) => {
+              throw error_
+            })
         } else {
           console.error(error)
         }

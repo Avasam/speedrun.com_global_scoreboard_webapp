@@ -64,8 +64,8 @@ def get_updated_user(user_id: str) -> dict[str, Union[str, None, float, int, Poi
                 text_output, result_state = update_runner_in_database(player, user)
             else:
                 cant_update_time = configs.last_updated_days[0]
-                text_output = f"This user has already been updated in the past {cant_update_time} day" \
-                    "s" if cant_update_time != 1 else ""
+                text_output = "This user has already been updated in the past " + \
+                    f"{cant_update_time} day {'s' if cant_update_time != 1 else ''}"
                 result_state = "warning"
 
         # When we can finally successfully update a player, clear the cache of their specific responses
@@ -167,7 +167,7 @@ def __set_user_points(user: User) -> None:
     params = {
         "user": user._id,
         "status": "verified",
-        "embed": "level,game.levels,game.variables",
+        "embed": "level,game,game.variables",
         "max": str(MAXIMUM_RESULTS_PER_PAGE),
     }
     runs: list[BasicJSONType] = get_paginated_response(url, params)["data"]

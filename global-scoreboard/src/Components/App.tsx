@@ -2,7 +2,7 @@ import './App.css'
 
 import { StatusCodes } from 'http-status-codes'
 import { useEffect, useState } from 'react'
-import { Route, Switch } from 'react-router-dom'
+import { Route, Routes } from 'react-router-dom'
 
 import Dashboard from './Dashboard/Dashboard'
 import GameSearch from './GameSearch/GameSearch'
@@ -49,16 +49,10 @@ const App = () => {
       username={currentUser === null ? null : currentUser?.name}
     />
 
-    <Switch>
-      <Route
-        component={GameSearch}
-        exact
-        path='/game-search'
-      />
-      <Route
-        render={() => <Dashboard currentUser={currentUser} />}
-      />
-    </Switch>
+    <Routes>
+      <Route element={<GameSearch />} path='/game-search' />
+      <Route element={<Dashboard currentUser={currentUser} />} />
+    </Routes>
 
     <footer>
       &copy;

@@ -17,7 +17,7 @@ cached_session_backend: Optional[str] = None
 bypass_update_restrictions: bool = True
 last_updated_days: list[int] = [7, 30, 91]
 skip_cache_cleanup: bool = False
-http_retryable_errors: list[int] = [401, 420, 502]
+http_retryable_errors: list[int] = [401, 420, 502, 504]
 
 # Database settings
 sql_track_modifications: bool = False

@@ -1,10 +1,10 @@
 // Keep in alphabetical order
 {
   "recommendations": [
+    "bungcip.better-toml",
     "davidanson.vscode-markdownlint",
     "dbaeumer.vscode-eslint",
     "eamodio.gitlens",
-    "hookyqr.minify",
     "meganrogge.template-string-converter",
     "mikestead.dotenv",
     "ms-python.python",

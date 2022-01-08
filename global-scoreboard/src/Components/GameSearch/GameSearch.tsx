@@ -12,7 +12,7 @@ import paginationFactory, { PaginationListStandalone, PaginationProvider, Pagina
 import ToolkitProvider from 'react-bootstrap-table2-toolkit'
 import { Picky } from 'react-picky'
 
-import GameCategorySearch from './GameCategorySearchBar'
+import GameCategorySearchBar from './GameCategorySearchBar'
 import runIdFormatter from './RunIdFormatter'
 import ScoreDropCalculator from './ScoreDropCalculator'
 import defaultPaginationOptions from 'src/Components/Dashboard/TableElements/PaginationProps'
@@ -204,7 +204,7 @@ const GameSearch = () => {
             <>
               <Row className='gx-0'>
                 <Col xs='auto'>
-                  <GameCategorySearch
+                  <GameCategorySearchBar
                     {...toolkitprops.searchProps}
                     placeholder='Game / Category search'
                     setGameMap={setGameMap}

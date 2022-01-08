@@ -87,15 +87,15 @@ class Player(BaseModel):
 
     @staticmethod
     def get_all():
-        sql = text("SELECT user_id, name, country_code, score, last_update, CONVERT(rank, SIGNED INT) rank FROM ( "
+        sql = text("SELECT user_id, name, country_code, score, last_update, CONVERT(rank, SIGNED INT) rank FROM ( " +
                    "    SELECT *, "
-                   "        IF(score = @_last_score, @cur_rank := @cur_rank, @cur_rank := @_sequence) AS rank, "
-                   "        @_sequence := @_sequence + 1, "
-                   "        @_last_score := score "
-                   "    FROM player, (SELECT @cur_rank := 1, @_sequence := 1, @_last_score := NULL) r "
-                   "    WHERE score > 0 "
-                   "    ORDER BY score DESC "
-                   ") ranked;")
+                   + "        IF(score = @_last_score, @cur_rank := @cur_rank, @cur_rank := @_sequence) AS rank, "
+                   + "        @_sequence := @_sequence + 1, "
+                   + "        @_last_score := score "
+                   + "    FROM player, (SELECT @cur_rank := 1, @_sequence := 1, @_last_score := NULL) r "
+                   + "    WHERE score > 0 "
+                   + "    ORDER BY score DESC "
+                   + ") ranked;")
         return [Player(
             user_id=player[0],
             name=player[1],
@@ -168,8 +168,8 @@ class Player(BaseModel):
 
     def get_friends(self) -> list[Player]:
         sql = text("SELECT f.friend_id, p.name, p.country_code, p.score, p.last_update FROM friend f "
-                   "JOIN player p ON p.user_id = f.friend_id "
-                   "WHERE f.user_id = ':user_id';")
+                   + "JOIN player p ON p.user_id = f.friend_id "
+                   + "WHERE f.user_id = ':user_id';")
         return [Player(
             user_id=friend[0],
             name=friend[1],
@@ -182,12 +182,12 @@ class Player(BaseModel):
         if self.user_id == friend_id:
             return False
         sql = text("INSERT INTO friend (user_id, friend_id) "
-                   "VALUES (':user_id', ':friend_id');")
+                   + "VALUES (':user_id', ':friend_id');")
         return db.engine.execute(sql, user_id=self.user_id, friend_id=friend_id).rowcount > 0
 
     def unfriend(self, friend_id: str) -> bool:
         sql = text("DELETE FROM friend "
-                   "WHERE user_id = ':user_id' AND friend_id=':friend_id'")
+                   + "WHERE user_id = ':user_id' AND friend_id=':friend_id'")
         return db.engine.execute(sql, user_id=self.user_id, friend_id=friend_id).rowcount > 0
 
     def get_schedules(self):

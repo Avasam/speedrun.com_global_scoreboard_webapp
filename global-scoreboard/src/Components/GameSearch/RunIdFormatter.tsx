@@ -1,7 +1,7 @@
 import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import type { Dispatch, SetStateAction } from 'react'
-import type {  ColumnFormatter } from 'react-bootstrap-table-next'
+import type { ColumnFormatter } from 'react-bootstrap-table-next'
 
 import type { GameValueRow, IdToNameMap } from 'src/Models/GameSearch'
 import { fetchValueNamesForRun } from 'src/Models/GameSearch'

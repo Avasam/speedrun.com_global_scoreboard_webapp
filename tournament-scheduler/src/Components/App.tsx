@@ -4,7 +4,7 @@ import { AppBar, Box, Button, CssBaseline, IconButton, Link, Stack, Toolbar, Typ
 import { StyledEngineProvider, ThemeProvider } from '@mui/material/styles'
 import { StatusCodes } from 'http-status-codes'
 import { useEffect, useState } from 'react'
-import { Link as RouterLink, Route, Switch, useLocation } from 'react-router-dom'
+import { Link as RouterLink, Route, Routes, useLocation, useParams } from 'react-router-dom'
 
 import LoginForm from './LoginForm/LoginForm'
 import ScheduleManagement from './ScheduleManagement/ScheduleManagement'
@@ -47,6 +47,7 @@ const App = () => {
   const isMobileSize = useMediaQuery('(max-width:640px)', { noSsr: true })
   const [currentUser, setCurrentUser] = useState<User | null | undefined>()
   const location = useLocation()
+  const routeParams = useParams()
 
   useEffect(() => {
     getCurrentUser()
@@ -129,27 +130,25 @@ const App = () => {
             overflow: 'auto',
           }}
           >
-            <Switch>
+            <Routes>
               <Route
-                exact
+                element={<ScheduleViewer scheduleId={Number(routeParams.scheduleId)} />}
                 path='/view/:scheduleId'
-                render={routeProps => <ScheduleViewer scheduleId={Number(routeProps.match.params.scheduleId)} />}
               />
               <Route
+                element={<ScheduleGroupViewer groupId={Number(routeParams.groupId)} />}
                 path='/view/group/:groupId'
-                render={routeProps => <ScheduleGroupViewer groupId={Number(routeProps.match.params.groupId)} />}
               />
               <Route
+                element={<ScheduleRegistration {...routeParams} />}
                 path='/register/:registrationId?'
-                render={routeProps => <ScheduleRegistration {...routeProps.match.params} />}
               />
               {currentUser !== undefined &&
-                <Route
-                  render={currentUser
-                    ? () => <ScheduleManagement currentUser={currentUser} />
-                    : () => <LoginForm onLogin={setCurrentUser} />}
-                />}
-            </Switch>
+                  (currentUser
+                    ? <Route element={<ScheduleManagement currentUser={currentUser} />} />
+                    : <Route element={<LoginForm onLogin={setCurrentUser} />} />
+                  )}
+            </Routes>
           </Box>
 
           <footer>

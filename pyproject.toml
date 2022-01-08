@@ -12,15 +12,19 @@ aggressive = 3
 # https://github.com/microsoft/pyright/blob/main/docs/configuration.md#sample-pyprojecttoml-file
 [tool.pyright]
 pythonPlatform = "Windows"
+# TODO: Fix everything and set to strict
 typeCheckingMode = "basic"
+# Extra strict
+reportPropertyTypeMismatch=true
+reportUninitializedInstanceVariable=true
+reportCallInDefaultInitializer=true
+reportImplicitStringConcatenation=true
 ignore = [
   "typings/",
 ]
 reportMissingTypeStubs = "information"
 # False positives with TYPE_CHECKING
 reportImportCycles = "information"
-# PyQt .connect
-reportFunctionMemberAccess = "information"
 # Extra runtime safety
 reportUnnecessaryComparison = "warning"
 # Flake8 does a better job
@@ -31,8 +35,8 @@ reportUnknownMemberType = "none"
 # https://github.com/PyCQA/pylint/blob/main/examples/pylintrc
 # https://pylint.pycqa.org/en/latest/technical_reference/features.html
 [tool.pylint.REPORTS]
-# Just like default but any error will make drop to 9 or less
-evaluation = "10.0 - error - ((float(warning + refactor + convention) / statement) * 10)"
+# Just like default but any error will make drop to 9 or less. warning and conventions are worth more
+evaluation = "10.0 - error - ((float((warning + convention) * 10 + refactor ) / statement) * 10)"
 [tool.pylint.MASTER]
 fail-under = 9.0
 # Needed for Pylint to discover our own modules
@@ -66,8 +70,8 @@ load-plugins = [
   # "pylint.extensions.for_any_all",
 ]
 ignore-paths = [
-  # Haven't looked into disabling specific rules per file
-  "^typings/.*$",
+  # We expect stub files to be incomplete or contain useless statements
+  "^.*\\.pyi$",
 ]
 # Dynamic/Generated members from SQLAlchemy
 ignored-classes = ["scoped_session"]
@@ -77,6 +81,13 @@ disable = [
   # Strings are ok. Pylance also doesn't seem to see our overriden Exception classes
   "invalid-sequence-index",
 ]
+
+[tool.pylint.DESIGN]
+# Same as SonarLint
+max-args = 7
+# Arbitrary to 2 bytes
+max-attributes = 16
+max-locals = 16
 
 [tool.pylint.FORMAT]
 max-line-length = 120
@@ -99,7 +110,6 @@ disable = [
   "unused-argument",
   # Already taken care of by Flake8
   "unused-import",
+  # TODO: Diabled until using *proper* class based logic
+  "protected-access",
 ]
-
-[tool.pylint.TYPECHECK]
-generated-members = "cv2"

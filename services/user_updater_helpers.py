@@ -240,7 +240,7 @@ def update_runner_in_database(player: Player, user: User):
                       score_details=json.dumps(user.get_points_distribution_dto()),
                       last_update=timestamp)
     else:
-        text_output = f"Not inserting new data as {user} " \
+        text_output = f"Not inserting new data as {user} " + \
             f"{'is banned' if user._banned else 'has a score lower than 1'}."
         result_state = "warning"
 

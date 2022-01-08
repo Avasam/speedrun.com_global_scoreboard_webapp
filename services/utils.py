@@ -34,7 +34,7 @@ MAXIMUM_RESULTS_PER_PAGE = 200
 # From testing on a single worker PA server: "Can't start 122th thread."
 MAX_THREADS_PER_WORKER = 121
 UNHANDLED_THREAD_EXCEPTION_MESSAGE = \
-    "\nPlease report to: https://github.com/Avasam/Global_Speedrunning_Scoreboard/issues\n" \
+    "\nPlease report to: https://github.com/Avasam/Global_Speedrunning_Scoreboard/issues\n" + \
     "\nNot uploading data as some errors were caught during execution:\n"
 executor = ThreadPoolExecutor(max_workers=MAX_THREADS_PER_WORKER)
 
@@ -178,7 +178,7 @@ def get_file(
         except (ConnectionResetError, ConnectionError, RequestsConnectionError) as exception:  # Connexion error
             raise UserUpdaterError({
                 "error": "Can't establish connexion to speedrun.com. "
-                f"Please try again ({exception.__class__.__name__})",
+                + f"Please try again ({exception.__class__.__name__})",
                 "details": exception,
             }) from exception
 
@@ -284,7 +284,7 @@ def get_paginated_response(url: str, params: dict[str, str]) -> dict:
                 if results_per_page < initial_results_per_page:
                     increased_results_per_page = min(initial_results_per_page, ceil(results_per_page * 1.5))
                     print("Reduced request successfull. Increasing the max results per page "
-                          f"from {results_per_page} back to {increased_results_per_page}")
+                          + f"from {results_per_page} back to {increased_results_per_page}")
                     update_next_params(increased_results_per_page)
                 else:
                     update_next_params()
@@ -303,7 +303,7 @@ def get_paginated_response(url: str, params: dict[str, str]) -> dict:
                     raise
                 reduced_results_per_page = max(floor(results_per_page / sqrt(7)), MINIMUM_RESULTS_PER_PAGE)
                 print("SR.C returned 500 for a paginated request. Reducing the max results per page "
-                      f"from {results_per_page} to {reduced_results_per_page}")
+                      + f"from {results_per_page} to {reduced_results_per_page}")
                 update_next_params(reduced_results_per_page, False)
 
         # ... and combine it with previous ones
@@ -337,8 +337,8 @@ def start_and_wait_for_threads(fn, items: list):
                     raise
                 print(
                     f"RuntimeError: Can't start {len(executor._threads) + 1}th thread. "
-                    f"Waiting {HTTP_ERROR_RETRY_DELAY_MAX}s before trying again. "
-                    "Consider reducing MAX_THREADS_PER_WORKER")
+                    + f"Waiting {HTTP_ERROR_RETRY_DELAY_MAX}s before trying again. "
+                    + "Consider reducing MAX_THREADS_PER_WORKER")
                 sleep(HTTP_ERROR_RETRY_DELAY_MAX)
     try:
         for future in futures:
