@@ -67,6 +67,8 @@ const ScoreDropCalculator = () => {
   const [requiredNewPlayers, setRequiredNewPlayers] = useState(0)
   const [calculatedRunScore, setCalculatedRunScore] = useState(0)
   const [calculatedRunId, setCalculatedRunId] = useState('')
+  // eslint-disable-next-line id-length
+  const [calculatedVariables, setCalculatedVariables] = useState({ m: 0, t: 0, w: 0, N: 0, p: 0, x: 0, n: 0 })
 
   const handleOnChange: ChangeEventHandler<HTMLInputElement> = event =>
     setRunId(event.currentTarget.value)
@@ -122,14 +124,9 @@ const ScoreDropCalculator = () => {
             setRequiredNewPlayers(Math.ceil((n + m * N) / t) - N)
           }
           setUpdating(false)
-
-          console.info('m', m)
-          console.info('t', t)
-          console.info('w', w)
-          console.info('N', N)
-          console.info('p', p)
-          console.info('x', x)
-          console.info('n', n)
+          const allVariables = { m, t, w, N, p, x, n }
+          setCalculatedVariables(allVariables)
+          console.info(allVariables)
 
           /* eslint-enable extra-rules/no-commented-out-code */
           /* eslint-enable id-length */
@@ -171,6 +168,7 @@ const ScoreDropCalculator = () => {
             The run &apos;
             {calculatedRunId}
             &apos; is currently worth
+            {' '}
             {calculatedRunScore}
             {' points. '}
           </span>
@@ -191,6 +189,28 @@ const ScoreDropCalculator = () => {
               {' '}
               or less.
             </span>}
+          <br />
+          <div>Other data:</div>
+          <div>
+            Leaderboard mean:
+            {' '}
+            {secondsToTimeString(calculatedVariables.m)}
+          </div>
+          <div>
+            Run&apos;s time:
+            {' '}
+            {secondsToTimeString(calculatedVariables.t)}
+          </div>
+          <div>
+            World Record time:
+            {' '}
+            {secondsToTimeString(calculatedVariables.w)}
+          </div>
+          <div>
+            Leaderboard population (pre 80th percentile soft cutoff):
+            {' '}
+            {calculatedVariables.N}
+          </div>
         </>
         : <span>
           The required time to reduce the points of the run
