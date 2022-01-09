@@ -28,8 +28,7 @@ const renderRow = (rows: RunResult[]) =>
       </td>
       <td>
         {row.gameName}
-        {' '}
-        -
+        {' - '}
         {row.categoryName}
         {row.levelName ? ` (${row.levelName})` : ''}
       </td>

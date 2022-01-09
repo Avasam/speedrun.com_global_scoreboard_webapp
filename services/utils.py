@@ -23,7 +23,7 @@ from simplejson.errors import JSONDecodeError as SimpleJSONDecodeError
 
 import configs
 
-RATE_LIMIT = 200
+RATE_LIMIT = 100
 HTTP_ERROR_RETRY_DELAY_MIN = ceil(RATE_LIMIT / 60)  # 1 / (period / limit)
 HTTP_ERROR_RETRY_DELAY_MAX = 15
 MINIMUM_RESULTS_PER_PAGE = 20
@@ -62,7 +62,9 @@ class RatedSemaphore(ThreadingBoundedSemaphore):  # synchronize.BoundedSemaphore
 
     def __init__(self, limit=1, period=1):
         # super().__init__(limit)
-        self.__semaphore = BoundedSemaphore(limit - 1)
+        limit -= 1
+        self.__semaphore = BoundedSemaphore(limit)
+        self.__semaphore.__exit__ = self.__exit__
         self.get_value = self.__semaphore.get_value
         timer = Timer(period, self._add_token_loop, kwargs=dict(time_delta=float(period) / limit))
         timer.daemon = True
@@ -71,8 +73,8 @@ class RatedSemaphore(ThreadingBoundedSemaphore):  # synchronize.BoundedSemaphore
     def _add_token_loop(self, time_delta):
         """Add token every time_delta seconds."""
         while True:
-            self._safe_release()
             sleep(time_delta)
+            self._safe_release()
 
     def _safe_release(self):
         try:
@@ -133,7 +135,7 @@ session = CachedSession(
     fast_save=True,
     use_temp=True)
 clean_old_cache()
-rate_limit = RatedSemaphore(RATE_LIMIT, 60)  # 200 requests per minute
+rate_limit = RatedSemaphore(RATE_LIMIT, 60)  # 100 requests per minute
 
 
 def get_file(
@@ -158,14 +160,15 @@ def get_file(
             except (DatabaseError, OperationalError, OSError):
                 # TODO: Try to check for available space first (<=5%),
                 # https://help.pythonanywhere.com/pages/DiskQuota
-                for dir in [gettempdir(), "~/.cache"]:
-                    if isdir(dir):
-                        unlink(dir)
+                for directory in [gettempdir(), "~/.cache"]:
+                    if isdir(directory):
+                        unlink(directory)
                 session.cache.clear()
                 response = session.get(url, params=params, headers=headers)
 
         if response.from_cache:
-            print(f"[CACHE] {response.url}")
+            if configs.debug:
+                print(f"[CACHE] {response.url}")
             rate_limit._safe_release()
         else:
             print(f"[ GET ] {response.url}")
@@ -291,12 +294,9 @@ def get_paginated_response(url: str, params: dict[str, str]) -> dict:
                 break
             # If it failed, try again with a smaller page.
             # The usual suspects:
-            # - Otterstone_Gamer, qjn1wzw8 --> /6 (2700-2733) still fails
+            # - Otterstone_Gamer, qjn1wzw8
             # - Cmdr, 48g5vo7j
-            # - SRGTsilent, v8l3eq48
-            # - HowDenKing, 68wk0748 --> 0-200 fails
-            # - Sizzyl, 18qvw9ox
-            # - Raid104, 18vw1rvj
+            # - SRGTsilent, v8l3eq48 --> 800-1000 fails
             # - ShesChardcore, y8dzlz9j
             except UserUpdaterError as exception:
                 if exception.args[0]["error"] != "HTTPError 500" or results_per_page <= MINIMUM_RESULTS_PER_PAGE:

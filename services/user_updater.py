@@ -118,9 +118,17 @@ def __set_user_points(user: User) -> None:
 
     def set_points_thread(pb: BasicJSONType) -> None:
         pb_subcategory_variables = get_subcategory_variables(pb)
+        pb_level_id = ""
+        pb_level_name = ""
+        level_count = 0
 
-        pb_level_id = pb["level"]["data"]["id"] if pb["level"]["data"] else ""
-        pb_level_name = pb["level"]["data"]["name"] if pb["level"]["data"] else ""
+        if pb["level"]["data"]:
+            pb_level_id = pb["level"]["data"]["id"]
+            pb_level_name = pb["level"]["data"]["name"]
+            url = "https://www.speedrun.com/api/v1/games/{game}/levels".format(game=pb["game"]["data"]["id"])
+            levels = get_file(url, {"max": str(MAXIMUM_RESULTS_PER_PAGE)}, True)
+            level_count = len(levels["data"])
+
         run: Run = Run(pb["id"],
                        pb["times"]["primary_t"],
                        pb["game"]["data"]["id"],
@@ -129,7 +137,7 @@ def __set_user_points(user: User) -> None:
                        pb_subcategory_variables,
                        pb_level_id,
                        pb_level_name,
-                       len(pb["game"]["data"]["levels"]["data"]))
+                       level_count)
         __set_run_points(run)
 
         # If a category has already been counted, only keep the one that's worth the most.
@@ -167,7 +175,7 @@ def __set_user_points(user: User) -> None:
     params = {
         "user": user._id,
         "status": "verified",
-        "embed": "level,game,game.variables",
+        "embed": "level,game.variables",
         "max": str(MAXIMUM_RESULTS_PER_PAGE),
     }
     runs: list[BasicJSONType] = get_paginated_response(url, params)["data"]
