@@ -93,6 +93,9 @@
     "python:S107": {
       "level": "off"
     },
+    "typescript:S3358": {
+      "level": "off"
+    }
   },
   "[python]": {
     "editor.tabSize": 4,

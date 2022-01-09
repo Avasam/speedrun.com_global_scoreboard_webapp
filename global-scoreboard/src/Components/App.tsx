@@ -63,19 +63,14 @@ const App = () => {
       >
         Copyright
       </a>
-      {' '}
-      {new Date().getFullYear()}
-      {' '}
-      by
-      {' '}
+      {` ${new Date().getFullYear()} by `}
       <a
         href='https://github.com/Avasam/'
         target='about'
       >
         Samuel Therrien
       </a>
-      {' '}
-      (
+      {' ('}
       <a href='https://www.twitch.tv/Avasam' target='about'>
         Avasam
         {/**/}
@@ -85,17 +80,15 @@ const App = () => {
           src='https://static.twitchcdn.net/assets/favicon-32-d6025c14e900565d6177.png'
         />
       </a>
-      {/**/}
-      ).
-      Powered by
+      ). Powered by
+      {' '}
       <a
         href='https://www.speedrun.com/'
         target='speedruncom'
       >
         speedrun.com
       </a>
-      {' '}
-      and
+      {' and '}
       <a
         href='https://www.pythonanywhere.com/'
         target='about'

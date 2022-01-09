@@ -4,7 +4,7 @@ import { AppBar, Box, Button, CssBaseline, IconButton, Link, Stack, Toolbar, Typ
 import { StyledEngineProvider, ThemeProvider } from '@mui/material/styles'
 import { StatusCodes } from 'http-status-codes'
 import { useEffect, useState } from 'react'
-import { Link as RouterLink, Route, Routes, useLocation, useParams } from 'react-router-dom'
+import { Link as RouterLink, Route, Routes, useLocation } from 'react-router-dom'
 
 import LoginForm from './LoginForm/LoginForm'
 import ScheduleManagement from './ScheduleManagement/ScheduleManagement'
@@ -33,13 +33,13 @@ const logout = (setCurrentUser: (user: null) => void) => {
 }
 
 const App = () => {
-  /* eslint-disable react-hooks/rules-of-hooks */
   for (const param of ['register', 'view']) {
     const oldParamValue = new URLSearchParams(window.location.search).get(param)
     if (oldParamValue != null) {
       const newLink = `${window.location.origin}${process.env.PUBLIC_URL}/${param}/${oldParamValue}`
       console.warn(`Old ${param} param found in URL, redirecting to:`, newLink)
       copyToClipboard(newLink).finally(() => window.location.href = newLink)
+      /* eslint-disable react-hooks/rules-of-hooks */
       return <>{undefined}</>
     }
   }
@@ -47,7 +47,6 @@ const App = () => {
   const isMobileSize = useMediaQuery('(max-width:640px)', { noSsr: true })
   const [currentUser, setCurrentUser] = useState<User | null | undefined>()
   const location = useLocation()
-  const routeParams = useParams()
 
   useEffect(() => {
     getCurrentUser()
@@ -132,16 +131,20 @@ const App = () => {
           >
             <Routes>
               <Route
-                element={<ScheduleViewer scheduleId={Number(routeParams.scheduleId)} />}
+                element={<ScheduleViewer />}
                 path='/view/:scheduleId'
               />
               <Route
-                element={<ScheduleGroupViewer groupId={Number(routeParams.groupId)} />}
+                element={<ScheduleGroupViewer />}
                 path='/view/group/:groupId'
               />
               <Route
-                element={<ScheduleRegistration {...routeParams} />}
-                path='/register/:registrationId?'
+                element={<ScheduleRegistration />}
+                path='/register/:registrationId'
+              />
+              <Route
+                element={<ScheduleRegistration />}
+                path='/register'
               />
               {currentUser !== undefined &&
               <Route
@@ -179,15 +182,15 @@ const App = () => {
                 src='https://static.twitchcdn.net/assets/favicon-32-d6025c14e900565d6177.png'
               />
             </Link>
-            ).
-            Powered by
+            ). Powered by
+            {' '}
             <Link
               href='https://www.speedrun.com/'
               target='speedruncom'
             >
               speedrun.com
             </Link>
-            {' and'}
+            {' and '}
             <Link
               href='https://www.pythonanywhere.com/'
               target='about'

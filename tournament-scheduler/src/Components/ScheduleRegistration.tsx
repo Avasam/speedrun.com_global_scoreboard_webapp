@@ -2,7 +2,7 @@ import { Button, Card, CardActions, CardContent, Container, FormControl, FormGro
 import type { SelectInputProps } from '@mui/material/Select/SelectInput'
 import { StatusCodes } from 'http-status-codes'
 import { useEffect, useState } from 'react'
-import { Link as RouterLink, useNavigate } from 'react-router-dom'
+import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom'
 
 import DisableDashlane from 'src/Components/DisableDashlane'
 import { apiGet, apiPost } from 'src/fetchers/api'
@@ -11,10 +11,6 @@ import { Schedule } from 'src/Models/Schedule'
 import { TimeSlot } from 'src/Models/TimeSlot'
 import { addTime, diffDays, fancyFormat } from 'src/utils/date'
 import { getDeadlineDueText } from 'src/utils/scheduleHelper'
-
-type ScheduleRegistrationProps = {
-  registrationId?: string
-}
 
 const timeSlotLabelPaddingRight = 40
 
@@ -36,12 +32,13 @@ const postRegistration = (timeSlotId: number, participants: string[], registrati
   apiPost(`time-slots/${timeSlotId}/registrations`, { participants, registrationKey })
     .then(response => response.json())
 
-const ScheduleRegistration = (props: ScheduleRegistrationProps) => {
+const ScheduleRegistration = () => {
   const [scheduleState, setScheduleState] = useState<Schedule | null | undefined>()
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<TimeSlot | undefined>()
   const [participants, setParticipants] = useState<string[]>([])
   const [formValidity, setFormValidity] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const routeParams = useParams()
   const navigate = useNavigate()
 
   // Take registrationLink from the localStorage
@@ -64,7 +61,7 @@ const ScheduleRegistration = (props: ScheduleRegistrationProps) => {
   }
 
   useEffect(() => {
-    if (props.registrationId) return
+    if (routeParams.registrationId) return
     console.info('Current registrationId:', registrationId)
 
     getSchedule(...splitIdFromRegistrationKey())
@@ -80,12 +77,12 @@ const ScheduleRegistration = (props: ScheduleRegistrationProps) => {
         }
       })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.registrationId])
+  }, [routeParams.registrationId])
 
   // Keep the registrationLink in localStorage so we can then hide it from the URL
-  if (props.registrationId) {
-    console.info('New registrationId:', props.registrationId)
-    localStorage.setItem('registrationId', props.registrationId)
+  if (routeParams.registrationId) {
+    console.info('New registrationId:', routeParams.registrationId)
+    localStorage.setItem('registrationId', routeParams.registrationId)
     navigate('/register')
     return <>{undefined}</>
   }
@@ -121,12 +118,9 @@ const ScheduleRegistration = (props: ScheduleRegistrationProps) => {
             registrationLink: scheduleState.registrationLink,
           })
           setSelectedTimeSlot(scheduleState.timeSlots[index])
-          error
+          void error
             .json()
             .then((response: { message: string, authenticated: boolean }) => setErrorMessage(response.message))
-            .catch((error_: Error) => {
-              throw error_
-            })
         } else {
           console.error(error)
         }
@@ -141,7 +135,7 @@ const ScheduleRegistration = (props: ScheduleRegistrationProps) => {
       ? scheduleState === null && <div>
         Sorry. `
         {/**/}
-        <code>{props.registrationId}</code>
+        <code>{routeParams.registrationId}</code>
         {/**/}
         ` does not lead to an existing registration form.
       </div>
@@ -149,6 +143,7 @@ const ScheduleRegistration = (props: ScheduleRegistrationProps) => {
         <CardContent style={{ textAlign: 'left' }}>
           <FormLabel>
             Schedule for:
+            {' '}
             {scheduleState.name}
           </FormLabel>
           <br />

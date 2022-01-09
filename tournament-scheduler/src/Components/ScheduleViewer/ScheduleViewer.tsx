@@ -1,6 +1,7 @@
 import { Box, Container, FormLabel, Grid, List, ListItem, ListItemText, Paper, Typography, useTheme } from '@mui/material'
 import { StatusCodes } from 'http-status-codes'
 import { useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom'
 
 import AddScheduleToCalendarButton from './AddScheduleToCalendarButton'
 import { apiGet } from 'src/fetchers/api'
@@ -14,7 +15,10 @@ const embedded = typeof new URLSearchParams(window.location.search).get('embedde
 
 type ScheduleViewerProps = {
   scheduleId: number
-  shownInGroup?: boolean
+  shownInGroup: boolean
+} | {
+  scheduleId?: undefined
+  shownInGroup?: undefined
 }
 
 const getSchedule = (id: number) =>
@@ -31,9 +35,12 @@ export const TimeZoneMessage = <Typography>All dates and times are given in your
 const ScheduleViewer = (props: ScheduleViewerProps) => {
   const [schedule, setSchedule] = useState<Schedule | null | undefined>()
   const theme = useTheme()
+  const routeParams = useParams()
+
+  const scheduleId = props.shownInGroup ? props.scheduleId : Number(routeParams.scheduleId)
 
   useEffect(() => {
-    getSchedule(props.scheduleId)
+    getSchedule(scheduleId)
       .then(setSchedule)
       .catch((error: Response) => {
         if (error.status === StatusCodes.NOT_FOUND || error.status === StatusCodes.BAD_REQUEST) {
@@ -42,7 +49,7 @@ const ScheduleViewer = (props: ScheduleViewerProps) => {
           console.error(error)
         }
       })
-  }, [props.scheduleId])
+  }, [scheduleId])
 
   const deadlineDaysLeft = diffDays(schedule?.deadline)
 
@@ -53,7 +60,7 @@ const ScheduleViewer = (props: ScheduleViewerProps) => {
       ? schedule === null && <div>
         Sorry. `
         {/**/}
-        <code>{props.scheduleId}</code>
+        <code>{scheduleId}</code>
         {/**/}
         ` is not a valid schedule id.
       </div>
@@ -62,6 +69,7 @@ const ScheduleViewer = (props: ScheduleViewerProps) => {
         <Paper style={{ boxShadow: 'none', background: embedded ? theme.palette.background.default : 'transparent' }}>
           <FormLabel>
             Schedule for:
+            {' '}
             {schedule.name}
           </FormLabel>
           {!props.shownInGroup && TimeZoneMessage}
@@ -88,9 +96,7 @@ const ScheduleViewer = (props: ScheduleViewerProps) => {
                     <span>
                       (
                       {timeSlot.registrations.length}
-                      {' '}
-                      /
-                      {' '}
+                      {' / '}
                       {timeSlot.maximumEntries}
                       {' '}
                       entr

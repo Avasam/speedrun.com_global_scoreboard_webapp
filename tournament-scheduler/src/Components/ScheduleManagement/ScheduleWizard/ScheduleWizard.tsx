@@ -39,7 +39,7 @@ export const ScheduleWizard = (props: ScheduleWizardProps) => {
     props.onCancel()
   }
 
-  const editTimeSlotDateTime = (date: Date | null, timeSlot: TimeSlot) => {
+  const editTimeSlotDateTime = (date: Date | null | undefined, timeSlot: TimeSlot) => {
     if (!date) return
     timeSlot.dateTime = date
     schedule.timeSlots.sort(TimeSlot.compareFn)

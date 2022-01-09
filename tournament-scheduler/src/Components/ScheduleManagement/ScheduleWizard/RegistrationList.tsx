@@ -36,7 +36,7 @@ const RegistrationList = (props: RegistrationListProps) => {
                 {props.index + 1}
               </span>
             }
-            style={{ marginTop: 0, textAlign: 'left', display: 'inline-block' }}
+            style={{ marginTop: 0, paddingLeft: '12px', textAlign: 'left', display: 'inline-block' }}
           />
           <ButtonGroup
             disabled={!props.registration.hasChanged}

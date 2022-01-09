@@ -7,6 +7,7 @@ import { MobileDateTimePicker } from '@mui/lab'
 import type { Theme } from '@mui/material'
 import { Card, CardContent, Collapse, IconButton, ListItem, ListItemText, Stack, TextField, Typography } from '@mui/material'
 import type { SxProps } from '@mui/system'
+import dayjs from 'dayjs'
 import type { MouseEventHandler } from 'react'
 import { useState } from 'react'
 
@@ -52,7 +53,7 @@ type TimeSlotRowProps = {
   schedule: NonFunctionProperties<Schedule>
   timeSlot: TimeSlot
   id: string
-  onEditTimeSlotDateTime: (date: Date | null) => void
+  onEditTimeSlotDateTime: (date: Date | null | undefined) => void
   onDuplicateTimeSlot: () => void
   onRemoveTimeSlot: () => void
   onEditTimeSlotMaximumEntries: (maximumEntries: number) => void
@@ -123,9 +124,9 @@ const TimeSlotRow = (props: TimeSlotRowProps) => {
         disablePast={props.timeSlot.id <= -1}
         inputFormat={TIMESLOT_FORMAT}
         label='Date and time'
-        minDate={new Date(MIN_YEAR, 0)}
+        minDate={dayjs().set('year', MIN_YEAR)}
         minutesStep={minutesStep}
-        onChange={date => props.onEditTimeSlotDateTime(date)}
+        onChange={date => props.onEditTimeSlotDateTime(date?.toDate())}
         renderInput={params =>
           <TextField
             {...params}
@@ -197,7 +198,7 @@ const TimeSlotRow = (props: TimeSlotRowProps) => {
         {open ? <ExpandLess /> : <ExpandMore />}
       </ListItem>
       <Collapse in={open} style={{ paddingLeft: '16px' }} timeout='auto' unmountOnExit>
-        <Stack direction='row'>
+        <Stack direction='row' flexWrap='wrap'>
           {props.timeSlot.registrations.length === 0
             ? <span>No one registered for this time slot yet.</span>
             : registrationsProxy.map((registrationProxy, index) =>
