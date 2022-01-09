@@ -51,7 +51,7 @@ const App = () => {
 
     <Routes>
       <Route element={<GameSearch />} path='/game-search' />
-      <Route element={<Dashboard currentUser={currentUser} />} />
+      <Route element={<Dashboard currentUser={currentUser} />} path='/' />
     </Routes>
 
     <footer>

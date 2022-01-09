@@ -59,7 +59,7 @@
     "build": true,
     "*.zip": true,
     "**/node_modules": false,
-    "**/dist/**/*.js": true,
+    "**/dist/**/*.js": false,
     "**/dist/**/*.map": true,
     "**/src/react-app-env.d.ts": true,
     ".mypy_cache": true,

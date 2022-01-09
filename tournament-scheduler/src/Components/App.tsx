@@ -144,10 +144,12 @@ const App = () => {
                 path='/register/:registrationId?'
               />
               {currentUser !== undefined &&
-                  (currentUser
-                    ? <Route element={<ScheduleManagement currentUser={currentUser} />} />
-                    : <Route element={<LoginForm onLogin={setCurrentUser} />} />
-                  )}
+              <Route
+                element={currentUser
+                  ? <ScheduleManagement currentUser={currentUser} />
+                  : <LoginForm onLogin={setCurrentUser} />}
+                path='/'
+              />}
             </Routes>
           </Box>
 
