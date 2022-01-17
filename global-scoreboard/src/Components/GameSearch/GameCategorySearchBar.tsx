@@ -13,11 +13,13 @@ type GameCategorySearchProps =
     setGameMap: Dispatch<SetStateAction<IdToNameMap>>
   }
 
-function debounce<T>(fn: (...args: T[]) => void, time: number) {
+const debounce = <T,>(
+  fn: (...params: T[]) => void,
+  time: number
+) => {
   let timeout: NodeJS.Timeout | undefined
 
-  return wrapper
-  function wrapper(...args: T[]) {
+  return (...args: T[]) => {
     if (timeout) {
       clearTimeout(timeout)
     }

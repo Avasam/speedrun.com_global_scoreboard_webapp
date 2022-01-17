@@ -1,7 +1,9 @@
 type LocalStorageItem = Record<string, unknown> | unknown[] | string
 
-export const getLocalStorageItem = function <T extends LocalStorageItem>(key: string, fallback: T) {
+export const getLocalStorageItem = <T extends LocalStorageItem>(key: string, fallback: T) => {
   const item = localStorage.getItem(key)
-  if (item != null && item.constructor === fallback.constructor) return JSON.parse(item) as T
-  return fallback
+
+  return item != null && item.constructor === fallback.constructor
+    ? JSON.parse(item) as T
+    : fallback
 }

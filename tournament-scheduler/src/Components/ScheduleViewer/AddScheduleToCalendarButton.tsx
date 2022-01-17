@@ -41,4 +41,5 @@ const AddScheduleToCalendarButton = (props: AddScheduleToCalendarProps) =>
       Add to calendar
     </AddToCalendar>
   </Button>
+
 export default AddScheduleToCalendarButton

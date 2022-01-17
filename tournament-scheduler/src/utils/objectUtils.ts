@@ -26,7 +26,7 @@ export const isObject = (item: unknown): item is URecord =>
  * or
  * `const merged = mergeDeep({a: 1}, { b : { c: { d: { e: 12345}}}})`
  */
-export function mergeDeep(target: unknown, source: unknown) {
+export const mergeDeep = (target: unknown, source: unknown) => {
   const output: URecord = Object.assign({}, target)
   if (isObject(target) && isObject(source)) {
     for (const key of Object.keys(source)) {

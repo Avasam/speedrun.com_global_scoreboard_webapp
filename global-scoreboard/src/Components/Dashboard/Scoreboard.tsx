@@ -36,6 +36,7 @@ const columnClass: ScoreboardColumnDescription['classes'] = cell => {
   if (daysSince >= Configs.lastUpdatedDays[2]) return 'daysSince'
   if (daysSince >= Configs.lastUpdatedDays[1]) return 'daysSince2'
   if (daysSince >= Configs.lastUpdatedDays[0]) return 'daysSince1'
+
   return 'daysSince0'
 }
 

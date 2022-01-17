@@ -33,7 +33,9 @@ export const THEMES = [
   'Quartz',
 ] as const
 const LIGHT_THEMES_COUNT = 19
+
 export const LIGHT_THEMES = THEMES.slice(0, LIGHT_THEMES_COUNT)
+
 export const DARK_THEMES = THEMES.slice(LIGHT_THEMES_COUNT)
 
 export type Themes = typeof THEMES[number]
@@ -75,6 +77,7 @@ const ThemeProvider: FC = ({ children }) => {
       setpreferedBootstrapTheme(theme)
       localStorage.setItem('preferedBootstrapTheme', theme)
     }
+
     return [preferedBootstrapTheme, saveTheme] as [typeof preferedBootstrapTheme, typeof saveTheme]
   }, [preferedBootstrapTheme])
 

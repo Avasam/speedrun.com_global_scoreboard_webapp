@@ -43,6 +43,7 @@ export const getAllPlatforms = () => apiGet('https://www.speedrun.com/api/v1/pla
   .then<IdToNameMap>(platforms => Object.fromEntries(platforms.map(platform => [platform.id, platform.name])))
 
 const requestsStartedForRun = new Map<string, boolean>()
+
 export const fetchValueNamesForRun = async (runId: string) => {
   if (requestsStartedForRun.get(runId)) return
   requestsStartedForRun.set(runId, true)

@@ -3,6 +3,7 @@ import advancedFormat from 'dayjs/plugin/advancedFormat'
 import timezone from 'dayjs/plugin/timezone'
 
 import math from './math'
+
 dayjs.extend(advancedFormat)
 dayjs.extend(timezone)
 
@@ -59,7 +60,9 @@ export const diffDays = (startDate: DateProperty, endDate?: DateProperty) => {
 }
 
 export const DEADLINE_FORMAT = 'ddd MMM Do YYYY'
+
 export const TIMESLOT_FORMAT = `${DEADLINE_FORMAT}, HH:mm`
+
 export const FULL_FANCY_FORMAT = 'dddd MMMM Do YYYY @ HH:mm z'
 
 export const fancyFormat = (date: Date) => dayjs(date).format(FULL_FANCY_FORMAT)

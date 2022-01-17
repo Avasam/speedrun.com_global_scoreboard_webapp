@@ -30,7 +30,7 @@
   },
   "javascript.preferences.quoteStyle": "single",
   "typescript.preferences.quoteStyle": "single",
-  "html.format.wrapAttributes": "auto",
+  "html.format.wrapAttributes": "force-expand-multiline",
   "typescript.tsdk": "./tournament-scheduler/node_modules/typescript/lib",
   "javascript.format.semicolons": "remove",
   "typescript.format.semicolons": "remove",
@@ -80,6 +80,8 @@
     "**/node_modules": true,
     "**/bower_components": true,
     "**/*.code-search": true,
+    "package-lock.json": true,
+    "*.lock": true,
     "typings": true,
   },
   // Copy those over to your user settings

@@ -16,6 +16,7 @@ const columnClass = (lastUpdate: Date) => {
   const daysSince = diffDays(currentTimeOnLoad, lastUpdate)
   if (daysSince >= Configs.lastUpdatedDays[2]) return 'daysSince'
   if (daysSince >= Configs.lastUpdatedDays[1]) return 'daysSince2'
+
   return ''
 }
 

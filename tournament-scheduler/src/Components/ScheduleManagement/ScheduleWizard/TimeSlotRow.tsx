@@ -1,8 +1,8 @@
 import Clear from '@mui/icons-material/Clear'
-import Event  from '@mui/icons-material/Event'
-import  ExpandLess from '@mui/icons-material/ExpandLess'
-import ExpandMore  from '@mui/icons-material/ExpandMore'
-import  FileCopy from '@mui/icons-material/FileCopy'
+import Event from '@mui/icons-material/Event'
+import ExpandLess from '@mui/icons-material/ExpandLess'
+import ExpandMore from '@mui/icons-material/ExpandMore'
+import FileCopy from '@mui/icons-material/FileCopy'
 import { MobileDateTimePicker } from '@mui/lab'
 import type { Theme } from '@mui/material'
 import { Card, CardContent, Collapse, IconButton, ListItem, ListItemText, Stack, TextField, Typography } from '@mui/material'
@@ -24,6 +24,7 @@ import type { NonFunctionProperties } from 'src/utils/objectUtils'
 import { createProxy } from 'src/utils/objectUtils'
 
 const MIN_YEAR = 2000
+
 export const FOCUS_CLASS = 'time-slot-focus'
 
 const putRegistration = (registration: Registration) =>

@@ -7,7 +7,7 @@ const oldCopyToClipboard = (text: string) =>
   new Promise<void>((resolve, reject) => {
     const textArea = document.createElement('textarea')
     textArea.value = text
-    textArea.style.position = 'fixed'  // Avoid scrolling to bottom
+    textArea.style.position = 'fixed' // Avoid scrolling to bottom
     document.body.append(textArea)
     textArea.focus()
     textArea.select()

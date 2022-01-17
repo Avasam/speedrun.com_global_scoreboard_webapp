@@ -24,4 +24,5 @@ const math = {
   MS_IN_DAY: 86_400_000, // 1000 * 60 * 60 * 24
   HALF: 0.5,
 }
+
 export default math
