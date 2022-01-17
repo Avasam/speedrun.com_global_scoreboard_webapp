@@ -37,7 +37,7 @@
     "@typescript-eslint/eslint-plugin": "^5.9.0",
     "@typescript-eslint/parser": "^5.9.0",
     "eslint": "^8.6.0",
-    "eslint-config-beslogic": "^0.0.60",
+    "eslint-config-beslogic": "^1.0.0",
     "eslint-config-react-app": "^7.0.0",
     "eslint-plugin-jsx-a11y": "^6.5.1",
     "eslint-plugin-react": "^7.28.0",
