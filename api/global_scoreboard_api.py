@@ -79,15 +79,17 @@ def __do_update_player(current_user: Player, name_or_id: str):
     global __currently_updating_to  # pylint: disable=global-variable-not-assigned
     now = datetime.now()
     minutes_5 = 5 * 60
-    updating_from_seconds_left = minutes_5 - (now - __currently_updating_from[current_user.user_id]).total_seconds()
-    updating_to_seconds_left = minutes_5 - (now - __currently_updating_to[name_or_id]).total_seconds()
 
     # Check if the current user is already updating someone
     # or if the player to be updated is currently being updated
-    if current_user.user_id in __currently_updating_from and updating_from_seconds_left <= 0:
-        return {"messageKey": "current_user", "timeLeft": updating_from_seconds_left}, 409
-    if name_or_id in __currently_updating_to and updating_to_seconds_left <= 0:
-        return {"messageKey": "name_or_id", "timeLeft": updating_to_seconds_left}, 409
+    if current_user.user_id in __currently_updating_from:
+        updating_from_seconds_left = minutes_5 - (now - __currently_updating_from[current_user.user_id]).total_seconds()
+        if updating_from_seconds_left > 0:
+            return {"messageKey": "current_user", "timeLeft": updating_from_seconds_left}, 409
+    if name_or_id in __currently_updating_to:
+        updating_to_seconds_left = minutes_5 - (now - __currently_updating_to[name_or_id]).total_seconds()
+        if updating_to_seconds_left > 0:
+            return {"messageKey": "name_or_id", "timeLeft": updating_to_seconds_left}, 409
     __currently_updating_from[current_user.user_id] = now
     __currently_updating_to[name_or_id] = now
 
