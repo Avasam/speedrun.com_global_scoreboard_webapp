@@ -169,7 +169,7 @@ class Player(BaseModel):
     def get_friends(self) -> list[Player]:
         sql = text("SELECT f.friend_id, p.name, p.country_code, p.score, p.last_update FROM friend f "
                    + "JOIN player p ON p.user_id = f.friend_id "
-                   + "WHERE f.user_id = ':user_id';")
+                   + "WHERE f.user_id = :user_id;")
         return [Player(
             user_id=friend[0],
             name=friend[1],
@@ -182,12 +182,12 @@ class Player(BaseModel):
         if self.user_id == friend_id:
             return False
         sql = text("INSERT INTO friend (user_id, friend_id) "
-                   + "VALUES (':user_id', ':friend_id');")
+                   + "VALUES (:user_id, :friend_id);")
         return db.engine.execute(sql, user_id=self.user_id, friend_id=friend_id).rowcount > 0
 
     def unfriend(self, friend_id: str) -> bool:
         sql = text("DELETE FROM friend "
-                   + "WHERE user_id = ':user_id' AND friend_id=':friend_id'")
+                   + "WHERE user_id = :user_id AND friend_id = :friend_id")
         return db.engine.execute(sql, user_id=self.user_id, friend_id=friend_id).rowcount > 0
 
     def get_schedules(self):

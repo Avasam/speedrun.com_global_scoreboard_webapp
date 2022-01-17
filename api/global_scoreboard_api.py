@@ -83,13 +83,13 @@ def __do_update_player(current_user: Player, name_or_id: str):
     # Check if the current user is already updating someone
     # or if the player to be updated is currently being updated
     if current_user.user_id in __currently_updating_from:
-        updating_from_seconds_left = minutes_5 - (now - __currently_updating_from[current_user.user_id]).total_seconds()
-        if updating_from_seconds_left > 0:
-            return {"messageKey": "current_user", "timeLeft": updating_from_seconds_left}, 409
+        seconds_left = minutes_5 - (now - __currently_updating_from[current_user.user_id]).total_seconds()
+        if seconds_left > 0:
+            return {"messageKey": "current_user", "timeLeft": seconds_left}, 409
     if name_or_id in __currently_updating_to:
-        updating_to_seconds_left = minutes_5 - (now - __currently_updating_to[name_or_id]).total_seconds()
-        if updating_to_seconds_left > 0:
-            return {"messageKey": "name_or_id", "timeLeft": updating_to_seconds_left}, 409
+        seconds_left = minutes_5 - (now - __currently_updating_to[name_or_id]).total_seconds()
+        if seconds_left > 0:
+            return {"messageKey": "name_or_id", "timeLeft": seconds_left}, 409
     __currently_updating_from[current_user.user_id] = now
     __currently_updating_to[name_or_id] = now
 
@@ -119,7 +119,7 @@ def put_friends_current(current_user: Player, user_id: str):
     if current_user.user_id == escaped_id:
         return "You can't add yourself as a friend!", 422
     try:
-        result = current_user.befriend(escaped_id)
+        result = current_user.befriend(user_id)
     except exc.IntegrityError:
         return f"User ID '{escaped_id}' is already one of your friends."
     else:
@@ -134,6 +134,6 @@ def delete_friends_current(current_user: Player, user_id: str):
     escaped_id = escape(user_id)
     if not escaped_id.isalnum():
         return jsonify({"message": "/user_id is not a valid user id", "authenticated": True}), 400
-    if current_user.unfriend(escaped_id):
+    if current_user.unfriend(user_id):
         return f"Successfully removed user ID '{escaped_id}' from your friends."
     return f"User ID '{escaped_id}' isn't one of your friends."
