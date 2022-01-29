@@ -14,7 +14,7 @@ const makeUrl = (location: string, queryParams?: QueryParams) => {
     : targetUrl
 }
 
-const apiFetch = (method: RequestInit['method'], url: string, body?: RequestInit['body']) =>
+const apiFetch = <R>(method: RequestInit['method'], url: string, body?: RequestInit['body']) =>
   fetch(url, {
     method,
     headers: {
@@ -27,15 +27,25 @@ const apiFetch = (method: RequestInit['method'], url: string, body?: RequestInit
     .then(response => response.status >= firstHttpErrorCode && response.status <= lastHttpErrorCode
       ? Promise.reject(response)
       : response)
+    .then<R & { token?: string }>(response => response.json())
+    .then(response => {
+      // If a token is sent back as part of any response, set it.
+      // This could be a first login, or a login session extension.
+      if (response.token) {
+        localStorage.setItem('jwtToken', response.token)
+      }
 
-export const apiGet = (location: string, queryParams?: QueryParams) =>
-  apiFetch('GET', makeUrl(location, queryParams))
+      return response as R
+    })
 
-export const apiPost = (location: string, body: unknown) =>
-  apiFetch('POST', makeUrl(location), JSON.stringify(body))
+export const apiGet = <R>(location: string, queryParams?: QueryParams) =>
+  apiFetch<R>('GET', makeUrl(location, queryParams))
 
-export const apiPut = (location: string, body: unknown) =>
-  apiFetch('PUT', makeUrl(location), JSON.stringify(body))
+export const apiPost = <R>(location: string, body: unknown) =>
+  apiFetch<R>('POST', makeUrl(location), JSON.stringify(body))
 
-export const apiDelete = (location: string) =>
-  apiFetch('DELETE', makeUrl(location))
+export const apiPut = <R>(location: string, body: unknown) =>
+  apiFetch<R>('PUT', makeUrl(location), JSON.stringify(body))
+
+export const apiDelete = <R>(location: string) =>
+  apiFetch<R>('DELETE', makeUrl(location))

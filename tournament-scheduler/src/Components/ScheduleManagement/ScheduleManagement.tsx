@@ -14,14 +14,11 @@ import type User from 'src/Models/User'
 import { arrayMove } from 'src/utils/objectUtils'
 
 const getSchedules = () =>
-  apiGet('schedules')
-    .then(response =>
-      response.json().then((scheduleDtos: ScheduleDto[] | undefined) =>
-        scheduleDtos?.map(scheduleDto => new Schedule(scheduleDto)) ?? []))
+  apiGet<ScheduleDto[] | undefined>('schedules')
+    .then(scheduleDtos => scheduleDtos?.map(scheduleDto => new Schedule(scheduleDto)) ?? [])
 
 const postSchedules = (schedule: ScheduleDto) =>
-  apiPost('schedules', schedule)
-    .then<number>(response => response.json())
+  apiPost<number>('schedules', schedule)
 
 const putSchedule = (schedule: ScheduleDto) =>
   apiPut(`schedules/${schedule.id}`, schedule)
@@ -36,14 +33,11 @@ const putScheduleOrder = (scheduleOrderDtos: ScheduleOrderDto[]) =>
   apiPut('schedules/order', scheduleOrderDtos)
 
 const getGroups = () =>
-  apiGet('schedule_groups')
-    .then(response =>
-      response.json().then((scheduleGroupDtos: ScheduleGroupDto[] | undefined) =>
-        scheduleGroupDtos?.map(scheduleGroupDto => new ScheduleGroup(scheduleGroupDto)) ?? []))
+  apiGet<ScheduleGroupDto[] | undefined>('schedule_groups')
+    .then(scheduleGroupDtos => scheduleGroupDtos?.map(scheduleGroupDto => new ScheduleGroup(scheduleGroupDto)) ?? [])
 
 const postGroups = (scheduleGroup: ScheduleGroupDto) =>
-  apiPost('schedule_groups', scheduleGroup)
-    .then<number>(response => response.json())
+  apiPost<number>('schedule_groups', scheduleGroup)
 
 const putGroup = (scheduleGroup: ScheduleGroupDto) =>
   apiPut(`schedule_groups/${scheduleGroup.id}`, scheduleGroup)

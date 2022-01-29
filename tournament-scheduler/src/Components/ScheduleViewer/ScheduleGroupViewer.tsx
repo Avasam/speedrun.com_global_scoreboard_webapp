@@ -9,12 +9,10 @@ import type { ScheduleDto, ScheduleGroupDto } from 'src/Models/Schedule'
 import { Schedule } from 'src/Models/Schedule'
 
 const getSchedules = (id: number) =>
-  apiGet(`schedule_groups/${id}/schedules`)
-    .then<ScheduleDto[]>(response => response.json())
+  apiGet<ScheduleDto[]>(`schedule_groups/${id}/schedules`)
 
 const getGroup = (id: number) =>
-  apiGet(`schedule_groups/${id}`)
-    .then<ScheduleGroupDto>(response => response.json())
+  apiGet<ScheduleGroupDto>(`schedule_groups/${id}`)
 
 const ScheduleGroupViewer = () => {
   const [schedules, setSchedules] = useState<ScheduleDto[]>([])

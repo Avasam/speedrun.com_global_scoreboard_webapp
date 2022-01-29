@@ -1,6 +1,7 @@
+from datetime import datetime, timedelta
 from functools import wraps
-
 from flask import current_app, jsonify, request
+import json
 import jwt
 
 from models.core_models import Player
@@ -34,6 +35,29 @@ def authentication_required(f):
         player = Player.query.filter_by(user_id=data["sub"]).first()
         if not player:
             raise RuntimeError("User not found")
-        return f(player, *args, **kwargs)
+
+        response = f(player, *args, **kwargs)
+
+        # Extend the expiration date of the JWT since the user is active
+        # Newly generated token needs to be sent back to frontent
+        if not isinstance(response, tuple):
+            return response
+
+        extended_token = jwt.encode({
+            "sub": data["sub"],
+            "iat": data["iat"],
+            "exp": datetime.utcnow() + timedelta(days=1)},
+            current_app.config["SECRET_KEY"])
+        try:
+            response_content = json.loads(response[0])
+        except json.JSONDecodeError:
+            response_content = {"message": response[0]}
+
+        return (
+            json.dumps({
+                **response_content,
+                "token": extended_token,
+            }),
+            response[1])
 
     return _verify

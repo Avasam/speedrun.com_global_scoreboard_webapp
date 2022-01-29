@@ -30,13 +30,8 @@ const LoginModal = (props: LoginModalProps) => {
     }
     setLoading(true)
     setLoginErrorMessage('')
-    apiPost('login', { speedruncomApiKey: speedruncomApiKeyInput })
-      .then(response => response.json())
-      .then((response: { token: string, user: Player }) => {
-        if (!response.token) return
-        localStorage.setItem('jwtToken', response.token)
-        props.onLogin(response.user)
-      })
+    apiPost<{ user: Player }>('login', { speedruncomApiKey: speedruncomApiKeyInput })
+      .then(response => props.onLogin(response.user))
       .catch((error: Response) => {
         if (error.status === StatusCodes.UNAUTHORIZED) {
           void error.json()

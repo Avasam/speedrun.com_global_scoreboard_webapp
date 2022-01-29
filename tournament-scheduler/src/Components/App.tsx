@@ -25,7 +25,7 @@ if (embedded) {
   (darkTheme.components?.MuiCssBaseline?.styleOverrides as unknown as StylesOverrides).body.background = 'transparent'
 }
 
-const getCurrentUser = () => apiGet('users/current').then(response => response.json())
+const getCurrentUser = () => apiGet<{ user: User | undefined }>('users/current')
 
 const logout = (setCurrentUser: (user: null) => void) => {
   setCurrentUser(null)
@@ -50,7 +50,7 @@ const App = () => {
 
   useEffect(() => {
     getCurrentUser()
-      .then((response: { user: User | undefined }) => response.user)
+      .then(response => response.user)
       .then(setCurrentUser)
       .catch((error: Response) => {
         if (error.status === StatusCodes.UNAUTHORIZED) {

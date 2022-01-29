@@ -20,9 +20,8 @@ type DashboardProps = {
 
 const MOBILE_SIZE = 767
 
-const getFriends = () => apiGet('players/current/friends').then<Player[]>(response => response.json())
-const getAllPlayers = () => apiGet('players')
-  .then<Player[]>(response => response.json())
+const getFriends = () => apiGet<Player[]>('players/current/friends')
+const getAllPlayers = () => apiGet<Player[]>('players')
   .then(players =>
     players.map(player => ({
       ...player,
@@ -128,8 +127,7 @@ const Dashboard = (props: DashboardProps) => {
       return
     }
     setUpdateStartTime(Date.now())
-    apiPost(`players/${runnerNameOrId}/update`)
-      .then<UpdateRunnerResult>(response => response.json())
+    apiPost<UpdateRunnerResult>(`players/${runnerNameOrId}/update`)
       .then(playerResult => {
         playerResult.lastUpdate = new Date(playerResult.lastUpdate)
         return playerResult

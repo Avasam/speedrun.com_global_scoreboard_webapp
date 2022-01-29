@@ -11,13 +11,8 @@ type loginFormProps = {
 }
 
 const login = (speedruncomApiKey: string, onLoginCallback: (currentUser: User) => void) =>
-  apiPost('login', { speedruncomApiKey })
-    .then(response => response.json())
-    .then((response: { token: string, user: User }) => {
-      if (!response.token) return
-      localStorage.setItem('jwtToken', response.token)
-      onLoginCallback(response.user)
-    })
+  apiPost<{ user: User }>('login', { speedruncomApiKey })
+    .then(response => onLoginCallback(response.user))
     .catch(console.error)
 
 const LoginForm = (props: loginFormProps) => {

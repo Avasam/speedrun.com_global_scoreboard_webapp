@@ -31,33 +31,30 @@ const filterSubCatVariables = (variables: SpeedruncomRun['data']['values'], subC
 }
 
 const getRunDetails = (runId: string) =>
-  apiGet(
+  apiGet<SpeedruncomRun>(
     `https://www.speedrun.com/api/v1/runs/${runId}`,
     {},
     false
   )
-    .then<SpeedruncomRun>(response => response.json())
     .then(response => response.data)
 
 const getGameSubCategories = (gameId: string) =>
-  apiGet(
+  apiGet<DataArray<SpeedruncomVariable>>(
     `https://www.speedrun.com/api/v1/games/${gameId}/variables`,
     {},
     false
   )
-    .then<DataArray<SpeedruncomVariable>>(response => response.json())
     .then(response => response
       .data
       .filter(variable => variable['is-subcategory'])
       .map(variable => variable.id))
 
 const getLeaderboardRuns = (gameId: string, categoryId: string, subCategories: SpeedruncomRun['data']['values']) =>
-  apiGet(
+  apiGet<SpeedruncomLeaderboard>(
     `https://www.speedrun.com/api/v1/leaderboards/${gameId}/category/${categoryId}`,
     { 'video-only': true, ...addVarToValuesKeys(subCategories) },
     false
   )
-    .then<SpeedruncomLeaderboard>(response => response.json())
     .then(response => response.data.runs.map(run => run.run))
 
 const ScoreDropCalculator = () => {

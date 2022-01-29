@@ -12,8 +12,8 @@ import type { ServerConfigs } from 'src/Models/Configs'
 import Configs from 'src/Models/Configs'
 import type Player from 'src/Models/Player'
 
-const getCurrentUser = () => apiGet('users/current').then<{ user: Player | undefined }>(response => response.json())
-const getConfigs = () => apiGet('configs').then<ServerConfigs>(response => response.json())
+const getCurrentUser = () => apiGet<{ user: Player | undefined }>('users/current')
+const getConfigs = () => apiGet<ServerConfigs>('configs')
 
 const logout = (setCurrentUser: (user: null) => void) => {
   setCurrentUser(null)

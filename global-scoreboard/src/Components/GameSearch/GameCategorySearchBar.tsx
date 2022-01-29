@@ -38,8 +38,7 @@ const GameCategorySearchBar = (props: GameCategorySearchProps) => {
     (searchText: string) =>
       !searchText
         ? props.onClear?.()
-        : apiGet('https://www.speedrun.com/api/v1/games', { name: searchText, max: MAX_PAGINATION }, false)
-          .then<DataArray<SpeedruncomGame>>(response => response.json())
+        : apiGet<DataArray<SpeedruncomGame>>('https://www.speedrun.com/api/v1/games', { name: searchText, max: MAX_PAGINATION }, false)
           .then(response => response.data)
           .then<IdToNameMap>(games => Object.fromEntries(games.map(game => [game.id, game.names.international])))
           .then(games => {

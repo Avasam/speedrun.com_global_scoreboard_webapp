@@ -29,31 +29,35 @@ export type PlatformSelectOption = {
 }
 
 export const getAllGameValues = () =>
-  apiGet('game-values')
-    .then<GameValue[]>(response => response.json())
+  apiGet<GameValue[]>('game-values')
     .then<GameValueRow[]>(gameValues => gameValues.map(gameValue => ({
       ...gameValue,
       wrPointsPerSecond: gameValue.wrPoints / gameValue.wrTime,
       meanPointsPerSecond: gameValue.wrPoints / gameValue.meanTime,
     })))
 
-export const getAllPlatforms = () => apiGet('https://www.speedrun.com/api/v1/platforms', { max: MAX_PAGINATION }, false)
-  .then<{ data: PlatformDto[] }>(response => response.json())
-  .then<PlatformDto[]>(response => response.data)
-  .then<IdToNameMap>(platforms => Object.fromEntries(platforms.map(platform => [platform.id, platform.name])))
+export const getAllPlatforms = () =>
+  apiGet<{ data: PlatformDto[] }>(
+    'https://www.speedrun.com/api/v1/platforms',
+    { max: MAX_PAGINATION },
+    false
+  )
+    .then<PlatformDto[]>(response => response.data)
+    .then<IdToNameMap>(platforms => Object.fromEntries(platforms.map(platform => [platform.id, platform.name])))
 
 const requestsStartedForRun = new Map<string, boolean>()
 
 export const fetchValueNamesForRun = async (runId: string) => {
   if (requestsStartedForRun.get(runId)) return
   requestsStartedForRun.set(runId, true)
-  return apiGet(`https://www.speedrun.com/api/v1/runs/${runId}?embed=game,category`, undefined, false)
-    .then<EmbeddedSpeedruncomRun>(response => response.json())
+  return apiGet<EmbeddedSpeedruncomRun>(
+    `https://www.speedrun.com/api/v1/runs/${runId}?embed=game,category`,
+    undefined,
+    false
+  )
     .then<[IdToNameMap, IdToNameMap]>(response => [
       { [response.data.game.data.id]: response.data.game.data.names.international },
       { [response.data.category.data.id]: response.data.category.data.name },
     ])
-    .catch(() => {
-      requestsStartedForRun.delete(runId)
-    })
+    .catch(() => requestsStartedForRun.delete(runId))
 }

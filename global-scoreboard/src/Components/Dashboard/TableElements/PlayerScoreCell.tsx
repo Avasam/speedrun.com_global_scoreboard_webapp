@@ -19,12 +19,11 @@ const PlayerScoreCell = (props: PlayerScoreCellProps) => {
   const handleClose = () => setShow(false)
   const handleShow = () =>
     props.player.scoreDetails === undefined
-      ? apiGet(`players/${props.player.userId}/score-details`)
-        .then(response =>
-          response.json().then((scoreDetails: RunResult[][]) => {
-            props.player.scoreDetails = scoreDetails
-            setShow(true)
-          }))
+      ? apiGet<RunResult[][]>(`players/${props.player.userId}/score-details`)
+        .then(scoreDetails => {
+          props.player.scoreDetails = scoreDetails
+          setShow(true)
+        })
       : setShow(true)
 
   // Date is last known update date for a user with details

@@ -25,13 +25,12 @@ type ScheduleViewerProps = {
 }
 
 const getSchedule = (id: number) =>
-  apiGet(`schedules/${id}`)
-    .then(response =>
-      response.json().then((scheduleDto: ScheduleDto) => {
-        const newSchedule = new Schedule(scheduleDto)
-        newSchedule.timeSlots.sort(TimeSlot.compareFn)
-        return newSchedule
-      }))
+  apiGet<ScheduleDto>(`schedules/${id}`)
+    .then(scheduleDto => {
+      const newSchedule = new Schedule(scheduleDto)
+      newSchedule.timeSlots.sort(TimeSlot.compareFn)
+      return newSchedule
+    })
 
 export const TimeZoneMessage = <Typography>All dates and times are given in your local timezone.</Typography>
 

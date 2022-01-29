@@ -26,12 +26,11 @@ const entriesLeftText = (timeSlot: TimeSlot) => {
 }
 
 const getSchedule = (id: number, registrationKey: string) =>
-  apiGet(`schedules/${id}`, { registrationKey })
-    .then(response => response.json().then((scheduleDto: ScheduleDto) => new Schedule(scheduleDto)))
+  apiGet<ScheduleDto>(`schedules/${id}`, { registrationKey })
+    .then(scheduleDto => new Schedule(scheduleDto))
 
 const postRegistration = (timeSlotId: number, participants: string[], registrationKey: string) =>
   apiPost(`time-slots/${timeSlotId}/registrations`, { participants, registrationKey })
-    .then(response => response.json())
 
 const ScheduleRegistration = () => {
   const [scheduleState, setScheduleState] = useState<Schedule | null | undefined>()
