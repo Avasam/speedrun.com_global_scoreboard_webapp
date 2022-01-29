@@ -9,7 +9,7 @@ from flask import Blueprint, jsonify, request
 from api.api_wrappers import authentication_required
 from models.core_models import Player, JSONObjectType
 from models.tournament_scheduler_models import Schedule, ScheduleGroup, TimeSlot
-from services.utils import map_to_dto
+from services.utils import has_duplicates, map_to_dto
 
 api = Blueprint("tournament_scheduler_api", __name__)
 
@@ -259,6 +259,8 @@ def __validate_create_registration(data: Optional[JSONObjectType], with_registra
         participants[:] = [x for x in data["participants"] if x]
     except KeyError:
         return "registrationKey has to be defined", registration_key, participants
+    if has_duplicates(participants):
+        return "duplicate participants", registration_key, participants
     return None, registration_key, participants
 
 

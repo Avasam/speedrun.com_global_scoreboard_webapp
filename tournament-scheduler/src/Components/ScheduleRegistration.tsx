@@ -45,9 +45,16 @@ const ScheduleRegistration = () => {
   const registrationId = localStorage.getItem('registrationId') ?? ''
 
   useEffect(() => {
+    // Get the participants list for this specific time slot, since extras are kept in memory
     const participantCount = selectedTimeSlot?.participantsPerEntry
     const actualParticipants = participants.slice(0, participantCount)
-    const valid = actualParticipants.length === participantCount &&
+    const uniqueParticipants = [...new Set(actualParticipants)]
+
+    const valid =
+      // Ensure there are no duplicates
+      uniqueParticipants.length === participantCount &&
+      // Ensure all fields are filled
+      actualParticipants.length === participantCount &&
       actualParticipants.every(participant => !!participant)
     setFormValidity(valid)
   }, [selectedTimeSlot, participants])

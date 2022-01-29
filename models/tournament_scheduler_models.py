@@ -6,6 +6,8 @@ from sqlalchemy import orm
 from models.core_models import db, BaseModel, Player
 from services.utils import map_to_dto
 
+CASCADE = "all,delete,delete-orphan"
+
 
 class Schedule(BaseModel):
     __tablename__ = "schedule"
@@ -20,7 +22,7 @@ class Schedule(BaseModel):
     owner: Player = db.relationship("Player", back_populates="schedules")
     time_slots: list[TimeSlot] = db.relationship(
         "TimeSlot",
-        cascade="all,delete,delete-orphan",
+        cascade=CASCADE,
         back_populates="schedule")
 
     group_id = db.Column(db.Integer, nullable=True)
@@ -96,7 +98,7 @@ class TimeSlot(BaseModel):
     schedule: Schedule = db.relationship("Schedule", back_populates="time_slots")
     registrations: list[Registration] = db.relationship(
         "Registration",
-        cascade="all,delete,delete-orphan",
+        cascade=CASCADE,
         back_populates="timeslot")
 
     @staticmethod
@@ -154,7 +156,7 @@ class Registration(BaseModel):
     timeslot: TimeSlot = db.relationship("TimeSlot", back_populates="registrations")
     participants: list[Participant] = db.relationship(
         "Participant",
-        cascade="all,delete,delete-orphan",
+        cascade=CASCADE,
         back_populates="registration")
 
     def to_dto(self):

@@ -357,3 +357,19 @@ def start_and_wait_for_threads(fn, items: list):
             + UNHANDLED_THREAD_EXCEPTION_MESSAGE
             + traceback.format_exc()
         ) from exception
+
+
+from collections import Counter
+
+
+def get_duplicates(array: list):
+    counter = Counter(array)
+    return [key for key in counter if counter[key] > 1]
+
+
+def has_duplicates(array: list):
+    counter = Counter(array)
+    for key in counter:
+        if counter[key] > 1:
+            return True
+    return False
