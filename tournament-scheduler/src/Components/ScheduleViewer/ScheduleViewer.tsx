@@ -3,6 +3,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { Box, Collapse, Container, FormLabel, List, ListItemButton, ListItemText, Paper, Typography, useTheme } from '@mui/material'
 import { StatusCodes } from 'http-status-codes'
 import { useEffect, useState } from 'react'
+import { Helmet } from 'react-helmet'
 import { useParams } from 'react-router-dom'
 
 import TimeSlotView from 'src/Components/ScheduleViewer/TimeSlotView'
@@ -80,7 +81,18 @@ const ScheduleViewer = (props: ScheduleViewerProps) => {
             {' '}
             {schedule.name}
           </FormLabel>
-          {!props.shownInGroup && TimeZoneMessage}
+          {!props.shownInGroup && <>
+            <Helmet>
+              <title>
+                Schedule
+                {' '}
+                {schedule.name}
+                {' '}
+                - Tournament Scheduler
+              </title>
+            </Helmet>
+            {TimeZoneMessage}
+          </> }
           {schedule.active
             ? schedule.deadline && <p>
               Registrations
@@ -89,7 +101,9 @@ const ScheduleViewer = (props: ScheduleViewerProps) => {
               .
             </p>
             : <p>This schedule is currently inactive and registration is closed.</p>}
-          {upcomingTimeSlots.length === 0 && <p>There are no registrations for this schedule.</p>}
+          {upcomingTimeSlots.length === 0 &&
+          pastTimeSlots.length === 0 &&
+          <p>There are no registrations for this schedule.</p>}
         </Paper>
 
         {upcomingTimeSlots.map(timeSlot => <TimeSlotView key={timeSlot.id} schedule={schedule} timeSlot={timeSlot} />)}

@@ -1,5 +1,6 @@
 import { Grid, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
+import { Helmet } from 'react-helmet'
 import { useParams } from 'react-router-dom'
 
 import ScheduleViewer, { TimeZoneMessage } from 'src/Components/ScheduleViewer/ScheduleViewer'
@@ -37,6 +38,15 @@ const ScheduleGroupViewer = () => {
     [groupId]
   )
   return <>
+    <Helmet>
+      <title>
+        Schedule group
+        {' '}
+        {groupName}
+        {' '}
+        - Tournament Scheduler
+      </title>
+    </Helmet>
     <Typography variant='h3'>{groupName}</Typography>
     {TimeZoneMessage}
     {schedules.length === 0 && <p>There are no registrations for any schedule of this group.</p>}

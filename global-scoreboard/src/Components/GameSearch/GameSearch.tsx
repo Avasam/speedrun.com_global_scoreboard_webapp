@@ -10,6 +10,7 @@ import BootstrapTable from 'react-bootstrap-table-next'
 import filterFactory, { Comparator, multiSelectFilter, numberFilter } from 'react-bootstrap-table2-filter'
 import paginationFactory, { PaginationListStandalone, PaginationProvider, PaginationTotalStandalone, SizePerPageDropdownStandalone } from 'react-bootstrap-table2-paginator'
 import ToolkitProvider from 'react-bootstrap-table2-toolkit'
+import { Helmet } from 'react-helmet'
 import { Picky } from 'react-picky'
 
 import GameCategorySearchBar from './GameCategorySearchBar'
@@ -178,6 +179,11 @@ const GameSearch = () => {
       : <span>No matching records found</span>
 
   return <Container>
+    <Helmet>
+      <title>
+        Game Search Tool
+      </title>
+    </Helmet>
     <br />
     <ToolkitProvider
       bootstrap4

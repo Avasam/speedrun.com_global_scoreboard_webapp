@@ -2,6 +2,7 @@ import { Button, Card, CardActions, CardContent, Container, FormControl, FormGro
 import type { SelectInputProps } from '@mui/material/Select/SelectInput'
 import { StatusCodes } from 'http-status-codes'
 import { useEffect, useState } from 'react'
+import { Helmet } from 'react-helmet'
 import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom'
 
 import DisableDashlane from 'src/Components/DisableDashlane'
@@ -147,6 +148,15 @@ const ScheduleRegistration = () => {
         ` does not lead to an existing registration form.
       </div>
       : <Card>
+        <Helmet>
+          <title>
+            Registration for
+            {' '}
+            {scheduleState.name}
+            {' '}
+            - Tournament Scheduler
+          </title>
+        </Helmet>
         <CardContent style={{ textAlign: 'left' }}>
           <FormLabel>
             Schedule for:
