@@ -25,14 +25,14 @@ jobs:
       - name: Set up Python 3.9
         uses: actions/setup-python@v2
         with:
-          python-version: ["3.9"]
+          python-version: "3.9"
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install wheel
           pip install -r "scripts/requirements.txt"
           npm install -g pyright
-      - run: mv configs.template.py configs.py
+      - run: mv backend/configs.template.py backend/configs.py
       - name: Analysing the code with ${{ job.name }}
         run: pyright --warnings backend
   Pylint:
@@ -43,15 +43,15 @@ jobs:
       - name: Set up Python 3.9
         uses: actions/setup-python@v2
         with:
-          python-version: ["3.9"]
+          python-version: "3.9"
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install wheel
           pip install -r "scripts/requirements.txt"
-      - run: mv configs.template.py configs.py
+      - run: mv backend/configs.template.py backend/configs.py
       - name: Analysing the code with ${{ job.name }}
-        run: pylint --reports=y --output-format=colorized $(git ls-files 'backend/*.py*')
+        run: pylint --reports=y --output-format=colorized $(git ls-files 'backend/*.py')
   Flake8:
     runs-on: ubuntu-latest
     steps:
@@ -60,13 +60,13 @@ jobs:
       - name: Set up Python 3.9
         uses: actions/setup-python@v2
         with:
-          python-version: ["3.9"]
+          python-version: "3.9"
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install wheel
           pip install -r "scripts/requirements.txt"
-      - run: mv configs.template.py configs.py
+      - run: mv backend/configs.template.py backend/configs.py
       - name: Analysing the code with ${{ job.name }}
         run: flake8 backend
   Bandit:
@@ -77,12 +77,12 @@ jobs:
       - name: Set up Python 3.9
         uses: actions/setup-python@v2
         with:
-          python-version: ["3.9"]
+          python-version: "3.9"
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install wheel
           pip install -r "scripts/requirements.txt"
-      - run: mv configs.template.py configs.py
+      - run: mv backend/configs.template.py backend/configs.py
       - name: Analysing the code with ${{ job.name }}
         run: bandit -n 1 --severity-level medium --recursive backend

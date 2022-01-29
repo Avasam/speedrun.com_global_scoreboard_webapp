@@ -5,7 +5,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build & npm run compress-build-folder",
-    "build:no-compress": "DISABLE_ESLINT_PLUGIN=true & react-scripts build",
+    "build:no-compress": "react-scripts build",
     "compress-build-folder": "powershell Compress-Archive -Update -Path .\\build\\ -CompressionLevel Optimal -DestinationPath ..\\tournament-scheduler-build.zip",
     "lint": "eslint src/ --ext .ts,.tsx --ignore-path ../.gitignore",
     "lint:fix": "npm run lint -- --fix",
