@@ -1,14 +1,16 @@
-import { Box, Container, FormLabel, Grid, List, ListItem, ListItemText, Paper, Typography, useTheme } from '@mui/material'
+import ExpandLessIcon from '@mui/icons-material/ExpandLess'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import { Box, Collapse, Container, FormLabel, List, ListItemButton, ListItemText, Paper, Typography, useTheme } from '@mui/material'
 import { StatusCodes } from 'http-status-codes'
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
-import AddScheduleToCalendarButton from './AddScheduleToCalendarButton'
+import TimeSlotView from 'src/Components/ScheduleViewer/TimeSlotView'
 import { apiGet } from 'src/fetchers/api'
 import type { ScheduleDto } from 'src/Models/Schedule'
 import { Schedule } from 'src/Models/Schedule'
 import { TimeSlot } from 'src/Models/TimeSlot'
-import { diffDays, fancyFormat } from 'src/utils/date'
+import { diffDays } from 'src/utils/date'
 import { getDeadlineDueText } from 'src/utils/scheduleHelper'
 
 const embedded = typeof new URLSearchParams(window.location.search).get('embedded') == 'string'
@@ -34,6 +36,7 @@ export const TimeZoneMessage = <Typography>All dates and times are given in your
 
 const ScheduleViewer = (props: ScheduleViewerProps) => {
   const [schedule, setSchedule] = useState<Schedule | null | undefined>()
+  const [pastTimeSlotsShown, setPastTimeSlotsShown] = useState(false)
   const theme = useTheme()
   const routeParams = useParams()
 
@@ -53,7 +56,12 @@ const ScheduleViewer = (props: ScheduleViewerProps) => {
 
   const deadlineDaysLeft = diffDays(schedule?.deadline)
 
-  const timeslots = schedule?.timeSlots.filter(timeSlot => timeSlot.registrations.length > 0) ?? []
+  const upcomingTimeSlots = schedule?.timeSlots.filter(timeSlot =>
+    timeSlot.registrations.length > 0 &&
+    timeSlot.dateTime > new Date()) ?? []
+  const pastTimeSlots = schedule?.timeSlots.filter(timeSlot =>
+    timeSlot.registrations.length > 0 &&
+    timeSlot.dateTime <= new Date()) ?? []
 
   return <Container maxWidth='md'>
     {!schedule
@@ -81,80 +89,19 @@ const ScheduleViewer = (props: ScheduleViewerProps) => {
               .
             </p>
             : <p>This schedule is currently inactive and registration is closed.</p>}
-          {timeslots.length === 0 && <p>There are no registrations for this schedule.</p>}
+          {upcomingTimeSlots.length === 0 && <p>There are no registrations for this schedule.</p>}
         </Paper>
 
-        {timeslots.map(timeSlot =>
-          <Paper elevation={24} key={`timeslot-${timeSlot.id}`}>
-            <List
-              subheader={
-                <Paper
-                  component={ListItemText}
-                  elevation={4}
-                  primary={fancyFormat(timeSlot.dateTime)}
-                  secondary={<>
-                    <span>
-                      (
-                      {timeSlot.registrations.length}
-                      {' / '}
-                      {timeSlot.maximumEntries}
-                      {' '}
-                      entr
-                      {
-                        timeSlot.registrations.length === 1 ? 'y' : 'ies'
-                      }
-                      )
-                    </span>
-                    <AddScheduleToCalendarButton schedule={schedule} timeSlot={timeSlot} />
-                  </>}
-                  secondaryTypographyProps={{
-                    component: 'span',
-                    display: 'flex',
-                    direction: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'baseline',
-                  }}
-                />
-              }
-            >
-              {(timeSlot.participantsPerEntry <= 1 || timeSlot.registrations.length === 1) &&
-                <ListItemText secondary='Participants' />}
-              {/* TODO: Maybe use a dynamic grid instead of flexes here. Especially when there's only one list */}
-              <Grid container>
-                {timeSlot.registrations.map((registration, registrationIndex) =>
-                  <List
-                    component={Grid}
-                    disablePadding
-                    item
-                    key={`registration-${registration.id}`}
-                    style={timeSlot.registrations.length === 1
-                      ? {
-                        display: 'flex',
-                        flexFlow: 'wrap',
-                        whiteSpace: 'nowrap',
-                      }
-                      : undefined}
-                    subheader={
-                      timeSlot.participantsPerEntry <= 1 || timeSlot.registrations.length === 1
-                        ? undefined
-                        : <ListItemText secondary='Participants' />
-                    }
-                  >
-                    {registration.participants.map((participant, participantIndex) =>
-                      <ListItem key={`participant-${participant}`}>
-                        <ListItemText
-                          primary={
-                            `${(timeSlot.participantsPerEntry <= 1
-                              ? registrationIndex
-                              : participantIndex
-                            ) + 1}. ${participant}`
-                          }
-                        />
-                      </ListItem>)}
-                  </List>)}
-              </Grid>
-            </List>
-          </Paper>)}
+        {upcomingTimeSlots.map(timeSlot => <TimeSlotView key={timeSlot.id} schedule={schedule} timeSlot={timeSlot} />)}
+        <List>
+          <ListItemButton onClick={() => setPastTimeSlotsShown(!pastTimeSlotsShown)}>
+            <ListItemText primary={`${pastTimeSlotsShown ? 'Hide' : 'Show'} past timeslots`} />
+            {pastTimeSlotsShown ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+          </ListItemButton>
+          <Collapse in={pastTimeSlotsShown}>
+            {pastTimeSlots.map(timeSlot => <TimeSlotView key={timeSlot.id} schedule={schedule} timeSlot={timeSlot} />)}
+          </Collapse>
+        </List>
       </Box >}
 
   </Container >
