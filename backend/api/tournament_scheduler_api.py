@@ -304,8 +304,8 @@ def __validate_create_schedule(data: Optional[JSONObjectType]):
         except KeyError:
             error_message += "active has to be defined"
         try:
-            deadlineData = data["deadline"]
-            deadline = None if deadlineData is None else str(deadlineData)
+            deadline_data = data["deadline"]
+            deadline = None if deadline_data is None else str(deadline_data)
         except KeyError:
             error_message += "deadline has to be defined"
         try:

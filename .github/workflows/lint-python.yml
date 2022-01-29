@@ -34,7 +34,7 @@ jobs:
           npm install -g pyright
       - run: mv configs.template.py configs.py
       - name: Analysing the code with ${{ job.name }}
-        run: pyright --warnings
+        run: pyright --warnings backend
   Pylint:
     runs-on: ubuntu-latest
     steps:
@@ -51,7 +51,7 @@ jobs:
           pip install -r "scripts/requirements.txt"
       - run: mv configs.template.py configs.py
       - name: Analysing the code with ${{ job.name }}
-        run: pylint --reports=y --output-format=colorized $(git ls-files '**/*.py*')
+        run: pylint --reports=y --output-format=colorized $(git ls-files 'backend/*.py*')
   Flake8:
     runs-on: ubuntu-latest
     steps:
@@ -68,7 +68,7 @@ jobs:
           pip install -r "scripts/requirements.txt"
       - run: mv configs.template.py configs.py
       - name: Analysing the code with ${{ job.name }}
-        run: flake8
+        run: flake8 backend
   Bandit:
     runs-on: ubuntu-latest
     steps:
@@ -85,4 +85,4 @@ jobs:
           pip install -r "scripts/requirements.txt"
       - run: mv configs.template.py configs.py
       - name: Analysing the code with ${{ job.name }}
-        run: bandit -n 1 --severity-level medium --recursive .
+        run: bandit -n 1 --severity-level medium --recursive backend

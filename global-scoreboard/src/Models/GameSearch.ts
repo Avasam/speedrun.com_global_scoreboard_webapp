@@ -59,5 +59,7 @@ export const fetchValueNamesForRun = async (runId: string) => {
       { [response.data.game.data.id]: response.data.game.data.names.international },
       { [response.data.category.data.id]: response.data.category.data.name },
     ])
-    .catch(() => requestsStartedForRun.delete(runId))
+    .catch(() => {
+      requestsStartedForRun.delete(runId)
+    })
 }

@@ -4,7 +4,7 @@ Write-Host $Script:MyInvocation.MyCommand.Path
 $exitCodes = 0
 
 Write-Host "`nRunning Pyright..."
-pyright --warnings
+pyright --warnings backend
 $exitCodes += $LastExitCode
 if ($LastExitCode -gt 0) {
   Write-Host "`Pyright failed ($LastExitCode)" -ForegroundColor Red
@@ -13,7 +13,7 @@ if ($LastExitCode -gt 0) {
 }
 
 Write-Host "`nRunning Pylint..."
-pylint --score=n --output-format=colorized $(git ls-files '**/*.py')
+pylint --score=n --output-format=colorized $(git ls-files 'backend/*.py')
 $exitCodes += $LastExitCode
 if ($LastExitCode -gt 0) {
   Write-Host "`Pylint failed ($LastExitCode)" -ForegroundColor Red
@@ -22,7 +22,7 @@ if ($LastExitCode -gt 0) {
 }
 
 Write-Host "`nRunning Flake8..."
-flake8
+flake8 backend
 $exitCodes += $LastExitCode
 if ($LastExitCode -gt 0) {
   Write-Host "`Flake8 failed ($LastExitCode)" -ForegroundColor Red
@@ -31,7 +31,7 @@ if ($LastExitCode -gt 0) {
 }
 
 Write-Host "`nRunning Bandit..."
-bandit -f custom --silent --recursive src
+bandit -f custom --silent --recursive backend
 # $exitCodes += $LastExitCode # Returns 1 on low
 if ($LastExitCode -gt 0) {
   Write-Host "`Bandit warning ($LastExitCode)" -ForegroundColor Yellow

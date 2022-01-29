@@ -87,8 +87,8 @@ class Player(BaseModel):
 
     @staticmethod
     def get_all():
-        sql = text("SELECT user_id, name, country_code, score, last_update, CONVERT(rank, SIGNED INT) rank FROM ( " +
-                   "    SELECT *, "
+        sql = text("SELECT user_id, name, country_code, score, last_update, CONVERT(rank, SIGNED INT) rank FROM ( "
+                   + "    SELECT *, "
                    + "        IF(score = @_last_score, @cur_rank := @cur_rank, @cur_rank := @_sequence) AS rank, "
                    + "        @_sequence := @_sequence + 1, "
                    + "        @_last_score := score "

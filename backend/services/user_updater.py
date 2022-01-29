@@ -14,8 +14,8 @@ from models.global_scoreboard_models import PointsDistributionDto, Run, User
 from services.user_updater_helpers import BasicJSONType, extract_valid_personal_bests, get_probability_terms, \
     get_subcategory_variables, keep_runs_before_soft_cutoff, MIN_LEADERBOARD_SIZE, update_runner_in_database, \
     extract_top_runs_and_score, extract_sorted_valid_runs_from_leaderboard
-from services.utils import clear_cache_for_user_async, get_file, get_paginated_response, MAXIMUM_RESULTS_PER_PAGE, \
-    SpeedrunComError, start_and_wait_for_threads, UserUpdaterError
+from services.utils import clear_cache_for_user_async, get_file, get_paginated_response, \
+    MAXIMUM_RESULTS_PER_PAGE, SpeedrunComError, start_and_wait_for_threads, UserUpdaterError
 import configs
 
 TIME_BONUS_DIVISOR = 3600 * 12  # 12h (1/2 day) for +100%

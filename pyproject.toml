@@ -40,7 +40,7 @@ evaluation = "10.0 - error - ((float((warning + convention) * 10 + refactor ) / 
 [tool.pylint.MASTER]
 fail-under = 9.0
 # Needed for Pylint to discover our own modules
-init-hook = "import os, sys; sys.path.append(os.path.dirname('.'))"
+init-hook = "from pylint.config import find_pylintrc; import os, sys; sys.path.append(os.path.join(os.path.dirname(find_pylintrc()), 'backend'))"
 # https://pylint.pycqa.org/en/latest/technical_reference/extensions.html
 load-plugins = [
   "pylint.extensions.emptystring",

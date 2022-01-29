@@ -1,7 +1,8 @@
+import json
+
 from datetime import datetime, timedelta
 from functools import wraps
 from flask import current_app, jsonify, request
-import json
 import jwt
 
 from models.core_models import Player

@@ -1,6 +1,7 @@
 from types import TracebackType
 from typing import Any, Literal, Optional, Union
 
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import nullcontext
 from datetime import timedelta
@@ -357,9 +358,6 @@ def start_and_wait_for_threads(fn, items: list):
             + UNHANDLED_THREAD_EXCEPTION_MESSAGE
             + traceback.format_exc()
         ) from exception
-
-
-from collections import Counter
 
 
 def get_duplicates(array: list):
