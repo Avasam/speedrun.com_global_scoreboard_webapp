@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
-import type { ThemeOptions } from '@material-ui/core/styles'
-import { createTheme } from '@material-ui/core/styles'
+import type { ThemeOptions } from '@mui/material/styles'
+import { createTheme } from '@mui/material/styles'
 
-import math from 'src/utils/Math'
+import math from 'src/utils/math'
 
 // Uses default `{spacing: 8}`
 const themeSpacing = createTheme().spacing
@@ -68,16 +68,6 @@ const baseThemeOptions: ThemeOptions = {
           paddingTop: 0,
           paddingBottom: 0,
           width: 'auto',
-        },
-      },
-    },
-    MuiLink: {
-      styleOverrides: {
-        root: {
-          '&.disabled': {
-            color: 'gray',
-            pointerEvents: 'none',
-          },
         },
       },
     },

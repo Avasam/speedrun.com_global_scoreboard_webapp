@@ -2,6 +2,7 @@
   "extends": [
     "config:base",
     "schedule:weekly",
+    ":disableDependencyDashboard",
     ":preserveSemverRanges",
     ":respectLatest",
     ":prHourlyLimitNone",
@@ -15,6 +16,9 @@
   ],
   "assigneesFromCodeOwners": true,
   "additionalReviewers": [
+    "Avasam"
+  ],
+  "assignees": [
     "Avasam"
   ],
   "ignoreDeps": [

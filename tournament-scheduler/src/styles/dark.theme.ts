@@ -1,8 +1,8 @@
-import { lightBlue as secondary, red as error, teal as primary, yellow as warn } from '@material-ui/core/colors'
-import { createTheme } from '@material-ui/core/styles'
+import { createTheme } from '@mui/material'
+import { lightBlue as secondary, red as error, teal as primary, yellow as warn } from '@mui/material/colors'
 
 import baseThemeOptions from './base.theme'
-import { mergeDeep } from 'src/utils/ObjectUtils'
+import { mergeDeep } from 'src/utils/objectUtils'
 
 // Actual theme declaration
 const theme = createTheme(mergeDeep(
@@ -20,18 +20,6 @@ const theme = createTheme(mergeDeep(
       },
     },
     components: {
-      // HACK: Couldn't get the color override working.
-      // See the following issue for eventual solution:
-      // https://github.com/mui-org/material-ui/issues/24778
-      MuiIconButton: {
-        styleOverrides: {
-          root: {
-            '&.error': {
-              color: error[700],
-            },
-          },
-        },
-      },
       MuiCssBaseline: {
         styleOverrides: {
           body: {

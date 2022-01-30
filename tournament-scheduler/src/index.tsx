@@ -1,8 +1,8 @@
 import '@culturehq/add-to-calendar/dist/styles.css'
 import './index.css'
 
-import { LocalizationProvider } from '@material-ui/lab'
-import DateAdapter from '@material-ui/lab/AdapterDayjs'
+import { LocalizationProvider } from '@mui/lab'
+import DateAdapter from '@mui/lab/AdapterDayjs'
 import { StrictMode } from 'react'
 import Div100vh from 'react-div-100vh'
 import ReactDOM from 'react-dom'

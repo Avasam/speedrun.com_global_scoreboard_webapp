@@ -9,6 +9,7 @@ type Player = {
   lastUpdate: Date
   userId: string
 }
+
 export default Player
 
 export type PlayerField = keyof Player

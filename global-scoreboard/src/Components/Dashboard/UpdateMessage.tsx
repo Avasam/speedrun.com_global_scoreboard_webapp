@@ -5,7 +5,7 @@ import { Alert, OverlayTrigger, ProgressBar, Tab, Tabs, Tooltip } from 'react-bo
 import type { Variant } from 'react-bootstrap/esm/types'
 
 import type { RunResult } from 'src/Models/UpdateRunnerResult'
-import math from 'src/utils/Math'
+import math from 'src/utils/math'
 
 type UpdateMessageProps = {
   variant: Variant
@@ -21,13 +21,16 @@ let progressTimer: NodeJS.Timeout
 let position: number
 
 const renderRow = (rows: RunResult[]) =>
-  rows.map((row, rowi) =>
-    <tr key={`row${rowi}`}>
+  rows.map(row =>
+    <tr key={`row-${row.gameName}-${row.categoryName}-${row.levelName}`}>
       <td>
         {math.roundToDecimals(position += row.levelFraction)}
       </td>
       <td>
-        {row.gameName} - {row.categoryName}{row.levelName ? ` (${row.levelName})` : ''}
+        {row.gameName}
+        {' - '}
+        {row.categoryName}
+        {row.levelName ? ` (${row.levelName})` : ''}
       </td>
       <td>
         {row.points.toFixed(2)}
@@ -43,15 +46,17 @@ const renderTable = (runs: RunResult[]) =>
     <thead>
       <tr>
         <th>
-          #<OverlayTrigger
-            placement='right'
+          #
+          <OverlayTrigger
             overlay={
               <Tooltip id='levelFractionInfo'>
                 Individual Levels (IL) are weighted and scored to a fraction of a Full Game run.
                 See the About page for a complete explanation.
               </Tooltip>
             }
-          ><FaInfoCircle />
+            placement='right'
+          >
+            <FaInfoCircle />
           </OverlayTrigger>
         </th>
         <th>Game - Category (Level)</th>
@@ -78,8 +83,7 @@ export const renderScoreTable = ([topRuns, lesserRuns]: RunResult[][], topMessag
               {renderTable(lesserRuns)}
             </Tab>}
         </Tabs>
-      </div>
-    }
+      </div>}
   </>
 }
 
@@ -104,17 +108,22 @@ const UpdateMessage = (props: UpdateMessageProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.updateStartTime])
   return <Alert
-    variant={props.variant}
     style={{ visibility: props.message ? 'visible' : 'hidden' }}
+    variant={props.variant}
   >
     {typeof props.message === 'string'
-      ? <span dangerouslySetInnerHTML={{ __html: props.message.replaceAll(/\s+/g, ' ') }} />
+      ? <span dangerouslySetInnerHTML={{
+        __html: props.message.trim().startsWith('<')
+          ? props.message.replaceAll(/(\s+|<link.*?stylesheet.*?>|<style[\S\s]*?\/style>)/g, ' ')
+          : props.message.replaceAll('\n', '<br/>'),
+      }}
+      />
       : <span>{props.message}</span>}
     {props.updateStartTime != null &&
       <ProgressBar
         animated
-        variant='info'
         now={(1 - (currentTime - props.updateStartTime) / minutes5) * FROM_HUNDREDTHS}
+        variant='info'
       />}
   </Alert>
 }

@@ -8,10 +8,11 @@ import type { Variant } from 'react-bootstrap/esm/types'
 import type { ScoreboardRef } from './Scoreboard'
 import { DesktopScoreTableLayout, MobileScoreTableLayout } from './TableElements/ScoreTableLayout'
 import UpdateMessage, { renderScoreTable } from './UpdateMessage'
-import { apiDelete, apiGet, apiPost, apiPut } from 'src/fetchers/Api'
+import { apiDelete, apiGet, apiPost, apiPut } from 'src/fetchers/api'
 import Configs from 'src/Models/Configs'
 import type Player from 'src/Models/Player'
 import type UpdateRunnerResult from 'src/Models/UpdateRunnerResult'
+import math from 'src/utils/math'
 
 type DashboardProps = {
   currentUser: Player | null | undefined
@@ -19,9 +20,8 @@ type DashboardProps = {
 
 const MOBILE_SIZE = 767
 
-const getFriends = () => apiGet('players/current/friends').then<Player[]>(res => res.json())
-const getAllPlayers = () => apiGet('players')
-  .then<Player[]>(res => res.json())
+const getFriends = () => apiGet<Player[]>('players/current/friends')
+const getAllPlayers = () => apiGet<Player[]>('players')
   .then(players =>
     players.map(player => ({
       ...player,
@@ -127,8 +127,7 @@ const Dashboard = (props: DashboardProps) => {
       return
     }
     setUpdateStartTime(Date.now())
-    apiPost(`players/${runnerNameOrId}/update`)
-      .then<UpdateRunnerResult>(res => res.json())
+    apiPost<UpdateRunnerResult>(`players/${runnerNameOrId}/update`)
       .then(playerResult => {
         playerResult.lastUpdate = new Date(playerResult.lastUpdate)
         return playerResult
@@ -176,23 +175,23 @@ const Dashboard = (props: DashboardProps) => {
     handleJumpToPlayer(result.userId)
   }
 
-  const onUpdateRunnerCatch = (err: Error | Response) => {
+  const onUpdateRunnerCatch = (errorResponse: Error | Response) => {
     let temporaryAlertVariant = 'danger'
-    if (err instanceof Error) {
-      setAlertMessage(`${err.name}: ${err.message}`)
+    if (errorResponse instanceof Error) {
+      setAlertMessage(`${errorResponse.name}: ${errorResponse.message}`)
     } else {
       temporaryAlertVariant = 'warning'
-      const conflictCase = (error: string) => {
-        switch (error) {
+      const conflictCase = (error: { messageKey: string, timeLeft: number }) => {
+        const tryAgain = `Please try again in ${Math.ceil(error.timeLeft / math.SECONDS_IN_MINUTE)} minutes.`
+        switch (error.messageKey) {
           case 'current_user':
-            setAlertMessage('It seems you are already updating a runner. Please try again in 5 minutes.')
+            setAlertMessage(`It seems you are already updating a runner. ${tryAgain}`)
             break
           case 'name_or_id':
-            setAlertMessage('It seems this runner is already being updated (possibly by someone else). ' +
-              'Please try again in 5 minutes.')
+            setAlertMessage(`It seems this runner is already being updated (possibly by someone else). ${tryAgain}`)
             break
           default:
-            setAlertMessage(error)
+            setAlertMessage(`${error.messageKey} ${tryAgain}`)
         }
       }
       const defaultCase = (error: string) => {
@@ -200,7 +199,7 @@ const Dashboard = (props: DashboardProps) => {
           const result = JSON.parse(error) as UpdateRunnerResult
           setAlertVariant(result.state ?? 'danger')
           setAlertMessage(result.message ?? '')
-          if (err.status === StatusCodes.BAD_REQUEST && result.score < 1) {
+          if (errorResponse.status === StatusCodes.BAD_REQUEST && result.score < 1) {
             setPlayersState(playersState.filter(player => player.userId !== result.userId))
           }
         } catch {
@@ -208,32 +207,31 @@ const Dashboard = (props: DashboardProps) => {
           setAlertMessage(error)
         }
       }
-      switch (err.status) {
+      switch (errorResponse.status) {
         case StatusCodes.IM_A_TEAPOT:
           setAlertMessage(<div>
             <p>You know the drill...</p>
             <p>
-              <img src='https://speedrun.com/themes/Default/1st.png' alt='' />
+              <img alt='SR.C logo' src='https://speedrun.com/themes/Default/1st.png' />
+              <img alt='Kappa' height='64px' src='https://brand.twitch.tv/assets/emotes/lib/kappa.png' />
               <br />
-              <img src='https://speedrun.com/themes/Default/logo.png' alt='speedrun.com' style={{ width: 384 }} />
+              <img alt='speedrun.com' src='https://speedrun.com/themes/Default/logo.png' width='384px' />
             </p>
             <p>Oops! The site&apos;s under a lot of pressure right now. Please try again in a minute.</p>
-            <img src='https://brand.twitch.tv/assets/emotes/lib/kappa.png' alt='Kappa' />
           </div>)
 
           break
         case StatusCodes.GATEWAY_TIMEOUT:
           setAlertMessage(`Error ${StatusCodes.GATEWAY_TIMEOUT}: ${ReasonPhrases.GATEWAY_TIMEOUT}. ` +
             'The webworker probably timed out, which can happen if updating takes more than 5 minutes. ' +
-            'Please try again as next attempt should take less time since ' +
-            'all calls to speedrun.com are cached for a day or until server restart.')
+            'Please try again as all calls to speedrun.com are cached for a day.')
 
           break
         case StatusCodes.CONFLICT:
-          void err.text().then(conflictCase)
+          void errorResponse.json().then(conflictCase)
           break
         default:
-          void err.text().then(defaultCase)
+          void errorResponse.text().then(defaultCase)
       }
     }
     setAlertVariant(temporaryAlertVariant)
@@ -272,14 +270,13 @@ const Dashboard = (props: DashboardProps) => {
 
   return <Container className='dashboard-container'>
     <UpdateMessage
-      variant={alertVariant}
       message={alertMessage}
       updateStartTime={updateStartTime}
+      variant={alertVariant}
     />
     {isMobileSize && currentPlayer
       ? <MobileScoreTableLayout {...layoutProps} />
-      : <DesktopScoreTableLayout {...layoutProps} />
-    }
+      : <DesktopScoreTableLayout {...layoutProps} />}
   </Container>
 }
 

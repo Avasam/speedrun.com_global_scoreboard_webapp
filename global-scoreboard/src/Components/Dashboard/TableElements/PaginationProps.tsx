@@ -1,6 +1,7 @@
 import { Dropdown, DropdownButton } from 'react-bootstrap'
+import type { PaginationOptions } from 'react-bootstrap-table-next'
 
-const sizePerPageRenderer: PaginationProps['sizePerPageRenderer'] = ({
+const sizePerPageRenderer: PaginationOptions['sizePerPageRenderer'] = ({
   options,
   currSizePerPage,
   onSizePerPageChange,
@@ -8,18 +9,18 @@ const sizePerPageRenderer: PaginationProps['sizePerPageRenderer'] = ({
   <span className='react-bs-table-sizePerPage-dropdown'>
     {'Show '}
     <DropdownButton
-      id='pageDropDown'
-      variant='outline-primary'
       align='end'
-      title={currSizePerPage}
+      id='pageDropDown'
       style={{ display: 'inline-block' }}
+      title={currSizePerPage}
+      variant='outline-primary'
     >
       {
         options.map(option =>
           <Dropdown.Item
-            key={`data-page-${option.page}`}
-            href='#'
             active={currSizePerPage === `${option.page}`}
+            href='#'
+            key={`data-page-${option.page}`}
             onClick={() => onSizePerPageChange(option.page)}
           >
             {option.text}
@@ -29,7 +30,7 @@ const sizePerPageRenderer: PaginationProps['sizePerPageRenderer'] = ({
     {' entries'}
   </span>
 
-const defaultPaginationOptions: PaginationProps = {
+const defaultPaginationOptions: PaginationOptions = {
   custom: true,
   showTotal: true,
   totalSize: -1,

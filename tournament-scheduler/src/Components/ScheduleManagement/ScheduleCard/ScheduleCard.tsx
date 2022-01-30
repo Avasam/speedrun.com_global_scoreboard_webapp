@@ -1,5 +1,7 @@
-import { Box, Button, Card, CardActions, CardContent, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Stack, Typography } from '@material-ui/core'
-import { ArrowDownward, ArrowUpward, DeleteForever } from '@material-ui/icons'
+import ArrowDownward from '@mui/icons-material/ArrowDownward'
+import ArrowUpward from '@mui/icons-material/ArrowUpward'
+import DeleteForever from '@mui/icons-material/DeleteForever'
+import { Box, Button, Card, CardActions, CardContent, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Stack, Typography } from '@mui/material'
 import { useState } from 'react'
 import { Link as RouterLink } from 'react-router-dom'
 
@@ -7,7 +9,7 @@ import type { MoveToGroupMenuProps } from './MoveToGroupMenu'
 import MoveToGroupMenu from './MoveToGroupMenu'
 import type { IOrderableProps } from 'src/Models/IOrderable'
 import type { Schedule } from 'src/Models/Schedule'
-import copyToClipboard from 'src/utils/Clipboard'
+import copyToClipboard from 'src/utils/clipboard'
 
 type ScheduleCardProps = IOrderableProps<Schedule> & MoveToGroupMenuProps & {
   schedule: Schedule
@@ -23,7 +25,13 @@ const ScheduleCard = (props: ScheduleCardProps) => {
     setOpen(false)
   }
 
-  return <Card component={Stack} direction='row' textAlign='start' justifyContent='space-between' elevation={8}>
+  return <Card
+    component={Stack}
+    direction='row'
+    elevation={8}
+    justifyContent='space-between'
+    textAlign='start'
+  >
 
     <Box sx={{
       '.MuiCardActions-root': {
@@ -34,37 +42,50 @@ const ScheduleCard = (props: ScheduleCardProps) => {
           minWidth: 'unset',
         },
       },
-    }}>
+    }}
+    >
       <CardContent>
-        <Typography variant='h6' component='span' style={{ verticalAlign: 'middle' }}>{props.schedule.name}</Typography>
+        <Typography
+          component='span'
+          style={{ verticalAlign: 'middle' }}
+          variant='h6'
+        >
+          {props.schedule.name}
+        </Typography>
         <IconButton
-          className='error'
           aria-label='delete schedule'
+          color='error'
           onClick={() => setOpen(true)}
-        ><DeleteForever /></IconButton>
+          size='large'
+        >
+          <DeleteForever />
+        </IconButton>
 
         <Dialog
-          open={open}
-          onClose={handleClose}
-          aria-labelledby='alert-dialog-title'
           aria-describedby='alert-dialog-description'
+          aria-labelledby='alert-dialog-title'
+          onClose={handleClose}
+          open={open}
         >
           <DialogTitle id='alert-dialog-title'>Permanently delete this schedule?</DialogTitle>
           <DialogContent>
             <DialogContentText id='alert-dialog-description'>
-              Are you sure that you want to delete &quot;{props.schedule.name}&quot; forever?
+              Are you sure that you want to delete &quot;
+              {props.schedule.name}
+              &quot; forever?
               This action will take effect immediatly and is irreversible.
               <strong><i> You will not be able to retrieve this schedule after this point!</i></strong>
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => handleClose(false)} autoFocus>
+            {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
+            <Button autoFocus onClick={() => handleClose(false)}>
               Cancel
             </Button>
             <Button
+              color='error'
               onClick={() => handleClose(true)}
               variant='outlined'
-              color='error'
             >
               <strong>Yes, delete this schedule</strong>
             </Button>
@@ -74,8 +95,8 @@ const ScheduleCard = (props: ScheduleCardProps) => {
 
       <CardActions style={{ flexWrap: 'wrap', whiteSpace: 'nowrap' }}>
         <Button
-          size='small'
           onClick={() => props.onEdit(props.schedule)}
+          size='small'
         >
           Edit
         </Button>
@@ -87,27 +108,31 @@ const ScheduleCard = (props: ScheduleCardProps) => {
           Open public page
         </Button>
         <Button
-          size='small'
           onClick={() => copyToClipboard(`${props.schedule.registrationLink}`)}
+          size='small'
         >
           Copy registration link
         </Button>
       </CardActions>
     </Box>
 
-    <Stack component={CardActions} alignItems='flex-end'>
+    <Stack alignItems='flex-end' component={CardActions}>
       <IconButton
-        size='small'
         aria-label='move up'
         disabled={props.isFirst}
         onClick={() => props.onMove(props.schedule, -1)}
-      ><ArrowUpward /></IconButton>
-      <IconButton
         size='small'
+      >
+        <ArrowUpward />
+      </IconButton>
+      <IconButton
         aria-label='move down'
         disabled={props.isLast}
         onClick={() => props.onMove(props.schedule, 1)}
-      ><ArrowDownward /></IconButton>
+        size='small'
+      >
+        <ArrowDownward />
+      </IconButton>
       {props.possibleGroups.length > 0 && <MoveToGroupMenu {...props} />}
     </Stack>
 

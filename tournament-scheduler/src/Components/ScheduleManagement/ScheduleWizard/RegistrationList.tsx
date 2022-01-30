@@ -1,5 +1,5 @@
-import { Button, ButtonGroup, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, List, ListItem, ListItemText, TextField } from '@material-ui/core'
-import { DeleteForever } from '@material-ui/icons'
+import DeleteForever from '@mui/icons-material/DeleteForever'
+import { Button, ButtonGroup, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, List, ListItem, ListItemText, TextField } from '@mui/material'
 import { useState } from 'react'
 
 import type { RegistrationProxy } from 'src/Models/Registration'
@@ -23,94 +23,109 @@ const RegistrationList = (props: RegistrationListProps) => {
     setOpen(false)
   }
 
-  return <List
-    component='div'
-    dense
-    subheader={
-      <div>
-        <ListItemText
-          style={{ marginTop: 0, textAlign: 'left', display: 'inline-block' }}
-          secondary={
-            <span>
-              Entry #{props.index + 1}
-            </span>
-          }
-        />
-        <ButtonGroup
-          sx={{ marginLeft: 2 }}
-          size='small'
-          disabled={!props.registration.hasChanged}
-        >
-          <Button onClick={() => props.onSave(props.registration)}>Save</Button>
-          <Button color='error' onClick={() => props.onReset(props.index)}>Reset</Button>
-        </ButtonGroup>
-        <IconButton
-          className='error'
-          aria-label='remove time slot'
-          onClick={() => setOpen(true)}
-        ><DeleteForever /></IconButton>
-
-        <Dialog
-          open={open}
-          onClose={handleClose}
-          aria-labelledby='alert-dialog-title'
-          aria-describedby='alert-dialog-description'
-        >
-          <DialogTitle id='alert-dialog-title'>Permanently delete this entry?</DialogTitle>
-          <DialogContent>
-            <DialogContentText id='alert-dialog-description'>
-              Are you sure that you want to delete entry #{props.index + 1} of this time slot forever?
-              This action will take effect immediatly and is irreversible.
-              <strong>
-                <i> Make sure you have notified the participants,
-                  as you will not be able to retrieve this entry after this point!</i>
-              </strong>
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => handleClose(false)} autoFocus>
-              Cancel
-            </Button>
-            <Button
-              onClick={() => handleClose(true)}
-              variant='outlined'
-              color='error'
-            >
-              <strong>Yes, delete this entry</strong>
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </div>
-    }
-  >
-    {[
-      ...props.registration.participants,
-      ...Array.from(
-        { length: Math.max(0, props.participantsPerEntry - props.registration.participants.length) },
-        () => ''
-      ),
-    ]
-      .map((participant: string, index) =>
-        <ListItem
-          key={`participant-${index}`}
-          style={{
-            alignItems: 'baseline',
-            padding: '0 16px',
-            color: index >= props.participantsPerEntry ? 'red' : undefined,
-          }}>
-          <span>{index + 1}.&nbsp;</span>
-          <TextField
-            error={index >= props.participantsPerEntry}
-            style={{ marginTop: 0 }}
-            value={participant}
-            onChange={event => props.onParticipantNameChange(
-              props.registration,
-              index,
-              event.target.value
-            )}
+  return (
+    <List
+      component='div'
+      dense
+      subheader={
+        <div>
+          <ListItemText
+            secondary={
+              <span>
+                Entry #
+                {props.index + 1}
+              </span>
+            }
+            style={{ marginTop: 0, paddingLeft: '12px', textAlign: 'left', display: 'inline-block' }}
           />
-        </ListItem>)}
-  </List>
+          <ButtonGroup
+            disabled={!props.registration.hasChanged}
+            size='small'
+            sx={{ marginLeft: 2 }}
+          >
+            <Button onClick={() => props.onSave(props.registration)}>Save</Button>
+            <Button color='error' onClick={() => props.onReset(props.index)}>Reset</Button>
+          </ButtonGroup>
+          <IconButton
+            aria-label='remove time slot'
+            color='error'
+            onClick={() => setOpen(true)}
+            size='large'
+          >
+            <DeleteForever />
+          </IconButton>
+
+          <Dialog
+            aria-describedby='alert-dialog-description'
+            aria-labelledby='alert-dialog-title'
+            onClose={handleClose}
+            open={open}
+          >
+            <DialogTitle id='alert-dialog-title'>Permanently delete this entry?</DialogTitle>
+            <DialogContent>
+              <DialogContentText id='alert-dialog-description'>
+                Are you sure that you want to delete entry #
+                {props.index + 1}
+                {' '}
+                of this time slot forever?
+                This action will take effect immediatly and is irreversible.
+                {' '}
+
+                <strong>
+                  <i>
+                    Make sure you have notified the participants,
+                    as you will not be able to retrieve this entry after this point!
+                  </i>
+                </strong>
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
+              <Button autoFocus onClick={() => handleClose(false)}>
+                Cancel
+              </Button>
+              <Button
+                color='error'
+                onClick={() => handleClose(true)}
+                variant='outlined'
+              >
+                <strong>Yes, delete this entry</strong>
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </div>
+      }
+    >
+      {[
+        ...props.registration.participants,
+        ...Array.from(
+          { length: Math.max(0, props.participantsPerEntry - props.registration.participants.length) },
+          () => ''
+        ),
+      ]
+        .map((participant: string, index) =>
+          <ListItem
+            key={`participant-${participant}`}
+            style={{
+              alignItems: 'baseline',
+              padding: '0 16px',
+              color: index >= props.participantsPerEntry ? 'red' : undefined,
+            }}
+          >
+            <span>{`${index + 1}. `}</span>
+            <TextField
+              error={index >= props.participantsPerEntry}
+              onChange={event => props.onParticipantNameChange(
+                props.registration,
+                index,
+                event.target.value
+              )}
+              style={{ marginTop: 0 }}
+              value={participant}
+            />
+          </ListItem>)}
+    </List>
+  )
 }
 
 export default RegistrationList

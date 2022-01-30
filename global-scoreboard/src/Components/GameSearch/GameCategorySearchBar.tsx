@@ -1,23 +1,25 @@
 import type { Dispatch, SetStateAction } from 'react'
 import { Form } from 'react-bootstrap'
-import type { SearchFieldProps, SearchProps } from 'react-bootstrap-table2-toolkit'
+import type { SearchBarProps } from 'react-bootstrap-table2-toolkit'
 
-import { apiGet, MAX_PAGINATION } from 'src/fetchers/Api'
-import type { DataArray, SrcGame } from 'src/Models/SrcResponse'
-import math from 'src/utils/Math'
+import { apiGet, MAX_PAGINATION } from 'src/fetchers/api'
+import type { DataArray, SpeedruncomGame } from 'src/Models/SpeedruncomResponse'
+import math from 'src/utils/math'
 
 type IdToNameMap = Record<string, string>
 
 type GameCategorySearchProps =
-  SearchFieldProps & SearchProps & {
+  SearchBarProps & {
     setGameMap: Dispatch<SetStateAction<IdToNameMap>>
   }
 
-function debounce<T>(fn: (...args: T[]) => void, time: number) {
+const debounce = <T,>(
+  fn: (...params: T[]) => void,
+  time: number
+) => {
   let timeout: NodeJS.Timeout | undefined
 
-  return wrapper
-  function wrapper(...args: T[]) {
+  return (...args: T[]) => {
     if (timeout) {
       clearTimeout(timeout)
     }
@@ -31,14 +33,13 @@ function debounce<T>(fn: (...args: T[]) => void, time: number) {
 // Note: 500 is double the default table update
 const DEBOUNCE_TIME = math.MS_IN_SECOND * math.HALF
 
-const GameCategorySearch = (props: GameCategorySearchProps) => {
+const GameCategorySearchBar = (props: GameCategorySearchProps) => {
   const handleOnChange = debounce(
     (searchText: string) =>
       !searchText
         ? props.onClear?.()
-        : apiGet('https://www.speedrun.com/api/v1/games', { name: searchText, max: MAX_PAGINATION }, false)
-          .then<DataArray<SrcGame>>(res => res.json())
-          .then(res => res.data)
+        : apiGet<DataArray<SpeedruncomGame>>('https://www.speedrun.com/api/v1/games', { name: searchText, max: MAX_PAGINATION }, false)
+          .then(response => response.data)
           .then<IdToNameMap>(games => Object.fromEntries(games.map(game => [game.id, game.names.international])))
           .then(games => {
             props.setGameMap(previousGames => {
@@ -54,10 +55,10 @@ const GameCategorySearch = (props: GameCategorySearchProps) => {
   return <Form.Label>
     <Form.Control
       className={props.className}
-      placeholder={props.placeholder}
       onChange={event => handleOnChange(event.currentTarget.value)}
+      placeholder={props.placeholder}
     />
   </Form.Label>
 }
 
-export default GameCategorySearch
+export default GameCategorySearchBar

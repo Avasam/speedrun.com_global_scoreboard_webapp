@@ -21,9 +21,9 @@ const NonZeroNumberInput = forwardRef<HTMLElement, NonZeroNumberInputProps>(({ i
   return (
     <MaskedInput
       {...props}
-      ref={setRef}
-      mask={[/[1-9]/, /\d/]}
       guide={false}
+      mask={[/[1-9]/, /\d/]}
+      ref={setRef}
     />
   )
 })

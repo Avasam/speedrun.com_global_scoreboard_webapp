@@ -1,5 +1,6 @@
 import { faLongArrowAltDown, faLongArrowAltUp } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import type { SortOrder } from 'react-bootstrap-table-next'
 
 const sortCaret = (order?: SortOrder | null) =>
   <>

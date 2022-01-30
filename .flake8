@@ -1,0 +1,19 @@
+[flake8]
+color=always
+max-line-length=120
+; Linebreak before binary operator
+; Allow default value other than "..."
+; Allow imports at the bottom of file
+ignore=W503,Y015,E402
+per-file-ignores=
+    ; Quotes
+    ; undefined name 'Unknown'
+    ; allow ... on same line as def
+    ; Naming stuff
+    ;
+    ; Q002 quote docstring for cv2-stubs
+    __init__.pyi: Q000,F821,E704,N8,E501,Y010,Y011,Q002
+; McCabe max-complexity is also taken care of by Pylint and doesn't fail the build there
+; So this is the hard limit
+max-complexity=32
+inline-quotes="

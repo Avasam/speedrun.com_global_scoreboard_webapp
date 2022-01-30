@@ -1,45 +1,55 @@
-import { Grid, Typography } from '@material-ui/core'
+import { Grid, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
+import { Helmet } from 'react-helmet'
+import { useParams } from 'react-router-dom'
 
 import ScheduleViewer, { TimeZoneMessage } from 'src/Components/ScheduleViewer/ScheduleViewer'
-import { apiGet } from 'src/fetchers/Api'
+import { apiGet } from 'src/fetchers/api'
 import type { ScheduleDto, ScheduleGroupDto } from 'src/Models/Schedule'
 import { Schedule } from 'src/Models/Schedule'
 
-type ScheduleGroupViewerProps = {
-  groupId: number
-}
-
 const getSchedules = (id: number) =>
-  apiGet(`schedule_groups/${id}/schedules`)
-    .then<ScheduleDto[]>(res => res.json())
+  apiGet<ScheduleDto[]>(`schedule_groups/${id}/schedules`)
 
 const getGroup = (id: number) =>
-  apiGet(`schedule_groups/${id}`)
-    .then<ScheduleGroupDto>(res => res.json())
+  apiGet<ScheduleGroupDto>(`schedule_groups/${id}`)
 
-const ScheduleGroupViewer = (props: ScheduleGroupViewerProps) => {
+const ScheduleGroupViewer = () => {
   const [schedules, setSchedules] = useState<ScheduleDto[]>([])
   const [groupName, setGroupName] = useState('')
+  const routeParams = useParams()
+  if (routeParams.groupId == null) throw new TypeError('Route param :groupId is null or undefined')
+  const groupId = Number(routeParams.groupId)
 
   useEffect(
     () => {
-      void getSchedules(props.groupId)
-        .then(res => res.filter(schedule => schedule.timeSlots.some(timeSlot => timeSlot.registrations.length > 0)))
-        .then(res => [...res].sort(Schedule.compareFn))
+      void getSchedules(groupId)
+        .then(response =>
+          response.filter(schedule =>
+            schedule.timeSlots.some(timeSlot => timeSlot.registrations.length > 0)))
+        .then(response => [...response].sort(Schedule.compareFn))
         .then(setSchedules)
-      void getGroup(props.groupId)
-        .then(res => res.name)
+      void getGroup(groupId)
+        .then(response => response.name)
         .then(setGroupName)
     },
-    [props.groupId]
+    [groupId]
   )
   return <>
+    <Helmet>
+      <title>
+        Schedule group
+        {' '}
+        {groupName}
+        {' '}
+        - Tournament Scheduler
+      </title>
+    </Helmet>
     <Typography variant='h3'>{groupName}</Typography>
     {TimeZoneMessage}
     {schedules.length === 0 && <p>There are no registrations for any schedule of this group.</p>}
-    <Grid container width='100%' rowSpacing={2}>
-      {schedules.map(scheduleDto => <Grid item xs={12} key={scheduleDto.id} >
+    <Grid container rowSpacing={2} width='100%'>
+      {schedules.map(scheduleDto => <Grid item key={scheduleDto.id} xs={12} >
         <ScheduleViewer scheduleId={scheduleDto.id} shownInGroup />
       </Grid>)}
     </Grid>

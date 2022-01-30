@@ -1,17 +1,17 @@
-import type { Theme } from '@material-ui/core'
-import { Button, Card, CardActions, CardContent, Checkbox, Container, FormControlLabel, Stack, TextField, Typography } from '@material-ui/core'
-import { Event } from '@material-ui/icons'
-import { MobileDatePicker } from '@material-ui/lab'
-import type { SxProps } from '@material-ui/system'
+import Event from '@mui/icons-material/Event'
+import { MobileDatePicker } from '@mui/lab'
+import type { Theme } from '@mui/material'
+import { Button, Card, CardActions, CardContent, Checkbox, Container, FormControlLabel, Stack, TextField, Typography } from '@mui/material'
+import type { SxProps } from '@mui/system'
 import { useState } from 'react'
 
 import TimeSlotRow from './TimeSlotRow'
 import DisableDashlane from 'src/Components/DisableDashlane'
 import type { Schedule, ScheduleDto } from 'src/Models/Schedule'
 import { TimeSlot } from 'src/Models/TimeSlot'
-import { DEADLINE_FORMAT, diffDays, startOfDay } from 'src/utils/Date'
-import type { NonFunctionProperties } from 'src/utils/ObjectUtils'
-import { getDeadlineDueText } from 'src/utils/ScheduleHelper'
+import { DEADLINE_FORMAT, diffDays, startOfDay } from 'src/utils/date'
+import type { NonFunctionProperties } from 'src/utils/objectUtils'
+import { getDeadlineDueText } from 'src/utils/scheduleHelper'
 
 const calendarIconStyle: SxProps<Theme> = {
   '.MuiInput-root > .MuiSvgIcon-root': {
@@ -39,7 +39,7 @@ export const ScheduleWizard = (props: ScheduleWizardProps) => {
     props.onCancel()
   }
 
-  const editTimeSlotDateTime = (date: Date | null, timeSlot: TimeSlot) => {
+  const editTimeSlotDateTime = (date: Date | null | undefined, timeSlot: TimeSlot) => {
     if (!date) return
     timeSlot.dateTime = date
     schedule.timeSlots.sort(TimeSlot.compareFn)
@@ -94,39 +94,44 @@ export const ScheduleWizard = (props: ScheduleWizardProps) => {
       <CardContent>
         <Stack spacing={1.5} sx={calendarIconStyle}>
           <TextField
-            required
             error={!schedule.name}
             label={`Name (${props.schedule.name})`}
-            value={schedule.name}
             onChange={event => setSchedule({ ...schedule, name: event.target.value })}
+            required
+            value={schedule.name}
           />
           <Stack direction='row' flexWrap='wrap'>
             <FormControlLabel
-              label='Active'
               control={
                 <Checkbox
                   checked={schedule.active}
                   onChange={event => setSchedule({ ...schedule, active: event.target.checked })}
                 />
               }
+              label='Active'
             />
 
             <MobileDatePicker
-              label={`${!schedule.deadline ? 'No r' : 'R'}egistration deadline`}
-              inputFormat={DEADLINE_FORMAT}
-              value={schedule.deadline}
-              disableCloseOnSelect
-              onChange={date => setSchedule({ ...schedule, deadline: date == null ? null : startOfDay(date) })}
-              disablePast={earliestTimeslotDate > new Date()}
-              showTodayButton
-              clearable
               InputProps={{ endAdornment: <Event /> }}
+              clearable
+              disableCloseOnSelect
+              disablePast={earliestTimeslotDate > new Date()}
+              inputFormat={DEADLINE_FORMAT}
+              label={`${!schedule.deadline ? 'No r' : 'R'}egistration deadline`}
+              onChange={date => setSchedule({ ...schedule, deadline: date == null ? null : startOfDay(date) })}
               renderInput={params =>
                 <TextField
                   {...params}
-                  id='schedule-deadline'
-                  error={!(validateDeadline() && validateDeadlineTooEarly())}
+                  // eslint-disable-next-line react/forbid-component-props
                   className={validateDeadlineTooEarly() ? 'error-as-warning' : undefined}
+                  error={!(validateDeadline() && validateDeadlineTooEarly())}
+                  helperText={[
+                    !validateDeadlineTooEarly() && 'Deadline should not be before today',
+                    !validateDeadline() && 'Warning: Your registrations close after the earliest time slot',
+                  ].filter(a => a).join('\n')}
+                  id='schedule-deadline'
+                  // Note: Overkill as we shouldn't have those two messages at once,
+                  // but good idea for form validation
                   sx={{
                     // Enough to fit 'No registration deadline'
                     width: '198px',
@@ -136,57 +141,53 @@ export const ScheduleWizard = (props: ScheduleWizardProps) => {
                       width: 'max-content',
                     },
                   }}
-                  // Note: Overkill as we shouldn't have those two messages at once,
-                  // but good idea for form validation
-                  helperText={[
-                    !validateDeadlineTooEarly() && 'Deadline should not be before today',
-                    !validateDeadline() && 'Warning: Your registrations close after the earliest time slot',
-                  ].filter(a => a).join('\n')}
                 />}
+              showTodayButton
+              value={schedule.deadline}
             />
             {schedule.deadline &&
               <Typography
-                component={'label'}
-                whiteSpace='nowrap'
-                marginTop={2.5}
                 color={deadlineDaysLeft > 0 ? 'warn' : undefined}
+                component='label'
+                marginTop={2.5}
+                whiteSpace='nowrap'
               >
-                &nbsp;Close{deadlineDaysLeft > 0 ? 's' : 'd'} {getDeadlineDueText(deadlineDaysLeft)}
+                {` Close${deadlineDaysLeft > 0 ? 's' : 'd'} ${getDeadlineDueText(deadlineDaysLeft)}`}
               </Typography>}
           </Stack>
 
-          <Button style={{ width: 'fit-content' }} variant='contained' onClick={addNewTimeSlot}>
+          <Button onClick={addNewTimeSlot} style={{ width: 'fit-content' }} variant='contained'>
             Add a time slot
           </Button>
 
           {schedule.timeSlots.map((timeSlot, index) =>
             <TimeSlotRow
-              key={`time-slot-${timeSlot.id}`}
               id={`${index}-${timeSlot.id}`}
-              schedule={schedule}
-              timeSlot={timeSlot}
-              onEditTimeSlotDateTime={date => editTimeSlotDateTime(date, timeSlot)}
+              isCurrentFocus={currentFocus === timeSlot}
+              key={`time-slot-${timeSlot.id}`}
               onDuplicateTimeSlot={() => duplicateTimeSlot(timeSlot, index + 1)}
-              onRemoveTimeSlot={() => removeTimeSlot(index)}
+              onEditTimeSlotDateTime={date => editTimeSlotDateTime(date, timeSlot)}
               onEditTimeSlotMaximumEntries={maximumEntries => editTimeSlotMaximumEntries(maximumEntries, timeSlot)}
               onEditTimeSlotparticipantsPerEntry={participantsPerEntry =>
                 editTimeSlotparticipantsPerEntry(participantsPerEntry, timeSlot)}
-              isCurrentFocus={currentFocus === timeSlot}
               onFocus={() => setCurrentFocus(timeSlot)}
+              onRemoveTimeSlot={() => removeTimeSlot(index)}
+              schedule={schedule}
+              timeSlot={timeSlot}
             />)}
         </Stack>
       </CardContent>
       <CardActions>
         <Button
-          size='small'
           onClick={handleCancel}
+          size='small'
         >
           Cancel
         </Button>
         <Button
-          size='small'
           disabled={!validateForm()}
           onClick={() => props.onSave(schedule)}
+          size='small'
         >
           Save
         </Button>

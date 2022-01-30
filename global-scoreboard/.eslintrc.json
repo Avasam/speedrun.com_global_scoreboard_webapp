@@ -1,0 +1,13 @@
+{
+  "extends": [
+    "beslogic/react",
+    "beslogic/typescript"
+  ],
+  "parserOptions": {
+    "project": "tsconfig.json"
+  },
+  "rules": {
+    // Ok with Bootstrap
+    "react/forbid-component-props": "off"
+  }
+}
