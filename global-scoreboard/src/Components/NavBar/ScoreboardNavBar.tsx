@@ -41,6 +41,7 @@ const LoginInfo = (props: LoginInfoProps) => {
     {props.username
       ? <Navbar.Text>
         Logged in as
+        {' '}
         {props.username}
       </Navbar.Text>
       : <LoginModal onClose={handleClose} onLogin={handleLogin} show={show} />}

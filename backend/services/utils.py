@@ -8,17 +8,15 @@ from datetime import timedelta
 from json.decoder import JSONDecodeError
 from math import ceil, floor, sqrt
 from multiprocessing import BoundedSemaphore  # , synchronize
-from os import unlink
-from os.path import isdir
 from random import randint
-from sqlite3 import DatabaseError, OperationalError
-from tempfile import gettempdir
+from sqlite3 import OperationalError
 from threading import BoundedSemaphore as ThreadingBoundedSemaphore, Semaphore, Timer, Thread
 from time import sleep
 from urllib.parse import parse_qs, urlparse
 import traceback
 
 from requests.exceptions import ConnectionError as RequestsConnectionError, HTTPError
+from requests.adapters import HTTPAdapter
 from requests_cache.session import CachedSession
 from simplejson.errors import JSONDecodeError as SimpleJSONDecodeError
 
@@ -106,12 +104,13 @@ class RatedSemaphore(ThreadingBoundedSemaphore):  # synchronize.BoundedSemaphore
 def clear_cache_for_user_async(user_id: str):
     def clear_cache_thread():
         try:
-            print(f"Deleting cache specific to user '{user_id}'...")
-            session.cache.delete_urls([url for url in session.cache.urls if user_id in url])
+            # TODO: For user-specifics, give them their own cache-files that are quick and easy to delete
+            # print(f"Deleting cache specific to user '{user_id}'...")
+            # session.cache.delete_urls([url for url in session.cache.urls if user_id in url])
             print("Removing expired responses...")
             session.cache.remove_expired_responses()
             print("Done")
-        except Exception:
+        except BaseException:
             print(f"Something went wrong while deleting cache for '{user_id}'")
             raise
     Thread(target=clear_cache_thread).start()
@@ -135,6 +134,7 @@ session = CachedSession(
     backend=configs.cached_session_backend,
     fast_save=True,
     use_temp=True)
+session.mount("https://", HTTPAdapter(pool_maxsize=RATE_LIMIT + 1))
 clean_old_cache()
 rate_limit = RatedSemaphore(RATE_LIMIT, 60)  # 100 requests per minute
 
@@ -157,15 +157,29 @@ def get_file(
         with nullcontext() if cached else session.cache_disabled():
             try:
                 response = session.get(url, params=params, headers=headers)
+            # TODO: Try to check for available space first (<=5%),
+            # https://help.pythonanywhere.com/pages/DiskQuota
             # "disk I/O erro" when going over PythonAnywhere"s Disk Quota
-            except (DatabaseError, OperationalError, OSError):
-                # TODO: Try to check for available space first (<=5%),
-                # https://help.pythonanywhere.com/pages/DiskQuota
-                for directory in [gettempdir(), "~/.cache"]:
-                    if isdir(directory):
-                        unlink(directory)
+            except OSError as error:
                 session.cache.clear()
-                response = session.get(url, params=params, headers=headers)
+                # for directory in [gettempdir(), "~/.cache"]:
+                #     if isdir(directory):
+                #         try:
+                #             unlink(directory)
+                #         # If the temp/cache folder itself is protected, delete files individually
+                #         except PermissionError:
+                #             for root, _dirs, files in walk(directory):
+                #                 for file in files:
+                #                     remove(join(root, file))
+                print("Cleared cache in response to OSError:", error)
+            # Note: This happens with LOTS of concurent requests
+            # (probably any Seterra player, but dha is the latest that gave me issues)
+            # TODO: Raise issue with librarie
+            except OperationalError as error:
+                print("Ignoring cache for this request because of OperationalError:", error)
+            finally:
+                with session.cache_disabled():
+                    response = session.get(url, params=params, headers=headers)
 
         if response.from_cache:
             if configs.debug:
@@ -177,8 +191,10 @@ def get_file(
 
     while True:
         try:
-            with rate_limit:
-                response = get_request_cache_bust_if_disk_quota_exceeded()
+            # TODO: Fix rated semaphore, right now it ends up blocking at 99 non-cached requests in prod
+            # with rate_limit:
+            # print(f"Rate limit value: {rate_limit.get_value()}/{RATE_LIMIT}")
+            response = get_request_cache_bust_if_disk_quota_exceeded()
         except (ConnectionResetError, ConnectionError, RequestsConnectionError) as exception:  # Connexion error
             raise UserUpdaterError({
                 "error": "Can't establish connexion to speedrun.com. "

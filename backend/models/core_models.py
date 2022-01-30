@@ -319,7 +319,6 @@ class Player(BaseModel):
     def update_schedule_order(self, schedule_orders: list[JSONObjectType]) -> bool:
         for schedule_order in schedule_orders:
             try:
-                print(schedule_order["order"], type(schedule_order["order"]))
                 id_filter = ScheduleGroup.group_id if schedule_order["isGroup"] else Schedule.schedule_id
                 table = ScheduleGroup if schedule_order["isGroup"] else Schedule
                 to_update = cast(

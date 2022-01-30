@@ -31,7 +31,7 @@ def get_updated_user(user_id: str) -> dict[str, Union[str, None, float, int, Poi
         print(f"Update request for: {user._name}")
 
         try:
-            __set_user_code_and_name(user)
+            user.fetch_and_set_user_code_and_name()
         except SpeedrunComError as exception:
             if not exception.args[0]["error"].startswith("404"):
                 raise
@@ -65,7 +65,7 @@ def get_updated_user(user_id: str) -> dict[str, Union[str, None, float, int, Poi
             else:
                 cant_update_time = configs.last_updated_days[0]
                 text_output = "This user has already been updated in the past " + \
-                    f"{cant_update_time} day {'s' if cant_update_time != 1 else ''}"
+                    f"{cant_update_time} day{'s' if cant_update_time != 1 else ''}"
                 result_state = "warning"
 
         # When we can finally successfully update a player, clear the cache of their specific responses
@@ -93,24 +93,6 @@ def get_updated_user(user_id: str) -> dict[str, Union[str, None, float, int, Poi
             "error": "Connexion interrupted",
             "details": exception}
         ) from exception
-
-
-def __set_user_code_and_name(user: User) -> None:
-    url = "https://www.speedrun.com/api/v1/users/{user}".format(user=user._id)
-    infos = get_file(url, {}, True)
-
-    user._id = infos["data"]["id"]
-    location = infos["data"]["location"]
-    if location is not None:
-        country = location["country"]
-        region = location.get("region")
-        user._country_code = region["code"] if region else country["code"]
-    else:
-        user._country_code = None
-    user._name = infos["data"]["names"].get("international")
-    if infos["data"]["role"] == "banned":
-        user._banned = True
-        user._points = 0
 
 
 def __set_user_points(user: User) -> None:

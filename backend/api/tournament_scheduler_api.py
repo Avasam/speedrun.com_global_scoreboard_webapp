@@ -199,7 +199,6 @@ def post_registration(time_slot_id: Union[str, int]):
     if error_message is not None:
         return jsonify({"message": error_message, "authenticated": True}), 400
 
-    print(registration_id, registration_key)
     time_slot = TimeSlot.get_with_key(registration_id, registration_key)
     if time_slot is None:
         return "", 404

@@ -41,7 +41,8 @@ def authentication_required(f):
 
         # Extend the expiration date of the JWT since the user is active
         # Newly generated token needs to be sent back to frontent
-        if not isinstance(response, tuple):
+        # TODO: When instance of response instead of str, can we still add the token to it?
+        if not isinstance(response, tuple) or not isinstance(response[0], str):
             return response
 
         extended_token = jwt.encode({
@@ -50,7 +51,7 @@ def authentication_required(f):
             "exp": datetime.utcnow() + timedelta(days=1)},
             current_app.config["SECRET_KEY"])
         try:
-            response_content = json.loads(response[0])
+            response_content: dict[str, str] = json.loads(response[0])
         except json.JSONDecodeError:
             response_content = {"message": response[0]}
 
