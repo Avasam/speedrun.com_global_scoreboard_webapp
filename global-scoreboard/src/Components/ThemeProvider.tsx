@@ -60,7 +60,14 @@ const ThemeProvider: FC = ({ children }) => {
 
   useEffect(() => {
     if (bootswatchStyleRef.current) return
-    const bootstrapStyle = document.getElementsByTagName('title').item(0)?.nextSibling
+    // See index.tsx for Bootstrap import index
+    const bootstrapStyle = document
+      .getElementsByTagName('title')
+      .item(0) // <title>
+      ?.nextElementSibling // <script>
+      ?.nextElementSibling // <style>
+      ?.nextElementSibling // <style>
+      ?.nextElementSibling // <style>
     if (!bootstrapStyle) throw new Error('Missing <title> in <head>')
     bootswatchStyleRef.current = document.createElement('link')
     bootswatchStyleRef.current.id = 'bootswatch-theme'

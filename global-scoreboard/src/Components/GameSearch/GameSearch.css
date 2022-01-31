@@ -15,3 +15,7 @@
   display: inline-flex;
   width: 190px;
 }
+
+.table td:first-child > a{
+  color: #e83283;
+}

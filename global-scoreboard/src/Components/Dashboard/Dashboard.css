@@ -15,19 +15,21 @@ label[for="update-user"]+.input-group {
 /*--------*\
 | Coloring |
 \*--------*/
-.daysSince0 {
+
+/* Tripling specificity to combat _tables.scss: `.table-striped > tbody > tr:nth-of-type(odd) > *` */
+.daysSince0.daysSince0.daysSince0 {
   color: blue;
 }
 
-.daysSince1 {
+.daysSince1.daysSince1.daysSince1 {
   color: green;
 }
 
-.daysSince2 {
+.daysSince2.daysSince2.daysSince2 {
   color: darkorange;
 }
 
-.daysSince {
+.daysSince.daysSince.daysSince {
   color: crimson;
 }
 
@@ -53,6 +55,78 @@ tbody>tr.highlight-friend:nth-of-type(odd){
 
 tbody>tr.highlight-current-user:nth-of-type(odd){
   background-color: #d3e7f1;
+}
+
+/* Some Bootswatch themes will put a box-shadow on td*/
+.table>:not(caption)>[class*="highlight"]>td{
+  box-shadow: unset;
+}
+
+/* Light themes adjutments */
+
+[data-theme="Morph"] .btn {
+  box-shadow: none;
+}
+[data-theme="Morph"] .btn-link {
+  background-color: unset;
+}
+
+[data-theme="Sketchy"] .table-striped > tbody > tr:nth-of-type(odd):not([class*="highlight"]) > td:not([class^="daysSince"]),
+[data-theme="Sketchy"] .table-striped > tbody > tr:nth-of-type(odd):not([class*="highlight"]) > td > *,
+[data-theme="Sketchy"] .spinner-border{
+  color: #fff !important;
+}
+
+/* Dark themes adjustments */
+
+[data-theme="Darkly"] .daysSince0.daysSince0,
+[data-theme="Sketchy"] .daysSince0.daysSince0,
+[data-theme="Slate"] .daysSince0.daysSince0,
+[data-theme="Superhero"] .daysSince0.daysSince0,
+[data-theme="Vapor"] .daysSince0.daysSince0{
+  color: dodgerblue;
+}
+
+[data-theme="Vapor"] .daysSince1.daysSince1,
+  [data-theme="Quartz"] .daysSince1.daysSince1{
+  color: limegreen;
+}
+[data-theme="Sketchy"] .daysSince.daysSince{
+  color: deeppink;
+}
+
+[data-theme="Darkly"] .table-striped > tbody > tr[class*="highlight"] > td:not([class^="daysSince"]),
+[data-theme="Cyborg"] .table-striped > tbody > tr[class*="highlight"] > td:not([class^="daysSince"]),
+[data-theme="Slate"] .table-striped > tbody > tr[class*="highlight"] > td:not([class^="daysSince"]),
+[data-theme="Slate"] .table-striped > tbody > tr[class*="highlight"] > td > *,
+[data-theme="Superhero"] .table-striped > tbody > tr[class*="highlight"] > td:not([class^="daysSince"]),
+[data-theme="Vapor"] .table-striped > tbody > tr[class*="highlight"] > td:not([class^="daysSince"]),
+[data-theme="Quartz"] .table-striped > tbody > tr[class*="highlight"] > td:not([class^="daysSince"]){
+  color: #212529;
+}
+
+[data-theme="Superhero"] .table{
+  font-size: 1rem;
+}
+[data-theme="Superhero"] .table a:not(.btn){
+  color: #4c9be8; /* Same as .btn-link */
+}
+
+[data-theme="Vapor"] a,
+[data-theme="Vapor"] .btn-link{
+  color: mediumaquamarine;
+}
+
+[data-theme="Quartz"] a:not([href="#"]),
+[data-theme="Quartz"] .btn-link,
+[data-theme="Quartz"] #pageDropDown:not(:hover){
+  color: #33b7e2;
+}
+[data-theme="Quartz"] #pageDropDown{
+  border-color: #33b7e2;
+}
+[data-theme="Quartz"] #pageDropDown:hover{
+  background-color: #33b7e2;
 }
 
 /*-------------------*\
