@@ -1,9 +1,8 @@
 from types import TracebackType
-from typing import Any, Literal, Optional, Union
+from typing import Any, cast, Literal, Optional, Union
 
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
-from contextlib import nullcontext
 from datetime import timedelta
 from json.decoder import JSONDecodeError
 from math import ceil, floor, sqrt
@@ -14,9 +13,11 @@ from threading import BoundedSemaphore as ThreadingBoundedSemaphore, Semaphore, 
 from time import sleep
 from urllib.parse import parse_qs, urlparse
 import traceback
+from requests import Session
 
 from requests.exceptions import ConnectionError as RequestsConnectionError, HTTPError
 from requests.adapters import HTTPAdapter
+from requests_cache.models.response import CachedResponse
 from requests_cache.session import CachedSession
 from simplejson.errors import JSONDecodeError as SimpleJSONDecodeError
 
@@ -134,7 +135,10 @@ session = CachedSession(
     backend=configs.cached_session_backend,
     fast_save=True,
     use_temp=True)
-session.mount("https://", HTTPAdapter(pool_maxsize=RATE_LIMIT + 1))
+uncached_session = Session()
+adapter = HTTPAdapter(pool_maxsize=RATE_LIMIT + 1)
+session.mount("https://", adapter)
+uncached_session.mount("https://", adapter)
 clean_old_cache()
 rate_limit = RatedSemaphore(RATE_LIMIT, 60)  # 100 requests per minute
 
@@ -154,34 +158,23 @@ def get_file(
     :param headers:
     """
     def get_request_cache_bust_if_disk_quota_exceeded():
-        with nullcontext() if cached else session.cache_disabled():
-            try:
-                response = session.get(url, params=params, headers=headers)
-            # TODO: Try to check for available space first (<=5%),
-            # https://help.pythonanywhere.com/pages/DiskQuota
-            # "disk I/O erro" when going over PythonAnywhere"s Disk Quota
-            except OSError as error:
-                session.cache.clear()
-                # for directory in [gettempdir(), "~/.cache"]:
-                #     if isdir(directory):
-                #         try:
-                #             unlink(directory)
-                #         # If the temp/cache folder itself is protected, delete files individually
-                #         except PermissionError:
-                #             for root, _dirs, files in walk(directory):
-                #                 for file in files:
-                #                     remove(join(root, file))
-                print("Cleared cache in response to OSError:", error)
-            # Note: This happens with LOTS of concurent requests
-            # (probably any Seterra player, but dha is the latest that gave me issues)
-            # TODO: Raise issue with librarie
-            except OperationalError as error:
-                print("Ignoring cache for this request because of OperationalError:", error)
-            finally:
-                with session.cache_disabled():
-                    response = session.get(url, params=params, headers=headers)
+        try:
+            response = (session if cached else uncached_session).get(url, params=params, headers=headers)
+        # TODO: Try to check for available space first (<=5%),
+        # https://help.pythonanywhere.com/pages/DiskQuota
+        # "disk I/O erro" when going over PythonAnywhere"s Disk Quota
+        except OSError as error:
+            session.cache.clear()
+            print("Cleared cache in response to OSError:", error)
+            response = session.get(url, params=params, headers=headers)
+        # Note: This happens with LOTS of concurent requests
+        # (probably any Seterra player, but dha is the latest that gave me issues)
+        # TODO: Raise issue with library
+        except OperationalError as error:
+            print("Ignoring cache for this request because of OperationalError:", error)
+            response = uncached_session.get(url, params=params, headers=headers)
 
-        if response.from_cache:
+        if hasattr(response, "from_cache") and cast(CachedResponse, response).from_cache:
             if configs.debug:
                 print(f"[CACHE] {response.url}")
             rate_limit._safe_release()
