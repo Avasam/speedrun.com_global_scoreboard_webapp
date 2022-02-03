@@ -15,7 +15,7 @@ const ScoreTitle = () => <>
   <span onClick={stopPropagation} onKeyPress={stopPropagation} role='button' tabIndex={0}>
     <OverlayTrigger
       overlay={
-        <Tooltip id='rankInfo'>Click on a blue score for a detailed view</Tooltip>
+        <Tooltip id='rankInfo'>Click on a score for a detailed view</Tooltip>
       }
       placement='top'
     >

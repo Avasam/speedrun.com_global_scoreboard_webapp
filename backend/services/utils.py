@@ -1,25 +1,27 @@
+from __future__ import annotations
 from types import TracebackType
-from typing import Any, cast, Literal, Optional, Union
+from typing import Any, Callable, Literal, Optional, Union, TYPE_CHECKING
+if TYPE_CHECKING:
+    from models.core_models import JSONObjectType
 
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
 from json.decoder import JSONDecodeError
 from math import ceil, floor, sqrt
-from multiprocessing import BoundedSemaphore  # , synchronize
 from random import randint
 from sqlite3 import OperationalError
-from threading import BoundedSemaphore as ThreadingBoundedSemaphore, Semaphore, Timer, Thread
+from threading import BoundedSemaphore, Timer, Thread
 from time import sleep
 from urllib.parse import parse_qs, urlparse
 import traceback
-from requests import Session
+from requests import Response, Session
 
 from requests.exceptions import ConnectionError as RequestsConnectionError, HTTPError
 from requests.adapters import HTTPAdapter
-from requests_cache.models.response import CachedResponse
 from requests_cache.session import CachedSession
 from simplejson.errors import JSONDecodeError as SimpleJSONDecodeError
+from models.exceptions import SpeedrunComError, UnderALotOfPressure, UnhandledThreadException, UserUpdaterError
 
 import configs
 
@@ -32,45 +34,26 @@ MAXIMUM_RESULTS_PER_PAGE = 200
 # https://www.pythonanywhere.com/forums/topic/12233/#id_post_46527
 # "your processes number limit is 128" in server.log
 # From testing on a single worker PA server: "Can't start 122th thread."
-MAX_THREADS_PER_WORKER = 121
+# Then reserve one for async cache cleanup
+MAX_THREADS_PER_WORKER = 120
 UNHANDLED_THREAD_EXCEPTION_MESSAGE = \
     "\nPlease report to: https://github.com/Avasam/Global_Speedrunning_Scoreboard/issues\n" + \
     "\nNot uploading data as some errors were caught during execution:\n"
 executor = ThreadPoolExecutor(max_workers=MAX_THREADS_PER_WORKER)
 
 
-class UserUpdaterError(Exception):
-    """ Usage: raise UserUpdaterError({"error":"On Status Label", "details":"Details of error"}) """
-
-    args: tuple[dict[Literal["error", "details"], str], ...]
-
-
-class SpeedrunComError(UserUpdaterError):
-    """ Usage: raise NotFoundError({"error":"`HTTP_STATUS_CODE` (speedrun.com)", "details":"Details of error"}) """
-
-
-class UnderALotOfPressure(SpeedrunComError):
-    """ Usage: raise NotFoundError({"error":"`HTTP_STATUS_CODE` (speedrun.com)", "details":"Details of error"}) """
-
-
-class UnhandledThreadException(Exception):
-    pass
-
-
-class RatedSemaphore(ThreadingBoundedSemaphore):  # synchronize.BoundedSemaphore
+class RatedSemaphore(BoundedSemaphore):
     """Limit to 1 request per `period / limit` seconds (over long run)."""
+    _value: int
 
     def __init__(self, limit=1, period=1):
-        # super().__init__(limit)
+        BoundedSemaphore.__init__(self, limit)
         limit -= 1
-        self.__semaphore = BoundedSemaphore(limit)
-        self.__semaphore.__exit__ = self.__exit__
-        self.get_value = self.__semaphore.get_value
-        timer = Timer(period, self._add_token_loop, kwargs=dict(time_delta=float(period) / limit))
+        timer = Timer(period, self.__add_token_loop, kwargs=dict(time_delta=float(period) / limit))
         timer.daemon = True
         timer.start()
 
-    def _add_token_loop(self, time_delta):
+    def __add_token_loop(self, time_delta):
         """Add token every time_delta seconds."""
         while True:
             sleep(time_delta)
@@ -78,28 +61,17 @@ class RatedSemaphore(ThreadingBoundedSemaphore):  # synchronize.BoundedSemaphore
 
     def _safe_release(self):
         try:
-            self.__semaphore.release()
+            self.release()
         except ValueError:  # Ignore if already max possible value
             pass
 
-    def release(
-        self: Semaphore,
-        n: int = 1
-    ) -> Optional[bool]:
-        pass  # Do nothing (only time-based release() is allowed)
-
     def __exit__(
-        self: Semaphore,
+        self,
         exc_type: Optional[type[BaseException]],
         exc_val: Optional[BaseException],
         exc_tb: Optional[TracebackType]
     ) -> Optional[bool]:
         pass  # Do nothing (only time-based release() is allowed)
-
-    def acquire(self, blocking: bool = True, timeout: Optional[float] = None):
-        return self.__semaphore.acquire(blocking, timeout)
-
-    __enter__ = acquire  # type: ignore
 
 
 def clear_cache_for_user_async(user_id: str):
@@ -143,9 +115,86 @@ clean_old_cache()
 rate_limit = RatedSemaphore(RATE_LIMIT, 60)  # 100 requests per minute
 
 
+def __handle_json_error(response: Response, json_exception: ValueError):
+    try:
+        response.raise_for_status()
+    except HTTPError as exception:  # ... because it's an HTTP error
+        if response.status_code in configs.http_retryable_errors:
+            print(f"WARNING: {exception.args[0]}. Retrying in {HTTP_ERROR_RETRY_DELAY_MIN} seconds.")
+            sleep(HTTP_ERROR_RETRY_DELAY_MIN)
+            # No break or raise as we want to retry
+        elif response.status_code == 503:
+            raise UnderALotOfPressure({
+                "error": f"{response.status_code} (speedrun.com)",
+                "details": exception.args[0]
+            }) from exception
+        else:
+            raise UserUpdaterError({
+                "error": f"HTTPError {response.status_code}",
+                "details": exception.args[0]
+            }) from exception
+    else:  # ... we don't know why (elevate the exception)
+        print(f"ERROR/WARNING: response=({type(response)})'{response}'\n")
+        raise UserUpdaterError({
+            "error": "JSONDecodeError",
+            "details": f"{json_exception.args[0]} in:\n{response}"
+        }) from json_exception
+
+
+def __handle_json_data(json_data: JSONObjectType, response_status_code: int):
+    if "status" in json_data:  # Speedrun.com custom error
+        status = int(str(json_data["status"]))
+        message = str(json_data["message"])
+        if status in configs.http_retryable_errors:
+            retry_delay = randint(HTTP_ERROR_RETRY_DELAY_MIN, HTTP_ERROR_RETRY_DELAY_MAX)  # nosec
+            if status == 420:
+                if "too busy" in message:
+                    raise UnderALotOfPressure({"error": f"{response_status_code} (speedrun.com)",
+                                               "details": message})
+                print(f"Rate limit value: {rate_limit._value}/{RATE_LIMIT}")
+            print(f"WARNING: {status}. {message} Retrying in {retry_delay} seconds.")
+            sleep(retry_delay)
+            # No break or raise as we want to retry
+        else:
+            raise SpeedrunComError({"error": f"{status} (speedrun.com)", "details": message})
+    else:
+        return json_data
+
+
+def __get_request_cache_bust_if_disk_quota_exceeded(
+    url: str,
+    params: Optional[dict[str, str]],
+    cached: bool,
+    headers: Optional[dict[str, Any]]
+):
+    try:
+        response = (session if cached else uncached_session).get(url, params=params, headers=headers)
+    # TODO: Try to check for available space first (<=5%),
+    # https://help.pythonanywhere.com/pages/DiskQuota
+    # "disk I/O erro" when going over PythonAnywhere"s Disk Quota
+    except OSError as error:
+        session.cache.clear()
+        print("Cleared cache in response to OSError:", error)
+        response = session.get(url, params=params, headers=headers)
+    # Note: This happens with LOTS of concurent requests
+    # (probably any Seterra player, but dha is the latest that gave me issues)
+    # TODO: Raise issue with library
+    except OperationalError as error:
+        print("Ignoring cache for this request because of OperationalError:", error)
+        response = uncached_session.get(url, params=params, headers=headers)
+
+    if getattr(response, "from_cache", False):
+        if configs.debug:
+            print(f"[CACHE] {response.url}")
+        rate_limit._safe_release()
+    else:
+        print(f"[ GET ] {response.url}")
+    return response
+
+
 def get_file(
     url: str,
-    params: Optional[dict[str, str]] = None,
+    params: dict[str, str] = None,
     cached=False,
     headers: dict[str, Any] = None
 ) -> dict:
@@ -157,38 +206,14 @@ def get_file(
     :param url:  # The url to query
     :param headers:
     """
-    def get_request_cache_bust_if_disk_quota_exceeded():
-        try:
-            response = (session if cached else uncached_session).get(url, params=params, headers=headers)
-        # TODO: Try to check for available space first (<=5%),
-        # https://help.pythonanywhere.com/pages/DiskQuota
-        # "disk I/O erro" when going over PythonAnywhere"s Disk Quota
-        except OSError as error:
-            session.cache.clear()
-            print("Cleared cache in response to OSError:", error)
-            response = session.get(url, params=params, headers=headers)
-        # Note: This happens with LOTS of concurent requests
-        # (probably any Seterra player, but dha is the latest that gave me issues)
-        # TODO: Raise issue with library
-        except OperationalError as error:
-            print("Ignoring cache for this request because of OperationalError:", error)
-            response = uncached_session.get(url, params=params, headers=headers)
-
-        if hasattr(response, "from_cache") and cast(CachedResponse, response).from_cache:
-            if configs.debug:
-                print(f"[CACHE] {response.url}")
-            rate_limit._safe_release()
-        else:
-            print(f"[ GET ] {response.url}")
-        return response
 
     while True:
         try:
-            # TODO: Fix rated semaphore, right now it ends up blocking at 99 non-cached requests in prod
-            # with rate_limit:
-            # print(f"Rate limit value: {rate_limit.get_value()}/{RATE_LIMIT}")
-            response = get_request_cache_bust_if_disk_quota_exceeded()
-        except (ConnectionResetError, ConnectionError, RequestsConnectionError) as exception:  # Connexion error
+            with rate_limit:
+                if configs.debug:
+                    print(f"Rate limit value: {rate_limit._value}/{RATE_LIMIT}")
+                response = __get_request_cache_bust_if_disk_quota_exceeded(url, params, cached, headers)
+        except (ConnectionError, RequestsConnectionError) as exception:  # Connexion error
             raise UserUpdaterError({
                 "error": "Can't establish connexion to speedrun.com. "
                 + f"Please try again ({exception.__class__.__name__})",
@@ -198,51 +223,12 @@ def get_file(
         try:
             json_data = response.json()
         # Didn't receive a JSON file ...
-        # Hack: casting as any due to missing type definition
         except (JSONDecodeError, SimpleJSONDecodeError) as exception:
-            try:
-                response.raise_for_status()
-            except HTTPError as exception:  # ... because it's an HTTP error
-                if response.status_code in configs.http_retryable_errors:
-                    print(f"WARNING: {exception.args[0]}. Retrying in {HTTP_ERROR_RETRY_DELAY_MIN} seconds.")
-                    sleep(HTTP_ERROR_RETRY_DELAY_MIN)
-                    # No break or raise as we want to retry
-                elif response.status_code == 503:
-                    raise UnderALotOfPressure({
-                        "error": f"{response.status_code} (speedrun.com)",
-                        "details": exception.args[0]
-                    }) from exception
-                else:
-                    raise UserUpdaterError({
-                        "error": f"HTTPError {response.status_code}",
-                        "details": exception.args[0]
-                    }) from exception
-            else:  # ... we don't know why (elevate the exception)
-                print(f"ERROR/WARNING: response=({type(response)})'{response}'\n")
-                raise UserUpdaterError({
-                    "error": "JSONDecodeError",
-                    "details": f"{exception.args[0]} in:\n{response}"
-                }) from exception
-
+            __handle_json_error(response, exception)
         else:
-            if "status" in json_data:  # Speedrun.com custom error
-                status = json_data["status"]
-                message = json_data["message"]
-                if status in configs.http_retryable_errors:
-                    retry_delay = randint(HTTP_ERROR_RETRY_DELAY_MIN, HTTP_ERROR_RETRY_DELAY_MAX)  # nosec
-                    if status == 420:
-                        if "too busy" in message:
-                            raise UnderALotOfPressure({"error": f"{response.status_code} (speedrun.com)",
-                                                       "details": message})
-                        print(f"Rate limit value: {rate_limit.get_value()}/{RATE_LIMIT}")
-                    print(f"WARNING: {status}. {message} Retrying in {retry_delay} seconds.")
-                    sleep(retry_delay)
-                    # No break or raise as we want to retry
-                else:
-                    raise SpeedrunComError({"error": f"{status} (speedrun.com)", "details": message})
-
-            else:
-                return json_data
+            data = __handle_json_data(json_data, response.status_code)
+            if data:
+                return data
 
 
 def params_from_url(url: str):
@@ -334,7 +320,7 @@ def map_to_dto(dto_mappable_object_list) -> list[dict[str, Union[str, bool, int]
     return [dto_mappable_object.to_dto() for dto_mappable_object in dto_mappable_object_list]
 
 
-def start_and_wait_for_threads(fn, items: list):
+def start_and_wait_for_threads(fn: Callable, items: list):
     futures = []
     for item in items:
         while True:

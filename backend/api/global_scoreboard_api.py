@@ -13,9 +13,10 @@ from sqlalchemy.sql.schema import Column
 from sqlalchemy.sql.sqltypes import String
 
 from api.api_wrappers import authentication_required
+from models.exceptions import UnderALotOfPressure, UnhandledThreadException, UserUpdaterError
 from models.core_models import Player
 from services.user_updater import get_updated_user
-from services.utils import UnhandledThreadException, map_to_dto, UnderALotOfPressure, UserUpdaterError
+from services.utils import map_to_dto
 import configs
 
 api = Blueprint("global_scoreboard_api", __name__)

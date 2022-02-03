@@ -7,6 +7,7 @@ from time import strftime
 from urllib.parse import unquote
 import httplib2
 import requests
+from models.exceptions import SpeedrunComError, UserUpdaterError
 
 from models.game_search_models import GameValues
 from models.core_models import db, Player
@@ -15,7 +16,7 @@ from services.user_updater_helpers import BasicJSONType, extract_valid_personal_
     get_subcategory_variables, keep_runs_before_soft_cutoff, MIN_LEADERBOARD_SIZE, update_runner_in_database, \
     extract_top_runs_and_score, extract_sorted_valid_runs_from_leaderboard
 from services.utils import clear_cache_for_user_async, get_file, get_paginated_response, \
-    MAXIMUM_RESULTS_PER_PAGE, SpeedrunComError, start_and_wait_for_threads, UserUpdaterError
+    MAXIMUM_RESULTS_PER_PAGE, start_and_wait_for_threads
 import configs
 
 TIME_BONUS_DIVISOR = 3600 * 12  # 12h (1/2 day) for +100%
