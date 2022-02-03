@@ -199,7 +199,10 @@ const Dashboard = (props: DashboardProps) => {
           const result = JSON.parse(error) as UpdateRunnerResult
           setAlertVariant(result.state ?? 'danger')
           setAlertMessage(result.message ?? '')
-          if (errorResponse.status === StatusCodes.BAD_REQUEST && result.score < 1) {
+          if (errorResponse.status === StatusCodes.BAD_REQUEST &&
+            result.score < 1 &&
+            !result.message?.startsWith('This user has already been updated')
+          ) {
             setPlayersState(playersState.filter(player => player.userId !== result.userId))
           }
         } catch {
