@@ -45,9 +45,9 @@ class Run:
         self.level_fraction = 1 / (level_count + 1) if level else 1
 
     def __str__(self) -> str:
-        level_str = f"Level/{self.level_fraction}: {self.level}, " if self.level else ""
+        level_str = f"Level/{str(self.level_fraction)[:4]}: {self.level}, " if self.level else ""
         return f"Run: <Game: {self.game}, " + \
-               f"Category: {self.category}, {level_str}{self.variables} {ceil(self._points * 100) / 100}>"
+               f"Category: {self.category}, {level_str}{self.variables}, {ceil(self._points * 100) / 100}>"
 
     def __eq__(self, other: object) -> bool:
         """
