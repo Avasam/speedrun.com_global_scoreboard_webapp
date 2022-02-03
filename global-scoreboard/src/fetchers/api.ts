@@ -1,5 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 
+import { getLocalStorageItem, setLocalStorageItem } from 'src/utils/localStorage'
+
 type QueryParams = Record<string, boolean | number | string | null>
 
 const FIRST_HTTP_CODE = StatusCodes.BAD_REQUEST
@@ -25,7 +27,7 @@ const apiFetch = <R>(method: RequestInit['method'], url: string, body?: RequestI
       ? {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'Authorization': `Bearer: ${localStorage.getItem('jwtToken')}`,
+        'Authorization': `Bearer: ${getLocalStorageItem('jwtToken', '')}`,
       }
       : undefined,
     body,
@@ -38,7 +40,7 @@ const apiFetch = <R>(method: RequestInit['method'], url: string, body?: RequestI
       // If a token is sent back as part of any response, set it.
       // This could be a first login, or a login session extension.
       if (response.token) {
-        localStorage.setItem('jwtToken', response.token)
+        setLocalStorageItem('jwtToken', response.token)
       }
 
       return response as R

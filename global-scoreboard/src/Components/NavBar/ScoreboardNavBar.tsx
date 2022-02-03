@@ -10,14 +10,20 @@ import LoginModal from './LoginModal'
 import type { Themes } from 'src/Components/ThemeProvider'
 import { DARK_THEMES, LIGHT_THEMES, ThemeContext } from 'src/Components/ThemeProvider'
 import type Player from 'src/Models/Player'
+import { getLocalStorageItem } from 'src/utils/localStorage'
 
 const ThemeDropDownItem = ({ theme }: { theme: Themes }) => {
   const [, setTheme] = useContext(ThemeContext)
+  const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+  const currentPreferedTheme = getLocalStorageItem<Themes>(
+    'preferedBootstrapTheme',
+    prefersDarkScheme ? 'Darkly' : 'Default'
+  )
 
   return <Dropdown.Item onClick={() => setTheme(theme)}>
     {theme}
     {' '}
-    {localStorage.getItem('preferedBootstrapTheme') === theme && <FontAwesomeIcon icon={faStar} />}
+    {currentPreferedTheme === theme && <FontAwesomeIcon icon={faStar} />}
   </Dropdown.Item>
 }
 

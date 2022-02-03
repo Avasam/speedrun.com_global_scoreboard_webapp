@@ -2,7 +2,7 @@ import 'react-bootstrap-table2-paginator/dist/react-bootstrap-table2-paginator.m
 import 'src/Components/Dashboard/Scoreboard.css'
 import './GameSearch.css'
 
-import type { ChangeEventHandler, Dispatch, SetStateAction } from 'react'
+import type { ChangeEventHandler } from 'react'
 import { useEffect, useState } from 'react'
 import { Col, Container, Form, FormGroup, FormLabel, InputGroup, Row, Spinner } from 'react-bootstrap'
 import type { ColumnDescription } from 'react-bootstrap-table-next'
@@ -14,23 +14,16 @@ import { Helmet } from 'react-helmet'
 import { Picky } from 'react-picky'
 
 import GameCategorySearchBar from './GameCategorySearchBar'
+import type { FormatExtraDataProps } from './RunIdFormatter'
 import runIdFormatter from './RunIdFormatter'
 import ScoreDropCalculator from './ScoreDropCalculator'
 import defaultPaginationOptions from 'src/Components/Dashboard/TableElements/PaginationProps'
 import sortCaret from 'src/Components/Dashboard/TableElements/SortCarret'
 import type { GameValueRow, IdToNameMap, PlatformSelectOption } from 'src/Models/GameSearch'
 import { getAllGameValues, getAllPlatforms } from 'src/Models/GameSearch'
-import { getLocalStorageItem } from 'src/utils/localStorage'
+import { getLocalStorageItem, setLocalStorageItem } from 'src/utils/localStorage'
 import math from 'src/utils/math'
 import { secondsToTimeString, timeStringToSeconds } from 'src/utils/time'
-
-type FormatExtraDataProps = {
-  platforms: IdToNameMap
-  gameMap: IdToNameMap
-  setGameMap: Dispatch<SetStateAction<IdToNameMap>>
-  categoryMap: IdToNameMap
-  setCategoryMap: Dispatch<SetStateAction<IdToNameMap>>
-}
 
 type NumberFilter = (value: { number: number | '', comparator: Comparator }) => void
 let platformFilter: (value: string[]) => void
@@ -54,13 +47,13 @@ const columns: ColumnDescription<GameValueRow, FormatExtraDataProps>[] = [
     formatter: (_, row, __, formatExtraData) => formatExtraData?.categoryMap[row.categoryId] ?? row.categoryId,
   },
   {
-    dataField: 'platformId',
+    dataField: 'platforms',
     text: 'Platform',
     formatter: (_, row, __, formatExtraData) =>
-      (row.platformId &&
-        formatExtraData &&
-        formatExtraData.platforms[row.platformId]) ||
-      '-',
+      row
+        .platforms
+        .map(platformId => formatExtraData?.allPlatforms[platformId])
+        .join(', '),
     filter: multiSelectFilter({
       options: {},
       getFilter: filter => platformFilter = filter,
@@ -113,10 +106,11 @@ const columns: ColumnDescription<GameValueRow, FormatExtraDataProps>[] = [
 
 const GameSearch = () => {
   const [gameValues, setGameValues] = useState<GameValueRow[]>([])
-  const [platforms, setPlatforms] = useState<IdToNameMap>()
+  const [allPlatforms, setAllPlatforms] = useState<IdToNameMap>()
   const [selectedPlatforms, setSelectedPlatforms] = useState<PlatformSelectOption[]>([])
   const [gameMap, setGameMap] = useState<IdToNameMap>({})
   const [categoryMap, setCategoryMap] = useState<IdToNameMap>({})
+  const [includeAlternatePlatforms, setIncludeAlternatePlatforms] = useState(false)
   const [minTimeText, setMinTimeText] = useState('')
   const [maxTimeText, setMaxTimeText] = useState('')
 
@@ -124,10 +118,11 @@ const GameSearch = () => {
     setGameMap(getLocalStorageItem('games', {}))
     setCategoryMap(getLocalStorageItem('categories', {}))
     doPlatformSelection(getLocalStorageItem('selectedPlatforms', []))
+    setIncludeAlternatePlatforms(getLocalStorageItem('includeAlternatePlatforms', true))
     doMinTimeChange(getLocalStorageItem('selectedMinTime', ''))
     doMaxTimeChange(getLocalStorageItem('selectedMaxTime', ''))
     void getAllGameValues().then(setGameValues)
-    void getAllPlatforms().then(setPlatforms)
+    void getAllPlatforms().then(setAllPlatforms)
   }, [])
 
   const doPlatformSelection = (selectedPlatformOptions: PlatformSelectOption[]) => {
@@ -136,7 +131,12 @@ const GameSearch = () => {
   }
   const handlePlatformSelection = (selectedPlatformOptions: PlatformSelectOption[]) => {
     doPlatformSelection(selectedPlatformOptions)
-    localStorage.setItem('selectedPlatforms', JSON.stringify(selectedPlatformOptions))
+    setLocalStorageItem('selectedPlatforms', selectedPlatformOptions)
+  }
+
+  const handleIncludeAlternatePlatform: ChangeEventHandler<HTMLInputElement> = event => {
+    setIncludeAlternatePlatforms(event.currentTarget.checked)
+    setLocalStorageItem('includeAlternatePlatforms', event.currentTarget.checked)
   }
 
   const doMinTimeChange = (minTime: string) => {
@@ -149,7 +149,7 @@ const GameSearch = () => {
   const handleMinTimeChange: ChangeEventHandler<HTMLInputElement> = event => {
     if (!(/^[1-9]?[\d:]{0,7}\d?$/).test(event.currentTarget.value)) return
     doMinTimeChange(event.currentTarget.value)
-    localStorage.setItem('selectedMinTime', JSON.stringify(event.currentTarget.value))
+    setLocalStorageItem('selectedMinTime', event.currentTarget.value)
   }
 
   const doMaxTimeChange = (maxTime: string) => {
@@ -162,17 +162,19 @@ const GameSearch = () => {
   const handleMaxTimeChange: ChangeEventHandler<HTMLInputElement> = event => {
     if (!(/^[1-9]?[\d:]{0,7}\d?$/).test(event.currentTarget.value)) return
     doMaxTimeChange(event.currentTarget.value)
-    localStorage.setItem('selectedMaxTime', JSON.stringify(event.currentTarget.value))
+    setLocalStorageItem('selectedMaxTime', event.currentTarget.value)
   }
 
   const buildPlatformsOptions = () =>
     Object
-      .entries(platforms ?? {})
-      .filter(([id]) => gameValues.some(gameValue => gameValue.platformId === id))
+      .entries(allPlatforms ?? {})
+      .filter(([id]) => gameValues.some(gameValue =>
+        gameValue.platformId === id ||
+        (includeAlternatePlatforms && gameValue.alternatePlatformsIds.includes(id))))
       .map(([id, name]) => ({ id, name } as PlatformSelectOption))
 
   const noDataIndication = () =>
-    gameValues.length === 0 || !platforms
+    gameValues.length === 0 || !allPlatforms
       ? <Spinner animation='border' role='scoreboard' variant='primary'>
         <span className='visually-hidden'>Building the GameSearch. Please wait...</span>
       </Spinner>
@@ -188,12 +190,26 @@ const GameSearch = () => {
     <ToolkitProvider
       bootstrap4
       columns={columns.map(column => {
-        if (!platforms) return column
-        const formatExtraData: FormatExtraDataProps = { platforms, gameMap, setGameMap, categoryMap, setCategoryMap }
+        const text = column.dataField === 'platforms' && includeAlternatePlatforms
+          ? 'Platforms'
+          : column.text
+        const formatExtraData: FormatExtraDataProps = {
+          allPlatforms: allPlatforms ?? {},
+          gameMap,
+          setGameMap,
+          categoryMap,
+          setCategoryMap,
+        }
 
-        return { ...column, formatExtraData, sortCaret }
+        return { ...column, text, formatExtraData, sortCaret }
       })}
-      data={gameValues}
+      data={gameValues.map(gameValue => {
+        gameValue.platforms = includeAlternatePlatforms
+          ? [gameValue.platformId, ...gameValue.alternatePlatformsIds]
+          : [gameValue.platformId]
+
+        return gameValue
+      })}
       keyField='runId'
       search={{
         searchFormatted: true,
@@ -208,7 +224,7 @@ const GameSearch = () => {
         >
           {(({ paginationProps, paginationTableProps }) =>
             <>
-              <Row className='gx-0'>
+              <Row className='gx-0' style={{ alignItems: 'center' }}>
                 <Col xs='auto'>
                   <GameCategorySearchBar
                     {...toolkitprops.searchProps}
@@ -232,6 +248,14 @@ const GameSearch = () => {
                     placeholder='Filter by platforms'
                     value={selectedPlatforms}
                     valueKey='id'
+                  />
+                </Col>
+                <Col className='mb-2 me-2' xs='auto'>
+                  <Form.Check
+                    checked={includeAlternatePlatforms}
+                    id='includeAlternatePlatforms'
+                    label='Include alternate platforms'
+                    onChange={handleIncludeAlternatePlatform}
                   />
                 </Col>
                 <FormGroup as={Col} className='mb-2 me-auto time-between' xs='auto'>

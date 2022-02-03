@@ -13,6 +13,7 @@ class GameValues(BaseModel):
     category_id = db.Column(db.String(8), primary_key=True)
     run_id = db.Column(db.String(8), nullable=False)
     platform_id = db.Column(db.String(8))
+    alternate_platforms = db.Column(db.String())
     wr_time = db.Column(db.Integer, nullable=False)
     wr_points = db.Column(db.Integer, nullable=False)
     mean_time = db.Column(db.Integer, nullable=False)
@@ -22,14 +23,23 @@ class GameValues(BaseModel):
             game_id: str,
             category_id: str,
             platform_id: Optional[str],
+            alternate_platforms: Optional[str],
             wr_time: int,
             wr_points: int,
             mean_time: int,
             run_id: str):
         existing_game_values = GameValues.get(game_id, category_id)
         if existing_game_values is None:
-            return GameValues.create(game_id, category_id, platform_id, wr_time, wr_points, mean_time, run_id)
+            return GameValues.create(
+                game_id,
+                category_id,
+                platform_id,
+                alternate_platforms,
+                wr_time,
+                wr_points,
+                mean_time, run_id)
         existing_game_values.platform_id = platform_id
+        existing_game_values.alternate_platforms = alternate_platforms
         existing_game_values.wr_time = wr_time
         existing_game_values.wr_points = wr_points
         existing_game_values.mean_time = mean_time
@@ -42,6 +52,7 @@ class GameValues(BaseModel):
             game_id: str,
             category_id: str,
             platform_id: Optional[str],
+            alternate_platforms: Optional[str],
             wr_time: int,
             wr_points: int,
             mean_time: int,
@@ -50,6 +61,7 @@ class GameValues(BaseModel):
             game_id=game_id,
             category_id=category_id,
             platform_id=platform_id,
+            alternate_platforms=alternate_platforms,
             wr_time=wr_time,
             wr_points=wr_points,
             mean_time=mean_time,
@@ -78,6 +90,7 @@ class GameValues(BaseModel):
             "gameId": self.game_id,
             "categoryId": self.category_id,
             "platformId": self.platform_id,
+            "alternatePlatformsIds": self.alternate_platforms.split(",") if self.alternate_platforms else [],
             "wrTime": self.wr_time,
             "wrPoints": self.wr_points,
             "meanTime": self.mean_time,

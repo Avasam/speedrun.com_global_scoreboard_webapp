@@ -140,11 +140,15 @@ def __set_user_points(user: User) -> None:
             # TODO : Current issues with subcategories where they try to create at the same time bc in two threads
             # Solution 1: Include subcategories as part of PRIMARY key
             # Solution 2: Batch create/update AFTER all threads are done running
+            platform_id = pb["system"]["platform"]
+            alternate_platforms: list[str] = pb["game"]["data"]["platforms"]
+            alternate_platforms.remove(platform_id)
             GameValues.create_or_update(
                 run_id=run.id_,
                 game_id=run.game,
                 category_id=run.category,
-                platform_id=pb["system"]["platform"],
+                platform_id=platform_id,
+                alternate_platforms=",".join(alternate_platforms),
                 wr_time=floor(run.primary_t),
                 wr_points=floor(run._points),
                 mean_time=floor(run._mean_time),

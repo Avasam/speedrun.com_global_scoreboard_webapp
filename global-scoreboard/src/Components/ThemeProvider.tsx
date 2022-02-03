@@ -1,6 +1,8 @@
 import type { FC } from 'react'
 import { createContext, useEffect, useMemo, useRef, useState } from 'react'
 
+import { getLocalStorageItem, setLocalStorageItem } from 'src/utils/localStorage'
+
 // TODO: Get through api: https://bootswatch.com/api/5.json
 export const THEMES = [
   // Light
@@ -53,8 +55,7 @@ const setHref = (element: HTMLLinkElement, theme: Themes) => {
 
 const ThemeProvider: FC = ({ children }) => {
   const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches
-  const savedTheme = localStorage.getItem('preferedBootstrapTheme') as (Themes | null) ??
-    (prefersDarkScheme ? 'Darkly' : 'Default')
+  const savedTheme = getLocalStorageItem<Themes>('preferedBootstrapTheme', prefersDarkScheme ? 'Darkly' : 'Default')
   const [preferedBootstrapTheme, setpreferedBootstrapTheme] = useState(savedTheme)
   const bootswatchStyleRef = useRef<HTMLLinkElement>()
 
@@ -82,7 +83,7 @@ const ThemeProvider: FC = ({ children }) => {
       if (!bootswatchStyleRef.current) return
       setHref(bootswatchStyleRef.current, theme)
       setpreferedBootstrapTheme(theme)
-      localStorage.setItem('preferedBootstrapTheme', theme)
+      setLocalStorageItem('preferedBootstrapTheme', theme)
     }
 
     return [preferedBootstrapTheme, saveTheme] as [typeof preferedBootstrapTheme, typeof saveTheme]
