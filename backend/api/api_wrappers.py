@@ -51,9 +51,14 @@ def authentication_required(f):
             "exp": datetime.utcnow() + timedelta(days=1)},
             current_app.config["SECRET_KEY"])
         try:
-            response_content: dict[str, str] = json.loads(response[0])
+            response_message: dict[str, str] = json.loads(response[0])
         except json.JSONDecodeError:
-            response_content = {"message": response[0]}
+            response_message = {"message": response[0]}
+
+        try:
+            response_content = {**response_message}
+        except TypeError:
+            response_content = {"message": response_message}
 
         return (
             json.dumps({

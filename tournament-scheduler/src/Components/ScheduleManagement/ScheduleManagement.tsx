@@ -14,11 +14,11 @@ import type User from 'src/Models/User'
 import { arrayMove } from 'src/utils/objectUtils'
 
 const getSchedules = () =>
-  apiGet<ScheduleDto[] | undefined>('schedules')
-    .then(scheduleDtos => scheduleDtos?.map(scheduleDto => new Schedule(scheduleDto)) ?? [])
+  apiGet<ScheduleDto[]>('schedules')
+    .then(scheduleDtos => scheduleDtos.map(scheduleDto => new Schedule(scheduleDto)))
 
 const postSchedules = (schedule: ScheduleDto) =>
-  apiPost<number>('schedules', schedule)
+  apiPost<{ id: number }>('schedules', schedule)
 
 const putSchedule = (schedule: ScheduleDto) =>
   apiPut(`schedules/${schedule.id}`, schedule)
@@ -33,11 +33,11 @@ const putScheduleOrder = (scheduleOrderDtos: ScheduleOrderDto[]) =>
   apiPut('schedules/order', scheduleOrderDtos)
 
 const getGroups = () =>
-  apiGet<ScheduleGroupDto[] | undefined>('schedule_groups')
-    .then(scheduleGroupDtos => scheduleGroupDtos?.map(scheduleGroupDto => new ScheduleGroup(scheduleGroupDto)) ?? [])
+  apiGet<ScheduleGroupDto[]>('schedule_groups')
+    .then(scheduleGroupDtos => scheduleGroupDtos.map(scheduleGroupDto => new ScheduleGroup(scheduleGroupDto)))
 
 const postGroups = (scheduleGroup: ScheduleGroupDto) =>
-  apiPost<number>('schedule_groups', scheduleGroup)
+  apiPost<{ id: number }>('schedule_groups', scheduleGroup)
 
 const putGroup = (scheduleGroup: ScheduleGroupDto) =>
   apiPut(`schedule_groups/${scheduleGroup.id}`, scheduleGroup)
@@ -91,7 +91,7 @@ const ScheduleManagement = (props: ScheduleManagementProps) => {
   const handleCreateGroup = () => {
     const newGroup = ScheduleGroup.createDefault(getDefaultOrder())
     void postGroups(newGroup)
-      .then(id => setGroups([{ ...newGroup, id }, ...groups]))
+      .then(group => setGroups([{ ...newGroup, id: group.id }, ...groups]))
   }
 
   const handleDeleteGroup = (groupId: number) =>
@@ -101,7 +101,7 @@ const ScheduleManagement = (props: ScheduleManagementProps) => {
           if (schedule.groupId === groupId)
             schedule.groupId = null
         setSchedules(schedules)
-        setGroups(groups.filter(group => group.id !== groupId))
+        setGroups([...groups.filter(group => group.id !== groupId)])
       })
 
   const handleEditGroup = (group: ScheduleGroup, newGroupname: string) =>
