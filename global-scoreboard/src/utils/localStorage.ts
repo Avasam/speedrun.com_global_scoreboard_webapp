@@ -10,9 +10,13 @@ export const getLocalStorageItem = <T extends LocalStorageItem>(key: string, fal
     }
   }
 
-  return item != null
-    ? JSON.parse(item) as T
-    : fallback
+  if (item == null) return fallback
+  try {
+    return JSON.parse(item) as T
+  } catch {
+    localStorage.removeItem(key)
+    return fallback
+  }
 }
 
 export const setLocalStorageItem = (key: string, item: LocalStorageItem) =>

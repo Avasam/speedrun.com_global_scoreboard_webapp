@@ -2,6 +2,7 @@ import json
 
 from datetime import datetime, timedelta
 from functools import wraps
+from typing import Union
 from flask import current_app, jsonify, request
 import jwt
 
@@ -45,11 +46,13 @@ def authentication_required(f):
         if not isinstance(response, tuple) or not isinstance(response[0], str):
             return response
 
-        extended_token = jwt.encode({
+        extended_token: Union[bytes, str] = jwt.encode({
             "sub": data["sub"],
             "iat": data["iat"],
             "exp": datetime.utcnow() + timedelta(days=1)},
             current_app.config["SECRET_KEY"])
+        if isinstance(extended_token, bytes):
+            extended_token = extended_token.decode()
         try:
             response_message: dict[str, str] = json.loads(response[0])
         except json.JSONDecodeError:
