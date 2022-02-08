@@ -5,9 +5,10 @@ import type { ColumnFormatter } from 'react-bootstrap-table-next'
 
 import type { GameValueRow, IdToNameMap } from 'src/Models/GameSearch'
 import { fetchValueNamesForRun } from 'src/Models/GameSearch'
+import { setLocalStorageItem } from 'src/utils/localStorage'
 
-type FormatExtraDataProps = {
-  platforms: IdToNameMap
+export type FormatExtraDataProps = {
+  allPlatforms: IdToNameMap
   gameMap: IdToNameMap
   setGameMap: Dispatch<SetStateAction<IdToNameMap>>
   categoryMap: IdToNameMap
@@ -24,12 +25,12 @@ const runIdFormatter: ColumnFormatter<GameValueRow, FormatExtraDataProps> =
           const [game, category] = results
           formatExtraData.setGameMap(previousGames => {
             const newGames = { ...previousGames, ...game }
-            localStorage.setItem('games', JSON.stringify(newGames))
+            setLocalStorageItem('games', newGames)
             return newGames
           })
           formatExtraData.setCategoryMap(previousCategories => {
             const newCategories = { ...previousCategories, ...category }
-            localStorage.setItem('categories', JSON.stringify(newCategories))
+            setLocalStorageItem('categories', newCategories)
             return newCategories
           })
         })

@@ -8,8 +8,9 @@ import uuid
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_, orm, text
+from models.exceptions import SpeedrunComError, UserUpdaterError
 
-from services.utils import get_file, SpeedrunComError, UserUpdaterError
+from services.utils import get_file
 
 # TODO: use and typecheck / typeguard JSONType
 __JSONTypeBase = Union[str, int, float, bool, None, dict[str, Any], list[Any]]
@@ -319,7 +320,6 @@ class Player(BaseModel):
     def update_schedule_order(self, schedule_orders: list[JSONObjectType]) -> bool:
         for schedule_order in schedule_orders:
             try:
-                print(schedule_order["order"], type(schedule_order["order"]))
                 id_filter = ScheduleGroup.group_id if schedule_order["isGroup"] else Schedule.schedule_id
                 table = ScheduleGroup if schedule_order["isGroup"] else Schedule
                 to_update = cast(

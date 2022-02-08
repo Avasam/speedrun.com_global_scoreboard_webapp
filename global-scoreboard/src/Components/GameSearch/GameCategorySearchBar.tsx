@@ -4,6 +4,7 @@ import type { SearchBarProps } from 'react-bootstrap-table2-toolkit'
 
 import { apiGet, MAX_PAGINATION } from 'src/fetchers/api'
 import type { DataArray, SpeedruncomGame } from 'src/Models/SpeedruncomResponse'
+import { setLocalStorageItem } from 'src/utils/localStorage'
 import math from 'src/utils/math'
 
 type IdToNameMap = Record<string, string>
@@ -44,7 +45,7 @@ const GameCategorySearchBar = (props: GameCategorySearchProps) => {
           .then(games => {
             props.setGameMap(previousGames => {
               const newGames = { ...previousGames, ...games }
-              localStorage.setItem('games', JSON.stringify(newGames))
+              setLocalStorageItem('games', newGames)
               return newGames
             })
             props.onSearch?.(searchText)

@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 
 from math import floor
 from time import strftime
@@ -97,7 +97,7 @@ def extract_sorted_valid_runs_from_leaderboard(
     return sorted(valid_runs, key=lambda r: r["run"]["times"]["primary_t"])
 
 
-def get_subcategory_variables(run: BasicJSONType) -> dict[str, dict[str, str]]:
+def get_subcategory_variables(run: BasicJSONType):
     """
     Produce a Dictionary of a run's sub-categories where:
     - key: variable id (ex: Framerate)
@@ -110,10 +110,12 @@ def get_subcategory_variables(run: BasicJSONType) -> dict[str, dict[str, str]]:
         if game_variable["is-subcategory"]
     ]
 
+    values: dict[str, str] = run["values"]
+
     # Only Keep the variables that are one of the game's subcategories
     return {
         pb_var_id: pb_var_value
-        for pb_var_id, pb_var_value in run["values"].items()
+        for pb_var_id, pb_var_value in values.items()
         if pb_var_id in game_subcategory_ids
     }
 
@@ -165,8 +167,9 @@ def keep_runs_before_soft_cutoff(runs: list[BasicJSONType]):
     return runs
 
 
-def extract_top_runs_and_score(runs: list[Run]) -> tuple[list[Run], list[Run]]:
-    top_runs, lesser_runs = [], []
+def extract_top_runs_and_score(runs: list[Run]):
+    top_runs: list[Run] = []
+    lesser_runs: list[Run] = []
     position = 0
 
     # Split the list of runs into 2: "Top 60 (by weight)" and "Other lesser runs"
@@ -183,11 +186,11 @@ def extract_top_runs_and_score(runs: list[Run]) -> tuple[list[Run], list[Run]]:
     # Check if it's possible to replace a handful of ILs by a full run, starting backward.
     # This can happen when there's not enough ILs to fill in for the weight of a full run.
     # See: https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/issues/174
-    first_lesser_full_game = next(filter(lambda run: run.level_fraction == 1, lesser_runs), None)
+    first_lesser_full_game: Optional[Run] = next(filter(lambda run: run.level_fraction == 1, lesser_runs), None)
     if first_lesser_full_game is not None and position < MIN_SAMPLE_SIZE:
         runs_to_transfer_weight = MIN_SAMPLE_SIZE - position
-        runs_to_transfer_reversed = []
-        for run in runs[::-1]:
+        runs_to_transfer_reversed: list[Run] = []
+        for run in top_runs[::-1]:
             if runs_to_transfer_weight >= 1:
                 break
             next_weight = runs_to_transfer_weight + run.level_fraction

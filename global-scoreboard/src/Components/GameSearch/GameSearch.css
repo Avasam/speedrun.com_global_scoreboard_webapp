@@ -7,6 +7,21 @@
   max-height: calc(100vh - 192px) !important; /* Still fits on a <= 394px wide screen */
 }
 
+[data-theme="Darkly"] .picky__dropdown,
+[data-theme="Cyborg"] .picky__dropdown,
+[data-theme="Slate"] .picky__dropdown,
+[data-theme="Solar"] .picky__dropdown,
+[data-theme="Superhero"] .picky__dropdown,
+[data-theme="Vapor"] .picky__dropdown,
+[data-theme="Quartz"] .picky__dropdown{
+  background: var(--bs-dark);
+}
+
+.picky__dropdown .option,
+.picky__dropdown li{
+  background-color: transparent;
+}
+
 .time-between {
   white-space: nowrap;
 }
@@ -14,4 +29,8 @@
 .time-between .input-group {
   display: inline-flex;
   width: 190px;
+}
+
+[data-theme="Quartz"] .table td:first-child > a{
+  color: #e83283;
 }

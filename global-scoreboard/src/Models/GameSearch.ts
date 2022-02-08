@@ -11,7 +11,8 @@ export type IdToNameMap = Record<string, string>
 export type GameValue = {
   gameId: string
   categoryId: string
-  platformId: string | null
+  platformId: string
+  alternatePlatformsIds: string[]
   meanTime: number
   runId: string
   wrPoints: number
@@ -21,6 +22,7 @@ export type GameValue = {
 export type GameValueRow = GameValue & {
   wrPointsPerSecond: number
   meanPointsPerSecond: number
+  platforms: string[]
 }
 
 export type PlatformSelectOption = {
@@ -34,6 +36,7 @@ export const getAllGameValues = () =>
       ...gameValue,
       wrPointsPerSecond: gameValue.wrPoints / gameValue.wrTime,
       meanPointsPerSecond: gameValue.wrPoints / gameValue.meanTime,
+      platforms: [],
     })))
 
 export const getAllPlatforms = () =>

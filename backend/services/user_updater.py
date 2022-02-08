@@ -7,6 +7,7 @@ from time import strftime
 from urllib.parse import unquote
 import httplib2
 import requests
+from models.exceptions import SpeedrunComError, UserUpdaterError
 
 from models.game_search_models import GameValues
 from models.core_models import db, Player
@@ -15,7 +16,7 @@ from services.user_updater_helpers import BasicJSONType, extract_valid_personal_
     get_subcategory_variables, keep_runs_before_soft_cutoff, MIN_LEADERBOARD_SIZE, update_runner_in_database, \
     extract_top_runs_and_score, extract_sorted_valid_runs_from_leaderboard
 from services.utils import clear_cache_for_user_async, get_file, get_paginated_response, \
-    MAXIMUM_RESULTS_PER_PAGE, SpeedrunComError, start_and_wait_for_threads, UserUpdaterError
+    MAXIMUM_RESULTS_PER_PAGE, start_and_wait_for_threads
 import configs
 
 TIME_BONUS_DIVISOR = 3600 * 12  # 12h (1/2 day) for +100%
@@ -31,7 +32,7 @@ def get_updated_user(user_id: str) -> dict[str, Union[str, None, float, int, Poi
         print(f"Update request for: {user._name}")
 
         try:
-            __set_user_code_and_name(user)
+            user.fetch_and_set_user_code_and_name()
         except SpeedrunComError as exception:
             if not exception.args[0]["error"].startswith("404"):
                 raise
@@ -65,7 +66,7 @@ def get_updated_user(user_id: str) -> dict[str, Union[str, None, float, int, Poi
             else:
                 cant_update_time = configs.last_updated_days[0]
                 text_output = "This user has already been updated in the past " + \
-                    f"{cant_update_time} day {'s' if cant_update_time != 1 else ''}"
+                    f"{cant_update_time} day{'s' if cant_update_time != 1 else ''}"
                 result_state = "warning"
 
         # When we can finally successfully update a player, clear the cache of their specific responses
@@ -93,24 +94,6 @@ def get_updated_user(user_id: str) -> dict[str, Union[str, None, float, int, Poi
             "error": "Connexion interrupted",
             "details": exception}
         ) from exception
-
-
-def __set_user_code_and_name(user: User) -> None:
-    url = "https://www.speedrun.com/api/v1/users/{user}".format(user=user._id)
-    infos = get_file(url, {}, True)
-
-    user._id = infos["data"]["id"]
-    location = infos["data"]["location"]
-    if location is not None:
-        country = location["country"]
-        region = location.get("region")
-        user._country_code = region["code"] if region else country["code"]
-    else:
-        user._country_code = None
-    user._name = infos["data"]["names"].get("international")
-    if infos["data"]["role"] == "banned":
-        user._banned = True
-        user._points = 0
 
 
 def __set_user_points(user: User) -> None:
@@ -157,11 +140,15 @@ def __set_user_points(user: User) -> None:
             # TODO : Current issues with subcategories where they try to create at the same time bc in two threads
             # Solution 1: Include subcategories as part of PRIMARY key
             # Solution 2: Batch create/update AFTER all threads are done running
+            platform_id = pb["system"]["platform"]
+            alternate_platforms: list[str] = pb["game"]["data"]["platforms"]
+            alternate_platforms.remove(platform_id)
             GameValues.create_or_update(
                 run_id=run.id_,
                 game_id=run.game,
                 category_id=run.category,
-                platform_id=pb["system"]["platform"],
+                platform_id=platform_id,
+                alternate_platforms=",".join(alternate_platforms),
                 wr_time=floor(run.primary_t),
                 wr_points=floor(run._points),
                 mean_time=floor(run._mean_time),

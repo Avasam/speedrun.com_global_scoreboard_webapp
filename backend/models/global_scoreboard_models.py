@@ -3,24 +3,24 @@ from typing import Optional, Union
 
 from math import ceil
 
-from services.utils import map_to_dto
+from services.utils import map_to_dto, get_file
 
 
 class Run:
-    id_: str = ""
-    primary_t: float = 0.0
-    game: str = ""
-    game_name: str = ""
-    category: str = ""
-    category_name: str = ""
+    id_ = ""
+    primary_t = 0.0
+    game = ""
+    game_name = ""
+    category = ""
+    category_name = ""
     variables = {}
-    level: str = ""
-    level_name: str = ""
-    level_fraction: float = 1
-    _points: float = 0
+    level = ""
+    level_name = ""
+    level_fraction = 1.0
+    _points = 0.0
     # This below section is for game search
-    _mean_time: float = 0
-    _is_wr_time: bool = False
+    _mean_time = 0.0
+    _is_wr_time = False
 
     # TODO: Reanable sonarlint max args rule
     def __init__(
@@ -45,9 +45,9 @@ class Run:
         self.level_fraction = 1 / (level_count + 1) if level else 1
 
     def __str__(self) -> str:
-        level_str = f"Level/{self.level_fraction}: {self.level}, " if self.level else ""
+        level_str = f"Level/{str(self.level_fraction)[:4]}: {self.level}, " if self.level else ""
         return f"Run: <Game: {self.game}, " + \
-               f"Category: {self.category}, {level_str}{self.variables} {ceil(self._points * 100) / 100}>"
+               f"Category: {self.category}, {level_str}{self.variables}, {ceil(self._points * 100) / 100}>"
 
     def __eq__(self, other: object) -> bool:
         """
@@ -99,3 +99,20 @@ class User:
             map_to_dto(self._points_distribution[0]),
             map_to_dto(self._points_distribution[1])
         ]
+
+    def fetch_and_set_user_code_and_name(self) -> None:
+        url = "https://www.speedrun.com/api/v1/users/{user}".format(user=self._id)
+        infos = get_file(url, {}, True)
+
+        self._id = infos["data"]["id"]
+        location = infos["data"]["location"]
+        if location is not None:
+            country = location["country"]
+            region = location.get("region")
+            self._country_code = region["code"] if region else country["code"]
+        else:
+            self._country_code = None
+        self._name = infos["data"]["names"].get("international")
+        if infos["data"]["role"] == "banned":
+            self._banned = True
+            self._points = 0
