@@ -169,7 +169,7 @@ def __set_user_points(user: User) -> None:
 
 def __set_run_points_and_category_name(run: Run) -> None:
     url = "https://www.speedrun.com/api/v1/leaderboards/{game}/{lvl_cat_str}{category}".format(
-        game=run.game,
+        game=run.game["id"],
         # If the run is an Individual Level, adapt the request url
         lvl_cat_str="level/{level}/".format(level=run.level["id"]) if run.level else "category/",
         category=run.category)
@@ -244,9 +244,9 @@ def __set_run_points_and_category_name(run: Run) -> None:
         r"((\d\d)$|Any)(?!%)",
         r"\1%",
         unquote(leaderboard["weblink"].split("#")[1])
-        .rstrip("1")
         .replace("_", " ")
         .title()
+        .replace("Ng1", "Ng+")
     )
 
     # Set game search data

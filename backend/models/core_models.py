@@ -68,17 +68,18 @@ class Player(BaseModel):
 
     schedules = db.relationship("Schedule", back_populates="owner")
 
-    @overload
-    def __init__(  # type: ignore # pylint: disable=too-many-arguments
-        self,
-        user_id: str | Column[String],
-        name: str | Column[String],
-        country_code: Optional[str | Column[String]],
-        score: int | float | Column[Integer],
-        last_update: Optional[str | Column[DateTime]],
-        score_details: Optional[str | Column[String]] = ...,
-        rank: Optional[int] = ...
-    ): ...
+    if TYPE_CHECKING:
+        @overload
+        def __init__(  # type: ignore # pylint: disable=too-many-arguments
+            self,
+            user_id: str | Column[String],
+            name: str | Column[String],
+            country_code: Optional[str | Column[String]],
+            score: int | float | Column[Integer],
+            last_update: Optional[str | Column[DateTime]],
+            score_details: Optional[str | Column[String]] = ...,
+            rank: Optional[int] = ...
+        ): ...
 
     @staticmethod
     def authenticate(api_key: str) -> tuple[Optional[Player], Optional[str]]:

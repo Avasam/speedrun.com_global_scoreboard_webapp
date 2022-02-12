@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Optional, cast, overload
+from typing import TYPE_CHECKING, Optional, cast, overload
 
 from datetime import datetime
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, orm
@@ -29,20 +29,21 @@ class Schedule(BaseModel):
     group_id: Optional[int | Column[Integer]] = db.Column(db.Integer, nullable=True)
     order: Optional[int | Column[Integer]] = db.Column(db.Integer, nullable=False, default=-1)
 
-    @overload
-    def __init__(  # type: ignore # pylint: disable=too-many-arguments
-        self,
-        registration_key: str | Column[String],
-        schedule_id: int | Column[Integer] = ...,
-        owner_id: str | Column[String] = ...,
-        owner: Player = ...,
-        time_slots: list[TimeSlot] = ...,
-        group_id: Optional[int | Column[Integer]] = ...,
-        name: Optional[str | Column[String]] = ...,
-        is_active: Optional[bool | Column[Boolean]] = ...,
-        deadline: Optional[datetime | Column[DateTime]] = ...,
-        order: Optional[int | Column[Integer]] = ...,
-    ): ...
+    if TYPE_CHECKING:
+        @overload
+        def __init__(  # type: ignore # pylint: disable=too-many-arguments
+            self,
+            registration_key: str | Column[String],
+            schedule_id: int | Column[Integer] = ...,
+            owner_id: str | Column[String] = ...,
+            owner: Player = ...,
+            time_slots: list[TimeSlot] = ...,
+            group_id: Optional[int | Column[Integer]] = ...,
+            name: Optional[str | Column[String]] = ...,
+            is_active: Optional[bool | Column[Boolean]] = ...,
+            deadline: Optional[datetime | Column[DateTime]] = ...,
+            order: Optional[int | Column[Integer]] = ...,
+        ): ...
 
     @staticmethod
     def get(schedule_id: int):
@@ -83,14 +84,15 @@ class ScheduleGroup(BaseModel):
     owner_id = db.Column(db.String(8), db.ForeignKey("player.user_id"), nullable=False)
     order: Optional[int | Column[Integer]] = db.Column(db.Integer, nullable=False, default=-1)
 
-    @overload
-    def __init__(  # type: ignore # pylint: disable=too-many-arguments
-        self,
-        group_id: int | Column[Integer] = ...,
-        name: str | Column[String] = ...,
-        order: Optional[int | Column[Integer]] = ...,
-        owner_id: str | Column[String] = ...,
-    ): ...
+    if TYPE_CHECKING:
+        @overload
+        def __init__(  # type: ignore # pylint: disable=too-many-arguments
+            self,
+            group_id: int | Column[Integer] = ...,
+            name: str | Column[String] = ...,
+            order: Optional[int | Column[Integer]] = ...,
+            owner_id: str | Column[String] = ...,
+        ): ...
 
     @staticmethod
     def get(group_id: int):
@@ -126,17 +128,18 @@ class TimeSlot(BaseModel):
         cascade=CASCADE,
         back_populates="timeslot")
 
-    @overload
-    def __init__(  # type: ignore # pylint: disable=too-many-arguments
-        self,
-        date_time: datetime | Column[DateTime],
-        maximum_entries: int | Column[Integer],
-        participants_per_entry: int | Column[Integer],
-        schedule_id: int | Column[Integer],
-        schedule: Schedule = ...,
-        time_slot_id: int | Column[Integer] = ...,
-        registrations: list[Registration] = ...,
-    ): ...
+    if TYPE_CHECKING:
+        @overload
+        def __init__(  # type: ignore # pylint: disable=too-many-arguments
+            self,
+            date_time: datetime | Column[DateTime],
+            maximum_entries: int | Column[Integer],
+            participants_per_entry: int | Column[Integer],
+            schedule_id: int | Column[Integer],
+            schedule: Schedule = ...,
+            time_slot_id: int | Column[Integer] = ...,
+            registrations: list[Registration] = ...,
+        ): ...
 
     @staticmethod
     def get_with_key(time_slot_id: int, registration_key: str) -> Optional[TimeSlot]:
@@ -196,14 +199,15 @@ class Registration(BaseModel):
         cascade=CASCADE,
         back_populates="registration")
 
-    @overload
-    def __init__(  # type: ignore # pylint: disable=too-many-arguments
-        self,
-        time_slot_id: int | Column[Integer],
-        registration_id: int | Column[Integer] = ...,
-        timeslot: TimeSlot = ...,
-        participants: list[Participant] = ...,
-    ): ...
+    if TYPE_CHECKING:
+        @overload
+        def __init__(  # type: ignore # pylint: disable=too-many-arguments
+            self,
+            time_slot_id: int | Column[Integer],
+            registration_id: int | Column[Integer] = ...,
+            timeslot: TimeSlot = ...,
+            participants: list[Participant] = ...,
+        ): ...
 
     def to_dto(self):
         return {
@@ -221,10 +225,11 @@ class Participant(BaseModel):
 
     registration: Registration = db.relationship("Registration", back_populates="participants")
 
-    @overload
-    def __init__(  # type: ignore # pylint: disable=too-many-arguments
-        self,
-        registration_id: int | Column[Integer] = ...,
-        name: str | Column[String] = ...,
-        registration: Registration = ...,
-    ): ...
+    if TYPE_CHECKING:
+        @overload
+        def __init__(  # type: ignore # pylint: disable=too-many-arguments
+            self,
+            registration_id: int | Column[Integer] = ...,
+            name: str | Column[String] = ...,
+            registration: Registration = ...,
+        ): ...

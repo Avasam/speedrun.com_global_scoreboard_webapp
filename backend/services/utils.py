@@ -9,7 +9,7 @@ from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
 from json.decoder import JSONDecodeError
-from math import ceil, floor, sqrt
+from math import ceil, floor
 from random import randint
 from sqlite3 import OperationalError
 from threading import BoundedSemaphore, Timer, Thread
@@ -162,6 +162,7 @@ def __handle_json_data(json_data: JSONObjectType, response_status_code: int):
         # No break or raise as we want to retry
     else:
         raise SpeedrunComError({"error": f"{status} (speedrun.com)", "details": message})
+    return None
 
 
 def __get_request_cache_bust_if_disk_quota_exceeded(
@@ -300,7 +301,7 @@ def get_paginated_response(url: str, params: dict[str, str]) -> dict[Literal["da
             except UserUpdaterError as exception:
                 if exception.args[0]["error"] != "HTTPError 500" or results_per_page <= MINIMUM_RESULTS_PER_PAGE:
                     raise
-                reduced_results_per_page = max(floor(results_per_page / sqrt(7)), MINIMUM_RESULTS_PER_PAGE)
+                reduced_results_per_page = max(floor(results_per_page / 2.5), MINIMUM_RESULTS_PER_PAGE)
                 print("SR.C returned 500 for a paginated request. Reducing the max results per page "
                       + f"from {results_per_page} to {reduced_results_per_page}")
                 update_next_params(reduced_results_per_page, False)
