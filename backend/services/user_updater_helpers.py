@@ -27,7 +27,7 @@ def extract_valid_personal_bests(runs: list[SrcRunDto]):
     def keep_if_pb(run: SrcRunDto):
         game = run["game"]["data"]["id"]
         category = run["category"]
-        level = run["level"]["data"]["id"] if run["level"]["data"] else ""
+        level = run["level"] or ""
         sorted_dict = sorted(get_subcategory_variables(run).items())
         subcategories = str(sorted_dict)
         identifier = game + category + level + subcategories
@@ -38,7 +38,7 @@ def extract_valid_personal_bests(runs: list[SrcRunDto]):
             best_know_runs[identifier] = run
 
     for run in runs:
-        if (not run["level"]["data"] or run["times"]["primary_t"] >= 60) \
+        if (not run["level"] or run["times"]["primary_t"] >= 60) \
                 and GAMETYPE_MULTI_GAME not in run["game"]["data"]["gametypes"] \
                 and run["category"] \
                 and run.get("videos"):
@@ -105,7 +105,7 @@ def get_subcategory_variables(run: SrcRunDto):
     - value: variable value (ex: 60 FPS, 144hz, Uncapped)
     """
     # Get a list of the game's subcategory variables
-    game_subcategory_ids: list[str] = [
+    game_subcategory_ids = [
         game_variable["id"]
         for game_variable in run["game"]["data"]["variables"]["data"]
         if game_variable["is-subcategory"]

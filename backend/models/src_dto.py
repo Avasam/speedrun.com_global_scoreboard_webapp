@@ -23,15 +23,15 @@ class SrcRunDto(TypedDict):
     id: str
     weblink: str
     game: dict[Literal["data"], SrcGameDto]
-    # Commented is data structure when not embedding
-    # game: str
-    level: dict[
-        Literal["data"],
-        # Note: is actually `SrcLevelDto | list` (empty list when no level data)
-        # To simplify typings we assume truthyness
-        SrcLevelDto | None
-    ]
-    # level: Optional[str]
+    # game: str # when not embedding
+    # When embedding
+    # level: dict[
+    #     Literal["data"],
+    #     # Note: is actually `SrcLevelDto | list` (empty list when no level data)
+    #     # To simplify typings we assume truthyness
+    #     SrcLevelDto | None
+    # ]
+    level: Optional[str]
     category: str
     videos: dict[Literal["links"], list[__UriData]]
     comment: str
@@ -47,25 +47,25 @@ class SrcRunDto(TypedDict):
 
 class SrcGameDto(TypedDict):
     id: str
-    names: dict
+    names: __NamesData
     abbreviation: str
     weblink: str
     discord: str
     released: int
-    ruleset: dict
+    ruleset: dict[str, bool | str | list[str]]
     romhack: bool
-    gametypes: list
-    platforms: list
-    regions: list
-    genres: list
-    engines: list
-    developpers: list
-    publishers: list
-    moderators: dict
+    gametypes: list[str]
+    platforms: list[str]
+    regions: list[str]
+    genres: list[str]
+    engines: list[str]
+    developpers: list[str]
+    publishers: list[str]
+    moderators: dict[str, str]
     created: str
-    assets: dict
-    links: list
-    variables: dict
+    assets: dict[str, __UriData]
+    links: list[__RelUriData]
+    variables: dict[Literal["data"], list[dict[str, Optional[str]]]]
 
 
 class SrcLeaderboardDto(TypedDict):
@@ -104,13 +104,13 @@ class __SystemData(TypedDict):
 
 class __TimesData(TypedDict):
     primary: str
-    primary_t: int
+    primary_t: float
     realtime: str
-    realtime_t: int
+    realtime_t: float
     realtime_noloads: Optional[str]
-    realtime_noloads_t: int
+    realtime_noloads_t: float
     ingame: Optional[str]
-    ingame_t: int
+    ingame_t: float
 
 
 class __StatusData(TypedDict):

@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Optional, Union
 
 from math import ceil
-from models.src_dto import SrcProfileDto
+from models.src_dto import SrcGameDto, SrcLevelDto, SrcProfileDto, SrcRunDto
 
 from services.utils import map_to_dto, get_file
 
@@ -10,44 +10,37 @@ from services.utils import map_to_dto, get_file
 class Run:
     id_ = ""
     primary_t = 0.0
-    game = ""
-    game_name = ""
-    category = ""
-    category_name = ""
+    game: SrcGameDto
+    category: str
+    category_name: str = ""
     variables = {}
-    level = ""
-    level_name = ""
+    level: Optional[SrcLevelDto]
     level_fraction = 1.0
     _points = 0.0
+    diminished_points = 0.0
     # This below section is for game search
     _mean_time = 0.0
     _is_wr_time = False
 
     # TODO: Reanable sonarlint max args rule
     def __init__(
-            self,
-            id_: str,
-            primary_t: float,
-            game: str,
-            game_name: str,
-            category: str,
-            variables: Optional[dict[str, str]] = None,
-            level: str = "",
-            level_name: str = "",
-            level_count: int = 0):
-        self.id_ = id_
-        self.primary_t = primary_t
-        self.game = game
-        self.game_name = game_name
-        self.category = category
+        self,
+        run_dto: SrcRunDto,
+        variables: Optional[dict[str, str]] = None,
+        level: SrcLevelDto = None,
+        level_count: int = 0
+    ):
+        self.id_ = run_dto["id"]
+        self.primary_t = run_dto["times"]["primary_t"]
+        self.game = run_dto["game"]["data"]
+        self.category = run_dto["category"]
         self.variables = variables if variables is not None else {}
         self.level = level
-        self.level_name = level_name
-        self.level_fraction = 1 / (level_count + 1) if level else 1
+        self.level_fraction = 1 / (level_count + 1)
 
     def __str__(self) -> str:
-        level_str = f"Level/{str(self.level_fraction)[:4]}: {self.level}, " if self.level else ""
-        return f"Run: <Game: {self.game}, " + \
+        level_str = f"Level/{str(self.level_fraction)[:4]}: {self.level['id']}, " if self.level else ""
+        return f"Run: <Game: {self.game['id']}, " + \
                f"Category: {self.category}, {level_str}{self.variables}, {ceil(self._points * 100) / 100}>"
 
     def __eq__(self, other: object) -> bool:
@@ -56,7 +49,7 @@ class Run:
         """
         if not isinstance(other, Run):
             raise TypeError("other is not a Run")
-        return (self.category, self.level) == (other.category, other.level)
+        return (self.category, self.level and self.level["id"]) == (other.category, other.level and other.level["id"])
 
     def __ne__(self, other: object) -> bool:
         """
@@ -65,13 +58,13 @@ class Run:
         return not self == other
 
     def __hash__(self):
-        return hash((self.category, self.level))
+        return hash((self.category, self.level and self.level["id"]))
 
     def to_dto(self) -> dict[str, Union[str, float]]:
         return {
-            "gameName": self.game_name,
+            "gameName": self.game["names"]["international"],
             "categoryName": self.category_name,
-            "levelName": self.level_name,
+            "levelName": self.level["name"] if self.level else "",
             "points": self._points,
             "levelFraction": self.level_fraction
         }

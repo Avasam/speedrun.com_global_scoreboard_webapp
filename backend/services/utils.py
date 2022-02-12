@@ -258,7 +258,7 @@ SpeedruncomResponsePagination = dict[
 SpeedruncomResponseData = dict[Literal["data"], list[Any]]
 
 
-def get_paginated_response(url: str, params: dict[str, str]) -> dict:
+def get_paginated_response(url: str, params: dict[str, str]) -> dict[Literal["data"], list]:
     next_params = params
     if not next_params.get("max"):
         next_params["max"] = str(MINIMUM_RESULTS_PER_PAGE)
