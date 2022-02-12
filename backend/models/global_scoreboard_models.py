@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Optional, Union
 
 from math import ceil
+from models.src_dto import SrcProfileDto
 
 from services.utils import map_to_dto, get_file
 
@@ -102,17 +103,17 @@ class User:
 
     def fetch_and_set_user_code_and_name(self) -> None:
         url = "https://www.speedrun.com/api/v1/users/{user}".format(user=self._id)
-        infos = get_file(url, {}, True)
+        infos: SrcProfileDto = get_file(url, {}, True)["data"]
 
-        self._id = infos["data"]["id"]
-        location = infos["data"]["location"]
+        self._id = infos["id"]
+        location = infos["location"]
         if location is not None:
             country = location["country"]
             region = location.get("region")
             self._country_code = region["code"] if region else country["code"]
         else:
             self._country_code = None
-        self._name = infos["data"]["names"].get("international")
-        if infos["data"]["role"] == "banned":
+        self._name = infos["names"]["international"]
+        if infos["role"] == "banned":
             self._banned = True
             self._points = 0

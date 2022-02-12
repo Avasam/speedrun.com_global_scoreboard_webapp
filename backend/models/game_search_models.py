@@ -1,7 +1,7 @@
 from __future__ import annotations
-from typing import Optional, cast
+from typing import Optional, cast, overload
 
-from sqlalchemy import orm
+from sqlalchemy import Column, Integer, String, orm
 
 from models.core_models import BaseModel, db
 
@@ -17,6 +17,19 @@ class GameValues(BaseModel):
     wr_time = db.Column(db.Integer, nullable=False)
     wr_points = db.Column(db.Integer, nullable=False)
     mean_time = db.Column(db.Integer, nullable=False)
+
+    @overload
+    def __init__(  # type: ignore # pylint: disable=too-many-arguments
+        self,
+        game_id: str | Column[String],
+        category_id: str | Column[String],
+        run_id: str | Column[String],
+        platform_id: Optional[str | Column[String]],
+        alternate_platforms: Optional[str | Column[String]],
+        wr_time: int | Column[Integer],
+        wr_points: int | Column[Integer],
+        mean_time: int | Column[Integer],
+    ): ...
 
     @staticmethod
     def create_or_update(

@@ -1,6 +1,7 @@
 from __future__ import annotations
 from types import TracebackType
-from typing import Any, Callable, Literal, Optional, Union, TYPE_CHECKING
+from collections.abc import Callable
+from typing import Any, Literal, Optional, Union, TYPE_CHECKING
 if TYPE_CHECKING:
     from models.core_models import JSONObjectType
 
@@ -15,12 +16,13 @@ from threading import BoundedSemaphore, Timer, Thread
 from time import sleep
 from urllib.parse import parse_qs, urlparse
 import traceback
-from requests import Response, Session
 
+from requests import Response, Session
 from requests.exceptions import ConnectionError as RequestsConnectionError, HTTPError
 from requests.adapters import HTTPAdapter
 from requests_cache.session import CachedSession
 from simplejson.errors import JSONDecodeError as SimpleJSONDecodeError
+
 from models.exceptions import SpeedrunComError, UnderALotOfPressure, UnhandledThreadException, UserUpdaterError
 
 import configs
@@ -142,23 +144,24 @@ def __handle_json_error(response: Response, json_exception: ValueError):
 
 
 def __handle_json_data(json_data: JSONObjectType, response_status_code: int):
-    if "status" in json_data:  # Speedrun.com custom error
-        status = int(str(json_data["status"]))
-        message = str(json_data["message"])
-        if status in configs.http_retryable_errors:
-            retry_delay = randint(HTTP_ERROR_RETRY_DELAY_MIN, HTTP_ERROR_RETRY_DELAY_MAX)  # nosec
-            if status == 420:
-                if "too busy" in message:
-                    raise UnderALotOfPressure({"error": f"{response_status_code} (speedrun.com)",
-                                               "details": message})
-                print(f"Rate limit value: {rate_limit._value}/{RATE_LIMIT}")
-            print(f"WARNING: {status}. {message} Retrying in {retry_delay} seconds.")
-            sleep(retry_delay)
-            # No break or raise as we want to retry
-        else:
-            raise SpeedrunComError({"error": f"{status} (speedrun.com)", "details": message})
-    else:
+    if "status" not in json_data:
         return json_data
+
+    # Speedrun.com custom error
+    status = int(str(json_data["status"]))
+    message = str(json_data["message"])
+    if status in configs.http_retryable_errors:
+        retry_delay = randint(HTTP_ERROR_RETRY_DELAY_MIN, HTTP_ERROR_RETRY_DELAY_MAX)  # nosec
+        if status == 420:
+            if "too busy" in message:
+                raise UnderALotOfPressure({"error": f"{response_status_code} (speedrun.com)",
+                                           "details": message})
+            print(f"Rate limit value: {rate_limit._value}/{RATE_LIMIT}")
+        print(f"WARNING: {status}. {message} Retrying in {retry_delay} seconds.")
+        sleep(retry_delay)
+        # No break or raise as we want to retry
+    else:
+        raise SpeedrunComError({"error": f"{status} (speedrun.com)", "details": message})
 
 
 def __get_request_cache_bust_if_disk_quota_exceeded(

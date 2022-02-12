@@ -6,6 +6,7 @@ import json
 
 from models.core_models import Player
 from models.global_scoreboard_models import Run, User
+from models.src_dto import SrcLeaderboardDto, SrcRunDto
 
 GAMETYPE_MULTI_GAME = "rj1dy1o8"
 BasicJSONType = dict[str, Any]
@@ -13,7 +14,7 @@ MIN_LEADERBOARD_SIZE = 3  # This is just to optimize as the formula gives 0 poin
 MIN_SAMPLE_SIZE = 60
 
 
-def extract_valid_personal_bests(runs: list[BasicJSONType]) -> list[BasicJSONType]:
+def extract_valid_personal_bests(runs: list[SrcRunDto]):
     """
     Check if it's a valid run:
     - is over a minute (or an IL, we don't have access to the IL's fraction yet)
@@ -23,7 +24,7 @@ def extract_valid_personal_bests(runs: list[BasicJSONType]) -> list[BasicJSONTyp
     """
     best_know_runs: BasicJSONType = {}
 
-    def keep_if_pb(run: BasicJSONType):
+    def keep_if_pb(run: SrcRunDto):
         game = run["game"]["data"]["id"]
         category = run["category"]
         level = run["level"]["data"]["id"] if run["level"]["data"] else ""
@@ -47,7 +48,7 @@ def extract_valid_personal_bests(runs: list[BasicJSONType]) -> list[BasicJSONTyp
 
 
 def extract_sorted_valid_runs_from_leaderboard(
-        leaderboard: BasicJSONType,
+        leaderboard: SrcLeaderboardDto,
         level_fraction: float) -> list[BasicJSONType]:
     """
     Check if the run is valid:
@@ -97,7 +98,7 @@ def extract_sorted_valid_runs_from_leaderboard(
     return sorted(valid_runs, key=lambda r: r["run"]["times"]["primary_t"])
 
 
-def get_subcategory_variables(run: BasicJSONType):
+def get_subcategory_variables(run: SrcRunDto):
     """
     Produce a Dictionary of a run's sub-categories where:
     - key: variable id (ex: Framerate)
@@ -186,7 +187,7 @@ def extract_top_runs_and_score(runs: list[Run]):
     # Check if it's possible to replace a handful of ILs by a full run, starting backward.
     # This can happen when there's not enough ILs to fill in for the weight of a full run.
     # See: https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/issues/174
-    first_lesser_full_game: Optional[Run] = next(filter(lambda run: run.level_fraction == 1, lesser_runs), None)
+    first_lesser_full_game: Optional[Run] = next((run for run in lesser_runs if run.level_fraction == 1), None)
     if first_lesser_full_game is not None and position < MIN_SAMPLE_SIZE:
         runs_to_transfer_weight = MIN_SAMPLE_SIZE - position
         runs_to_transfer_reversed: list[Run] = []

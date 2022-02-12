@@ -1,7 +1,8 @@
 from __future__ import annotations
-from typing import Optional, cast
+from typing import Optional, cast, overload
 
-from sqlalchemy import orm
+from datetime import datetime
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, orm
 
 from models.core_models import db, BaseModel, Player
 from services.utils import map_to_dto
@@ -13,11 +14,11 @@ class Schedule(BaseModel):
     __tablename__ = "schedule"
 
     schedule_id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128), nullable=False, default="")
+    name: str | Column[String] = db.Column(db.String(128), nullable=False, default="")
     owner_id = db.Column(db.String(8), db.ForeignKey("player.user_id"), nullable=False)
     registration_key = db.Column(db.String(36), nullable=False)
-    is_active = db.Column(db.Boolean, nullable=False, default=True)
-    deadline = db.Column(db.DateTime, nullable=True)
+    is_active: bool | Column[Boolean] = db.Column(db.Boolean, nullable=False, default=True)
+    deadline: Optional[datetime | Column[DateTime]] = db.Column(db.DateTime, nullable=True)
 
     owner: Player = db.relationship("Player", back_populates="schedules")
     time_slots: list[TimeSlot] = db.relationship(
@@ -25,8 +26,23 @@ class Schedule(BaseModel):
         cascade=CASCADE,
         back_populates="schedule")
 
-    group_id = db.Column(db.Integer, nullable=True)
-    order = db.Column(db.Integer, nullable=False, default=-1)
+    group_id: Optional[int | Column[Integer]] = db.Column(db.Integer, nullable=True)
+    order: Optional[int | Column[Integer]] = db.Column(db.Integer, nullable=False, default=-1)
+
+    @overload
+    def __init__(  # type: ignore # pylint: disable=too-many-arguments
+        self,
+        registration_key: str | Column[String],
+        schedule_id: int | Column[Integer] = ...,
+        owner_id: str | Column[String] = ...,
+        owner: Player = ...,
+        time_slots: list[TimeSlot] = ...,
+        group_id: Optional[int | Column[Integer]] = ...,
+        name: Optional[str | Column[String]] = ...,
+        is_active: Optional[bool | Column[Boolean]] = ...,
+        deadline: Optional[datetime | Column[DateTime]] = ...,
+        order: Optional[int | Column[Integer]] = ...,
+    ): ...
 
     @staticmethod
     def get(schedule_id: int):
@@ -63,9 +79,18 @@ class ScheduleGroup(BaseModel):
     __tablename__ = "schedule_group"
 
     group_id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128), nullable=False, default="")
+    name: str | Column[String] = db.Column(db.String(128), nullable=False, default="")
     owner_id = db.Column(db.String(8), db.ForeignKey("player.user_id"), nullable=False)
-    order = db.Column(db.Integer, nullable=False, default=-1)
+    order: Optional[int | Column[Integer]] = db.Column(db.Integer, nullable=False, default=-1)
+
+    @overload
+    def __init__(  # type: ignore # pylint: disable=too-many-arguments
+        self,
+        group_id: int | Column[Integer] = ...,
+        name: str | Column[String] = ...,
+        order: Optional[int | Column[Integer]] = ...,
+        owner_id: str | Column[String] = ...,
+    ): ...
 
     @staticmethod
     def get(group_id: int):
@@ -90,16 +115,28 @@ class TimeSlot(BaseModel):
     __tablename__ = "time_slot"
 
     time_slot_id = db.Column(db.Integer, primary_key=True)
-    schedule_id = db.Column(db.String(8), db.ForeignKey("schedule.schedule_id"), nullable=False)
-    date_time = db.Column(db.DateTime, nullable=False)
-    maximum_entries = db.Column(db.Integer, nullable=False)
-    participants_per_entry = db.Column(db.Integer, nullable=False)
+    schedule_id: int | Column[Integer] = db.Column(db.Integer, db.ForeignKey("schedule.schedule_id"), nullable=False)
+    date_time: datetime | Column[DateTime] = db.Column(db.DateTime, nullable=False)
+    maximum_entries: int | Column[Integer] = db.Column(db.Integer, nullable=False)
+    participants_per_entry: int | Column[Integer] = db.Column(db.Integer, nullable=False)
 
     schedule: Schedule = db.relationship("Schedule", back_populates="time_slots")
     registrations: list[Registration] = db.relationship(
         "Registration",
         cascade=CASCADE,
         back_populates="timeslot")
+
+    @overload
+    def __init__(  # type: ignore # pylint: disable=too-many-arguments
+        self,
+        date_time: datetime | Column[DateTime],
+        maximum_entries: int | Column[Integer],
+        participants_per_entry: int | Column[Integer],
+        schedule_id: int | Column[Integer],
+        schedule: Schedule = ...,
+        time_slot_id: int | Column[Integer] = ...,
+        registrations: list[Registration] = ...,
+    ): ...
 
     @staticmethod
     def get_with_key(time_slot_id: int, registration_key: str) -> Optional[TimeSlot]:
@@ -159,6 +196,15 @@ class Registration(BaseModel):
         cascade=CASCADE,
         back_populates="registration")
 
+    @overload
+    def __init__(  # type: ignore # pylint: disable=too-many-arguments
+        self,
+        time_slot_id: int | Column[Integer],
+        registration_id: int | Column[Integer] = ...,
+        timeslot: TimeSlot = ...,
+        participants: list[Participant] = ...,
+    ): ...
+
     def to_dto(self):
         return {
             "id": self.registration_id,
@@ -169,7 +215,16 @@ class Registration(BaseModel):
 class Participant(BaseModel):
     __tablename__ = "participant"
 
-    registration_id = db.Column(db.Integer, db.ForeignKey("registration.registration_id"), primary_key=True)
-    name = db.Column(db.String(128), primary_key=True)
+    registration_id: int | Column[Integer] = db.Column(
+        db.Integer, db.ForeignKey("registration.registration_id"), primary_key=True)
+    name: str | Column[String] = db.Column(db.String(128), primary_key=True)
 
     registration: Registration = db.relationship("Registration", back_populates="participants")
+
+    @overload
+    def __init__(  # type: ignore # pylint: disable=too-many-arguments
+        self,
+        registration_id: int | Column[Integer] = ...,
+        name: str | Column[String] = ...,
+        registration: Registration = ...,
+    ): ...
