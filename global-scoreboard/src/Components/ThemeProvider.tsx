@@ -61,15 +61,18 @@ const ThemeProvider: FC = ({ children }) => {
 
   useEffect(() => {
     if (bootswatchStyleRef.current) return
-    // See index.tsx for Bootstrap import index
-    const bootstrapStyle = document
+    // This will be constant in prod
+    let bootstrapStyle = document
       .getElementsByTagName('title')
       .item(0) // <title>
       ?.nextElementSibling // <script>
       ?.nextElementSibling // <style>
+      // See index.tsx for Bootstrap import index
+    const devBootstrapStyle = bootstrapStyle
       ?.nextElementSibling // <style>
       ?.nextElementSibling // <style>
-    if (!bootstrapStyle) throw new Error('Missing <title> in <head>')
+    if (devBootstrapStyle) bootstrapStyle = devBootstrapStyle
+    if (!bootstrapStyle) throw new Error('Couldn\'t find where to inject Bootswatch in the <head>')
     bootswatchStyleRef.current = document.createElement('link')
     bootswatchStyleRef.current.id = 'bootswatch-theme'
     bootswatchStyleRef.current.rel = 'stylesheet'

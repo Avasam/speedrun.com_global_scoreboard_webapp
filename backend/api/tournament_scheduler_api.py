@@ -50,7 +50,7 @@ def post_schedule(current_user: Player):
     if error_message is not None:
         return jsonify({"message": error_message, "authenticated": True}), 400
 
-    return str(current_user.create_schedule(name, is_active, deadline, time_slots, order)), 201
+    return jsonify({"id": current_user.create_schedule(name, is_active, deadline, time_slots, order)}), 201
 
 
 @api.route("/schedules/<schedule_id>", methods=("PUT",))
@@ -153,7 +153,7 @@ def post_schedule_group(current_user: Player):
     if error_message is not None:
         return jsonify({"message": error_message, "authenticated": True}), 400
 
-    return str(current_user.create_schedule_group(name, order)), 201
+    return jsonify({"id": current_user.create_schedule_group(name, order)}), 201
 
 
 @api.route("/schedule_groups/<group_id>", methods=("PUT",))
@@ -207,7 +207,7 @@ def post_registration(time_slot_id: Union[str, int]):
     if len(time_slot.registrations) >= time_slot.maximum_entries:
         return jsonify({"message": "Registrations are full for this timeslot", "authenticated": True}), 507
 
-    return str(time_slot.register_participant(participants)), 201
+    return jsonify({"id": time_slot.register_participant(participants)}), 201
 
 
 @api.route("/registrations/<registration_id>", methods=("PUT",))

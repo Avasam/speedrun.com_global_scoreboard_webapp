@@ -28,14 +28,21 @@ const apiFetch = <R>(method: RequestInit['method'], url: string, body?: RequestI
       ? Promise.reject(response)
       : response)
     .then<R & { token?: string }>(response => response.json())
+    .catch(error => {
+      if (error instanceof SyntaxError) {
+        return { token: undefined }
+      } else {
+        throw error
+      }
+    })
     .then(response => {
       // If a token is sent back as part of any response, set it.
       // This could be a first login, or a login session extension.
       if (response.token) {
         localStorage.setItem('jwtToken', response.token)
       }
-
-      return response as R
+      delete response.token
+      return response as Omit<R, 'token'>
     })
 
 export const apiGet = <R>(location: string, queryParams?: QueryParams) =>

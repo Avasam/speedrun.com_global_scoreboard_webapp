@@ -30,7 +30,7 @@ const getSchedule = (id: number, registrationKey: string) =>
     .then(scheduleDto => new Schedule(scheduleDto))
 
 const postRegistration = (timeSlotId: number, participants: string[], registrationKey: string) =>
-  apiPost(`time-slots/${timeSlotId}/registrations`, { participants, registrationKey })
+  apiPost<{ id: number }>(`time-slots/${timeSlotId}/registrations`, { participants, registrationKey })
 
 const ScheduleRegistration = () => {
   const [scheduleState, setScheduleState] = useState<Schedule | null | undefined>()

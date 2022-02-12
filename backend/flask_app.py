@@ -31,7 +31,7 @@ from models.core_models import db
 import configs
 
 # Setup Flask app
-app = Flask(__name__, static_folder="assets")
+app = Flask(__name__, static_folder="../assets")
 app.config["ENV"] = configs.flask_environment
 app.config["DEBUG"] = configs.debug
 app.config["PREFERRED_URL_SCHEME"] = "https"
