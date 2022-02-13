@@ -170,24 +170,39 @@ def keep_runs_before_soft_cutoff(runs: list[BasicJSONType]):
 
 
 def set_diminishing_returns(runs: list[Run]):
-    groups: dict[str, list[Run]] = {}
+    groups: dict[str, list[list[Run]]] = {}
+    il_groups: dict[str, list[Run]] = {}
     for run in sorted(runs, key=lambda run: run._points, reverse=True):
-        # TODO: For now ILs are ignored from diminishing returns
+        # Store ILs separately so we can sum up their worth and assign them the right position for diminishing return
         if run.level:
-            run.diminished_points = run._points
+            existing_group = il_groups.get(run.base_game_key, [])
+            existing_group.append(run)
+            il_groups[run.base_game_key] = existing_group
         else:
             existing_group = groups.get(run.base_game_key, [])
-            existing_group.append(run)
+            existing_group.append([run])
             groups[run.base_game_key] = existing_group
 
-    for grouped_runs in groups.values():
-        for position, run in enumerate(grouped_runs, start=1):
-            if position < MIN_LEADERBOARD_SIZE:
-                run.diminished_points = run._points
-            else:
-                run.diminished_points = run._points * 1 / (1 + math.exp(position - math.tau))
+    # Add Ils to their respective groups at the right position
+    for key, level_runs in il_groups.items():
+        existing_group = groups.get(key, [])
+        ils_sum = sum(level_run._points for level_run in level_runs)
+        try:
+            index_to_insert = existing_group.index(next(run for run in existing_group if run[0]._points < ils_sum))
+        except (ValueError, TypeError, StopIteration, IndexError):
+            index_to_insert = -1
+        if index_to_insert >= 0:
+            existing_group.insert(index_to_insert, level_runs)
+        else:
+            existing_group.append(level_runs)
 
-    return runs
+    for grouped_runs in groups.values():
+        for position, levels in enumerate(grouped_runs, start=1):
+            for run in levels:
+                if position < MIN_LEADERBOARD_SIZE:
+                    run.diminished_points = run._points
+                else:
+                    run.diminished_points = run._points * 1 / (1 + math.exp(position - math.tau))
 
 
 def extract_top_runs_and_score(runs: list[Run]):
