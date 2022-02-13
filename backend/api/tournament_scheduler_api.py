@@ -7,6 +7,7 @@ from typing import Optional, Union
 from flask import Blueprint, jsonify, request
 
 from api.api_wrappers import authentication_required
+from models.core_models import ScheduleOrderDict
 from models.core_models import Player, JSONObjectType
 from models.tournament_scheduler_models import Schedule, ScheduleGroup, TimeSlot
 from services.utils import has_duplicates, map_to_dto
@@ -84,7 +85,7 @@ def delete_schedule(current_user: Player, schedule_id: Union[str, int]):
 @api.route("/schedules/order", methods=("PUT",))
 @authentication_required
 def put_schedule_order(current_user: Player):
-    data: Optional[list[JSONObjectType]] = request.get_json()
+    data: Optional[list[ScheduleOrderDict]] = request.get_json()
     if not data:
         return "missing data", 400
 
@@ -98,7 +99,7 @@ def put_schedule_order(current_user: Player):
 
 @api.route("/schedules/<schedule_id>/group_id/<group_id>", methods=("PUT",))
 @authentication_required
-def put_schedule_group_id(current_user: Player, schedule_id: Union[str, int], group_id: Optional[int]):
+def put_schedule_group_id(current_user: Player, schedule_id: Union[str, int], group_id: Optional[Union[str, int]]):
     try:
         schedule_id = int(schedule_id)
     except ValueError:

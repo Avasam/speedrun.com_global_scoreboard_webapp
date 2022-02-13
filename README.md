@@ -54,7 +54,15 @@ Note: The soft cutoff works great on games such as Barney. But is too punishing 
     - `length_bonus = 1 + (wr_time / TIME_BONUS_DIVISOR)`. This is to slightly bonify longuer runs which which usually require more time put in the game to achieve a similar level of execution
         - `TIME_BONUS_DIVISOR = 3600 * 12`: 12h (1/2 day) for +100%
 7. If the run is an IL (Individual Level), the points are divided by "the quantity of ILs for the game + 1" (`points / (level_count + 1)`)
-8. Finally, while all currently valid personal bests will be shown, only the top 60 will be counted in order to help reduce the "quantity over quality" game.
+8. A diminishing return is applied for runs under the same game (this includes mods and ROMHacks) starting at the third run. The curve is a mirrored Sigmoid (aka Logistic). Which means the first 2 best runs under a game are untouched, and no run can be diminished to 0. Below are a visual representation, you can click on the images for further details.
+    - Indivisual levels are grouped together as a single step of diminishing return.
+
+<!-- markdownlint-disable MD033 -->
+| | |
+|-|-|
+|[![Diminishing return example](/assets/images/diminishing-return-desmos-graph.svg)](https://www.desmos.com/calculator/2zskz4jytl)|<nobr>`1 / (1 +` <i>`e`</i><sup> `x - τ`</sup>`)`</nobr><br /><br />  [![Diminishing return fomula](/assets/images/diminishing-return-wolfram-alpha-input.gif)](https://www.wolframalpha.com/input?i=Piecewise%5B%7B%7B1%2F%281+%2B+e%5E%28x+-+2π%29%29%2C+x+>+2%7D%2C+%7B1%2C+x+<%3D+2%7D%7D%5D)|
+<!-- markdownlint-disable-next-line MD029 -->
+9. Finally, while all currently valid personal bests will be shown, only the top 60 will be counted in order to help reduce the "quantity over quality" game.
     - Since Ils are only worth a fraction, they are also weighted a fraction of the top 60. Full Games are always 1 spot.
 
 ---
@@ -63,13 +71,13 @@ Note: The soft cutoff works great on games such as Barney. But is too punishing 
 
 Get yourself a [MySQL server](https://dev.mysql.com/downloads/mysql/) (as of 2021/06/01, PythonAnywhere uses version 5.7.27)  
 Install [Python](https://www.python.org/downloads/) 3.7 or above (validated up to 3.9)  
-Run this command in a terminal: `pip3 install -r requirements.txt`  
+Run `./scripts/install.bat` to install the required dependencies.  
 Copy `configs.template.py` as `configs.py` and update the file as needed.  
 If needed, copy `.env.development` as `.env.development.local` and update the file.  
 
 ### Running the app
 
-- From the root of the project: `py ./flask_app.py`, to launch the backend server
+- From the root of the project: `py ./backend/flask_app.py`, to launch the backend server
 - From the root of a React app: `npm run start`, to serve the app  
 
 These steps are missing setting up a virtual environment, but if you care about that, you'll know how to set it up yourself. In any case you can let me know if you have issues setting up your dev environment.

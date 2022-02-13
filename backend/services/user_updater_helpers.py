@@ -1,3 +1,4 @@
+import math
 from typing import Any, Optional
 
 from math import floor
@@ -6,6 +7,7 @@ import json
 
 from models.core_models import Player
 from models.global_scoreboard_models import Run, User
+from models.src_dto import SrcLeaderboardDto, SrcRunDto
 
 GAMETYPE_MULTI_GAME = "rj1dy1o8"
 BasicJSONType = dict[str, Any]
@@ -13,7 +15,7 @@ MIN_LEADERBOARD_SIZE = 3  # This is just to optimize as the formula gives 0 poin
 MIN_SAMPLE_SIZE = 60
 
 
-def extract_valid_personal_bests(runs: list[BasicJSONType]) -> list[BasicJSONType]:
+def extract_valid_personal_bests(runs: list[SrcRunDto]):
     """
     Check if it's a valid run:
     - is over a minute (or an IL, we don't have access to the IL's fraction yet)
@@ -23,10 +25,10 @@ def extract_valid_personal_bests(runs: list[BasicJSONType]) -> list[BasicJSONTyp
     """
     best_know_runs: BasicJSONType = {}
 
-    def keep_if_pb(run: BasicJSONType):
+    def keep_if_pb(run: SrcRunDto):
         game = run["game"]["data"]["id"]
         category = run["category"]
-        level = run["level"]["data"]["id"] if run["level"]["data"] else ""
+        level = run["level"] or ""
         sorted_dict = sorted(get_subcategory_variables(run).items())
         subcategories = str(sorted_dict)
         identifier = game + category + level + subcategories
@@ -37,7 +39,7 @@ def extract_valid_personal_bests(runs: list[BasicJSONType]) -> list[BasicJSONTyp
             best_know_runs[identifier] = run
 
     for run in runs:
-        if (not run["level"]["data"] or run["times"]["primary_t"] >= 60) \
+        if (not run["level"] or run["times"]["primary_t"] >= 60) \
                 and GAMETYPE_MULTI_GAME not in run["game"]["data"]["gametypes"] \
                 and run["category"] \
                 and run.get("videos"):
@@ -47,7 +49,7 @@ def extract_valid_personal_bests(runs: list[BasicJSONType]) -> list[BasicJSONTyp
 
 
 def extract_sorted_valid_runs_from_leaderboard(
-        leaderboard: BasicJSONType,
+        leaderboard: SrcLeaderboardDto,
         level_fraction: float) -> list[BasicJSONType]:
     """
     Check if the run is valid:
@@ -97,14 +99,14 @@ def extract_sorted_valid_runs_from_leaderboard(
     return sorted(valid_runs, key=lambda r: r["run"]["times"]["primary_t"])
 
 
-def get_subcategory_variables(run: BasicJSONType):
+def get_subcategory_variables(run: SrcRunDto):
     """
     Produce a Dictionary of a run's sub-categories where:
     - key: variable id (ex: Framerate)
     - value: variable value (ex: 60 FPS, 144hz, Uncapped)
     """
     # Get a list of the game's subcategory variables
-    game_subcategory_ids: list[str] = [
+    game_subcategory_ids = [
         game_variable["id"]
         for game_variable in run["game"]["data"]["variables"]["data"]
         if game_variable["is-subcategory"]
@@ -167,6 +169,42 @@ def keep_runs_before_soft_cutoff(runs: list[BasicJSONType]):
     return runs
 
 
+def set_diminishing_returns(runs: list[Run]):
+    groups: dict[str, list[list[Run]]] = {}
+    il_groups: dict[str, list[Run]] = {}
+    for run in sorted(runs, key=lambda run: run._points, reverse=True):
+        # Store ILs separately so we can sum up their worth and assign them the right position for diminishing return
+        if run.level:
+            existing_group = il_groups.get(run.base_game_key, [])
+            existing_group.append(run)
+            il_groups[run.base_game_key] = existing_group
+        else:
+            existing_group = groups.get(run.base_game_key, [])
+            existing_group.append([run])
+            groups[run.base_game_key] = existing_group
+
+    # Add Ils to their respective groups at the right position
+    for key, level_runs in il_groups.items():
+        existing_group = groups.get(key, [])
+        ils_sum = sum(level_run._points for level_run in level_runs)
+        try:
+            index_to_insert = existing_group.index(next(run for run in existing_group if run[0]._points < ils_sum))
+        except (ValueError, TypeError, StopIteration, IndexError):
+            index_to_insert = -1
+        if index_to_insert >= 0:
+            existing_group.insert(index_to_insert, level_runs)
+        else:
+            existing_group.append(level_runs)
+
+    for grouped_runs in groups.values():
+        for position, levels in enumerate(grouped_runs, start=1):
+            for run in levels:
+                if position < MIN_LEADERBOARD_SIZE:
+                    run.diminished_points = run._points
+                else:
+                    run.diminished_points = run._points * 1 / (1 + math.exp(position - math.tau))
+
+
 def extract_top_runs_and_score(runs: list[Run]):
     top_runs: list[Run] = []
     lesser_runs: list[Run] = []
@@ -180,13 +218,13 @@ def extract_top_runs_and_score(runs: list[Run]):
             return True
         return False
 
-    for run in sorted(runs, key=lambda run: run._points / run.level_fraction, reverse=True):
+    for run in sorted(runs, key=lambda run: run.diminished_points / run.level_fraction, reverse=True):
         (top_runs if is_top_run(run) else lesser_runs).append(run)
 
     # Check if it's possible to replace a handful of ILs by a full run, starting backward.
     # This can happen when there's not enough ILs to fill in for the weight of a full run.
     # See: https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/issues/174
-    first_lesser_full_game: Optional[Run] = next(filter(lambda run: run.level_fraction == 1, lesser_runs), None)
+    first_lesser_full_game: Optional[Run] = next((run for run in lesser_runs if run.level_fraction == 1), None)
     if first_lesser_full_game is not None and position < MIN_SAMPLE_SIZE:
         runs_to_transfer_weight = MIN_SAMPLE_SIZE - position
         runs_to_transfer_reversed: list[Run] = []
@@ -198,7 +236,7 @@ def extract_top_runs_and_score(runs: list[Run]):
                 continue
             runs_to_transfer_reversed.append(run)
 
-        if sum(run._points for run in runs_to_transfer_reversed) < first_lesser_full_game._points:
+        if sum(run.diminished_points for run in runs_to_transfer_reversed) < first_lesser_full_game.diminished_points:
             for run in runs_to_transfer_reversed:
                 top_runs.remove(run)
                 lesser_runs.insert(0, run)

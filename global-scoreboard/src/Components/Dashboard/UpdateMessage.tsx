@@ -33,7 +33,17 @@ const renderRow = (rows: RunResult[]) =>
         {row.levelName ? ` (${row.levelName})` : ''}
       </td>
       <td>
-        {row.points.toFixed(2)}
+        {row.diminishedPoints && row.diminishedPoints !== row.points && <OverlayTrigger
+          overlay={<Tooltip>
+            Points before diminishing return:
+            {' '}
+            {row.points.toFixed(2)}
+          </Tooltip>}
+          placement='left'
+        >
+          <FaInfoCircle />
+        </OverlayTrigger>}
+        {(row.diminishedPoints ?? row.points).toFixed(2)}
       </td>
     </tr>)
 
