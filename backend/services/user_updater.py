@@ -14,8 +14,8 @@ from models.game_search_models import GameValues
 from models.global_scoreboard_models import PointsDistributionDto, Run, User
 from models.src_dto import SrcLeaderboardDto, SrcRunDto, SrcLevelDto
 from services.user_updater_helpers import extract_valid_personal_bests, get_probability_terms, \
-    get_subcategory_variables, keep_runs_before_soft_cutoff, MIN_LEADERBOARD_SIZE, update_runner_in_database, \
-    extract_top_runs_and_score, extract_sorted_valid_runs_from_leaderboard
+    get_subcategory_variables, keep_runs_before_soft_cutoff, MIN_LEADERBOARD_SIZE, set_diminishing_returns, \
+    update_runner_in_database, extract_top_runs_and_score, extract_sorted_valid_runs_from_leaderboard
 from services.utils import clear_cache_for_user_async, get_file, get_paginated_response, \
     MAXIMUM_RESULTS_PER_PAGE, start_and_wait_for_threads
 import configs
@@ -160,10 +160,11 @@ def __set_user_points(user: User) -> None:
     runs = extract_valid_personal_bests(runs)
 
     start_and_wait_for_threads(set_points_thread, runs)
+    set_diminishing_returns(counted_runs)
 
     # Sum up the runs' score, only the top 60 will end up giving points
     top_runs, lower_runs = extract_top_runs_and_score(counted_runs)
-    user._points = sum(run._points for run in top_runs)
+    user._points = sum(run.diminished_points for run in top_runs)
     user._points_distribution = [top_runs, lower_runs]
 
 

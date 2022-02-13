@@ -1,3 +1,4 @@
+import math
 from typing import Any, Optional
 
 from math import floor
@@ -168,6 +169,27 @@ def keep_runs_before_soft_cutoff(runs: list[BasicJSONType]):
     return runs
 
 
+def set_diminishing_returns(runs: list[Run]):
+    groups: dict[str, list[Run]] = {}
+    for run in sorted(runs, key=lambda run: run._points, reverse=True):
+        # TODO: For now ILs are ignored from diminishing returns
+        if run.level:
+            run.diminished_points = run._points
+        else:
+            existing_group = groups.get(run.base_game_key, [])
+            existing_group.append(run)
+            groups[run.base_game_key] = existing_group
+
+    for grouped_runs in groups.values():
+        for position, run in enumerate(grouped_runs, start=1):
+            if position < MIN_LEADERBOARD_SIZE:
+                run.diminished_points = run._points
+            else:
+                run.diminished_points = run._points * 1 / (1 + math.exp(position - math.tau))
+
+    return runs
+
+
 def extract_top_runs_and_score(runs: list[Run]):
     top_runs: list[Run] = []
     lesser_runs: list[Run] = []
@@ -181,7 +203,7 @@ def extract_top_runs_and_score(runs: list[Run]):
             return True
         return False
 
-    for run in sorted(runs, key=lambda run: run._points / run.level_fraction, reverse=True):
+    for run in sorted(runs, key=lambda run: run.diminished_points / run.level_fraction, reverse=True):
         (top_runs if is_top_run(run) else lesser_runs).append(run)
 
     # Check if it's possible to replace a handful of ILs by a full run, starting backward.
@@ -199,7 +221,7 @@ def extract_top_runs_and_score(runs: list[Run]):
                 continue
             runs_to_transfer_reversed.append(run)
 
-        if sum(run._points for run in runs_to_transfer_reversed) < first_lesser_full_game._points:
+        if sum(run.diminished_points for run in runs_to_transfer_reversed) < first_lesser_full_game.diminished_points:
             for run in runs_to_transfer_reversed:
                 top_runs.remove(run)
                 lesser_runs.insert(0, run)

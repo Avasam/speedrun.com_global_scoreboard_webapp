@@ -16,5 +16,6 @@ export type RunResult = {
   categoryName: string
   levelName: string | null
   points: number
+  diminishedPoints: number | undefined
   levelFraction: number
 }
