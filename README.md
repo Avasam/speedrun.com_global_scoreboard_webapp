@@ -48,7 +48,7 @@ Note: The soft cutoff works great on games such as Barney. But is too punishing 
     - 5.1. A signed deviation from the mean is obtained for all the runs
     - 5.2. The deviation is adjusted so that the last run is worth 0 points. By adding the lowest (unsigned) deviation to the signed deviation
     - 5.3. The deviation is then normalized so that the average time is worth 1 point and the last run is still worth 0 points. By dividing the adjusted deviation with the lowest deviation (from before the step #4 cutoff, if it applies). Capped at π.
-    - 5.4. Points for a run are equal to: `e^(normalized_deviation * certainty_adjustment) -1` which creates the logarithmic curve that starts at 0
+    - 5.4. Points for a run are equal to: `e`<sup>`normalized_deviation * certainty_adjustment`</sup>` - 1` which creates the logarithmic curve that starts at 0
         - `certainty_adjustment = 1 - 1 / (population - 1)`
 6. The points for a run are then multiplied by a "length bonus" and the decimal point is shifted to the right by 1.
     - `length_bonus = 1 + (wr_time / TIME_BONUS_DIVISOR)`. This is to slightly bonify longuer runs which which usually require more time put in the game to achieve a similar level of execution
@@ -58,9 +58,8 @@ Note: The soft cutoff works great on games such as Barney. But is too punishing 
     - Indivisual levels are grouped together as a single step of diminishing return.
 
 <!-- markdownlint-disable MD033 -->
-| | |
+|[![Diminishing return example](/assets/images/diminishing-return-desmos-graph.svg)](https://www.desmos.com/calculator/2zskz4jytl)|<nobr>`1 / (1 + e`<sup>`x - τ`</sup>`)`</nobr><br /><br />  [<img alt="Diminishing return fomula" src="/assets/images/diminishing-return-wolfram-alpha-input.gif" width="540px"/>](https://www.wolframalpha.com/input?i=Piecewise%5B%7B%7B1%2F%281+%2B+e%5E%28x+-+2π%29%29%2C+x+>+2%7D%2C+%7B1%2C+x+<%3D+2%7D%7D%5D)|
 |-|-|
-|[![Diminishing return example](/assets/images/diminishing-return-desmos-graph.svg)](https://www.desmos.com/calculator/2zskz4jytl)|<nobr>`1 / (1 +` <i>`e`</i><sup> `x - τ`</sup>`)`</nobr><br /><br />  [![Diminishing return fomula](/assets/images/diminishing-return-wolfram-alpha-input.gif)](https://www.wolframalpha.com/input?i=Piecewise%5B%7B%7B1%2F%281+%2B+e%5E%28x+-+2π%29%29%2C+x+>+2%7D%2C+%7B1%2C+x+<%3D+2%7D%7D%5D)|
 <!-- markdownlint-disable-next-line MD029 -->
 9. Finally, while all currently valid personal bests will be shown, only the top 60 will be counted in order to help reduce the "quantity over quality" game.
     - Since Ils are only worth a fraction, they are also weighted a fraction of the top 60. Full Games are always 1 spot.
