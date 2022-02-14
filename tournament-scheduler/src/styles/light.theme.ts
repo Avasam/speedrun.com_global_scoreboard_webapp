@@ -14,12 +14,17 @@ const theme = createTheme(mergeDeep(
       secondary,
       warn: warn[600],
       error,
+      background: {
+        // HACK: I shouldn't need to set this: https://next.material-ui.com/customization/default-theme/#explore
+        default: 'unset',
+      },
     },
     components: {
       MuiCssBaseline: {
         styleOverrides: {
           body: {
             fill: 'black',
+            backgroundColor: 'unset !important',
           },
           // Dropdowns, lists, and carheaders
           '.MuiPaper-elevation4, .MuiPaper-elevation8': {

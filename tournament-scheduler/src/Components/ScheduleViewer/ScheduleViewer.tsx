@@ -106,15 +106,18 @@ const ScheduleViewer = (props: ScheduleViewerProps) => {
         </Paper>
 
         {upcomingTimeSlots.map(timeSlot => <TimeSlotView key={timeSlot.id} schedule={schedule} timeSlot={timeSlot} />)}
-        <List>
+        {pastTimeSlots.length > 0 && <List>
           <ListItemButton onClick={() => setPastTimeSlotsShown(!pastTimeSlotsShown)}>
-            <ListItemText primary={`${pastTimeSlotsShown ? 'Hide' : 'Show'} past timeslots`} />
+            <ListItemText primary={`${pastTimeSlotsShown
+              ? 'Hide'
+              : 'Show'} past registrations (${pastTimeSlots.length})`}
+            />
             {pastTimeSlotsShown ? <ExpandLessIcon /> : <ExpandMoreIcon />}
           </ListItemButton>
           <Collapse in={pastTimeSlotsShown}>
             {pastTimeSlots.map(timeSlot => <TimeSlotView key={timeSlot.id} schedule={schedule} timeSlot={timeSlot} />)}
           </Collapse>
-        </List>
+        </List>}
       </Box >}
 
   </Container >
