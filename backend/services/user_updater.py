@@ -71,7 +71,7 @@ def get_updated_user(user_id: str) -> dict[str, Union[str, None, float, int, Poi
                 result_state = "warning"
 
         # When we can finally successfully update a player, clear the cache of their specific responses
-        if not configs.skip_cache_cleanup:
+        if not configs.skip_cache_cleanup and result_state == "success":
             clear_cache_for_user(user._id)
         return {
             "userId": user._id,
@@ -131,9 +131,10 @@ def __set_user_points(user: User) -> None:
             # TODO : Current issues with subcategories where they try to create at the same time bc in two threads
             # Solution 1: Include subcategories as part of PRIMARY key
             # Solution 2: Batch create/update AFTER all threads are done running
-            platform_id = pb["system"]["platform"] or ""
+            platform_id = pb["system"]["platform"]
             alternate_platforms = run.game["platforms"]
-            alternate_platforms.remove(platform_id)
+            if platform_id:
+                alternate_platforms.remove(platform_id)
             GameValues.create_or_update(
                 run_id=run.id_,
                 game_id=run.game["id"],

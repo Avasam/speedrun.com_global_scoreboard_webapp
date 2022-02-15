@@ -50,10 +50,12 @@ const columns: ColumnDescription<GameValueRow, FormatExtraDataProps>[] = [
     dataField: 'platforms',
     text: 'Platform',
     formatter: (_, row, __, formatExtraData) =>
-      row
-        .platforms
-        .map(platformId => formatExtraData?.allPlatforms[platformId])
-        .join(', '),
+      row.platforms.length > 0
+        ? row
+          .platforms
+          .map(platformId => formatExtraData?.allPlatforms[platformId])
+          .join(', ')
+        : '-',
     filter: multiSelectFilter({
       options: {},
       getFilter: filter => platformFilter = filter,

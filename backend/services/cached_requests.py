@@ -14,7 +14,7 @@ RATE_LIMIT = 100
 def clean_old_cache():
     session = use_session()
     __cache_count = session.cache.response_count()
-    print(f"   Cache location: {session.cache.db_path}")
+    print(f"   Cache location: {getattr(session.cache, 'db_path', 'unknown')}")
     print(f"   {__cache_count} cached responses.")
     if (__cache_count == 0 or configs.skip_cache_cleanup):
         print("   Skipping expired cache removal.")

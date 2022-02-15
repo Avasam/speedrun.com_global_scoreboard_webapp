@@ -145,8 +145,7 @@ def __get_request_cache_bust_if_disk_quota_exceeded(
         response = use_session(False).get(url, params=params, headers=headers)
 
     if getattr(response, "from_cache", False):
-        if configs.debug:
-            print(f"[CACHE] {response.url}")
+        print(f"[CACHE] {response.url}")
         rate_limit._safe_release()
     else:
         print(f"[ GET ] {response.url}")
@@ -170,10 +169,10 @@ def get_file(
 
     while True:
         try:
-            with rate_limit:
-                if configs.debug:
-                    print(f"Rate limit value: {rate_limit._value}/{RATE_LIMIT}")
-                response = __get_request_cache_bust_if_disk_quota_exceeded(url, params, cached, headers)
+            # with rate_limit:
+            if configs.debug:
+                print(f"Rate limit value: {rate_limit._value}/{RATE_LIMIT}")
+            response = __get_request_cache_bust_if_disk_quota_exceeded(url, params, cached, headers)
         except (ConnectionError, RequestsConnectionError) as exception:  # Connexion error
             raise UserUpdaterError({
                 "error": "Can't establish connexion to speedrun.com. "

@@ -105,7 +105,9 @@ const RegistrationList = (props: RegistrationListProps) => {
       ]
         .map((participant: string, index) =>
           <ListItem
-            key={`participant-${participant}`}
+            // Using participant name would change the key and loose focus on every keystroke
+            // eslint-disable-next-line react/no-array-index-key
+            key={`participant-${index}`}
             style={{
               alignItems: 'baseline',
               padding: '0 16px',
