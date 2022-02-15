@@ -7,14 +7,15 @@ from time import strftime
 from urllib.parse import unquote
 import httplib2
 import requests
-from models.exceptions import SpeedrunComError, UserUpdaterError
 
-from models.game_search_models import GameValues
 from models.core_models import db, Player
+from models.exceptions import SpeedrunComError, UserUpdaterError
+from models.game_search_models import GameValues
 from models.global_scoreboard_models import PointsDistributionDto, Run, User
-from services.user_updater_helpers import BasicJSONType, extract_valid_personal_bests, get_probability_terms, \
-    get_subcategory_variables, keep_runs_before_soft_cutoff, MIN_LEADERBOARD_SIZE, update_runner_in_database, \
-    extract_top_runs_and_score, extract_sorted_valid_runs_from_leaderboard
+from models.src_dto import SrcLeaderboardDto, SrcRunDto, SrcLevelDto
+from services.user_updater_helpers import extract_valid_personal_bests, get_probability_terms, \
+    get_subcategory_variables, keep_runs_before_soft_cutoff, MIN_LEADERBOARD_SIZE, set_diminishing_returns, \
+    update_runner_in_database, extract_top_runs_and_score, extract_sorted_valid_runs_from_leaderboard
 from services.utils import clear_cache_for_user_async, get_file, get_paginated_response, \
     MAXIMUM_RESULTS_PER_PAGE, start_and_wait_for_threads
 import configs
@@ -99,29 +100,19 @@ def get_updated_user(user_id: str) -> dict[str, Union[str, None, float, int, Poi
 def __set_user_points(user: User) -> None:
     counted_runs: list[Run] = []
 
-    def set_points_thread(pb: BasicJSONType) -> None:
+    def set_points_thread(pb: SrcRunDto) -> None:
         pb_subcategory_variables = get_subcategory_variables(pb)
-        pb_level_id = ""
-        pb_level_name = ""
         level_count = 0
+        level = None
 
-        if pb["level"]["data"]:
-            pb_level_id = pb["level"]["data"]["id"]
-            pb_level_name = pb["level"]["data"]["name"]
+        if pb["level"]:
             url = "https://www.speedrun.com/api/v1/games/{game}/levels".format(game=pb["game"]["data"]["id"])
-            levels = get_file(url, {"max": str(MAXIMUM_RESULTS_PER_PAGE)}, True)
-            level_count = len(levels["data"])
+            levels: list[SrcLevelDto] = get_file(url, {"max": str(MAXIMUM_RESULTS_PER_PAGE)}, True)["data"]
+            level = next(level for level in levels if level["id"] == pb["level"])
+            level_count = len(levels)
 
-        run: Run = Run(pb["id"],
-                       pb["times"]["primary_t"],
-                       pb["game"]["data"]["id"],
-                       pb["game"]["data"]["names"]["international"],
-                       pb["category"],
-                       pb_subcategory_variables,
-                       pb_level_id,
-                       pb_level_name,
-                       level_count)
-        __set_run_points(run)
+        run = Run(pb, pb_subcategory_variables, level, level_count)
+        __set_run_points_and_category_name(run)
 
         # If a category has already been counted, only keep the one that's worth the most.
         # This can happen in leaderboards with coop runs or subcategories.
@@ -140,12 +131,12 @@ def __set_user_points(user: User) -> None:
             # TODO : Current issues with subcategories where they try to create at the same time bc in two threads
             # Solution 1: Include subcategories as part of PRIMARY key
             # Solution 2: Batch create/update AFTER all threads are done running
-            platform_id = pb["system"]["platform"]
-            alternate_platforms: list[str] = pb["game"]["data"]["platforms"]
+            platform_id = pb["system"]["platform"] or ""
+            alternate_platforms = run.game["platforms"]
             alternate_platforms.remove(platform_id)
             GameValues.create_or_update(
                 run_id=run.id_,
-                game_id=run.game,
+                game_id=run.game["id"],
                 category_id=run.category,
                 platform_id=platform_id,
                 alternate_platforms=",".join(alternate_platforms),
@@ -162,40 +153,43 @@ def __set_user_points(user: User) -> None:
     params = {
         "user": user._id,
         "status": "verified",
-        "embed": "level,game.variables",
+        "embed": "game.variables",
         "max": str(MAXIMUM_RESULTS_PER_PAGE),
     }
-    runs: list[BasicJSONType] = get_paginated_response(url, params)["data"]
+    runs: list[SrcRunDto] = get_paginated_response(url, params)["data"]
     runs = extract_valid_personal_bests(runs)
 
     start_and_wait_for_threads(set_points_thread, runs)
+    set_diminishing_returns(counted_runs)
 
     # Sum up the runs' score, only the top 60 will end up giving points
     top_runs, lower_runs = extract_top_runs_and_score(counted_runs)
-    user._points = sum(run._points for run in top_runs)
+    user._points = sum(run.diminished_points for run in top_runs)
     user._points_distribution = [top_runs, lower_runs]
 
 
-def __set_run_points(run: Run) -> None:
-    run._points = 0
-    # If the run is an Individual Level, adapt the request url
-    lvl_cat_str = "level/{level}/".format(level=run.level) if run.level else "category/"
+def __set_run_points_and_category_name(run: Run) -> None:
     url = "https://www.speedrun.com/api/v1/leaderboards/{game}/{lvl_cat_str}{category}".format(
-        game=run.game,
-        lvl_cat_str=lvl_cat_str,
+        game=run.game["id"],
+        # If the run is an Individual Level, adapt the request url
+        lvl_cat_str="level/{level}/".format(level=run.level["id"]) if run.level else "category/",
         category=run.category)
-    params = {"video-only": True, "embed": "players"}
-    for var_id, var_value in run.variables.items():
-        params[f"var-{var_id}"] = var_value
+    params = {
+        "video-only": True,
+        "embed": "players",
+        **{f"var-{var_id}": var_value
+           for var_id, var_value
+           in run.variables.items()},
+    }
     try:
-        leaderboard = get_file(url, params, True)
+        leaderboard: SrcLeaderboardDto = get_file(url, params, True)["data"]
     # If SR.C returns 404 here, most likely the run references a category or level that does not exist anymore
     except SpeedrunComError as exception:
         if exception.args[0]["error"].startswith("404"):
             return
         raise
 
-    valid_runs = extract_sorted_valid_runs_from_leaderboard(leaderboard["data"], run.level_fraction)
+    valid_runs = extract_sorted_valid_runs_from_leaderboard(leaderboard, run.level_fraction)
     len_valid_runs = len(valid_runs)
 
     # CHECK: Avoid useless computation and errors
@@ -250,10 +244,10 @@ def __set_run_points(run: Run) -> None:
     run.category_name = sub(
         r"((\d\d)$|Any)(?!%)",
         r"\1%",
-        unquote(leaderboard["data"]["weblink"].split("#")[1])
-        .rstrip("1")
+        unquote(leaderboard["weblink"].split("#")[1])
         .replace("_", " ")
         .title()
+        .replace("Ng1", "Ng+")
     )
 
     # Set game search data

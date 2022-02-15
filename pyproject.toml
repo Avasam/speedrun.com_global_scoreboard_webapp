@@ -40,7 +40,7 @@ evaluation = "10.0 - error - ((float((warning + convention) * 10 + refactor ) / 
 [tool.pylint.MASTER]
 fail-under = 9.0
 # Needed for Pylint to discover our own modules
-init-hook = "from pylint.config import find_pylintrc; import os, sys; sys.path.append(os.path.join(os.path.dirname(find_pylintrc()), 'backend'))"
+init-hook = "import os, sys; sys.path.append(os.path.dirname('.'))"
 # https://pylint.pycqa.org/en/latest/technical_reference/extensions.html
 load-plugins = [
   "pylint.extensions.emptystring",
@@ -75,12 +75,6 @@ ignore-paths = [
 ]
 # Dynamic/Generated members from SQLAlchemy
 ignored-classes = ["scoped_session"]
-disable = [
-  # No need to mention the fixmes
-  "fixme",
-  # Strings are ok. Pylance also doesn't seem to see our overriden Exception classes
-  "invalid-sequence-index",
-]
 
 [tool.pylint.DESIGN]
 # Same as SonarLint
@@ -112,4 +106,17 @@ disable = [
   "unused-import",
   # TODO: Diabled until using *proper* class based logic
   "protected-access",
+  # No need to mention the fixmes
+  "fixme",
+  # Strings are ok. Pylance also doesn't seem to see our overriden Exception classes
+  "invalid-sequence-index",
+  # Similar lines in 2 files, doesn't really work
+  "R0801",
+  # Happens too often with Flask, child classes should not be affted by this rule
+  # See: https://github.com/PyCQA/pylint/issues/4352
+  "too-few-public-methods",
+  # Too many false positives with Columns[]
+  # https://github.com/PyCQA/pylint/issues/3979#issuecomment-1036936661
+  # https://github.com/PyCQA/pylint/issues/4369#issuecomment-1036932987
+  "unsubscriptable-object",
 ]

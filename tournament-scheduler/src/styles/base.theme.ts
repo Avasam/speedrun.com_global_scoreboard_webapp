@@ -101,14 +101,14 @@ const baseThemeOptions: ThemeOptions = {
       styleOverrides: {
         /* Replicate Material Design Style with AddToCalendar */
         '.chq-atc': {
-          '.chq-atc--button.chq-atc--button, path, .chq-atc--dropdown, .chq-atc--dropdown a': {
+          '.chq-atc--button.chq-atc--button, .chq-atc--button path, .chq-atc--dropdown, .chq-atc--dropdown a': {
             fontSize: '1rem',
             textTransform: 'none',
             borderRadius: themeSpacing(math.HALF),
             border: 'none',
             backgroundColor: 'transparent',
             color: 'inherit',
-            fill: 'inherit !important',
+            fill: 'inherit',
           },
           '.MuiButton-sizeMedium > & .chq-atc--button, .chq-atc--dropdown a': {
             padding: `${themeSpacing(0.75)} ${themeSpacing(2)}`,

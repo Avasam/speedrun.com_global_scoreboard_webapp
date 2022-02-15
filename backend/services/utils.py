@@ -1,6 +1,7 @@
 from __future__ import annotations
 from types import TracebackType
-from typing import Any, Callable, Literal, Optional, Union, TYPE_CHECKING
+from collections.abc import Callable
+from typing import Any, Literal, Optional, Union, TYPE_CHECKING
 if TYPE_CHECKING:
     from models.core_models import JSONObjectType
 
@@ -8,19 +9,20 @@ from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
 from json.decoder import JSONDecodeError
-from math import ceil, floor, sqrt
+from math import ceil, floor
 from random import randint
 from sqlite3 import OperationalError
 from threading import BoundedSemaphore, Timer, Thread
 from time import sleep
 from urllib.parse import parse_qs, urlparse
 import traceback
-from requests import Response, Session
 
+from requests import Response, Session
 from requests.exceptions import ConnectionError as RequestsConnectionError, HTTPError
 from requests.adapters import HTTPAdapter
 from requests_cache.session import CachedSession
 from simplejson.errors import JSONDecodeError as SimpleJSONDecodeError
+
 from models.exceptions import SpeedrunComError, UnderALotOfPressure, UnhandledThreadException, UserUpdaterError
 
 import configs
@@ -142,23 +144,25 @@ def __handle_json_error(response: Response, json_exception: ValueError):
 
 
 def __handle_json_data(json_data: JSONObjectType, response_status_code: int):
-    if "status" in json_data:  # Speedrun.com custom error
-        status = int(str(json_data["status"]))
-        message = str(json_data["message"])
-        if status in configs.http_retryable_errors:
-            retry_delay = randint(HTTP_ERROR_RETRY_DELAY_MIN, HTTP_ERROR_RETRY_DELAY_MAX)  # nosec
-            if status == 420:
-                if "too busy" in message:
-                    raise UnderALotOfPressure({"error": f"{response_status_code} (speedrun.com)",
-                                               "details": message})
-                print(f"Rate limit value: {rate_limit._value}/{RATE_LIMIT}")
-            print(f"WARNING: {status}. {message} Retrying in {retry_delay} seconds.")
-            sleep(retry_delay)
-            # No break or raise as we want to retry
-        else:
-            raise SpeedrunComError({"error": f"{status} (speedrun.com)", "details": message})
-    else:
+    if "status" not in json_data:
         return json_data
+
+    # Speedrun.com custom error
+    status = int(str(json_data["status"]))
+    message = str(json_data["message"])
+    if status in configs.http_retryable_errors:
+        retry_delay = randint(HTTP_ERROR_RETRY_DELAY_MIN, HTTP_ERROR_RETRY_DELAY_MAX)  # nosec
+        if status == 420:
+            if "too busy" in message:
+                raise UnderALotOfPressure({"error": f"{response_status_code} (speedrun.com)",
+                                           "details": message})
+            print(f"Rate limit value: {rate_limit._value}/{RATE_LIMIT}")
+        print(f"WARNING: {status}. {message} Retrying in {retry_delay} seconds.")
+        sleep(retry_delay)
+        # No break or raise as we want to retry
+    else:
+        raise SpeedrunComError({"error": f"{status} (speedrun.com)", "details": message})
+    return None
 
 
 def __get_request_cache_bust_if_disk_quota_exceeded(
@@ -255,7 +259,7 @@ SpeedruncomResponsePagination = dict[
 SpeedruncomResponseData = dict[Literal["data"], list[Any]]
 
 
-def get_paginated_response(url: str, params: dict[str, str]) -> dict:
+def get_paginated_response(url: str, params: dict[str, str]) -> dict[Literal["data"], list]:
     next_params = params
     if not next_params.get("max"):
         next_params["max"] = str(MINIMUM_RESULTS_PER_PAGE)
@@ -297,7 +301,7 @@ def get_paginated_response(url: str, params: dict[str, str]) -> dict:
             except UserUpdaterError as exception:
                 if exception.args[0]["error"] != "HTTPError 500" or results_per_page <= MINIMUM_RESULTS_PER_PAGE:
                     raise
-                reduced_results_per_page = max(floor(results_per_page / sqrt(7)), MINIMUM_RESULTS_PER_PAGE)
+                reduced_results_per_page = max(floor(results_per_page / 2.5), MINIMUM_RESULTS_PER_PAGE)
                 print("SR.C returned 500 for a paginated request. Reducing the max results per page "
                       + f"from {results_per_page} to {reduced_results_per_page}")
                 update_next_params(reduced_results_per_page, False)

@@ -15,7 +15,7 @@ const getGroup = (id: number) =>
   apiGet<ScheduleGroupDto>(`schedule_groups/${id}`)
 
 const ScheduleGroupViewer = () => {
-  const [schedules, setSchedules] = useState<ScheduleDto[]>([])
+  const [schedules, setSchedules] = useState<ScheduleDto[] | undefined>(undefined)
   const [groupName, setGroupName] = useState('')
   const routeParams = useParams()
   if (routeParams.groupId == null) throw new TypeError('Route param :groupId is null or undefined')
@@ -47,9 +47,9 @@ const ScheduleGroupViewer = () => {
     </Helmet>
     <Typography variant='h3'>{groupName}</Typography>
     {TimeZoneMessage}
-    {schedules.length === 0 && <p>There are no registrations for any schedule of this group.</p>}
+    {schedules && schedules.length === 0 && <p>There are no registrations for any schedule of this group.</p>}
     <Grid container rowSpacing={2} width='100%'>
-      {schedules.map(scheduleDto => <Grid item key={scheduleDto.id} xs={12} >
+      {schedules?.map(scheduleDto => <Grid item key={scheduleDto.id} xs={12} >
         <ScheduleViewer scheduleId={scheduleDto.id} shownInGroup />
       </Grid>)}
     </Grid>

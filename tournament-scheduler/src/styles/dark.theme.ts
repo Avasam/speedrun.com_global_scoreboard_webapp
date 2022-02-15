@@ -24,16 +24,23 @@ const theme = createTheme(mergeDeep(
         styleOverrides: {
           body: {
             fill: 'white',
+            backgroundColor: '#222',
           },
           // Datepicker
           '.PrivatePickersToolbar-root, .MuiTabs-root': {
             backgroundColor: '#222',
           },
           /* Replicate Material Design Style with AddToCalendar */
-          '.chq-atc .chq-atc--dropdown': {
-            backgroundColor: '#121212',
-            'a:hover ': {
-              backgroundColor: 'rgba(255, 255, 255, 0.08)',
+          '.chq-atc': {
+            '.chq-atc--button.chq-atc--button, .chq-atc--button path, .chq-atc--dropdown, .chq-atc--dropdown a': {
+              color: 'white',
+              fill: 'white',
+            },
+            '.chq-atc--dropdown': {
+              backgroundColor: '#121212',
+              'a:hover ': {
+                backgroundColor: 'rgba(255, 255, 255, 0.08)',
+              },
             },
           },
           '.error-as-warning': {
