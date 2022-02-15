@@ -7,27 +7,23 @@ if TYPE_CHECKING:
 
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
-from datetime import timedelta
 from json.decoder import JSONDecodeError
 from math import ceil, floor
 from random import randint
 from sqlite3 import OperationalError
-from threading import BoundedSemaphore, Timer, Thread
+from threading import BoundedSemaphore, Timer
 from time import sleep
 from urllib.parse import parse_qs, urlparse
 import traceback
 
-from requests import Response, Session
+from requests import Response
 from requests.exceptions import ConnectionError as RequestsConnectionError, HTTPError
-from requests.adapters import HTTPAdapter
-from requests_cache.session import CachedSession
+from services.cached_requests import RATE_LIMIT, use_session
 from simplejson.errors import JSONDecodeError as SimpleJSONDecodeError
 
 from models.exceptions import SpeedrunComError, UnderALotOfPressure, UnhandledThreadException, UserUpdaterError
-
 import configs
 
-RATE_LIMIT = 100
 HTTP_ERROR_RETRY_DELAY_MIN = ceil(RATE_LIMIT / 60)  # 1 / (period / limit)
 HTTP_ERROR_RETRY_DELAY_MAX = 15
 MINIMUM_RESULTS_PER_PAGE = 20
@@ -36,8 +32,7 @@ MAXIMUM_RESULTS_PER_PAGE = 200
 # https://www.pythonanywhere.com/forums/topic/12233/#id_post_46527
 # "your processes number limit is 128" in server.log
 # From testing on a single worker PA server: "Can't start 122th thread."
-# Then reserve one for async cache cleanup
-MAX_THREADS_PER_WORKER = 120
+MAX_THREADS_PER_WORKER = 121
 UNHANDLED_THREAD_EXCEPTION_MESSAGE = \
     "\nPlease report to: https://github.com/Avasam/Global_Speedrunning_Scoreboard/issues\n" + \
     "\nNot uploading data as some errors were caught during execution:\n"
@@ -76,44 +71,6 @@ class RatedSemaphore(BoundedSemaphore):
         pass  # Do nothing (only time-based release() is allowed)
 
 
-def clear_cache_for_user_async(user_id: str):
-    def clear_cache_thread():
-        try:
-            # TODO: For user-specifics, give them their own cache-files that are quick and easy to delete
-            # print(f"Deleting cache specific to user '{user_id}'...")
-            # session.cache.delete_urls([url for url in session.cache.urls if user_id in url])
-            print("Removing expired responses...")
-            session.cache.remove_expired_responses()
-            print("Done")
-        except BaseException:
-            print(f"Something went wrong while deleting cache for '{user_id}'")
-            raise
-    Thread(target=clear_cache_thread).start()
-
-
-def clean_old_cache():
-    __cache_count = session.cache.response_count()
-    print(f"   {__cache_count} cached responses.")
-    if (__cache_count == 0 or configs.skip_cache_cleanup):
-        print("   Skipping expired cache removal.")
-    else:
-        print("   Removing expired responses...")
-        session.cache.remove_expired_responses()
-        print("   Done")
-
-
-session = CachedSession(
-    expire_after=timedelta(days=1),
-    allowable_codes=(200, 500),
-    ignored_parameters=["status", "video-only", "embed"],
-    backend=configs.cached_session_backend,
-    fast_save=True,
-    use_temp=True)
-uncached_session = Session()
-adapter = HTTPAdapter(pool_maxsize=RATE_LIMIT + 1)
-session.mount("https://", adapter)
-uncached_session.mount("https://", adapter)
-clean_old_cache()
 rate_limit = RatedSemaphore(RATE_LIMIT, 60)  # 100 requests per minute
 
 
@@ -168,24 +125,24 @@ def __handle_json_data(json_data: JSONObjectType, response_status_code: int):
 def __get_request_cache_bust_if_disk_quota_exceeded(
     url: str,
     params: Optional[dict[str, str]],
-    cached: bool,
+    cached: Union[str, Literal[False]],
     headers: Optional[dict[str, Any]]
 ):
     try:
-        response = (session if cached else uncached_session).get(url, params=params, headers=headers)
+        response = use_session(cached).get(url, params=params, headers=headers)
     # TODO: Try to check for available space first (<=5%),
     # https://help.pythonanywhere.com/pages/DiskQuota
     # "disk I/O erro" when going over PythonAnywhere"s Disk Quota
     except OSError as error:
-        session.cache.clear()
+        use_session().cache.clear()
         print("Cleared cache in response to OSError:", error)
-        response = session.get(url, params=params, headers=headers)
+        response = use_session().get(url, params=params, headers=headers)
     # Note: This happens with LOTS of concurent requests
     # (probably any Seterra player, but dha is the latest that gave me issues)
     # TODO: Raise issue with library
     except OperationalError as error:
         print("Ignoring cache for this request because of OperationalError:", error)
-        response = uncached_session.get(url, params=params, headers=headers)
+        response = use_session(False).get(url, params=params, headers=headers)
 
     if getattr(response, "from_cache", False):
         if configs.debug:
@@ -199,7 +156,7 @@ def __get_request_cache_bust_if_disk_quota_exceeded(
 def get_file(
     url: str,
     params: dict[str, str] = None,
-    cached=False,
+    cached: Union[str, Literal[False]] = False,
     headers: dict[str, Any] = None
 ) -> dict:
     """
@@ -259,7 +216,7 @@ SpeedruncomResponsePagination = dict[
 SpeedruncomResponseData = dict[Literal["data"], list[Any]]
 
 
-def get_paginated_response(url: str, params: dict[str, str]) -> dict[Literal["data"], list]:
+def get_paginated_response(url: str, params: dict[str, str], related_user_id: str) -> dict[Literal["data"], list]:
     next_params = params
     if not next_params.get("max"):
         next_params["max"] = str(MINIMUM_RESULTS_PER_PAGE)
@@ -282,7 +239,7 @@ def get_paginated_response(url: str, params: dict[str, str]) -> dict[Literal["da
         # Get the next page of results ...
         while True:
             try:
-                result = get_file(url, next_params, True)
+                result = get_file(url, next_params, related_user_id)
                 # If it succeeds, slowly raise back up the page size
                 if results_per_page < initial_results_per_page:
                     increased_results_per_page = min(initial_results_per_page, ceil(results_per_page * 1.5))

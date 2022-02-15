@@ -13,11 +13,11 @@ from models.exceptions import SpeedrunComError, UserUpdaterError
 from models.game_search_models import GameValues
 from models.global_scoreboard_models import PointsDistributionDto, Run, User
 from models.src_dto import SrcLeaderboardDto, SrcRunDto, SrcLevelDto
+from services.cached_requests import clear_cache_for_user
 from services.user_updater_helpers import extract_valid_personal_bests, get_probability_terms, \
     get_subcategory_variables, keep_runs_before_soft_cutoff, MIN_LEADERBOARD_SIZE, set_diminishing_returns, \
     update_runner_in_database, extract_top_runs_and_score, extract_sorted_valid_runs_from_leaderboard
-from services.utils import clear_cache_for_user_async, get_file, get_paginated_response, \
-    MAXIMUM_RESULTS_PER_PAGE, start_and_wait_for_threads
+from services.utils import get_file, get_paginated_response, MAXIMUM_RESULTS_PER_PAGE, start_and_wait_for_threads
 import configs
 
 TIME_BONUS_DIVISOR = 3600 * 12  # 12h (1/2 day) for +100%
@@ -72,7 +72,7 @@ def get_updated_user(user_id: str) -> dict[str, Union[str, None, float, int, Poi
 
         # When we can finally successfully update a player, clear the cache of their specific responses
         if not configs.skip_cache_cleanup:
-            clear_cache_for_user_async(user._id)
+            clear_cache_for_user(user._id)
         return {
             "userId": user._id,
             "name": user._name,
@@ -107,7 +107,7 @@ def __set_user_points(user: User) -> None:
 
         if pb["level"]:
             url = "https://www.speedrun.com/api/v1/games/{game}/levels".format(game=pb["game"]["data"]["id"])
-            levels: list[SrcLevelDto] = get_file(url, {"max": str(MAXIMUM_RESULTS_PER_PAGE)}, True)["data"]
+            levels: list[SrcLevelDto] = get_file(url, {"max": str(MAXIMUM_RESULTS_PER_PAGE)}, "http_cache")["data"]
             level = next(level for level in levels if level["id"] == pb["level"])
             level_count = len(levels)
 
@@ -156,7 +156,7 @@ def __set_user_points(user: User) -> None:
         "embed": "game.variables",
         "max": str(MAXIMUM_RESULTS_PER_PAGE),
     }
-    runs: list[SrcRunDto] = get_paginated_response(url, params)["data"]
+    runs: list[SrcRunDto] = get_paginated_response(url, params, user._id)["data"]
     runs = extract_valid_personal_bests(runs)
 
     start_and_wait_for_threads(set_points_thread, runs)
@@ -182,7 +182,7 @@ def __set_run_points_and_category_name(run: Run) -> None:
            in run.variables.items()},
     }
     try:
-        leaderboard: SrcLeaderboardDto = get_file(url, params, True)["data"]
+        leaderboard: SrcLeaderboardDto = get_file(url, params, "http_cache")["data"]
     # If SR.C returns 404 here, most likely the run references a category or level that does not exist anymore
     except SpeedrunComError as exception:
         if exception.args[0]["error"].startswith("404"):

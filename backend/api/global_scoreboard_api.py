@@ -74,8 +74,6 @@ __currently_updating_to: dict[str, datetime] = {}
 
 @authentication_required
 def __do_update_player(current_user: Player, name_or_id: str):
-    global __currently_updating_from  # pylint: disable=global-variable-not-assigned,invalid-name
-    global __currently_updating_to  # pylint: disable=global-variable-not-assigned,invalid-name
     now = datetime.now()
     minutes_5 = 5 * 60
 

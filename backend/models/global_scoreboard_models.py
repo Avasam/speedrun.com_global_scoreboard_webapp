@@ -122,7 +122,7 @@ class User:
 
     def fetch_and_set_user_code_and_name(self) -> None:
         url = "https://www.speedrun.com/api/v1/users/{user}".format(user=self._id)
-        infos: SrcProfileDto = get_file(url, {}, True)["data"]
+        infos: SrcProfileDto = get_file(url, {}, "http_cache")["data"]
 
         self._id = infos["id"]
         location = infos["location"]
