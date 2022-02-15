@@ -30,7 +30,7 @@ That being said, go out there and challenge your friends by showing them how man
 The score is calculated by summing up every valid PB of a user according to a formula which goes as follow:
 
 1. Check if the run is valid. If not, the run is immediatly worth 0 points:
-    - The user (or any, for multipler) is not banned from SR.C
+    - The user (or any, for multiplayer) is not banned from SR.C
     - Is not a multi-game run
     - Has video/image verification
     - The leaderboard (for the current sub-category) has at least 3 runs
@@ -48,14 +48,14 @@ Note: The soft cutoff works great on games such as Barney. But is too punishing 
     - 5.1. A signed deviation from the mean is obtained for all the runs
     - 5.2. The deviation is adjusted so that the last run is worth 0 points. By adding the lowest (unsigned) deviation to the signed deviation
     - 5.3. The deviation is then normalized so that the average time is worth 1 point and the last run is still worth 0 points. By dividing the adjusted deviation with the lowest deviation (from before the step #4 cutoff, if it applies). Capped at π.
-    - 5.4. Points for a run are equal to: `e`<sup>`normalized_deviation * certainty_adjustment`</sup>` - 1` which creates the logarithmic curve that starts at 0
+    - 5.4. Points for a run are equal to: `e`<sup>`normalized_deviation * certainty_adjustment`</sup>`- 1` which creates the logarithmic curve that starts at 0
         - `certainty_adjustment = 1 - 1 / (population - 1)`
 6. The points for a run are then multiplied by a "length bonus" and the decimal point is shifted to the right by 1.
     - `length_bonus = 1 + (wr_time / TIME_BONUS_DIVISOR)`. This is to slightly bonify longuer runs which which usually require more time put in the game to achieve a similar level of execution
         - `TIME_BONUS_DIVISOR = 3600 * 12`: 12h (1/2 day) for +100%
 7. If the run is an IL (Individual Level), the points are divided by "the quantity of ILs for the game + 1" (`points / (level_count + 1)`)
 8. A diminishing return is applied for runs under the same game (this includes mods and ROMHacks) starting at the third run. The curve is a mirrored Sigmoid (aka Logistic). Which means the first 2 best runs under a game are untouched, and no run can be diminished to 0. Below are a visual representation, you can click on the images for further details.
-    - Indivisual levels are grouped together as a single step of diminishing return.
+    - Individual levels are grouped together as a single step of diminishing return.
 
 <!-- markdownlint-disable MD033 -->
 |[![Diminishing return example](/assets/images/diminishing-return-desmos-graph.svg)](https://www.desmos.com/calculator/2zskz4jytl)|<nobr>`1 / (1 + e`<sup>`x - τ`</sup>`)`</nobr><br /><br />  [<img alt="Diminishing return fomula" src="/assets/images/diminishing-return-wolfram-alpha-input.gif" width="540px"/>](https://www.wolframalpha.com/input?i=Piecewise%5B%7B%7B1%2F%281+%2B+e%5E%28x+-+2π%29%29%2C+x+>+2%7D%2C+%7B1%2C+x+<%3D+2%7D%7D%5D)|
