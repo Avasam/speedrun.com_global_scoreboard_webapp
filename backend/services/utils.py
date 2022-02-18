@@ -1,9 +1,6 @@
 from __future__ import annotations
-from types import TracebackType
+from typing import Any, Literal, Optional, Union, cast
 from collections.abc import Callable
-from typing import Any, Literal, Optional, Union, TYPE_CHECKING
-if TYPE_CHECKING:
-    from models.core_models import JSONObjectType
 
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
@@ -11,7 +8,6 @@ from json.decoder import JSONDecodeError
 from math import ceil, floor
 from random import randint
 from sqlite3 import OperationalError
-from threading import BoundedSemaphore, Timer
 from time import sleep
 from urllib.parse import parse_qs, urlparse
 import traceback
@@ -22,6 +18,8 @@ from services.cached_requests import RATE_LIMIT, use_session
 from simplejson.errors import JSONDecodeError as SimpleJSONDecodeError
 
 from models.exceptions import SpeedrunComError, UnderALotOfPressure, UnhandledThreadException, UserUpdaterError
+from models.rated_semaphore import RatedSemaphore
+from models.src_dto import SrcPaginatedDataResultDto, SrcPaginationResultDto, SrcDataResultDto, SrcErrorResultDto
 import configs
 
 HTTP_ERROR_RETRY_DELAY_MIN = ceil(RATE_LIMIT / 60)  # 1 / (period / limit)
@@ -37,40 +35,6 @@ UNHANDLED_THREAD_EXCEPTION_MESSAGE = \
     "\nPlease report to: https://github.com/Avasam/Global_Speedrunning_Scoreboard/issues\n" + \
     "\nNot uploading data as some errors were caught during execution:\n"
 executor = ThreadPoolExecutor(max_workers=MAX_THREADS_PER_WORKER)
-
-
-class RatedSemaphore(BoundedSemaphore):
-    """Limit to 1 request per `period / limit` seconds (over long run)."""
-    _value: int
-
-    def __init__(self, limit=1, period=1):
-        BoundedSemaphore.__init__(self, limit)
-        limit -= 1
-        timer = Timer(period, self.__add_token_loop, kwargs=dict(time_delta=float(period) / limit))
-        timer.daemon = True
-        timer.start()
-
-    def __add_token_loop(self, time_delta):
-        """Add token every time_delta seconds."""
-        while True:
-            sleep(time_delta)
-            self._safe_release()
-
-    def _safe_release(self):
-        try:
-            self.release()
-        except ValueError:  # Ignore if already max possible value
-            pass
-
-    def __exit__(
-        self,
-        exc_type: Optional[type[BaseException]],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[TracebackType]
-    ) -> Optional[bool]:
-        pass  # Do nothing (only time-based release() is allowed)
-
-
 rate_limit = RatedSemaphore(RATE_LIMIT, 60)  # 100 requests per minute
 
 
@@ -100,13 +64,13 @@ def __handle_json_error(response: Response, json_exception: ValueError):
         }) from json_exception
 
 
-def __handle_json_data(json_data: JSONObjectType, response_status_code: int):
+def __handle_json_data(json_data: SrcErrorResultDto, response_status_code: int) -> Optional[SrcDataResultDto]:
     if "status" not in json_data:
         return json_data
 
     # Speedrun.com custom error
-    status = int(str(json_data["status"]))
-    message = str(json_data["message"])
+    status = json_data["status"]
+    message = json_data["message"]
     if status in configs.http_retryable_errors:
         retry_delay = randint(HTTP_ERROR_RETRY_DELAY_MIN, HTTP_ERROR_RETRY_DELAY_MAX)  # nosec
         if status == 420:
@@ -157,7 +121,7 @@ def get_file(
     params: dict[str, str] = None,
     cached: Union[str, Literal[False]] = False,
     headers: dict[str, Any] = None
-) -> dict:
+) -> SrcDataResultDto:
     """
     Returns the content of "url" parsed as JSON dict.
 
@@ -170,8 +134,8 @@ def get_file(
     while True:
         try:
             # with rate_limit:
-            if configs.debug:
-                print(f"Rate limit value: {rate_limit._value}/{RATE_LIMIT}")
+            #     if configs.debug:
+            #         print(f"Rate limit value: {rate_limit._value}/{RATE_LIMIT}")
             response = __get_request_cache_bust_if_disk_quota_exceeded(url, params, cached, headers)
         except (ConnectionError, RequestsConnectionError) as exception:  # Connexion error
             raise UserUpdaterError({
@@ -200,36 +164,22 @@ def params_from_url(url: str):
     return params
 
 
-SpeedruncomResponsePagination = dict[
-    str,
-    dict[
-        Literal["links"],
-        list[
-            dict[
-                Literal["uri", "rel"],
-                str
-            ]
-        ]
-    ]
-]
-SpeedruncomResponseData = dict[Literal["data"], list[Any]]
-
-
-def get_paginated_response(url: str, params: dict[str, str], related_user_id: str) -> dict[Literal["data"], list]:
+def get_paginated_response(url: str, params: dict[str, str], related_user_id: str):
     next_params = params
     if not next_params.get("max"):
         next_params["max"] = str(MINIMUM_RESULTS_PER_PAGE)
-    result: SpeedruncomResponsePagination
-    summed_results: SpeedruncomResponseData = {"data": []}
+    result: SrcPaginationResultDto
+    summed_results: SrcPaginatedDataResultDto = {"data": []}
     results_per_page = initial_results_per_page = int(next_params["max"])
 
     def update_next_params(new_results_per_page: Optional[int] = None, take_next: bool = True):
         nonlocal next_params
         nonlocal results_per_page
+        pagination_max = int(next_params["max"])
         if take_next:
-            next_params = params_from_url(next(
-                (link["uri"] for link in result["pagination"]["links"] if link["rel"] == "next"),
-                ""))
+            next_params = {} \
+                if result["pagination"]["size"] < pagination_max \
+                else {**next_params, "offset": result["pagination"]["offset"] + pagination_max}
         if new_results_per_page and next_params:
             results_per_page = new_results_per_page
             next_params["max"] = str(new_results_per_page)
@@ -238,7 +188,8 @@ def get_paginated_response(url: str, params: dict[str, str], related_user_id: st
         # Get the next page of results ...
         while True:
             try:
-                result = get_file(url, next_params, related_user_id)
+                result = cast(SrcPaginationResultDto, get_file(url, next_params, related_user_id))
+
                 # If it succeeds, slowly raise back up the page size
                 if results_per_page < initial_results_per_page:
                     increased_results_per_page = min(initial_results_per_page, ceil(results_per_page * 1.5))
