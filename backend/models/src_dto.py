@@ -1,5 +1,20 @@
 from __future__ import annotations
-from typing import Literal, Optional, TypedDict
+from typing import Any, Literal, Optional, TypedDict
+
+SrcDataResultDto = dict[Literal["data"], Any]
+SrcPaginatedDataResultDto = dict[Literal["data"], list]
+
+
+class SrcPaginationResultDto(TypedDict):
+    data: list
+    pagination: __PaginationData
+
+
+class __PaginationData(TypedDict):
+    offset: int
+    max: int
+    size: int
+    links: list[__RelUriData]
 
 
 class SrcProfileDto(TypedDict):
@@ -88,6 +103,12 @@ class SrcLevelDto(TypedDict):
     name: str
     weblink: str
     rules: str
+    links: list[__RelUriData]
+
+
+class SrcErrorResultDto(TypedDict):
+    status: int
+    message: str
     links: list[__RelUriData]
 
 
