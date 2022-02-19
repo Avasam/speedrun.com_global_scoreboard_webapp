@@ -14,13 +14,13 @@ from time import sleep
 from urllib.parse import parse_qs, urlparse
 import traceback
 
+from ratelimiter import RateLimiter
 from requests import Response
 from requests.exceptions import ConnectionError as RequestsConnectionError, HTTPError
 from services.cached_requests import RATE_LIMIT, use_session
 from simplejson.errors import JSONDecodeError as SimpleJSONDecodeError
 
 from models.exceptions import SpeedrunComError, UnderALotOfPressure, UnhandledThreadException, UserUpdaterError
-from models.rated_semaphore import RatedSemaphore
 from models.src_dto import SrcPaginatedDataResultDto, SrcPaginationResultDto, SrcDataResultDto, SrcErrorResultDto
 import configs
 
@@ -37,7 +37,7 @@ UNHANDLED_THREAD_EXCEPTION_MESSAGE = \
     "\nPlease report to: https://github.com/Avasam/Global_Speedrunning_Scoreboard/issues\n" + \
     "\nNot uploading data as some errors were caught during execution:\n"
 executor = ThreadPoolExecutor(max_workers=MAX_THREADS_PER_WORKER)
-rate_limiter = RatedSemaphore(RATE_LIMIT, 60)  # 100 requests per minute
+rate_limiter = RateLimiter(max_calls=RATE_LIMIT, period=60)
 
 
 def __handle_json_error(response: Response, json_exception: ValueError):
@@ -79,7 +79,7 @@ def __handle_json_data(json_data: SrcErrorResultDto, response_status_code: int) 
             if "too busy" in message:
                 raise UnderALotOfPressure({"error": f"{response_status_code} (speedrun.com)",
                                            "details": message})
-            print(f"Rate limit value: {(rate_limiter._value)}/{RATE_LIMIT}")
+            print(f"Rate limit value: {len(rate_limiter.calls)}/{RATE_LIMIT}")
         print(f"WARNING: {status}. {message} Retrying in {retry_delay} seconds.")
         sleep(retry_delay)
         # No break or raise as we want to retry
@@ -112,7 +112,7 @@ def __get_request_cache_bust_if_disk_quota_exceeded(
 
     if getattr(response, "from_cache", False):
         print(f"[CACHE] {response.url}")
-        rate_limiter._safe_release()
+        rate_limiter.calls.pop()
     else:
         print(f"[ GET ] {response.url}")
     return response
@@ -135,9 +135,9 @@ def get_file(
 
     while True:
         try:
-            # with rate_limiter:
-            #     if configs.debug:
-            #         print(f"Rate limit value: {len(rate_limiter._value)}/{RATE_LIMIT}")
+            with rate_limiter:
+                if configs.debug:
+                    print(f"Rate limit value: {len(rate_limiter.calls)}/{RATE_LIMIT}")
             response = __get_request_cache_bust_if_disk_quota_exceeded(url, params, cached, headers)
         except (ConnectionError, RequestsConnectionError) as exception:  # Connexion error
             raise UserUpdaterError({
@@ -169,7 +169,7 @@ def params_from_url(url: str):
 def get_paginated_response(url: str, params: dict[str, Union[str, int]], related_user_id: str):
     next_params = params
     if not next_params.get("max"):
-        next_params["max"] = str(MINIMUM_RESULTS_PER_PAGE)
+        next_params["max"] = MINIMUM_RESULTS_PER_PAGE
     result: SrcPaginationResultDto
     summed_results: SrcPaginatedDataResultDto = {"data": []}
     results_per_page = initial_results_per_page = int(next_params["max"])
@@ -184,7 +184,7 @@ def get_paginated_response(url: str, params: dict[str, Union[str, int]], related
                 else {**next_params, "offset": result["pagination"]["offset"] + pagination_max}
         if new_results_per_page and next_params:
             results_per_page = new_results_per_page
-            next_params["max"] = str(new_results_per_page)
+            next_params["max"] = new_results_per_page
 
     while next_params:
         # Get the next page of results ...
