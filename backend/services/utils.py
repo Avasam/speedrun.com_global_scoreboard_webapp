@@ -1,31 +1,33 @@
 from __future__ import annotations
-from typing import Any, Literal, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Literal, Optional, Union, cast
 from collections.abc import Callable
+if TYPE_CHECKING:
+    from requests.sessions import _Params
 
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from json.decoder import JSONDecodeError
-from math import ceil, floor
+from math import ceil
 from random import randint
 from sqlite3 import OperationalError
 from time import sleep
 from urllib.parse import parse_qs, urlparse
 import traceback
 
+from ratelimiter import RateLimiter
 from requests import Response
 from requests.exceptions import ConnectionError as RequestsConnectionError, HTTPError
 from services.cached_requests import RATE_LIMIT, use_session
 from simplejson.errors import JSONDecodeError as SimpleJSONDecodeError
 
 from models.exceptions import SpeedrunComError, UnderALotOfPressure, UnhandledThreadException, UserUpdaterError
-from models.rated_semaphore import RatedSemaphore
 from models.src_dto import SrcPaginatedDataResultDto, SrcPaginationResultDto, SrcDataResultDto, SrcErrorResultDto
 import configs
 
 HTTP_ERROR_RETRY_DELAY_MIN = ceil(RATE_LIMIT / 60)  # 1 / (period / limit)
 HTTP_ERROR_RETRY_DELAY_MAX = 15
 MINIMUM_RESULTS_PER_PAGE = 20
-MAXIMUM_RESULTS_PER_PAGE = 200
+MAXIMUM_RESULTS_PER_PAGE = 125
 # We have limited concurent processes on PythonAnywhere
 # https://www.pythonanywhere.com/forums/topic/12233/#id_post_46527
 # "your processes number limit is 128" in server.log
@@ -35,7 +37,7 @@ UNHANDLED_THREAD_EXCEPTION_MESSAGE = \
     "\nPlease report to: https://github.com/Avasam/Global_Speedrunning_Scoreboard/issues\n" + \
     "\nNot uploading data as some errors were caught during execution:\n"
 executor = ThreadPoolExecutor(max_workers=MAX_THREADS_PER_WORKER)
-rate_limit = RatedSemaphore(RATE_LIMIT, 60)  # 100 requests per minute
+rate_limiter = RateLimiter(max_calls=RATE_LIMIT, period=60)
 
 
 def __handle_json_error(response: Response, json_exception: ValueError):
@@ -77,7 +79,7 @@ def __handle_json_data(json_data: SrcErrorResultDto, response_status_code: int) 
             if "too busy" in message:
                 raise UnderALotOfPressure({"error": f"{response_status_code} (speedrun.com)",
                                            "details": message})
-            print(f"Rate limit value: {rate_limit._value}/{RATE_LIMIT}")
+            print(f"Rate limit value: {len(rate_limiter.calls)}/{RATE_LIMIT}")
         print(f"WARNING: {status}. {message} Retrying in {retry_delay} seconds.")
         sleep(retry_delay)
         # No break or raise as we want to retry
@@ -88,7 +90,7 @@ def __handle_json_data(json_data: SrcErrorResultDto, response_status_code: int) 
 
 def __get_request_cache_bust_if_disk_quota_exceeded(
     url: str,
-    params: Optional[dict[str, str]],
+    params: Optional[_Params],
     cached: Union[str, Literal[False]],
     headers: Optional[dict[str, Any]]
 ):
@@ -110,7 +112,7 @@ def __get_request_cache_bust_if_disk_quota_exceeded(
 
     if getattr(response, "from_cache", False):
         print(f"[CACHE] {response.url}")
-        rate_limit._safe_release()
+        rate_limiter.calls.pop()
     else:
         print(f"[ GET ] {response.url}")
     return response
@@ -118,7 +120,7 @@ def __get_request_cache_bust_if_disk_quota_exceeded(
 
 def get_file(
     url: str,
-    params: dict[str, str] = None,
+    params: _Params = None,
     cached: Union[str, Literal[False]] = False,
     headers: dict[str, Any] = None
 ) -> SrcDataResultDto:
@@ -133,9 +135,9 @@ def get_file(
 
     while True:
         try:
-            # with rate_limit:
-            #     if configs.debug:
-            #         print(f"Rate limit value: {rate_limit._value}/{RATE_LIMIT}")
+            with rate_limiter:
+                if configs.debug:
+                    print(f"Rate limit value: {len(rate_limiter.calls)}/{RATE_LIMIT}")
             response = __get_request_cache_bust_if_disk_quota_exceeded(url, params, cached, headers)
         except (ConnectionError, RequestsConnectionError) as exception:  # Connexion error
             raise UserUpdaterError({
@@ -158,9 +160,9 @@ def get_file(
 def params_from_url(url: str):
     if not url:
         return {}
-    params = {k: v[0] for k, v in parse_qs(urlparse(url).query).items()}
+    params: dict[str, Union[str, int]] = {k: v[0] for k, v in parse_qs(urlparse(url).query).items()}
     if not params.get("max"):
-        params["max"] = str(MINIMUM_RESULTS_PER_PAGE)
+        params["max"] = MINIMUM_RESULTS_PER_PAGE
     return params
 
 

@@ -155,7 +155,7 @@ def __set_user_points(user: User) -> None:
         "user": user._id,
         "status": "verified",
         "embed": "game.variables",
-        "max": str(MAXIMUM_RESULTS_PER_PAGE),
+        "max": MAXIMUM_RESULTS_PER_PAGE,
     }
     runs: list[SrcRunDto] = get_paginated_response(url, params, user._id)["data"]
     runs = extract_valid_personal_bests(runs)
