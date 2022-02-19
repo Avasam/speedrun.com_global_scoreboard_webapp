@@ -164,57 +164,18 @@ def params_from_url(url: str):
     return params
 
 
-def get_paginated_response(url: str, params: dict[str, str], related_user_id: str):
-    next_params = params
-    if not next_params.get("max"):
-        next_params["max"] = str(MINIMUM_RESULTS_PER_PAGE)
-    result: SrcPaginationResultDto
+def get_paginated_response(url: str, params: dict[str, Union[str, int]], related_user_id: str):
     summed_results: SrcPaginatedDataResultDto = {"data": []}
-    results_per_page = initial_results_per_page = int(next_params["max"])
+    if not params.get("max"):
+        params["max"] = str(MINIMUM_RESULTS_PER_PAGE)
 
-    def update_next_params(new_results_per_page: Optional[int] = None, take_next: bool = True):
-        nonlocal next_params
-        nonlocal results_per_page
-        pagination_max = int(next_params["max"])
-        if take_next:
-            next_params = {} \
-                if result["pagination"]["size"] < pagination_max \
-                else {**next_params, "offset": result["pagination"]["offset"] + pagination_max}
-        if new_results_per_page and next_params:
-            results_per_page = new_results_per_page
-            next_params["max"] = str(new_results_per_page)
-
-    while next_params:
-        # Get the next page of results ...
-        while True:
-            try:
-                result = cast(SrcPaginationResultDto, get_file(url, next_params, related_user_id))
-
-                # If it succeeds, slowly raise back up the page size
-                if results_per_page < initial_results_per_page:
-                    increased_results_per_page = min(initial_results_per_page, ceil(results_per_page * 1.5))
-                    print("Reduced request successfull. Increasing the max results per page "
-                          + f"from {results_per_page} back to {increased_results_per_page}")
-                    update_next_params(increased_results_per_page)
-                else:
-                    update_next_params()
-                break
-            # If it failed, try again with a smaller page.
-            # The usual suspects:
-            # - Otterstone_Gamer, qjn1wzw8
-            # - Cmdr, 48g5vo7j
-            # - SRGTsilent, v8l3eq48 --> 800-1000 fails
-            # - ShesChardcore, y8dzlz9j
-            except UserUpdaterError as exception:
-                if exception.args[0]["error"] != "HTTPError 500" or results_per_page <= MINIMUM_RESULTS_PER_PAGE:
-                    raise
-                reduced_results_per_page = max(floor(results_per_page / 2.5), MINIMUM_RESULTS_PER_PAGE)
-                print("SR.C returned 500 for a paginated request. Reducing the max results per page "
-                      + f"from {results_per_page} to {reduced_results_per_page}")
-                update_next_params(reduced_results_per_page, False)
+    def eager_load_thread(offset: int):
+        result = cast(SrcPaginationResultDto, get_file(url, {**params, "offset": offset}, related_user_id))
 
         # ... and combine it with previous ones
         summed_results["data"] += result["data"]
+
+    start_and_wait_for_threads(eager_load_thread, list(range(0, 10000, int(params["max"]))))
 
     return summed_results
 
