@@ -3,7 +3,7 @@ type LocalStorageItem = Record<string, unknown> | unknown[] | boolean | string
 export const getLocalStorageItem = <T extends LocalStorageItem>(key: string, fallback: T) => {
   const item = localStorage.getItem(key)
   if (typeof fallback === 'boolean') {
-    switch (item){
+    switch (item) {
       case 'true': return true as T
       case 'false': return false as T
       default: return fallback

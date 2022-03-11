@@ -7,8 +7,8 @@ type PlayerNameCellProps = {
   player: Player
   isFriend: boolean
   isCurrentUser: boolean
-  handleOnUnfriend: (friendId: string) => void
-  handleOnBefriend: (friendId: string) => void
+  onBefriend: (friendId: string) => void
+  onUnfriend: (friendId: string) => void
 }
 
 const backupFlag = (element: HTMLImageElement) => {
@@ -26,8 +26,8 @@ const PlayerNameCell = (props: PlayerNameCellProps) =>
       !props.isCurrentUser &&
       <FriendButton
         isFriend={props.isFriend}
-        onBefriend={props.handleOnBefriend}
-        onUnfriend={props.handleOnUnfriend}
+        onBefriend={props.onBefriend}
+        onUnfriend={props.onUnfriend}
         playerId={props.player.userId}
       />
     }

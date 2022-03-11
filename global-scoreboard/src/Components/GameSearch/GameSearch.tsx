@@ -26,6 +26,7 @@ import math from 'src/utils/math'
 import { secondsToTimeString, timeStringToSeconds } from 'src/utils/time'
 
 type NumberFilter = (value: { number: number | '', comparator: Comparator }) => void
+
 let platformFilter: (value: string[]) => void
 let minTimeFilter: NumberFilter
 let maxTimeFilter: NumberFilter

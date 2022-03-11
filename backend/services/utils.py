@@ -99,22 +99,26 @@ def __get_request_cache_bust_if_disk_quota_exceeded(
     # TODO: Try to check for available space first (<=5%),
     # https://help.pythonanywhere.com/pages/DiskQuota
     # "disk I/O erro" when going over PythonAnywhere"s Disk Quota
-    except OSError as error:
-        use_session().cache.clear()
-        print("Cleared cache in response to OSError:", error)
-        response = use_session().get(url, params=params, headers=headers)
-    # Note: This happens with LOTS of concurent requests
-    # (probably any Seterra player, but dha is the latest that gave me issues)
-    # TODO: Raise issue with library
-    except OperationalError as error:
-        print("Ignoring cache for this request because of OperationalError:", error)
-        response = use_session(False).get(url, params=params, headers=headers)
+    except (OSError, OperationalError) as error:
+        error_message = str(error)
+        error_type = type(error).__name__
+        if isinstance(error, OSError) or error_message == "disk I/O error":
+            use_session(cached).cache.clear()
+            print(f"Cleared cache in response to {error_type}: {error_message}. Trying again...")
+            response = use_session(cached).get(url, params=params, headers=headers)
+        else:
+            print(f"Ignoring cache for this request because of {error_type}: {error_message}")
+            response = use_session(False).get(url, params=params, headers=headers)
 
+    rate_limit = f"Rate limit: {len(rate_limiter.calls)}/{RATE_LIMIT}" if configs.debug else ""
     if getattr(response, "from_cache", False):
-        print(f"[CACHE] {response.url}")
-        rate_limiter.calls.pop()
+        print(f"[CACHE] {rate_limit} {response.url}")
+        try:
+            rate_limiter.calls.pop()
+        except IndexError:
+            pass
     else:
-        print(f"[ GET ] {response.url}")
+        print(f"[ GET ] {rate_limit} {response.url}")
     return response
 
 
@@ -136,9 +140,7 @@ def get_file(
     while True:
         try:
             with rate_limiter:
-                if configs.debug:
-                    print(f"Rate limit value: {len(rate_limiter.calls)}/{RATE_LIMIT}")
-            response = __get_request_cache_bust_if_disk_quota_exceeded(url, params, cached, headers)
+                response = __get_request_cache_bust_if_disk_quota_exceeded(url, params, cached, headers)
         except (ConnectionError, RequestsConnectionError) as exception:  # Connexion error
             raise UserUpdaterError({
                 "error": "Can't establish connexion to speedrun.com. "

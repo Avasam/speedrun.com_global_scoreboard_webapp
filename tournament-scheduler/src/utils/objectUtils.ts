@@ -3,10 +3,12 @@ type JSONProps = JSONPropsBase | Record<string, JSONPropsBase> | unknown[]
 
 type JSONPropertyNames<T> = { [K in keyof T]: T[K] extends JSONProps ? K : never }[keyof T]
 export type JSONProperties<T> = Pick<T, JSONPropertyNames<T>>
+
 // https://stackoverflow.com/a/58210459
 // eslint-disable-next-line @typescript-eslint/ban-types
 type FunctionPropertyNames<T> = { [K in keyof T]: T[K] extends Function ? K : never }[keyof T]
 export type FunctionProperties<T> = Pick<T, FunctionPropertyNames<T>>
+
 // eslint-disable-next-line @typescript-eslint/ban-types
 type NonFunctionPropertyNames<T> = { [K in keyof T]: T[K] extends Function ? never : K }[keyof T]
 export type NonFunctionProperties<T> = Pick<T, NonFunctionPropertyNames<T>>
@@ -31,10 +33,11 @@ export const mergeDeep = (target: unknown, source: unknown) => {
   if (isObject(target) && isObject(source)) {
     for (const key of Object.keys(source)) {
       if (isObject(source[key])) {
-        if (!(key in target))
+        if (!(key in target)) {
           Object.assign(output, { [key]: source[key] })
-        else
+        } else {
           output[key] = mergeDeep(target[key], source[key])
+        }
       } else {
         Object.assign(output, { [key]: source[key] })
       }

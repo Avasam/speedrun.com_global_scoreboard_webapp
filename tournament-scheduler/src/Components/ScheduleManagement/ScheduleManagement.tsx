@@ -97,9 +97,11 @@ const ScheduleManagement = (props: ScheduleManagementProps) => {
   const handleDeleteGroup = (groupId: number) =>
     deleteGroup(groupId)
       .then(() => {
-        for (const schedule of schedules)
-          if (schedule.groupId === groupId)
+        for (const schedule of schedules) {
+          if (schedule.groupId === groupId) {
             schedule.groupId = null
+          }
+        }
         setSchedules(schedules)
         setGroups([...groups.filter(group => group.id !== groupId)])
       })

@@ -3,12 +3,12 @@ from typing import Literal, Union, cast
 from datetime import timedelta
 from requests import Session
 from requests.adapters import HTTPAdapter
-from requests_cache import CachedSession
+from requests_cache.session import CachedSession
 
 import configs
 
 
-RATE_LIMIT = 100
+RATE_LIMIT = 99
 
 
 def clean_old_cache():

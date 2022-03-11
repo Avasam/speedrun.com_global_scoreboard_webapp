@@ -50,10 +50,10 @@ const QuickView = (props: QuickViewProps) =>
               <td className={columnClass(player.lastUpdate)}>{player.rank}</td>
               <td>
                 <PlayerNameCell
-                  handleOnBefriend={props.onUnfriend}
-                  handleOnUnfriend={props.onUnfriend}
                   isCurrentUser={player === props.currentUser}
                   isFriend
+                  onBefriend={props.onBefriend}
+                  onUnfriend={props.onUnfriend}
                   player={player}
                 />
               </td>

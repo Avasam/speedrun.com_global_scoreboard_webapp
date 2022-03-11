@@ -54,10 +54,10 @@ const columns: ScoreboardColumnDescription[] = [
     formatter: (_cell, row, _rowIndex, formatExtraData) =>
       formatExtraData &&
       <PlayerNameCell
-        handleOnBefriend={formatExtraData.handleOnBefriend}
-        handleOnUnfriend={formatExtraData.handleOnUnfriend}
         isCurrentUser={formatExtraData.currentUser?.userId === row.userId}
         isFriend={formatExtraData.friends.some(friend => friend.userId === row.userId) || false}
+        onBefriend={formatExtraData.handleOnBefriend}
+        onUnfriend={formatExtraData.handleOnUnfriend}
         player={row}
       />,
     sort: true,
@@ -164,6 +164,7 @@ const Scoreboard = forwardRef<ScoreboardRef, ScoreboardProps>((props, ref) => {
 
   const searchBarRef = useRef<Component<SearchProps<Player>>>(null)
   const boostrapTableRef = useRef<BootstrapTable & BootstrapTableRef>(null)
+  // eslint-disable-next-line react/hook-use-state
   const [pageState, goToPage] = useState<number | undefined>()
 
   const noDataIndication = () =>

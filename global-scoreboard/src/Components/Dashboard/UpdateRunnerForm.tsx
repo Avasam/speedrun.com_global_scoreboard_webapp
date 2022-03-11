@@ -3,6 +3,7 @@ import type { ChangeEventHandler, FormEvent } from 'react'
 import { useState } from 'react'
 import { Button, Form, InputGroup } from 'react-bootstrap'
 
+import Configs from 'src/Models/Configs'
 import type Player from 'src/Models/Player'
 
 export type UpdateRunnerFormProps = {
@@ -25,14 +26,14 @@ const UpdateRunnerForm = (props: UpdateRunnerFormProps) => {
           <Form.Control
             aria-describedby='update user name or id'
             data-lpignore='true'
-            disabled={process.env.REACT_APP_BYPASS_UPDATE_RESTRICTIONS !== 'true' &&
+            disabled={!Configs.bypassUpdateRestrictions &&
               (props.updating || !props.currentUser)}
             onChange={handleOnChange}
             placeholder={props.currentUser ? 'Name or ID' : 'Please log in first'}
             required
           />
           <Button
-            disabled={process.env.REACT_APP_BYPASS_UPDATE_RESTRICTIONS !== 'true' &&
+            disabled={!Configs.bypassUpdateRestrictions &&
               (props.updating || !props.currentUser || !updateUserNameOrId)}
             id='update-runner-button'
             onClick={() => props.onUpdate(updateUserNameOrId.trim())}

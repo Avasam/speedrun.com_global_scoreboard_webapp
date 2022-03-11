@@ -43,6 +43,12 @@
       "mode": "auto"
     }
   ],
+  "eslint.rules.customizations": [
+    {
+      "rule": "*",
+      "severity": "downgrade"
+    }
+  ],
   "files.insertFinalNewline": true,
   "trailing-spaces.includeEmptyLines": true,
   "trailing-spaces.trimOnSave": true,
@@ -116,6 +122,8 @@
   "python.linting.flake8Enabled": true,
   // Errors
   "python.linting.flake8CategorySeverity.E": "Warning",
+  // Pyflakes
+  "python.linting.flake8CategorySeverity.F": "Warning",
   // Naming convention
   "python.linting.flake8CategorySeverity.N": "Warning",
   // PyRight obsoletes mypy

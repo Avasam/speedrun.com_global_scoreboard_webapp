@@ -56,7 +56,7 @@ const setHref = (element: HTMLLinkElement, theme: Themes) => {
 const ThemeProvider: FC = ({ children }) => {
   const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches
   const savedTheme = getLocalStorageItem<Themes>('preferedBootstrapTheme', prefersDarkScheme ? 'Darkly' : 'Default')
-  const [preferedBootstrapTheme, setpreferedBootstrapTheme] = useState(savedTheme)
+  const [preferedBootstrapTheme, setPreferedBootstrapTheme] = useState(savedTheme)
   const bootswatchStyleRef = useRef<HTMLLinkElement>()
 
   useEffect(() => {
@@ -85,7 +85,7 @@ const ThemeProvider: FC = ({ children }) => {
     const saveTheme = (theme: Themes) => {
       if (!bootswatchStyleRef.current) return
       setHref(bootswatchStyleRef.current, theme)
-      setpreferedBootstrapTheme(theme)
+      setPreferedBootstrapTheme(theme)
       setLocalStorageItem('preferedBootstrapTheme', theme)
     }
 

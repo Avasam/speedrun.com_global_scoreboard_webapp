@@ -19,6 +19,7 @@ import copyToClipboard from 'src/utils/clipboard'
 
 type Themes = 'dark' | 'light'
 type StylesOverrides = { body: { background: string } }
+
 const embedded = typeof new URLSearchParams(window.location.search).get('embedded') == 'string'
 if (embedded) {
   (lightTheme.components?.MuiCssBaseline?.styleOverrides as unknown as StylesOverrides).body.background = 'transparent';
@@ -63,9 +64,9 @@ const App = () => {
 
   const prefersLightScheme = useMediaQuery('@media (prefers-color-scheme: light)', { noSsr: true })
   const savedTheme = localStorage.getItem('preferedMaterialTheme') ?? (prefersLightScheme ? 'light' : 'dark')
-  const [preferedMaterialTheme, setpreferedMaterialTheme] = useState(savedTheme)
+  const [preferedMaterialTheme, setPreferedMaterialTheme] = useState(savedTheme)
   const saveTheme = (theme: Themes) => {
-    setpreferedMaterialTheme(theme)
+    setPreferedMaterialTheme(theme)
     localStorage.setItem('preferedMaterialTheme', theme)
   }
 

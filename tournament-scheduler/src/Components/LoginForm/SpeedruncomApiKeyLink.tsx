@@ -17,8 +17,8 @@ const InputSpan = (props: TypographyProps) =>
   <Typography component='span' {...props}>{props.children}</Typography>
 
 const SpeedruncomApiKeyLink = () => {
-  const [sourceNameInput, setSpeedruncomNameInput] = useState('')
-  const [linkHover, setStartHover] = useState(false)
+  const [speedruncomNameInput, setSpeedruncomNameInput] = useState('')
+  const [linkHover, setLinkHover] = useState(false)
   const theme = useTheme()
 
   const handleNameChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
@@ -26,12 +26,12 @@ const SpeedruncomApiKeyLink = () => {
 
   return <Stack alignItems='center' component='span' direction='row' display='inline-flex'>
     <Link
-      href={`https://www.speedrun.com/${sourceNameInput}/settings/api`}
-      onMouseEnter={() => setStartHover(true)}
-      onMouseLeave={() => setStartHover(false)}
+      href={`https://www.speedrun.com/${speedruncomNameInput}/settings/api`}
+      onMouseEnter={() => setLinkHover(true)}
+      onMouseLeave={() => setLinkHover(false)}
       rel='noopener'
       style={{ textDecoration: linkHover ? 'underline' : undefined }}
-      sx={sourceNameInput.length > 0 ? undefined : disabled}
+      sx={speedruncomNameInput.length > 0 ? undefined : disabled}
       target='speedruncom'
     >
       www.speedrun.com/
@@ -43,7 +43,7 @@ const SpeedruncomApiKeyLink = () => {
         'data-lpignore': 'true',
         style: {
           // eslint-disable-next-line @typescript-eslint/no-magic-numbers
-          width: `${sourceNameInput.length > 0 ? sourceNameInput.length + 0.5 : MIN_WIDTH}ch`,
+          width: `${speedruncomNameInput.length > 0 ? speedruncomNameInput.length + 0.5 : MIN_WIDTH}ch`,
           textDecoration: linkHover ? 'underline' : undefined,
         },
       }}
@@ -52,18 +52,18 @@ const SpeedruncomApiKeyLink = () => {
       onChange={handleNameChange}
       placeholder='SR.C name'
       style={{
-        borderBottomColor: sourceNameInput.length > 0 ? theme.palette.primary.main : theme.palette.text.disabled,
+        borderBottomColor: speedruncomNameInput.length > 0 ? theme.palette.primary.main : theme.palette.text.disabled,
         borderBottomStyle: 'solid',
         borderBottomWidth: '2px',
       }}
     />
     <Link
-      href={`https://www.speedrun.com/${sourceNameInput}/settings/api`}
-      onMouseEnter={() => setStartHover(true)}
-      onMouseLeave={() => setStartHover(false)}
+      href={`https://www.speedrun.com/${speedruncomNameInput}/settings/api`}
+      onMouseEnter={() => setLinkHover(true)}
+      onMouseLeave={() => setLinkHover(false)}
       rel='noopener'
       style={{ textDecoration: linkHover ? 'underline' : undefined }}
-      sx={sourceNameInput.length > 0 ? undefined : disabled}
+      sx={speedruncomNameInput.length > 0 ? undefined : disabled}
       target='speedruncom'
     >
       /settings/api
