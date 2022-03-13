@@ -3,10 +3,11 @@ module.exports = (createProxyMiddleware) => (app) => {
   const SERVER_PORT = '5000'
   const CLIENT_PORT = '3000'
   const proxyMiddleware = (req, res, next) =>
-    createProxyMiddleware({
+    createProxyMiddleware(['!/ws'], {
       target: `${req.protocol}://${req.hostname}:${SERVER_PORT}`,
       changeOrigin: true,
       logLevel: 'warn',
+      ws: false,
     })(req, res, next)
 
   app.use('/api', proxyMiddleware)

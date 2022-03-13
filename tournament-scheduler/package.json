@@ -48,7 +48,7 @@
     "eslint-plugin-jsx-a11y": "^6.5.1",
     "eslint-plugin-react": "^7.29.3",
     "eslint-plugin-react-hooks": "^4.3.0",
-    "http-proxy-middleware": "^2.0.3",
+    "http-proxy-middleware": "^2.0.4",
     "patch-package": "^6.4.7",
     "react-scripts": "^5.0.0",
     "typescript": "^4.6.2"
@@ -62,5 +62,20 @@
   "bugs": {
     "url": "https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/issues"
   },
-  "homepage": "http://www.Avasam.dev/tournament-scheduler"
+  "homepage": "http://www.Avasam.dev/tournament-scheduler",
+  "browserslist": {
+    "production": [
+      ">0.5%",
+      "last 2 versions",
+      "not dead",
+      "not IE 11",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 opera version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
 }

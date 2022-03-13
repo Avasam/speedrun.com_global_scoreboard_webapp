@@ -124,7 +124,7 @@
   "python.linting.flake8CategorySeverity.E": "Warning",
   // Pyflakes
   "python.linting.flake8CategorySeverity.F": "Warning",
-  // Naming convention
+  // PEP8 Naming convention
   "python.linting.flake8CategorySeverity.N": "Warning",
   // PyRight obsoletes mypy
   "python.linting.mypyEnabled": false,
