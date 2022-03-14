@@ -14,6 +14,17 @@ const getSchedules = (id: number) =>
 const getGroup = (id: number) =>
   apiGet<ScheduleGroupDto>(`schedule_groups/${id}`)
 
+// Note: Skip checking for registrations since the check is already done
+const hasUpcommingMatches = (schedule: ScheduleDto) =>
+  schedule.timeSlots.some(timeSlot => new Date(timeSlot.dateTime) < new Date())
+
+const compareScheduleSplitByActive = (a: ScheduleDto, b: ScheduleDto) => {
+  const result = Number(hasUpcommingMatches(a)) - Number(hasUpcommingMatches(b))
+  if (result !== 0) return result
+
+  return Schedule.compareFn(a, b)
+}
+
 const ScheduleGroupViewer = () => {
   const [schedules, setSchedules] = useState<ScheduleDto[] | undefined>(undefined)
   const [groupName, setGroupName] = useState('')
@@ -27,7 +38,7 @@ const ScheduleGroupViewer = () => {
         .then(response =>
           response.filter(schedule =>
             schedule.timeSlots.some(timeSlot => timeSlot.registrations.length > 0)))
-        .then(response => [...response].sort(Schedule.compareFn))
+        .then(response => [...response].sort(compareScheduleSplitByActive))
         .then(setSchedules)
       void getGroup(groupId)
         .then(response => response.name)

@@ -46,9 +46,12 @@ export class Schedule implements IOrderable {
   }
 
   static compareFn = (a: ScheduleCompareProps, b: ScheduleCompareProps) => {
+    // Sort by the same order set in the Management page
     const result = a.order - b.order
+    if (result !== 0) return result
 
-    return result !== 0 ? result : b.id - a.id
+    // Fallback to id (order of creation) if all else equal
+    return b.id - a.id
   }
 
   static toScheduleAndGroups = (schedules: Schedule[], groups: ScheduleGroup[]) => {
