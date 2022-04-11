@@ -2,16 +2,15 @@
 Provides the core API endpoints for consuming and producing REST requests and
 responses. Like login and user management.
 """
+from datetime import datetime, timedelta
 from typing import Optional
 
-from datetime import datetime, timedelta
-from flask import Blueprint, current_app, jsonify, request
+import configs
 import jwt
-
 from api.api_wrappers import authentication_required
+from flask import Blueprint, current_app, jsonify, request
 from models.core_models import JSONObjectType
 from models.tournament_scheduler_models import Player
-import configs
 
 api = Blueprint("core_api", __name__)
 

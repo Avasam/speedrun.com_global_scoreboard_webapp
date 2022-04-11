@@ -24,7 +24,8 @@
     "ms-vscode.vscode-typescript-tslint-plugin",
     // Obsoleted by Pylance
     "ms-pyright.pyright",
-    // The ESLint plugin is sufficient in JS-only projects
+    // Not configurable per workspace, tends to conflict with other linters
+    // Use eslint-plugin-sonarjs for JS/TS projects
     "sonarsource.sonarlint-vscode",
   ]
 }

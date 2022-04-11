@@ -21,14 +21,13 @@ Contact:
 samuel.06@hotmail.com
 """
 
-from flask import Flask, send_file, send_from_directory, redirect, url_for
-
+import configs
 from api.core_api import api as core_api
 from api.game_search_api import api as game_search_api
 from api.global_scoreboard_api import api as global_scoreboard_api
 from api.tournament_scheduler_api import api as tournament_scheduler_api
+from flask import Flask, redirect, send_file, send_from_directory, url_for
 from models.core_models import db
-import configs
 
 # Setup Flask app
 app = Flask(__name__, static_folder="../assets")

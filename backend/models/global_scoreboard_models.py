@@ -1,10 +1,10 @@
 from __future__ import annotations
-from typing import Optional, Union
 
 from math import ceil
-from models.src_dto import SrcGameDto, SrcLevelDto, SrcProfileDto, SrcRunDto
+from typing import Optional, Union
 
-from services.utils import map_to_dto, get_file
+from models.src_dto import SrcGameDto, SrcLevelDto, SrcProfileDto, SrcRunDto
+from services.utils import get_file, map_to_dto
 
 ROBLOX_SERIES_ID = "m72vj342"
 NO_SERIES_ID = "yr4gon12"
@@ -30,7 +30,7 @@ class Run:
         self,
         run_dto: SrcRunDto,
         variables: Optional[dict[str, str]] = None,
-        level: SrcLevelDto = None,
+        level: Optional[SrcLevelDto] = None,
         level_count: int = 0
     ):
         self.id_ = run_dto["id"]

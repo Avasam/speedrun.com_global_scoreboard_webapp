@@ -1,12 +1,10 @@
+from datetime import timedelta
 from typing import Literal, Union, cast
 
-from datetime import timedelta
+import configs
 from requests import Session
 from requests.adapters import HTTPAdapter
 from requests_cache.session import CachedSession
-
-import configs
-
 
 RATE_LIMIT = 99
 
@@ -49,8 +47,11 @@ def __make_cache_session(user_id: str = "http_cache"):
         ignored_parameters=["status", "video-only", "embed"],
         backend=configs.cached_session_backend,
         fast_save=True,
+        wal=True,
         use_temp=True)
     session.mount("https://", __adapter)
+    with session.cache.responses.connection() as conn:
+        conn.execute("PRAGMA journal_mode=wal;")
     return session
 
 

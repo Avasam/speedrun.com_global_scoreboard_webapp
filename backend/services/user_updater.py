@@ -1,24 +1,25 @@
-from typing import Union
-
 from datetime import datetime
 from math import exp, floor, pi
 from re import sub
 from time import strftime
+from typing import Union
 from urllib.parse import unquote
+
+import configs
 import httplib2
 import requests
-
-from models.core_models import db, Player
+from models.core_models import Player, db
 from models.exceptions import SpeedrunComError, UserUpdaterError
 from models.game_search_models import GameValues
 from models.global_scoreboard_models import PointsDistributionDto, Run, User
-from models.src_dto import SrcLeaderboardDto, SrcRunDto, SrcLevelDto
+from models.src_dto import SrcLeaderboardDto, SrcLevelDto, SrcRunDto
 from services.cached_requests import clear_cache_for_user
-from services.user_updater_helpers import extract_valid_personal_bests, get_probability_terms, \
-    get_subcategory_variables, keep_runs_before_soft_cutoff, MIN_LEADERBOARD_SIZE, set_diminishing_returns, \
-    update_runner_in_database, extract_top_runs_and_score, extract_sorted_valid_runs_from_leaderboard
-from services.utils import get_file, get_paginated_response, MAXIMUM_RESULTS_PER_PAGE, start_and_wait_for_threads
-import configs
+from services.user_updater_helpers import (MIN_LEADERBOARD_SIZE, extract_sorted_valid_runs_from_leaderboard,
+                                           extract_top_runs_and_score, extract_valid_personal_bests,
+                                           get_probability_terms, get_subcategory_variables,
+                                           keep_runs_before_soft_cutoff, set_diminishing_returns,
+                                           update_runner_in_database)
+from services.utils import MAXIMUM_RESULTS_PER_PAGE, get_file, get_paginated_response, start_and_wait_for_threads
 
 TIME_BONUS_DIVISOR = 3600 * 12  # 12h (1/2 day) for +100%
 

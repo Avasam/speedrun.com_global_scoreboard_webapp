@@ -4,11 +4,9 @@ responses within the Tournament Scheduler context
 """
 from typing import Optional, Union
 
-from flask import Blueprint, jsonify, request
-
 from api.api_wrappers import authentication_required
-from models.core_models import ScheduleOrderDict
-from models.core_models import Player, JSONObjectType
+from flask import Blueprint, jsonify, request
+from models.core_models import JSONObjectType, Player, ScheduleOrderDict
 from models.tournament_scheduler_models import Schedule, ScheduleGroup, TimeSlot
 from services.utils import has_duplicates, map_to_dto
 

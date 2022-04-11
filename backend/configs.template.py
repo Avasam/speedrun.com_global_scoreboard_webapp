@@ -1,4 +1,5 @@
 from typing import Optional
+
 # import os
 # IMPORTANT : DO NOT DO THIS IN PROD /!\
 # We're only doing it here because it's annoying to invalidate JWT tokens on refresh during development

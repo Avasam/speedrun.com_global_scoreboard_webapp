@@ -1,9 +1,9 @@
 from __future__ import annotations
+
 from typing import TYPE_CHECKING, Optional, cast, overload
 
-from sqlalchemy import Column, Integer, String, orm
-
 from models.core_models import BaseModel, db
+from sqlalchemy import Column, Integer, String, orm
 
 
 class GameValues(BaseModel):

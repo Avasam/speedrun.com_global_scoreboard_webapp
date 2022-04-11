@@ -1,9 +1,8 @@
+import json
 import math
-from typing import Any, Optional
-
 from math import floor
 from time import strftime
-import json
+from typing import Any, Optional
 
 from models.core_models import Player
 from models.global_scoreboard_models import Run, User

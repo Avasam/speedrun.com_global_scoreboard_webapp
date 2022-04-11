@@ -1,9 +1,12 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Literal, Optional, Union, cast
+
 from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, Literal, Optional, Union, cast
+
 if TYPE_CHECKING:
     from requests.sessions import _Params
 
+import traceback
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from json.decoder import JSONDecodeError
@@ -12,17 +15,15 @@ from random import randint
 from sqlite3 import OperationalError
 from time import sleep
 from urllib.parse import parse_qs, urlparse
-import traceback
 
+import configs
+from models.exceptions import SpeedrunComError, UnderALotOfPressure, UnhandledThreadException, UserUpdaterError
+from models.src_dto import SrcDataResultDto, SrcErrorResultDto, SrcPaginatedDataResultDto, SrcPaginationResultDto
 from ratelimiter import RateLimiter
 from requests import Response
 from requests.exceptions import ConnectionError as RequestsConnectionError, HTTPError
 from services.cached_requests import RATE_LIMIT, use_session
 from simplejson.errors import JSONDecodeError as SimpleJSONDecodeError
-
-from models.exceptions import SpeedrunComError, UnderALotOfPressure, UnhandledThreadException, UserUpdaterError
-from models.src_dto import SrcPaginatedDataResultDto, SrcPaginationResultDto, SrcDataResultDto, SrcErrorResultDto
-import configs
 
 HTTP_ERROR_RETRY_DELAY_MIN = ceil(RATE_LIMIT / 60)  # 1 / (period / limit)
 HTTP_ERROR_RETRY_DELAY_MAX = 15
@@ -124,9 +125,9 @@ def __get_request_cache_bust_if_disk_quota_exceeded(
 
 def get_file(
     url: str,
-    params: _Params = None,
+    params: Optional[_Params] = None,
     cached: Union[str, Literal[False]] = False,
-    headers: dict[str, Any] = None
+    headers: Optional[dict[str, Any]] = None
 ) -> SrcDataResultDto:
     """
     Returns the content of "url" parsed as JSON dict.

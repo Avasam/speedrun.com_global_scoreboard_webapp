@@ -1,17 +1,16 @@
 from __future__ import annotations
-from typing import Any, TypedDict, cast, Optional, TYPE_CHECKING, Union, overload
 
 import sys
 import traceback
 import uuid
-
 from datetime import datetime
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Column, DateTime, Integer, String, or_, orm, text
-from models.src_dto import SrcProfileDto
-from models.exceptions import SpeedrunComError, UserUpdaterError
+from typing import TYPE_CHECKING, Any, Optional, TypedDict, Union, cast, overload
 
+from flask_sqlalchemy import SQLAlchemy
+from models.exceptions import SpeedrunComError, UserUpdaterError
+from models.src_dto import SrcProfileDto
 from services.utils import get_file
+from sqlalchemy import Column, DateTime, Integer, String, or_, orm, text
 
 # TODO: use and typecheck / typeguard JSONType
 __JSONTypeBase = Union[str, int, float, bool, None, dict[str, Any], list[Any]]
@@ -79,7 +78,8 @@ class Player(BaseModel):
             last_update: Optional[str | Column[DateTime]],
             score_details: Optional[str | Column[String]] = ...,
             rank: Optional[int] = ...
-        ): ...
+        ):
+            ...
 
     @staticmethod
     def authenticate(api_key: str) -> tuple[Optional[Player], Optional[str]]:
@@ -157,10 +157,10 @@ class Player(BaseModel):
     def create(
             user_id: str,
             name: str,
-            country_code: str = None,
+            country_code: Optional[str] = None,
             score: int | float = 0,
-            score_details: str = None,
-            last_update: str = None) -> Player:
+            score_details: Optional[str] = None,
+            last_update: Optional[str] = None) -> Player:
         player = Player(
             user_id=user_id,
             name=name,

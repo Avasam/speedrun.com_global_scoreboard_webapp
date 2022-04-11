@@ -3,21 +3,21 @@ Provides the API endpoints for consuming and producing REST requests and
 responses within the Global Scoreboard context
 """
 from __future__ import annotations
-from typing import cast, Optional
 
 from datetime import datetime
+from typing import Optional, cast
+
+import configs
+from api.api_wrappers import authentication_required
 from flask import Blueprint, jsonify, request
 from markupsafe import escape
+from models.core_models import Player
+from models.exceptions import UnderALotOfPressure, UnhandledThreadException, UserUpdaterError
+from services.user_updater import get_updated_user
+from services.utils import map_to_dto
 from sqlalchemy import exc
 from sqlalchemy.sql.schema import Column
 from sqlalchemy.sql.sqltypes import String
-
-from api.api_wrappers import authentication_required
-from models.exceptions import UnderALotOfPressure, UnhandledThreadException, UserUpdaterError
-from models.core_models import Player
-from services.user_updater import get_updated_user
-from services.utils import map_to_dto
-import configs
 
 api = Blueprint("global_scoreboard_api", __name__)
 

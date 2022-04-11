@@ -11,6 +11,20 @@
   "editor.detectIndentation": false,
   "editor.tabSize": 2,
   "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true,
+    "source.organizeImports": true,
+  },
+  // Set the default formatter to help avoid Prettier
+  "[json]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+  },
+  "[html]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+  },
   "[javascript]": {
     "editor.defaultFormatter": "dbaeumer.vscode-eslint",
   },
@@ -22,11 +36,6 @@
   },
   "[typescriptreact]": {
     "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-  },
-  "editor.codeActionsOnSave": {
-    "source.fixAll": true,
-    "source.fixAll.eslint": true,
-    "source.fixAll.markdownlint": true
   },
   "javascript.preferences.quoteStyle": "single",
   "typescript.preferences.quoteStyle": "single",
@@ -74,36 +83,21 @@
     "**/.DS_Store": true,
     "**/Thumbs.db": true,
     "build": true,
-    "*.zip": true,
+    ".mypy_cache": true,
+    "**/__pycache__/": true,
     "**/node_modules": false,
+    "*.zip": true,
     "**/dist/**/*.js": false,
     "**/dist/**/*.map": true,
     "**/src/react-app-env.d.ts": true,
-    ".mypy_cache": true,
-    "**/__pycache__/": true,
   },
   "search.exclude": {
     "**/node_modules": true,
     "**/bower_components": true,
     "**/*.code-search": true,
-    "package-lock.json": true,
     "*.lock": true,
+    "package-lock.json": true,
     "typings": true,
-  },
-  // Copy those over to your user settings
-  "sonarlint.rules": {
-    "python:S1192": {
-      "level": "off"
-    },
-    "python:S3776": {
-      "level": "off"
-    },
-    "python:S107": {
-      "level": "off"
-    },
-    "typescript:S3358": {
-      "level": "off"
-    }
   },
   "[python]": {
     "editor.tabSize": 4,
@@ -120,12 +114,14 @@
   "python.linting.pylintCategorySeverity.convention": "Warning",
   "python.linting.pylintCategorySeverity.refactor": "Warning",
   "python.linting.flake8Enabled": true,
-  // Errors
+  // pycodestyles
   "python.linting.flake8CategorySeverity.E": "Warning",
   // Pyflakes
   "python.linting.flake8CategorySeverity.F": "Warning",
   // PEP8 Naming convention
   "python.linting.flake8CategorySeverity.N": "Warning",
+  // PYI
+  "python.linting.flake8CategorySeverity.Y": "Warning",
   // PyRight obsoletes mypy
   "python.linting.mypyEnabled": false,
   // Is already wrapped by Flake8, prospector and pylama

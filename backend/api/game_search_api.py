@@ -3,7 +3,6 @@ Provides the API endpoints for consuming and producing REST requests and
 responses within the Game Search context
 """
 from flask import Blueprint, jsonify
-
 from models.game_search_models import GameValues
 from services.utils import map_to_dto
 

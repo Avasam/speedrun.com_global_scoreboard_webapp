@@ -1,11 +1,10 @@
 import json
-
 from datetime import datetime, timedelta
 from functools import wraps
 from typing import Union
-from flask import current_app, jsonify, request
-import jwt
 
+import jwt
+from flask import current_app, jsonify, request
 from models.core_models import Player
 
 

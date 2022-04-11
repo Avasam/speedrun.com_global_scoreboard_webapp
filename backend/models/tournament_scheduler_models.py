@@ -1,11 +1,11 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, cast, overload
 
 from datetime import datetime
-from sqlalchemy import Boolean, Column, DateTime, Integer, String, orm
+from typing import TYPE_CHECKING, Optional, cast, overload
 
-from models.core_models import db, BaseModel, Player
+from models.core_models import BaseModel, Player, db
 from services.utils import map_to_dto
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, orm
 
 CASCADE = "all,delete,delete-orphan"
 
