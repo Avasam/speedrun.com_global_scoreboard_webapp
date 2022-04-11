@@ -1,6 +1,7 @@
 from datetime import datetime
 from math import exp, floor, pi
 from re import sub
+from sqlite3 import OperationalError
 from time import strftime
 from typing import Union
 from urllib.parse import unquote
@@ -95,6 +96,12 @@ def get_updated_user(user_id: str) -> dict[str, Union[str, None, float, int, Poi
         raise UserUpdaterError({
             "error": "Connexion interrupted",
             "details": exception}
+        ) from exception
+    except OperationalError as exception:
+        raise UserUpdaterError({
+            "error": f"{type(exception).__name__}: {exception}",
+            "details": "There was an issue clearing the requests cache. It is probably stuck (known issue currently). "
+            + "Your request still completed, but a site administrator needs to go restart the cache."}
         ) from exception
 
 

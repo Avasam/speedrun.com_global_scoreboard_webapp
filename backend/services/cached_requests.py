@@ -51,7 +51,7 @@ def __make_cache_session(user_id: str = "http_cache"):
         use_temp=True)
     session.mount("https://", __adapter)
     with session.cache.responses.connection() as conn:
-        conn.execute("PRAGMA journal_mode=wal;")
+        conn.execute("PRAGMA journal_mode=WAL;")
     return session
 
 
