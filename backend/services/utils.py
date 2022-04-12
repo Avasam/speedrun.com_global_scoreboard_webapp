@@ -1,19 +1,15 @@
 from __future__ import annotations
 
-from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, Literal, Optional, Union, cast
-
-if TYPE_CHECKING:
-    from requests.sessions import _Params
-
 import traceback
 from collections import Counter
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from json.decoder import JSONDecodeError
 from math import ceil, floor
 from random import randint
 from sqlite3 import OperationalError
 from time import sleep
+from typing import TYPE_CHECKING, Any, Literal, Optional, Union, cast
 from urllib.parse import parse_qs, urlparse
 
 import configs
@@ -25,6 +21,9 @@ from requests.exceptions import ConnectionError as RequestsConnectionError, HTTP
 from services.cached_requests import RATE_LIMIT, use_session
 from simplejson.errors import JSONDecodeError as SimpleJSONDecodeError
 
+if TYPE_CHECKING:
+    from requests.sessions import _Params
+
 HTTP_ERROR_RETRY_DELAY_MIN = ceil(RATE_LIMIT / 60)  # 1 / (period / limit)
 HTTP_ERROR_RETRY_DELAY_MAX = 15
 MINIMUM_RESULTS_PER_PAGE = 20
@@ -32,8 +31,8 @@ MAXIMUM_RESULTS_PER_PAGE = 200
 # We have limited concurent processes on PythonAnywhere
 # https://www.pythonanywhere.com/forums/topic/12233/#id_post_46527
 # "your processes number limit is 128" in server.log
-# From testing on a single worker PA server: "Can't start 122th thread."
-MAX_THREADS_PER_WORKER = 121
+# From testing on a single worker PA server: "Can't start 119th thread."
+MAX_THREADS_PER_WORKER = 118
 UNHANDLED_THREAD_EXCEPTION_MESSAGE = \
     "\nPlease report to: https://github.com/Avasam/Global_Speedrunning_Scoreboard/issues\n" + \
     "\nNot uploading data as some errors were caught during execution:\n"
@@ -75,7 +74,7 @@ def __handle_json_data(json_data: SrcErrorResultDto, response_status_code: int) 
     status = json_data["status"]
     message = json_data["message"]
     if status in configs.http_retryable_errors:
-        retry_delay = randint(HTTP_ERROR_RETRY_DELAY_MIN, HTTP_ERROR_RETRY_DELAY_MAX)  # nosec
+        retry_delay = randint(HTTP_ERROR_RETRY_DELAY_MIN, HTTP_ERROR_RETRY_DELAY_MAX)  # nosecops
         if status == 420:
             if "too busy" in message:
                 raise UnderALotOfPressure({"error": f"{response_status_code} (speedrun.com)",
@@ -111,7 +110,7 @@ def __get_request_cache_bust_if_disk_quota_exceeded(
             print(f"Ignoring cache for this request because of {error_type}: {error_message}")
             response = use_session(False).get(url, params=params, headers=headers)
 
-    rate_limit = f"Rate limit: {len(rate_limiter.calls)}/{RATE_LIMIT}" if configs.debug else ""
+    rate_limit = f"Rate limit: {len(rate_limiter.calls)}/{RATE_LIMIT}"
     if getattr(response, "from_cache", False):
         print(f"[CACHE] {rate_limit} {response.url}")
         try:

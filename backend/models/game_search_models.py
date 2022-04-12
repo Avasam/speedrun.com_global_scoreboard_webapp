@@ -30,7 +30,8 @@ class GameValues(BaseModel):
             wr_time: int | Column[Integer],
             wr_points: int | Column[Integer],
             mean_time: int | Column[Integer],
-        ): ...
+        ):
+            ...
 
     @staticmethod
     def create_or_update(
