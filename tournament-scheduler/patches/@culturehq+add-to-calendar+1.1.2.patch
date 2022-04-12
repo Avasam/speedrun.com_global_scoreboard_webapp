@@ -1,3 +1,15 @@
+diff --git a/node_modules/@culturehq/add-to-calendar/dist/AddToCalendar.d.ts b/node_modules/@culturehq/add-to-calendar/dist/AddToCalendar.d.ts
+index 08a4c96..a5e7efb 100644
+--- a/node_modules/@culturehq/add-to-calendar/dist/AddToCalendar.d.ts
++++ b/node_modules/@culturehq/add-to-calendar/dist/AddToCalendar.d.ts
+@@ -4,6 +4,7 @@ declare type AddToCalendarProps = {
+     event: CalendarEvent;
+     open?: boolean;
+     filename?: string;
++    children?: React.ReactNode
+ };
+ declare const AddToCalendar: React.FC<AddToCalendarProps>;
+ export default AddToCalendar;
 diff --git a/node_modules/@culturehq/add-to-calendar/dist/AddToCalendar.js b/node_modules/@culturehq/add-to-calendar/dist/AddToCalendar.js
 index 418e2d6..c6ef105 100644
 --- a/node_modules/@culturehq/add-to-calendar/dist/AddToCalendar.js

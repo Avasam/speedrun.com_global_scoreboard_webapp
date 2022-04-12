@@ -1,4 +1,4 @@
-import type { FC } from 'react'
+import type { FC, ReactNode } from 'react'
 import { createContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import { getLocalStorageItem, setLocalStorageItem } from 'src/utils/localStorage'
@@ -53,7 +53,7 @@ const setHref = (element: HTMLLinkElement, theme: Themes) => {
   }
 }
 
-const ThemeProvider: FC = ({ children }) => {
+const ThemeProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches
   const savedTheme = getLocalStorageItem<Themes>('preferedBootstrapTheme', prefersDarkScheme ? 'Darkly' : 'Default')
   const [preferedBootstrapTheme, setPreferedBootstrapTheme] = useState(savedTheme)
