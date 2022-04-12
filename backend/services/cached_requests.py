@@ -47,7 +47,7 @@ def __make_cache_session(user_id: str = "http_cache"):
         ignored_parameters=["status", "video-only", "embed"],
         backend=configs.cached_session_backend,
         # Redis specific parameters
-        connection=__redis,
+        connection=__REDIS,
         # SQLite specific parameters
         fast_save=True,
         wal=True,
@@ -69,10 +69,14 @@ def use_session(user_id: Union[str, Literal[False]] = "http_cache"):
     return existing_session
 
 
-__redis = None
+__REDIS = None
 if configs.cached_session_backend == "redis":
-    import redislite
-    __redis = redislite.Redis()
+    import redislite  # pyright: ignore # pylint: disable=import-error
+    __REDIS = redislite.Redis(
+        dbfilename="/tmp/redis-requests-cache.db",  # nosec
+        # Ignore failures to persist rather than crashing on Prod. Data is non-critical.
+        serverconfig={"stop-writes-on-bgsave-error": "yes" if configs.debug else "no"},
+    )
 
 
 __adapter = HTTPAdapter(pool_maxsize=RATE_LIMIT - 1)
