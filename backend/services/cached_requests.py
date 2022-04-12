@@ -46,12 +46,13 @@ def __make_cache_session(user_id: str = "http_cache"):
         allowable_codes=(200, 500),
         ignored_parameters=["status", "video-only", "embed"],
         backend=configs.cached_session_backend,
+        # Redis specific parameters
+        connection=__redis,
+        # SQLite specific parameters
         fast_save=True,
         wal=True,
         use_temp=True)
     session.mount("https://", __adapter)
-    with session.cache.responses.connection() as conn:
-        conn.execute("PRAGMA journal_mode=WAL;")
     return session
 
 
@@ -66,6 +67,12 @@ def use_session(user_id: Union[str, Literal[False]] = "http_cache"):
         existing_session = __make_cache_session(user_id)
         __cached_sessions[user_id] = existing_session
     return existing_session
+
+
+__redis = None
+if configs.cached_session_backend == "redis":
+    import redislite
+    __redis = redislite.Redis()
 
 
 __adapter = HTTPAdapter(pool_maxsize=RATE_LIMIT - 1)

@@ -1,4 +1,4 @@
-from typing import Optional
+from requests_cache.backends import BackendSpecifier
 
 # import os
 # IMPORTANT : DO NOT DO THIS IN PROD /!\
@@ -9,10 +9,10 @@ secret_key: bytes = bytes([1])  # os.urandom(24)
 debug: bool = True
 flask_environment: str = "development"
 auto_reload_templates: bool = True
-# https://requests-cache.readthedocs.io/en/stable/user_guide.html?highlight=backends#cache-backends
-# Supported: sqlite (default), memory, filesystem
-# Unsupported: redis, mongodb, gridfs, dynamodb
-cached_session_backend: Optional[str] = None
+# https://requests-cache.readthedocs.io/en/stable/user_guide/backends.html
+# Supported: sqlite (default), memory, filesystem, redis
+# Unsupported: mongodb, gridfs, dynamodb
+cached_session_backend: BackendSpecifier = "sqlite"
 
 # Custom settings
 bypass_update_restrictions: bool = True
