@@ -74,7 +74,7 @@ def __handle_json_data(json_data: SrcErrorResultDto, response_status_code: int) 
     status = json_data["status"]
     message = json_data["message"]
     if status in configs.http_retryable_errors:
-        retry_delay = randint(HTTP_ERROR_RETRY_DELAY_MIN, HTTP_ERROR_RETRY_DELAY_MAX)  # nosec
+        retry_delay = randint(HTTP_ERROR_RETRY_DELAY_MIN, HTTP_ERROR_RETRY_DELAY_MAX)  # nosecops
         if status == 420:
             if "too busy" in message:
                 raise UnderALotOfPressure({"error": f"{response_status_code} (speedrun.com)",

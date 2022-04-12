@@ -43,7 +43,8 @@ class Schedule(BaseModel):
             is_active: Optional[bool | Column[Boolean]] = ...,
             deadline: Optional[datetime | Column[DateTime]] = ...,
             order: Optional[int | Column[Integer]] = ...,
-        ): ...
+        ):
+            ...
 
     @staticmethod
     def get(schedule_id: int):
@@ -92,7 +93,8 @@ class ScheduleGroup(BaseModel):
             name: str | Column[String] = ...,
             order: Optional[int | Column[Integer]] = ...,
             owner_id: str | Column[String] = ...,
-        ): ...
+        ):
+            ...
 
     @staticmethod
     def get(group_id: int):
@@ -139,7 +141,8 @@ class TimeSlot(BaseModel):
             schedule: Schedule = ...,
             time_slot_id: int | Column[Integer] = ...,
             registrations: list[Registration] = ...,
-        ): ...
+        ):
+            ...
 
     @staticmethod
     def get_with_key(time_slot_id: int, registration_key: str) -> Optional[TimeSlot]:
@@ -207,7 +210,8 @@ class Registration(BaseModel):
             registration_id: int | Column[Integer] = ...,
             timeslot: TimeSlot = ...,
             participants: list[Participant] = ...,
-        ): ...
+        ):
+            ...
 
     def to_dto(self):
         return {
@@ -232,4 +236,5 @@ class Participant(BaseModel):
             registration_id: int | Column[Integer] = ...,
             name: str | Column[String] = ...,
             registration: Registration = ...,
-        ): ...
+        ):
+            ...
