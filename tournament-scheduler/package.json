@@ -36,6 +36,7 @@
   "// minimist": "Prototype Pollution in minimist <= 1.2.5",
   "// node-forge": "Improper Verification of Cryptographic Signature in node-forge < 1.3.0",
   "// follow-redirects": "Exposure of Sensitive Information to an Unauthorized Actor in follow-redirects < 1.14.8",
+  "// ejs": "Template injection in ejs < 3.1.7",
   "devDependencies": {
     "@types/react": "^18.0.1",
     "@types/react-div-100vh": "^0.4.0",
@@ -45,6 +46,7 @@
     "@types/react-text-mask": "^5.4.11",
     "@typescript-eslint/eslint-plugin": "^5.19.0",
     "@typescript-eslint/parser": "^5.19.0",
+    "ejs": "^3.1.7",
     "eslint": "^8.13.0",
     "eslint-config-beslogic": "^1.2.0",
     "eslint-plugin-jsx-a11y": "^6.5.1",
