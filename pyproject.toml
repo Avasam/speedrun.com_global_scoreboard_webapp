@@ -22,6 +22,7 @@ reportUninitializedInstanceVariable="error"
 reportUnnecessaryTypeIgnoreComment="error"
 reportUnusedCallResult="none"
 exclude = [
+  # We expect stub files to be incomplete or contain useless statements
   "typings/",
 ]
 reportMissingTypeStubs = "warning"
@@ -37,8 +38,8 @@ reportUnknownMemberType = "none"
 # https://github.com/PyCQA/pylint/blob/main/examples/pylintrc
 # https://pylint.pycqa.org/en/latest/technical_reference/features.html
 [tool.pylint.REPORTS]
-# Just like default but any error will make drop to 9 or less. warning and conventions are worth more
-evaluation = "10.0 - error - ((float((warning + convention) * 10 + refactor ) / statement) * 10)"
+# Just like default but any error, warning or convention will make drop to 9 or less. refactor are worth more
+evaluation = "10.0 - error - warning - convention - ((10 * refactor) / statement) * 10"
 [tool.pylint.MASTER]
 fail-under = 9.0
 # Needed for Pylint to discover our own modules
@@ -73,7 +74,7 @@ load-plugins = [
 ]
 ignore-paths = [
   # We expect stub files to be incomplete or contain useless statements
-  "^.*\\.pyi$",
+  "^.*.pyi$",
 ]
 # Dynamic/Generated members from SQLAlchemy
 ignored-classes = ["scoped_session"]
@@ -97,24 +98,33 @@ max-branches = 15
 module-naming-style = "any"
 # Can't make private class with PascalCase
 class-rgx = "_?_?[a-zA-Z]+?$"
-# https://github.com/PyCQA/pylint/issues/2018
-good-names = ["id", "x", "y", "a0", "i", "t0", "t1", "fn", "pb", "wr"]
+good-names = [
+  "fn", "pb", "wr",
+  # https://github.com/PyCQA/pylint/issues/2018
+  "id", "x", "y", "a0", "i", "t0", "t1",
+]
 disable = [
   # No need to mention the fixmes
   "fixme",
-  "missing-docstring",
-  # We group imports
-  "wrong-import-position",
-  # Already taken care of and grayed out. Also conflicts with Pylance reportIncompatibleMethodOverride
+  # Already taken care of and grayed out. Also conflicts with Pyright reportIncompatibleMethodOverride
   "unused-argument",
-  # Already taken care of by Flake8
+  # Already taken care of by Flake8 and isort
+  "ungrouped-imports",
   "unused-import",
+  "wrong-import-order",
+  "wrong-import-position",
+  # Doesn't work with local imports
+  "import-error",
   # Similar lines in 2 files, doesn't really work
   "R0801",
+  # We don't document every single method
+  "missing-docstring",
   # TODO: Diabled until using *proper* class based logic
   "protected-access",
-  # Strings are ok. Pylance also doesn't seem to see our overriden Exception classes
+  # Strings are ok. Pyright also doesn't seem to see our overriden Exception classes
   "invalid-sequence-index",
+  # We use a lot of string format with urls to make it easier to parse visually
+  "consider-using-f-string",
   # Happens too often with Flask, child classes should not be affected by this rule
   # See: https://github.com/PyCQA/pylint/issues/4352
   "too-few-public-methods",
