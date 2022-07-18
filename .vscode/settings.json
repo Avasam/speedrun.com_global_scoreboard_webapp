@@ -13,29 +13,29 @@
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.fixAll": true,
-    "source.organizeImports": true,
+    "source.organizeImports": true
   },
   // Set the default formatter to help avoid Prettier
   "[json]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
   "[jsonc]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
   "[html]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
   "[javascript]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
   "[javascriptreact]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
   "[typescript]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
   "[typescriptreact]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   },
   "javascript.preferences.quoteStyle": "single",
   "typescript.preferences.quoteStyle": "single",
@@ -89,7 +89,7 @@
     "*.zip": true,
     "**/dist/**/*.js": false,
     "**/dist/**/*.map": true,
-    "**/src/react-app-env.d.ts": true,
+    "**/src/react-app-env.d.ts": true
   },
   "search.exclude": {
     "**/node_modules": true,
@@ -97,7 +97,7 @@
     "**/*.code-search": true,
     "*.lock": true,
     "package-lock.json": true,
-    "typings": true,
+    "typings": true
   },
   "[python]": {
     "editor.tabSize": 4,
@@ -106,7 +106,7 @@
       // 79, // PEP8-17 default max
       // 88, // Black default
       99, // PEP8-17 acceptable max
-      120, // Our hard rule
+      120 // Our hard rule
     ]
   },
   "python.linting.enabled": true,
@@ -130,5 +130,5 @@
   "python.linting.prospectorEnabled": false,
   // Just another wrapper, use Flake8 OR this
   "python.linting.pylamaEnabled": false,
-  "python.linting.banditEnabled": true,
+  "python.linting.banditEnabled": true
 }

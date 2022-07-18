@@ -1,0 +1,6 @@
+# https://nitpick.readthedocs.io/en/latest/configuration.html#multiple-styles
+[tool.nitpick]
+style = [
+  "https://github.com/Avasam/nitpick.styles/blob/main/python.toml",
+]
+

@@ -11,7 +11,7 @@
     "ms-python.vscode-pylance",
     "ms-vscode.vscode-typescript-next",
     "pkief.material-icon-theme",
-    "shardulm94.trailing-spaces",
+    "shardulm94.trailing-spaces"
   ],
   "unwantedRecommendations": [
     // VSCode has implemented an optimized version
@@ -26,6 +26,6 @@
     "ms-pyright.pyright",
     // Not configurable per workspace, tends to conflict with other linters
     // Use eslint-plugin-sonarjs for JS/TS projects
-    "sonarsource.sonarlint-vscode",
+    "sonarsource.sonarlint-vscode"
   ]
 }

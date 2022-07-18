@@ -7,10 +7,11 @@
     "build": "react-scripts build & npm run compress-build-folder",
     "build:no-compress": "react-scripts build",
     "compress-build-folder": "powershell Compress-Archive -Update -Path .\\build\\ -CompressionLevel Optimal -DestinationPath ..\\global-scoreboard-build.zip",
-    "lint": "eslint src/ --ext .ts,.tsx --ignore-path ../.gitignore",
-    "lint:fix": "npm run lint -- --fix",
+    "eslint": "eslint src/ --ext .ts,.tsx --ignore-path ../.gitignore",
+    "lint": "npm run eslint & cd .. & nitpick check",
+    "lint:fix": "npm run eslint -- --fix & cd .. & nitpick fix",
     "upgrade": "npx npm-check-updates -u & npm i",
-    "postinstall": "npm audit --production --audit-level=none & patch-package"
+    "postinstall": "pip install nitpick --upgrade & npm audit --production --audit-level=none & patch-package"
   },
   "// node 17": "issue with Webpack: https://github.com/webpack/webpack/issues/14532",
   "engines": {
