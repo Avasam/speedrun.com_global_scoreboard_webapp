@@ -115,9 +115,10 @@ class Player(BaseModel):
 
     @staticmethod
     def get_all():
-        sql = text(  # nosecops
-            "SELECT user_id, name, country_code, score, last_update, CONVERT(rank, SIGNED INT) rank FROM ( "
-            + "    SELECT *, "
+        sql = text(
+            "SELECT user_id, name, country_code, score, last_update, CONVERT(rank, SIGNED INT) rank "  # nosec B608
+            + "FROM ( "  # nosec B608
+            + "    SELECT *, "  # nosec B608
             + "        IF(score = @_last_score, @cur_rank := @cur_rank, @cur_rank := @_sequence) AS rank, "
             + "        @_sequence := @_sequence + 1, "
             + "        @_last_score := score "
@@ -194,8 +195,8 @@ class Player(BaseModel):
         return True
 
     def get_friends(self) -> list[Player]:
-        sql = text(  # nosecops
-            "SELECT f.friend_id, p.name, p.country_code, p.score, p.last_update FROM friend f "
+        sql = text(
+            "SELECT f.friend_id, p.name, p.country_code, p.score, p.last_update FROM friend f "  # nosec B608
             + "JOIN player p ON p.user_id = f.friend_id "
             + "WHERE f.user_id = :user_id;")
         return [Player(
@@ -214,8 +215,8 @@ class Player(BaseModel):
         return db.engine.execute(sql, user_id=self.user_id, friend_id=friend_id).rowcount > 0
 
     def unfriend(self, friend_id: str) -> bool:
-        sql = text(  # nosecops
-            "DELETE FROM friend "
+        sql = text(
+            "DELETE FROM friend "  # nosec B608
             + "WHERE user_id = :user_id AND friend_id = :friend_id")
         return db.engine.execute(sql, user_id=self.user_id, friend_id=friend_id).rowcount > 0
 
@@ -496,4 +497,5 @@ class Player(BaseModel):
 
 
 if "models.tournament_scheduler_models" not in sys.modules:
+    # pylint: disable=ungrouped-imports
     from models.tournament_scheduler_models import Participant, Registration, Schedule, ScheduleGroup, TimeSlot

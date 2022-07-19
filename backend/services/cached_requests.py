@@ -73,7 +73,7 @@ __REDIS = None
 if configs.cached_session_backend == "redis":
     import redislite  # pyright: ignore # pylint: disable=import-error
     __REDIS = redislite.Redis(
-        dbfilename="/tmp/redis-requests-cache.db",  # nosecops
+        dbfilename="/tmp/redis-requests-cache.db",  # nosec B108
         # Ignore failures to persist rather than crashing on Prod. Data is non-critical.
         serverconfig={"stop-writes-on-bgsave-error": "yes" if configs.debug else "no"},
     )

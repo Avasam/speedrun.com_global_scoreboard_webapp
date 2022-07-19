@@ -7,8 +7,8 @@ from typing import Union
 from urllib.parse import unquote
 
 import configs
-import httplib2
 import requests
+from httplib2 import ServerNotFoundError
 from models.core_models import Player, db
 from models.exceptions import SpeedrunComError, UserUpdaterError
 from models.game_search_models import GameValues
@@ -87,7 +87,7 @@ def get_updated_user(user_id: str) -> dict[str, Union[str, None, float, int, Poi
             "state": result_state,
         }
 
-    except httplib2.ServerNotFoundError as exception:
+    except ServerNotFoundError as exception:
         raise UserUpdaterError({
             "error": "Server not found",
             "details": f"{exception}\nPlease make sure you have an active internet connection"}
