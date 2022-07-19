@@ -19,7 +19,6 @@ from ratelimiter import RateLimiter
 from requests import Response
 from requests.exceptions import ConnectionError as RequestsConnectionError, HTTPError
 from services.cached_requests import RATE_LIMIT, use_session
-from simplejson.errors import JSONDecodeError as SimpleJSONDecodeError
 
 if TYPE_CHECKING:
     from requests.sessions import _Params
@@ -74,7 +73,7 @@ def __handle_json_data(json_data: SrcErrorResultDto, response_status_code: int) 
     status = json_data["status"]
     message = json_data["message"]
     if status in configs.http_retryable_errors:
-        retry_delay = randint(HTTP_ERROR_RETRY_DELAY_MIN, HTTP_ERROR_RETRY_DELAY_MAX)  # nosecops
+        retry_delay = randint(HTTP_ERROR_RETRY_DELAY_MIN, HTTP_ERROR_RETRY_DELAY_MAX)  # nosec B311
         if status == 420:
             if "too busy" in message:
                 raise UnderALotOfPressure({"error": f"{response_status_code} (speedrun.com)",
@@ -151,7 +150,7 @@ def get_file(
         try:
             json_data = response.json()
         # Didn't receive a JSON file ...
-        except (JSONDecodeError, SimpleJSONDecodeError) as exception:
+        except (JSONDecodeError) as exception:
             __handle_json_error(response, exception)
         else:
             data = __handle_json_data(json_data, response.status_code)

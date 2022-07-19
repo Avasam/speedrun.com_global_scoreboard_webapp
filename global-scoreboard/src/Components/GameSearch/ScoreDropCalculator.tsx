@@ -189,7 +189,7 @@ const ScoreDropCalculator = () => {
           <br />
           <div>Other data:</div>
           <div>
-            Leaderboard mean:
+            Leaderboard average:
             {' '}
             {secondsToTimeString(calculatedVariables.m)}
           </div>
@@ -199,7 +199,7 @@ const ScoreDropCalculator = () => {
             {secondsToTimeString(calculatedVariables.t)}
           </div>
           <div>
-            World Record time:
+            95th percentile&apos;s time:
             {' '}
             {secondsToTimeString(calculatedVariables.w)}
           </div>
