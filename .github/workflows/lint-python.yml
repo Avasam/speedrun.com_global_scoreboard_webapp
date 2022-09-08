@@ -5,16 +5,33 @@ on:
     branches:
       - main
     paths:
-      - '**.py'
-      - '**.pyi'
+      - "**.py"
+      - "**.pyi"
   pull_request:
     branches:
       - main
       - develop
     paths:
-      - '**.py'
-      - '**.pyi'
+      - "**.py"
+      - "**.pyi"
 jobs:
+  add-trailing-comma:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout ${{ github.repository }}/${{ github.ref }}
+        uses: actions/checkout@v3
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+          cache: "pip"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install wheel
+          pip install -r "scripts/requirements.txt"
+      - name: Analysing the code with add-trailing-comma
+        run: add-trailing-comma $(git ls-files '**.py*') --py36-plus
   Pyright:
     runs-on: ubuntu-latest
     steps:
@@ -26,13 +43,12 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
-          cache: 'pip'
+          cache: "pip"
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install wheel
           pip install -r "scripts/requirements.txt"
-          npm install -g pyright
       - run: mv backend/configs.template.py backend/configs.py
       - name: Analysing the code with ${{ job.name }}
         run: pyright --warnings backend
@@ -45,7 +61,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
-          cache: 'pip'
+          cache: "pip"
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -63,7 +79,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
-          cache: 'pip'
+          cache: "pip"
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -81,7 +97,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
-          cache: 'pip'
+          cache: "pip"
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip

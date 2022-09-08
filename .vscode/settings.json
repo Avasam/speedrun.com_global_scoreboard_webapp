@@ -13,6 +13,8 @@
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.fixAll": true,
+    "source.fixAll.unusedImports": false,
+    "source.fixAll.convertImportFormat": true,
     "source.organizeImports": true,
   },
   // Set the default formatter to help avoid Prettier
@@ -113,15 +115,36 @@
   "python.linting.pylintEnabled": true,
   "python.linting.pylintCategorySeverity.convention": "Warning",
   "python.linting.pylintCategorySeverity.refactor": "Warning",
-  "python.linting.flake8Enabled": true,
-  // pycodestyles
-  "python.linting.flake8CategorySeverity.E": "Warning",
-  // Pyflakes
-  "python.linting.flake8CategorySeverity.F": "Warning",
-  // PEP8 Naming convention
-  "python.linting.flake8CategorySeverity.N": "Warning",
-  // PYI
-  "python.linting.flake8CategorySeverity.Y": "Warning",
+  // Use the new Flake8 extension instead
+  "python.linting.flake8Enabled": false,
+  "flake8.severity": {
+    "convention": "Warning",
+    "error": "Error",
+    "fatal": "Error",
+    "refactor": "Warning",
+    "warning": "Warning",
+    "info": "Warning",
+    // builtins
+    "A": "Warning",
+    // mccabe
+    "C": "Warning",
+    // class attributes order
+    "CCE": "Warning",
+    // pycodestyles
+    "E": "Warning",
+    "E9": "Error", // Runtime
+    "W": "Warning",
+    "W6": "Error", // Deprecation warning
+    // Pyflakes
+    "F": "Warning",
+    // PEP8 Naming convention
+    "N": "Warning",
+    // Simplify
+    "SIM": "Warning",
+    "SIM9": "Information",
+    // PYI
+    "Y": "Warning",
+  },
   // PyRight obsoletes mypy
   "python.linting.mypyEnabled": false,
   // Is already wrapped by Flake8, prospector and pylama
@@ -131,4 +154,11 @@
   // Just another wrapper, use Flake8 OR this
   "python.linting.pylamaEnabled": false,
   "python.linting.banditEnabled": true,
+  "powershell.codeFormatting.pipelineIndentationStyle": "IncreaseIndentationForFirstPipeline",
+  "powershell.codeFormatting.autoCorrectAliases": true,
+  "powershell.codeFormatting.trimWhitespaceAroundPipe": true,
+  "powershell.codeFormatting.useConstantStrings": true,
+  "powershell.codeFormatting.useCorrectCasing": true,
+  "powershell.codeFormatting.whitespaceBetweenParameters": true,
+  "powershell.integratedConsole.showOnStartup": false,
 }
