@@ -1,6 +1,6 @@
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { forwardRef, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Alert, OverlayTrigger, ProgressBar, Tab, Tabs, Tooltip } from 'react-bootstrap'
 import type { Variant } from 'react-bootstrap/esm/types'
 
@@ -33,7 +33,7 @@ const renderRow = (rows: RunResult[]) =>
         {row.levelName ? ` (${row.levelName})` : ''}
       </td>
       <td>
-        {row.diminishedPoints && row.diminishedPoints !== row.points && <OverlayTrigger
+        {row.diminishedPoints && row.diminishedPoints !== row.points ? <OverlayTrigger
           overlay={<Tooltip>
             Points before diminishing return:
             {' '}
@@ -41,15 +41,11 @@ const renderRow = (rows: RunResult[]) =>
           </Tooltip>}
           placement='left'
         >
-          <FaInfoCircle />
-        </OverlayTrigger>}
+          <FontAwesomeIcon icon={faInfoCircle} />
+        </OverlayTrigger> : null}
         {(row.diminishedPoints ?? row.points).toFixed(2)}
       </td>
     </tr>)
-
-// Maybe this will be simplified in the future: https://github.com/FortAwesome/react-fontawesome/issues/199
-const FaInfoCircle = forwardRef((props, ref) => <FontAwesomeIcon forwardedRef={ref} icon={faInfoCircle} {...props} />)
-FaInfoCircle.displayName = 'FaInfoCircle'
 
 const renderTable = (runs: RunResult[]) =>
   <table>
@@ -66,7 +62,7 @@ const renderTable = (runs: RunResult[]) =>
             }
             placement='right'
           >
-            <FaInfoCircle />
+            <FontAwesomeIcon icon={faInfoCircle} />
           </OverlayTrigger>
         </th>
         <th>Game - Category (Level)</th>
@@ -124,7 +120,7 @@ const UpdateMessage = (props: UpdateMessageProps) => {
     {typeof props.message === 'string'
       ? <span dangerouslySetInnerHTML={{
         __html: props.message.trim().startsWith('<')
-          ? props.message.replaceAll(/(\s+|<link.*?stylesheet.*?>|<style[\S\s]*?\/style>)/g, ' ')
+          ? props.message.replaceAll(/(\s+|<link.*?stylesheet.*?>|<style[\s\S]*?\/style>)/gu, ' ')
           : props.message.replaceAll('\n', '<br/>'),
       }}
       />

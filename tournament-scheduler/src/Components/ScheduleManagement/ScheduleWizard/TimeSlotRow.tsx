@@ -4,9 +4,10 @@ import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import FileCopy from '@mui/icons-material/FileCopy'
 import { MobileDateTimePicker } from '@mui/lab'
-import type { Theme } from '@mui/material'
+import type { TextFieldProps, Theme } from '@mui/material'
 import { Card, CardContent, Collapse, IconButton, ListItem, ListItemText, Stack, TextField, Typography } from '@mui/material'
 import type { SxProps } from '@mui/system'
+import type { Dayjs } from 'dayjs'
 import dayjs from 'dayjs'
 import type { MouseEventHandler } from 'react'
 import { useState } from 'react'
@@ -127,8 +128,8 @@ const TimeSlotRow = (props: TimeSlotRowProps) => {
         label='Date and time'
         minDate={dayjs().set('year', MIN_YEAR)}
         minutesStep={minutesStep}
-        onChange={date => props.onEditTimeSlotDateTime(date?.toDate())}
-        renderInput={params =>
+        onChange={(date: Dayjs | null) => props.onEditTimeSlotDateTime(date?.toDate())}
+        renderInput={(params: TextFieldProps) =>
           <TextField
             {...params}
             error={!!props.schedule.deadline && props.timeSlot.dateTime < props.schedule.deadline}
@@ -166,15 +167,15 @@ const TimeSlotRow = (props: TimeSlotRowProps) => {
           <FileCopy />
         </IconButton>
         {props.schedule.timeSlots.length > 1 &&
-        <IconButton
-          aria-label='remove time slot'
-          color='error'
-          component='button'
-          onClick={handleDelete}
-          size='large'
-        >
-          <Clear />
-        </IconButton>}
+          <IconButton
+            aria-label='remove time slot'
+            color='error'
+            component='button'
+            onClick={handleDelete}
+            size='large'
+          >
+            <Clear />
+          </IconButton>}
       </Stack>
     </CardContent>
     <CardContent>

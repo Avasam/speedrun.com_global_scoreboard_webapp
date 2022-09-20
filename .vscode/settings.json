@@ -15,29 +15,29 @@
     "source.fixAll": true,
     "source.fixAll.unusedImports": false,
     "source.fixAll.convertImportFormat": true,
-    "source.organizeImports": true,
+    "source.organizeImports": false,
   },
   // Set the default formatter to help avoid Prettier
   "[json]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.defaultFormatter": "vscode.json-language-features",
   },
   "[jsonc]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.defaultFormatter": "vscode.json-language-features",
   },
   "[html]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.defaultFormatter": "vscode.html-language-features",
   },
   "[javascript]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.defaultFormatter": "vscode.typescript-language-features",
   },
   "[javascriptreact]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.defaultFormatter": "vscode.typescript-language-features",
   },
   "[typescript]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.defaultFormatter": "vscode.typescript-language-features",
   },
   "[typescriptreact]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.defaultFormatter": "vscode.typescript-language-features",
   },
   "javascript.preferences.quoteStyle": "single",
   "typescript.preferences.quoteStyle": "single",
@@ -109,7 +109,10 @@
       // 88, // Black default
       99, // PEP8-17 acceptable max
       120, // Our hard rule
-    ]
+    ],
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": true,
+    },
   },
   "python.linting.enabled": true,
   "python.linting.pylintEnabled": true,

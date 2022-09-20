@@ -1,6 +1,6 @@
 import Event from '@mui/icons-material/Event'
 import { MobileDatePicker } from '@mui/lab'
-import type { Theme } from '@mui/material'
+import type { TextFieldProps, Theme } from '@mui/material'
 import { Button, Card, CardActions, CardContent, Checkbox, Container, FormControlLabel, Stack, TextField, Typography } from '@mui/material'
 import type { SxProps } from '@mui/system'
 import { useState } from 'react'
@@ -118,8 +118,11 @@ export const ScheduleWizard = (props: ScheduleWizardProps) => {
               disablePast={earliestTimeslotDate > new Date()}
               inputFormat={DEADLINE_FORMAT}
               label={`${!schedule.deadline ? 'No r' : 'R'}egistration deadline`}
-              onChange={date => setSchedule({ ...schedule, deadline: date == null ? null : startOfDay(date) })}
-              renderInput={params =>
+              onChange={(date: Date | null) => setSchedule({
+                ...schedule,
+                deadline: date == null ? null : startOfDay(date),
+              })}
+              renderInput={(params: TextFieldProps) =>
                 <TextField
                   {...params}
                   // eslint-disable-next-line react/forbid-component-props
@@ -145,15 +148,16 @@ export const ScheduleWizard = (props: ScheduleWizardProps) => {
               showTodayButton
               value={schedule.deadline}
             />
-            {schedule.deadline &&
-              <Typography
+            {schedule.deadline
+              ? <Typography
                 color={deadlineDaysLeft > 0 ? 'warn' : undefined}
                 component='label'
                 marginTop={2.5}
                 whiteSpace='nowrap'
               >
                 {` Close${deadlineDaysLeft > 0 ? 's' : 'd'} ${getDeadlineDueText(deadlineDaysLeft)}`}
-              </Typography>}
+              </Typography>
+              : null}
           </Stack>
 
           <Button onClick={addNewTimeSlot} style={{ width: 'fit-content' }} variant='contained'>
