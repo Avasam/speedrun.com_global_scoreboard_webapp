@@ -45,8 +45,9 @@ const ScheduleViewer = (props: ScheduleViewerProps) => {
   useEffect(() => {
     getSchedule(scheduleId)
       .then(setSchedule)
-      .catch((error: Response) => {
-        if (error.status === StatusCodes.NOT_FOUND || error.status === StatusCodes.BAD_REQUEST) {
+      .catch((error: unknown) => {
+        if (error instanceof Response &&
+          (error.status === StatusCodes.NOT_FOUND || error.status === StatusCodes.BAD_REQUEST)) {
           setSchedule(null)
         } else {
           console.error(error)
@@ -91,7 +92,7 @@ const ScheduleViewer = (props: ScheduleViewerProps) => {
               </title>
             </Helmet>
             {TimeZoneMessage}
-          </> }
+          </>}
           {schedule.active
             ? schedule.deadline && <p>
               Registrations
@@ -101,8 +102,8 @@ const ScheduleViewer = (props: ScheduleViewerProps) => {
             </p>
             : <p>This schedule is currently inactive and registration is closed.</p>}
           {upcomingTimeSlots.length === 0 &&
-          pastTimeSlots.length === 0 &&
-          <p>There are no registrations for this schedule.</p>}
+            pastTimeSlots.length === 0 &&
+            <p>There are no registrations for this schedule.</p>}
         </Paper>
 
         {upcomingTimeSlots.map(timeSlot => <TimeSlotView key={timeSlot.id} schedule={schedule} timeSlot={timeSlot} />)}

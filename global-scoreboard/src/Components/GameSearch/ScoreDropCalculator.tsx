@@ -64,7 +64,7 @@ const ScoreDropCalculator = () => {
   const [requiredNewPlayers, setRequiredNewPlayers] = useState(0)
   const [calculatedRunScore, setCalculatedRunScore] = useState(0)
   const [calculatedRunId, setCalculatedRunId] = useState('')
-  // eslint-disable-next-line id-length
+  // eslint-disable-next-line id-length, no-autofix/id-length
   const [calculatedVariables, setCalculatedVariables] = useState({ m: 0, t: 0, w: 0, N: 0, p: 0, x: 0, n: 0 })
 
   const handleOnChange: ChangeEventHandler<HTMLInputElement> = event =>
@@ -79,7 +79,7 @@ const ScoreDropCalculator = () => {
       getGameSubCategories(run.game).then(subCategories =>
         getLeaderboardRuns(run.game, run.category, filterSubCatVariables(run.values, subCategories)).then(records => {
           /* eslint-disable extra-rules/no-commented-out-code */
-          /* eslint-disable id-length */
+          /* eslint-disable id-length, no-autofix/id-length */
           /* eslint-disable max-len */
           /* eslint-disable @typescript-eslint/no-magic-numbers */
           const primaryTimes = records
@@ -88,7 +88,7 @@ const ScoreDropCalculator = () => {
 
           const m = math.mean(primaryTimes)
           const t = run.times.primary_t
-          const w = primaryTimes[primaryTimes.length - 1]
+          const w = primaryTimes.at(-1)
           const N = primaryTimes.length
 
           // Original algorithm (https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/blob/main/README.md)
@@ -126,7 +126,7 @@ const ScoreDropCalculator = () => {
           console.info(allVariables)
 
           /* eslint-enable extra-rules/no-commented-out-code */
-          /* eslint-enable id-length */
+          /* eslint-enable id-length, no-autofix/id-length */
           /* eslint-enable max-len */
           /* eslint-enable @typescript-eslint/no-magic-numbers */
         })))

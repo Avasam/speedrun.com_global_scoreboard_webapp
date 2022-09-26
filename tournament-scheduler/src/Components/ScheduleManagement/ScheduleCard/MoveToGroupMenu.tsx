@@ -2,7 +2,7 @@ import DriveFileMove from '@mui/icons-material/DriveFileMove'
 import { IconButton, Menu, MenuItem } from '@mui/material'
 import { useState } from 'react'
 
-import type { ScheduleGroup } from 'src/Models/Schedule'
+import type { ScheduleGroup } from 'src/Models/ScheduleGroup'
 
 export type MoveToGroupMenuProps = {
   onMoveToGroup: (groupId: number | null) => void

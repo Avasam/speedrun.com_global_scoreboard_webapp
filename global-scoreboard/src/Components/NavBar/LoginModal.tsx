@@ -32,8 +32,8 @@ const LoginModal = (props: LoginModalProps) => {
     setLoginErrorMessage('')
     apiPost<{ user: Player }>('login', { speedruncomApiKey: speedruncomApiKeyInput })
       .then(response => props.onLogin(response.user))
-      .catch((error: Response) => {
-        if (error.status === StatusCodes.UNAUTHORIZED) {
+      .catch((error: unknown) => {
+        if (error instanceof Response && error.status === StatusCodes.UNAUTHORIZED) {
           void error.json()
             .then((data: UpdateRunnerResult) => data.message ?? '')
             .then(setLoginErrorMessage)

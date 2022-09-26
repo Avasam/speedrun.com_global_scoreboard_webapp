@@ -7,11 +7,14 @@ import ScheduleCard from './ScheduleCard/ScheduleCard'
 import ScheduleGroupCard from './ScheduleCard/ScheduleGroupCard'
 import { ScheduleWizard } from './ScheduleWizard/ScheduleWizard'
 import { apiDelete, apiGet, apiPost, apiPut } from 'src/fetchers/api'
-import type { ScheduleDto, ScheduleGroupDto, ScheduleOrderDto } from 'src/Models/Schedule'
-import { isGroup, Schedule, ScheduleGroup } from 'src/Models/Schedule'
+import type { ScheduleDto, ScheduleOrderDto } from 'src/Models/Schedule'
+import { Schedule } from 'src/Models/Schedule'
+import type { ScheduleGroupDto } from 'src/Models/ScheduleGroup'
+import { ScheduleGroup } from 'src/Models/ScheduleGroup'
 import { TimeSlot } from 'src/Models/TimeSlot'
 import type User from 'src/Models/User'
 import { arrayMove } from 'src/utils/objectUtils'
+import { isGroup } from 'src/utils/scheduleHelper'
 
 const getSchedules = () =>
   apiGet<ScheduleDto[]>('schedules')
@@ -51,12 +54,35 @@ type ScheduleManagementProps = {
 
 type ScheduleOrGroup = Schedule | ScheduleGroup
 
-// TODO: Remove dependency on knowing the index? (need to assign proper order on initial get and moving to/out of gorup)
+// TODO: Remove dependency on knowing the index? (need to assign proper order on initial get and moving to/out of group)
 type ScheduleCardFromGroupProps = {
   schedule: Schedule
   parent: ScheduleOrGroup[]
   index: number
+  onDelete: (scheduleId: number) => void
+  onEdit: (schedule?: Schedule) => void
+  onMove: (source: ScheduleOrGroup[], schedule: ScheduleOrGroup, upDown: -1 | 1) => void
+  onMoveToGroup: (schedule: Schedule, groupId: number | null) => void
+  schedulesAndGroups: ScheduleOrGroup[]
 }
+
+const ScheduleCardFromGroup = memo((params: ScheduleCardFromGroupProps) =>
+  <ScheduleCard
+    isFirst={params.index === 0}
+    isLast={params.index === params.parent.length - 1}
+    key={`schedule-${params.schedule.id}`}
+    onDelete={params.onDelete}
+    onEdit={params.onEdit}
+    onMove={(moved, upDown) => params.onMove(params.parent, moved, upDown)}
+    onMoveToGroup={groupId => params.onMoveToGroup(params.schedule, groupId)}
+    possibleGroups={[
+      // Note: null represents root. This is a fake group
+      { ...ScheduleGroup.createDefault(), id: null, name: 'Ungroup' } as unknown as ScheduleGroup,
+      ...params.schedulesAndGroups,
+    ].filter(group => isGroup(group) && group.id !== params.schedule.groupId) as ScheduleGroup[]}
+    schedule={params.schedule}
+  />)
+ScheduleCardFromGroup.displayName = 'ScheduleCardFromGroup'
 
 const ScheduleManagement = (props: ScheduleManagementProps) => {
   const [schedules, setSchedules] = useState<Schedule[]>([])
@@ -150,24 +176,6 @@ const ScheduleManagement = (props: ScheduleManagementProps) => {
     [schedules, groups]
   )
 
-  const ScheduleCardFromGroup = memo((params: ScheduleCardFromGroupProps) =>
-    <ScheduleCard
-      isFirst={params.index === 0}
-      isLast={params.index === params.parent.length - 1}
-      key={`schedule-${params.schedule.id}`}
-      onDelete={handleDelete}
-      onEdit={handleEdit}
-      onMove={(moved, upDown) => handleMoveSchedule(params.parent, moved, upDown)}
-      onMoveToGroup={groupId => handleMoveToGroup(params.schedule, groupId)}
-      possibleGroups={[
-        // Note: null represents root. This is a fake group
-        { ...ScheduleGroup.createDefault(), id: null, name: 'Ungroup' } as unknown as ScheduleGroup,
-        ...schedulesAndGroups,
-      ].filter(group => isGroup(group) && group.id !== params.schedule.groupId) as ScheduleGroup[]}
-      schedule={params.schedule}
-    />)
-  ScheduleCardFromGroup.displayName = 'ScheduleCardFromGroup'
-
   return currentSchedule
     ? <ScheduleWizard
       onCancel={() => setCurrentSchedule(undefined)}
@@ -217,15 +225,25 @@ const ScheduleManagement = (props: ScheduleManagementProps) => {
               <ScheduleCardFromGroup
                 index={index_}
                 key={`schedule-${schedule.id}`}
+                onDelete={handleDelete}
+                onEdit={handleEdit}
+                onMove={handleMoveSchedule}
+                onMoveToGroup={handleMoveToGroup}
                 parent={scheduleOrGroup.schedules}
                 schedule={schedule}
+                schedulesAndGroups={schedulesAndGroups}
               />)}
           </ScheduleGroupCard>
           : <ScheduleCardFromGroup
             index={index}
             key={`schedule-${scheduleOrGroup.id}`}
+            onDelete={handleDelete}
+            onEdit={handleEdit}
+            onMove={handleMoveSchedule}
+            onMoveToGroup={handleMoveToGroup}
             parent={schedulesAndGroups}
             schedule={scheduleOrGroup}
+            schedulesAndGroups={schedulesAndGroups}
           />)}
     </Container>
 }

@@ -1,9 +1,16 @@
+// eslint-disable-next-line max-classes-per-file
 import type IOrderable from './IOrderable'
 import type { TimeSlotDto } from './TimeSlot'
 import { TimeSlot } from './TimeSlot'
+import type { ScheduleGroup } from 'src/Models/ScheduleGroup'
 import { nextDayFlat } from 'src/utils/date'
 import type { NonFunctionProperties } from 'src/utils/objectUtils'
 import { createProxy } from 'src/utils/objectUtils'
+
+export type ScheduleOrderDto = IOrderable & {
+  isGroup: boolean
+  id: number
+}
 
 export type ScheduleDto = IOrderable & {
   id: number
@@ -85,40 +92,4 @@ export class Schedule implements IOrderable {
       ...properties,
     }
   }
-}
-
-export type ScheduleGroupDto = {
-  id: number
-  name: string
-  order: number
-}
-
-export class ScheduleGroup implements IOrderable {
-  id: number
-  name: string
-  schedules: Schedule[]
-  order: number
-
-  constructor(dto: ScheduleGroupDto) {
-    this.id = dto.id
-    this.name = dto.name
-    this.schedules = []
-    this.order = dto.order
-  }
-
-  static createDefault = (order = Date.now()) =>
-    new ScheduleGroup({
-      id: -Date.now(),
-      name: 'New Group',
-      order,
-    })
-}
-
-export const isGroup = (scheduleOrGroup: Schedule | ScheduleGroup): scheduleOrGroup is ScheduleGroup =>
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  (scheduleOrGroup as ScheduleGroup).schedules != null
-
-export type ScheduleOrderDto = IOrderable & {
-  isGroup: boolean
-  id: number
 }

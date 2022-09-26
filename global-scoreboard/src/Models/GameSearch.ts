@@ -43,7 +43,7 @@ export const getAllPlatforms = () =>
   apiGet<{ data: PlatformDto[] }>(
     'https://www.speedrun.com/api/v1/platforms',
     { max: MAX_PAGINATION },
-    false
+    false,
   )
     .then<PlatformDto[]>(response => response.data)
     .then<IdToNameMap>(platforms => Object.fromEntries(platforms.map(platform => [platform.id, platform.name])))
@@ -56,7 +56,7 @@ export const fetchValueNamesForRun = async (runId: string) => {
   return apiGet<EmbeddedSpeedruncomRun>(
     `https://www.speedrun.com/api/v1/runs/${runId}?embed=game,category`,
     undefined,
-    false
+    false,
   )
     .then<[IdToNameMap, IdToNameMap]>(response => [
       { [response.data.game.data.id]: response.data.game.data.names.international },

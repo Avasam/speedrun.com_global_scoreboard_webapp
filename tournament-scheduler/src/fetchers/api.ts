@@ -24,16 +24,16 @@ const apiFetch = <R>(method: RequestInit['method'], url: string, body?: RequestI
     },
     body,
   })
-    .then(response => response.status >= firstHttpErrorCode && response.status <= lastHttpErrorCode
+    .then(response => (response.status >= firstHttpErrorCode && response.status <= lastHttpErrorCode
+      // eslint-disable-next-line etc/throw-error
       ? Promise.reject(response)
-      : response)
+      : response))
     .then<R & { token?: string }>(response => response.json())
-    .catch(error => {
+    .catch((error: unknown) => {
       if (error instanceof SyntaxError) {
         return { token: undefined }
-      } else {
-        throw error
       }
+      throw error
     })
     .then(response => {
       // If a token is sent back as part of any response, set it.

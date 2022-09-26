@@ -17,7 +17,7 @@ const isLocalhost = Boolean(
   window.location.hostname === '[::1]' ||
   // 127.0.0.1/8 is considered localhost for IPv4.
   // eslint-disable-next-line unicorn/no-unsafe-regex
-  (/^127(?:\.(?:25[0-5]|2[0-4]\d|[01]?\d{1,2})){3}$/).test(window.location.hostname)
+  (/^127(?:\.(?:25[0-5]|2[0-4]\d|[01]?\d{1,2})){3}$/u).test(window.location.hostname),
 )
 
 type Config = {
@@ -30,7 +30,7 @@ export const register = (config?: Config) => {
     // The URL constructor is available in all browsers that support SW.
     const publicUrl = new URL(
       process.env.PUBLIC_URL,
-      window.location.href
+      window.location.href,
     )
     // Our service worker won't work if PUBLIC_URL is on a different origin
     // from what our page is served on. This might happen if a CDN is used to
@@ -49,7 +49,7 @@ export const register = (config?: Config) => {
         void navigator.serviceWorker.ready.then(() =>
           console.info(
             'This web app is being served cache-first by a service ' +
-            'worker. To learn more, visit https://bit.ly/CRA-PWA'
+            'worker. To learn more, visit https://bit.ly/CRA-PWA',
           ))
       } else {
         // Is not localhost. Just register service worker
@@ -75,7 +75,7 @@ const registerValidSW = (swUrl: string, config?: Config) => {
             // content until all client tabs are closed.
             console.info(
               'New content is available and will be used when all ' +
-              'tabs for this page are closed. See https://bit.ly/CRA-PWA.'
+              'tabs for this page are closed. See https://bit.ly/CRA-PWA.',
             )
 
             // Execute callback
@@ -92,7 +92,7 @@ const registerValidSW = (swUrl: string, config?: Config) => {
         })
       })
     })
-    .catch(error => {
+    .catch((error: unknown) => {
       console.error('Error during service worker registration:', error)
     })
 }
@@ -119,7 +119,7 @@ const checkValidServiceWorker = (swUrl: string, config?: Config) => {
     })
     .catch(() => {
       console.info(
-        'No internet connection found. App is running in offline mode.'
+        'No internet connection found. App is running in offline mode.',
       )
     })
 }

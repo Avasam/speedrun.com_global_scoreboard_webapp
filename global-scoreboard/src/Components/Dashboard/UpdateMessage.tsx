@@ -120,7 +120,7 @@ const UpdateMessage = (props: UpdateMessageProps) => {
     {typeof props.message === 'string'
       ? <span dangerouslySetInnerHTML={{
         __html: props.message.trim().startsWith('<')
-          ? props.message.replaceAll(/(\s+|<link.*?stylesheet.*?>|<style[\s\S]*?\/style>)/gu, ' ')
+          ? props.message.replaceAll(/\s+|<link.*?stylesheet.*?>|<style[\s\S]*?\/style>/gu, ' ')
           : props.message.replaceAll('\n', '<br/>'),
       }}
       />

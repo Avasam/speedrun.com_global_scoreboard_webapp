@@ -32,8 +32,8 @@ const App = () => {
           currentUserPromise()
             .then((response: { user: Player | undefined }) => response.user)
             .then(setCurrentUser)
-            .catch((error: Response) => {
-              if (error.status === StatusCodes.UNAUTHORIZED) {
+            .catch((error: unknown) => {
+              if (error instanceof Response && error.status === StatusCodes.UNAUTHORIZED) {
                 setCurrentUser(null)
               } else {
                 console.error(error)

@@ -10,8 +10,7 @@ const DisableDashlane = () => {
   observer.observe(document.body, { childList: true })
   useEffect(() => () => observer.disconnect())
   // eslint-disable-next-line react/no-danger
-  return <style dangerouslySetInnerHTML={{
-    __html: `
+  return <style dangerouslySetInnerHTML={{ __html: `
     iframe#kw-iframe-dropdown.kw-iframe, [data-dashlanecreated] {
       display: none !important;
       visibility: hidden !important;

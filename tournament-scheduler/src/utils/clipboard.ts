@@ -22,7 +22,7 @@ const oldCopyToClipboard = (text: string) =>
     } catch (error: Error) {
       alert(`Could not copy text: ${error}`)
       console.error('Could not copy text using textarea:', error)
-      reject()
+      reject(error)
     }
 
     textArea.remove()
@@ -38,10 +38,10 @@ const copyToClipboard = (text: string) => {
 
   return navigator.clipboard.writeText(text).then(
     () => console.info('text copied to clipboard successfully'),
-    error => {
+    (error: unknown) => {
       alert(`Could not copy text: ${error}`)
       console.error('Could not copy text:', error)
-    }
+    },
   )
 }
 

@@ -22,6 +22,7 @@ type URecord = Record<string, Record<string, any>>
 export const isObject = (item: unknown): item is URecord =>
   !!(item && typeof item === 'object' && !Array.isArray(item))
 
+// eslint-disable-next-line etc/no-commented-out-code
 /**
  * Usage:
  * `mergeDeep(this, { a: { b: { c: 123 } } })`

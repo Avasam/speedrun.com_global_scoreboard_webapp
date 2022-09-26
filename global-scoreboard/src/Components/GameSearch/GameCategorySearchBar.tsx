@@ -37,7 +37,7 @@ const DEBOUNCE_TIME = math.MS_IN_SECOND * math.HALF
 const GameCategorySearchBar = (props: GameCategorySearchProps) => {
   const handleOnChange = debounce(
     (searchText: string) =>
-      !searchText
+      (!searchText
         ? props.onClear?.()
         : apiGet<DataArray<SpeedruncomGame>>('https://www.speedrun.com/api/v1/games', { name: searchText, max: MAX_PAGINATION }, false)
           .then(response => response.data)
@@ -49,7 +49,7 @@ const GameCategorySearchBar = (props: GameCategorySearchProps) => {
               return newGames
             })
             props.onSearch?.(searchText)
-          }),
+          })),
     DEBOUNCE_TIME
   )
 

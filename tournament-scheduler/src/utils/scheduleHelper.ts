@@ -1,4 +1,5 @@
 import type { Schedule } from 'src/Models/Schedule'
+import type { ScheduleGroup } from 'src/Models/ScheduleGroup'
 import type { TimeSlot } from 'src/Models/TimeSlot'
 
 export const buildCalendarEventTitle = (timeSlot: TimeSlot, schedule: Schedule) =>
@@ -18,7 +19,7 @@ export const buildCalendarEventDescription = (timeSlot: TimeSlot, schedule: Sche
     ? `Participants:<br/>${buildParticipantsList(
       timeSlot
         .registrations
-        .flatMap(registration => registration.participants)
+        .flatMap(registration => registration.participants),
     )}`
     : timeSlot
       .registrations
@@ -42,3 +43,7 @@ export const getDeadlineDueText = (deadlineDaysLeft: number) => {
       return deadlineDaysLeft > 0 ? `in ${deadlineDaysLeft} days` : `${-deadlineDaysLeft} days ago`
   }
 }
+
+export const isGroup = (scheduleOrGroup: Schedule | ScheduleGroup): scheduleOrGroup is ScheduleGroup =>
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  (scheduleOrGroup as ScheduleGroup).schedules != null

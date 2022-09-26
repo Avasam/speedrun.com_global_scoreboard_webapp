@@ -150,7 +150,7 @@ const GameSearch = () => {
     })
   }
   const handleMinTimeChange: ChangeEventHandler<HTMLInputElement> = event => {
-    if (!(/^[1-9]?[\d:]{0,7}\d?$/).test(event.currentTarget.value)) return
+    if (!(/^[1-9]?[\d:]{0,7}\d?$/u).test(event.currentTarget.value)) return
     doMinTimeChange(event.currentTarget.value)
     setLocalStorageItem('selectedMinTime', event.currentTarget.value)
   }
@@ -163,7 +163,7 @@ const GameSearch = () => {
     })
   }
   const handleMaxTimeChange: ChangeEventHandler<HTMLInputElement> = event => {
-    if (!(/^[1-9]?[\d:]{0,7}\d?$/).test(event.currentTarget.value)) return
+    if (!(/^[1-9]?[\d:]{0,7}\d?$/u).test(event.currentTarget.value)) return
     doMaxTimeChange(event.currentTarget.value)
     setLocalStorageItem('selectedMaxTime', event.currentTarget.value)
   }

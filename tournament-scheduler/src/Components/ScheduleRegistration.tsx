@@ -76,8 +76,8 @@ const ScheduleRegistration = () => {
         schedule.timeSlots.sort(TimeSlot.compareFn)
         setScheduleState(schedule)
       })
-      .catch((error: Response) => {
-        if (error.status === StatusCodes.NOT_FOUND) {
+      .catch((error: unknown) => {
+        if (error instanceof Response && error.status === StatusCodes.NOT_FOUND) {
           setScheduleState(null)
         } else {
           console.error(error)
@@ -113,8 +113,8 @@ const ScheduleRegistration = () => {
       splitIdFromRegistrationKey()[1]
     )
       .then(() => navigate(`/view/${scheduleState?.id}`))
-      .catch((error: Response) => {
-        if (error.status === StatusCodes.INSUFFICIENT_STORAGE) {
+      .catch((error: unknown) => {
+        if (error instanceof Response && error.status === StatusCodes.INSUFFICIENT_STORAGE) {
           if (!scheduleState) {
             return
           }
@@ -181,13 +181,13 @@ const ScheduleRegistration = () => {
                 ).
               </div>
               : <FormGroup>
-                {scheduleState.deadline && <div>
+                {scheduleState.deadline ? <div>
                   <br />
                   {
                     `Registration deadline: ${fancyFormat(addTime(-1, 'Seconds', scheduleState.deadline))
                     } (${getDeadlineDueText(deadlineDaysLeft)})`
                   }
-                </div>}
+                </div> : null}
                 <FormControl style={{ margin: '16px 0' }} variant='outlined'>
                   <InputLabel
                     id='time-slot-select-label'
@@ -212,26 +212,25 @@ const ScheduleRegistration = () => {
                       </MenuItem>)}
                   </Select>
                 </FormControl>
-                {selectedTimeSlot && entriesLeft(selectedTimeSlot) > 0 &&
-                  <>
-                    <FormLabel>
-                      Please write down your name
-                      {selectedTimeSlot.participantsPerEntry > 1 &&
-                        ' as well as all other participants playing with or against you in the same match'}
-                    </FormLabel>
-                    {Array.from(
-                      { length: selectedTimeSlot.participantsPerEntry },
-                      (_, index) => {
-                        const participantNumber = selectedTimeSlot.participantsPerEntry > 1 ? ` ${index + 1}` : ''
+                {selectedTimeSlot && entriesLeft(selectedTimeSlot) > 0 ? <>
+                  <FormLabel>
+                    Please write down your name
+                    {selectedTimeSlot.participantsPerEntry > 1 &&
+                      ' as well as all other participants playing with or against you in the same match'}
+                  </FormLabel>
+                  {Array.from(
+                    { length: selectedTimeSlot.participantsPerEntry },
+                    (_, index) => {
+                      const participantNumber = selectedTimeSlot.participantsPerEntry > 1 ? ` ${index + 1}` : ''
 
-                        return <TextField
-                          key={`participant-${index}`}
-                          label={`Participant${participantNumber}'s name`}
-                          onChange={event => handleParticipantChange(index, event.target.value)}
-                        />
-                      }
-                    )}
-                  </>}
+                      return <TextField
+                        key={`participant-${index}`}
+                        label={`Participant${participantNumber}'s name`}
+                        onChange={event => handleParticipantChange(index, event.target.value)}
+                      />
+                    }
+                  )}
+                </> : null}
               </FormGroup>}
         </CardContent>
         <CardActions>

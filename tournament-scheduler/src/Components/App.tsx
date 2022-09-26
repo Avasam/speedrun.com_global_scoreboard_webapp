@@ -53,8 +53,8 @@ const App = () => {
     getCurrentUser()
       .then(response => response.user)
       .then(setCurrentUser)
-      .catch((error: Response) => {
-        if (error.status === StatusCodes.UNAUTHORIZED) {
+      .catch((error: unknown) => {
+        if (error instanceof Response && error.status === StatusCodes.UNAUTHORIZED) {
           setCurrentUser(null)
         } else {
           console.error(error)
@@ -148,12 +148,12 @@ const App = () => {
                 path='/register'
               />
               {currentUser !== undefined &&
-              <Route
-                element={currentUser
-                  ? <ScheduleManagement currentUser={currentUser} />
-                  : <LoginForm onLogin={setCurrentUser} />}
-                path='/'
-              />}
+                <Route
+                  element={currentUser
+                    ? <ScheduleManagement currentUser={currentUser} />
+                    : <LoginForm onLogin={setCurrentUser} />}
+                  path='/'
+                />}
             </Routes>
           </Box>
 

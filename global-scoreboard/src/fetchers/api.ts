@@ -32,9 +32,10 @@ const apiFetch = <R>(method: RequestInit['method'], url: string, body?: RequestI
       : undefined,
     body,
   })
-    .then(response => response.status >= FIRST_HTTP_CODE && response.status <= LAST_HTTP_CODE
+    .then(response => (response.status >= FIRST_HTTP_CODE && response.status <= LAST_HTTP_CODE
+      // eslint-disable-next-line etc/throw-error
       ? Promise.reject(response)
-      : response)
+      : response))
     .then<R & { token?: string }>(response => response.json())
     .then(response => {
       // If a token is sent back as part of any response, set it.

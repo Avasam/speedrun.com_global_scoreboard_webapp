@@ -7,7 +7,7 @@ import { useState } from 'react'
 import { Link as RouterLink } from 'react-router-dom'
 
 import type { IOrderableProps } from 'src/Models/IOrderable'
-import type { ScheduleGroup } from 'src/Models/Schedule'
+import type { ScheduleGroup } from 'src/Models/ScheduleGroup'
 
 type ScheduleGroupCardProps = IOrderableProps<ScheduleGroup> & {
   group: ScheduleGroup

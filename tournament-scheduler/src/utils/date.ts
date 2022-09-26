@@ -18,7 +18,7 @@ type DateGetSet =
   | 'Seconds'
   | 'Time'
 
-const newDate = (date: DateProperty) => date == null ? new Date() : new Date(date)
+const newDate = (date: DateProperty) => (date == null ? new Date() : new Date(date))
 
 // #region DateTime manipulation
 

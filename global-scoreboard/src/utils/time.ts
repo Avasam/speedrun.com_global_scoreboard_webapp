@@ -13,11 +13,12 @@ export const timeStringToSeconds = (timeString: string) => {
   if (!timeString) return ''
   const time = timeString.split(':')
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers
-  const hour = time[time.length - 3] ?? '0'
-  const min = time[time.length - 2] ?? '0'
-  const sec = time[time.length - 1]
+  const hour = time.at(-3) ?? '0'
+  // eslint-disable-next-line @typescript-eslint/no-magic-numbers
+  const min = time.at(-2) ?? '0'
+  const sec = time.at(-1)
 
-  return +hour * math.SECONDS_IN_HOUR + +min * math.SECONDS_IN_MINUTE + +sec
+  return Number(hour) * math.SECONDS_IN_HOUR + Number(min) * math.SECONDS_IN_MINUTE + Number(sec)
 }
 
 // From https://stackoverflow.com/a/17727953

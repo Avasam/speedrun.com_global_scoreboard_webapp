@@ -5,8 +5,9 @@ import { useParams } from 'react-router-dom'
 
 import ScheduleViewer, { TimeZoneMessage } from 'src/Components/ScheduleViewer/ScheduleViewer'
 import { apiGet } from 'src/fetchers/api'
-import type { ScheduleDto, ScheduleGroupDto } from 'src/Models/Schedule'
+import type { ScheduleDto } from 'src/Models/Schedule'
 import { Schedule } from 'src/Models/Schedule'
+import type { ScheduleGroupDto } from 'src/Models/ScheduleGroup'
 
 const getSchedules = (id: number) =>
   apiGet<ScheduleDto[]>(`schedule_groups/${id}/schedules`)
