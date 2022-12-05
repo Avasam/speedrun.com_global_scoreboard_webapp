@@ -15,11 +15,11 @@ def authentication_required(fn):
 
         invalid_msg = {
             "message": "Invalid token. Authentification and / or authentication required",
-            "authenticated": False
+            "authenticated": False,
         }
         expired_msg = {
             "message": "Expired token. Reauthentication required.",
-            "authenticated": False
+            "authenticated": False,
         }
 
         if len(auth_headers) != 2:
@@ -45,11 +45,14 @@ def authentication_required(fn):
         if not isinstance(response, tuple) or not isinstance(response[0], str):
             return response
 
-        extended_token: Union[bytes, str] = jwt.encode({
-            "sub": data["sub"],
-            "iat": data["iat"],
-            "exp": datetime.utcnow() + timedelta(days=1)},
-            current_app.config["SECRET_KEY"])
+        extended_token: Union[bytes, str] = jwt.encode(
+            {
+                "sub": data["sub"],
+                "iat": data["iat"],
+                "exp": datetime.utcnow() + timedelta(days=1),
+            },
+            current_app.config["SECRET_KEY"],
+        )
         if isinstance(extended_token, bytes):
             extended_token = extended_token.decode()
         try:
@@ -67,6 +70,7 @@ def authentication_required(fn):
                 **response_content,
                 "token": extended_token,
             }),
-            response[1])
+            response[1],
+        )
 
     return _verify

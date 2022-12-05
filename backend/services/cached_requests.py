@@ -1,3 +1,4 @@
+import sys
 from datetime import timedelta
 from typing import Literal, Union, cast
 
@@ -51,7 +52,8 @@ def __make_cache_session(user_id: str = "http_cache"):
         # SQLite specific parameters
         fast_save=True,
         wal=True,
-        use_temp=True)
+        use_temp=True,
+    )
     session.mount("https://", __adapter)
     return session
 
@@ -70,7 +72,7 @@ def use_session(user_id: Union[str, Literal[False]] = "http_cache"):
 
 
 __REDIS = None
-if configs.cached_session_backend == "redis":
+if sys.platform != "win32" and configs.cached_session_backend == "redis":
     import redislite  # pyright: ignore # pylint: disable=import-error
     __REDIS = redislite.Redis(
         dbfilename="/tmp/redis-requests-cache.db",  # nosec B108

@@ -2,8 +2,9 @@
 Provides the core API endpoints for consuming and producing REST requests and
 responses. Like login and user management.
 """
+from __future__ import annotations
+
 from datetime import datetime, timedelta
-from typing import Optional
 
 import configs
 import jwt
@@ -17,7 +18,7 @@ api = Blueprint("core_api", __name__)
 
 @api.route("/login", methods=("POST",))
 def login():
-    data: Optional[JSONObjectType] = request.get_json()
+    data: JSONObjectType | None = request.get_json()
     try:
         api_key = data["speedruncomApiKey"] if data else ""
         if not isinstance(api_key, str):
@@ -29,11 +30,14 @@ def login():
     if not player:
         return jsonify({"message": error_message, "authenticated": False}), 401
 
-    token: str = jwt.encode({
-        "sub": player.user_id,
-        "iat": datetime.utcnow(),
-        "exp": datetime.utcnow() + timedelta(days=1)},
-        current_app.config["SECRET_KEY"])
+    token: str = jwt.encode(
+        {
+            "sub": player.user_id,
+            "iat": datetime.utcnow(),
+            "exp": datetime.utcnow() + timedelta(days=1),
+        },
+        current_app.config["SECRET_KEY"],
+    )
     # Note: https://github.com/jpadilla/pyjwt/issues/529
     if isinstance(token, bytes):
         token = token.decode("UTF-8")
@@ -42,7 +46,8 @@ def login():
         "user": {
             "userId": player.user_id,
             "name": player.name,
-        }})
+        },
+    })
 
 
 @api.route("/configs", methods=("GET",))
@@ -60,4 +65,5 @@ def get_user_current(current_user: Player):
         "user": {
             "userId": current_user.user_id,
             "name": current_user.name,
-        }})
+        },
+    })

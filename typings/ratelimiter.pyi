@@ -1,15 +1,16 @@
-from typing import Optional
-from types import TracebackType
-from threading import Lock
-from collections.abc import Callable
-from collections import deque
 import sys
+from collections import deque
+from collections.abc import Callable
+from threading import Lock
+from types import TracebackType
+
+from typing_extensions import Literal
 
 __author__: str
 __version__: str
 __license__: str
 __description__: str
-PY35 = sys.version_info >= (3, 5)
+PY35: Literal[False]
 
 
 class RateLimiter:
@@ -17,14 +18,14 @@ class RateLimiter:
 
     period: int
     max_calls: int
-    callback: Optional[Callable, None]
+    callback: Callable | None
     _lock: Lock
     _alock: Lock
 
     # Lock to protect creation of self._alock
     s_init_lock: Lock
 
-    def __init__(self, max_calls: int, period: int = ..., callback: Optional[Callable, None] = ...) -> None:
+    def __init__(self, max_calls: int, period: int = ..., callback: Callable | None = ...) -> None:
         ...
 
     def __call__(self, f: Callable) -> Callable:
@@ -35,15 +36,11 @@ class RateLimiter:
 
     def __exit__(
         self,
-        exc_type: Optional[type[BaseException]],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[TracebackType]
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
     ) -> None:
         ...
-
-    if PY35:
-        aenter_code: str
-        __aexit__ = __exit__
 
     @property
     def _timespan(self) -> float:

@@ -44,18 +44,19 @@ app.register_blueprint(global_scoreboard_api, url_prefix="/api")
 app.register_blueprint(tournament_scheduler_api, url_prefix="/api")
 
 # Setup the dal (SQLAlchemy)
-SQLALCHEMY_DATABASE_URI = "mysql+{connector}://{username}:{password}@{hostname}/{database_name}".format(
+SQLALCHEMY_DATABASE_URI = "mysql+{connector}://{username}:{password}@{hostname}/{database_name}".format(  # pylint: disable=C0209  # noqa: E501
     connector=configs.sql_connector,
     username=configs.sql_username,
     password=configs.sql_password,
     hostname=configs.sql_hostname,
-    database_name=configs.sql_database_name)
+    database_name=configs.sql_database_name,
+)
 app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
 app.config["SQLALCHEMY_POOL_RECYCLE"] = 299
 app.config["SQLALCHEMY_POOL_SIZE"] = 3  # PythonAnywhere allows 3 connections per webworker
 app.config["SQLALCHEMY_MAX_OVERFLOW"] = 0
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = configs.sql_track_modifications
-db.app = app  # type: ignore # TODO: Raise issue upstream
+db.app = app
 db.init_app(app)
 
 

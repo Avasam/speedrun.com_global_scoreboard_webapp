@@ -4,6 +4,10 @@
 max_line_length = 120
 recursive = true
 aggressive = 3
+ignore = [
+  "E124", # Closing bracket may not match multi-line method invocation style (enforced by add-trailing-comma)
+  "E70" # Allow ... on same line as def
+]
 
 # https://github.com/microsoft/pyright/blob/main/docs/configuration.md#sample-pyprojecttoml-file
 [tool.pyright]
@@ -16,8 +20,10 @@ reportMissingSuperCall="none" # False positives on base classes
 reportPropertyTypeMismatch="error"
 reportUninitializedInstanceVariable="error"
 reportUnnecessaryTypeIgnoreComment="error"
-exclude = [
-  "typings/",
+# Ignore must be specified for Pylance to stop displaying errors
+ignore = [
+  # We expect stub files to be incomplete or contain useless statements
+  "**/*.pyi",
 ]
 reportUnusedCallResult="none"
 # Type stubs may not be completable
@@ -28,29 +34,30 @@ reportImportCycles = "information"
 reportUnnecessaryComparison = "warning"
 # Flake8 does a better job
 reportUnusedImport = "none"
-# numpy has way too many complex types that triggers this
-reportUnknownMemberType = "none"
 
 # https://github.com/PyCQA/pylint/blob/main/examples/pylintrc
 # https://pylint.pycqa.org/en/latest/technical_reference/features.html
 [tool.pylint.REPORTS]
-# Just like default but any error will make drop to 9 or less. warning and conventions are worth more
-evaluation = "10.0 - error - ((float((warning + convention) * 10 + refactor ) / statement) * 10)"
+# Just like default but any error, warning or convention will make drop to 9 or less. refactor are worth more
+evaluation = "10.0 - error - warning - convention - ((10 * refactor) / statement) * 10"
 [tool.pylint.MASTER]
 fail-under = 9.0
-# Needed for Pylint to discover our own modules
-init-hook = "import os, sys; sys.path.append(os.path.dirname('.'))"
 # https://pylint.pycqa.org/en/latest/technical_reference/extensions.html
 load-plugins = [
-  "pylint.extensions.emptystring",
+  "pylint.extensions.bad_builtin",
+  "pylint.extensions.check_elif",
+  "pylint.extensions.comparison_placement",
   "pylint.extensions.confusing_elif",
   "pylint.extensions.consider_ternary_expression",
-  "pylint.extensions.bad_builtin",
-  "pylint.extensions.mccabe",
-  "pylint.extensions.check_elif",
-  "pylint.extensions.redefined_variable_type",
-  "pylint.extensions.overlapping_exceptions",
   "pylint.extensions.empty_comment",
+  "pylint.extensions.emptystring",
+  "pylint.extensions.for_any_all",
+  "pylint.extensions.eq_without_hash",
+  "pylint.extensions.mccabe",
+  "pylint.extensions.overlapping_exceptions",
+  "pylint.extensions.private_import",
+  # "pylint.extensions.redefined_loop_name", # 2.16
+  "pylint.extensions.redefined_variable_type",
   "pylint.extensions.set_membership",
   "pylint.extensions.typing",
   # External plugins
@@ -64,13 +71,10 @@ load-plugins = [
   # "pylint.extensions.comparetozero",
   # "pylint.extensions.docstyle",
   # "pylint.extensions.while_used",
-  # Didn't work
-  # "pylint.extensions.comparison_placement",
-  # "pylint.extensions.for_any_all",
 ]
 ignore-paths = [
   # We expect stub files to be incomplete or contain useless statements
-  "^.*\\.pyi$",
+  "^.*.pyi$",
 ]
 # Dynamic/Generated members from SQLAlchemy
 ignored-classes = ["scoped_session"]
@@ -90,35 +94,30 @@ max-locals = 15
 max-complexity = 15
 # At least same as max-complexity
 max-branches = 15
-# https://pylint.pycqa.org/en/latest/user_guide/options.html#naming-styles
-module-naming-style = "any"
-# Can't make private class with PascalCase
-class-rgx = "_?_?[a-zA-Z]+?$"
-# https://github.com/PyCQA/pylint/issues/2018
-good-names = ["id", "x", "y", "a0", "i", "t0", "t1", "fn", "pb", "wr"]
 disable = [
   # No need to mention the fixmes
   "fixme",
   "missing-docstring",
-  # We group imports
+  # Already taken care of by isort
+  "ungrouped-imports",
+  "unused-import",
+  "wrong-import-order",
   "wrong-import-position",
+  # Already taken care of by Flake8-naming, which does a better job
+  "invalid-name",
   # Already taken care of and grayed out. Also conflicts with Pylance reportIncompatibleMethodOverride
   "unused-argument",
-  # Already taken care of by Flake8
-  "unused-import",
-  # Similar lines in 2 files, doesn't really work
-  "R0801",
+  # Only reports a single instance. Pyright does a better job anyway
+  "cyclic-import",
   # TODO: Diabled until using *proper* class based logic
   "protected-access",
-  # Strings are ok. Pylance also doesn't seem to see our overriden Exception classes
+  # Strings are ok. Pylance also doesn't seem to see our overriden Exception classes (TODO: Make it better?)
   "invalid-sequence-index",
   # Happens too often with Flask, child classes should not be affected by this rule
   # See: https://github.com/PyCQA/pylint/issues/4352
   "too-few-public-methods",
-  # Too many false positives with Columns[]
-  # https://github.com/PyCQA/pylint/issues/3979#issuecomment-1036936661
-  # https://github.com/PyCQA/pylint/issues/4369#issuecomment-1036932987
-  "unsubscriptable-object",
+  # Similar lines in 2 files, doesn't really work
+  "R0801",
 ]
 
 [tool.isort]

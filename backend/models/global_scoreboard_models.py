@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from math import ceil
-from typing import Optional, Union
+from typing import Union
 
 from models.src_dto import SrcGameDto, SrcLevelDto, SrcProfileDto, SrcRunDto
 from services.utils import get_file, map_to_dto
@@ -18,7 +18,7 @@ class Run:
     category: str
     category_name: str = ""
     variables = {}
-    level: Optional[SrcLevelDto]
+    level: SrcLevelDto | None
     level_fraction = 1.0
     _points = 0.0
     diminished_points = 0.0
@@ -29,9 +29,9 @@ class Run:
     def __init__(
         self,
         run_dto: SrcRunDto,
-        variables: Optional[dict[str, str]] = None,
-        level: Optional[SrcLevelDto] = None,
-        level_count: int = 0
+        variables: dict[str, str] | None = None,
+        level: SrcLevelDto | None = None,
+        level_count: int = 0,
     ):
         self.id_ = run_dto["id"]
         self.primary_t = run_dto["times"]["primary_t"]
@@ -45,23 +45,39 @@ class Run:
             self.base_game_key = ROBLOX_SERIES_ID
         else:
             self.base_game_key = next(
-                (link["uri"].rstrip("/")
-                 for link
-                 in self.game["links"]
-                 if link["rel"] == "base-game"),
-                "").split("/")[-1]
+                (
+                    link["uri"].rstrip("/")
+                    for link
+                    in self.game["links"]
+                    if link["rel"] == "base-game"
+                ),
+                "",
+            ).split("/")[-1]
             series_id = next(
-                (link["uri"].rstrip("/")
-                 for link
-                 in self.game["links"]
-                 if link["rel"] == "series"),
-                "").split("/")[-1]
+                (
+                    link["uri"].rstrip("/")
+                    for link
+                    in self.game["links"]
+                    if link["rel"] == "series"
+                ),
+                "",
+            ).split("/")[-1]
             # If it is a derived-game/romhack, but base-game is not specified, use the series id instead
             # uri: "https://www.speedrun.com/api/v1/games/"
             if self.base_game_key == "games" and series_id and series_id != NO_SERIES_ID:
                 self.base_game_key = series_id
             else:
                 self.base_game_key = self.game["id"]
+
+    def to_dto(self) -> dict[str, str | float]:
+        return {
+            "gameName": self.game["names"]["international"],
+            "categoryName": self.category_name,
+            "levelName": self.level["name"] if self.level else "",
+            "points": self._points,
+            "diminishedPoints": self.diminished_points,
+            "levelFraction": self.level_fraction,
+        }
 
     def __str__(self) -> str:
         level_str = f"Level/{str(self.level_fraction)[:4]}: {self.level['id']}, " if self.level else ""
@@ -80,20 +96,10 @@ class Run:
         """
         :type other: Run
         """
-        return not self == other
+        return self != other
 
     def __hash__(self):
         return hash((self.category, self.level and self.level["id"]))
-
-    def to_dto(self) -> dict[str, Union[str, float]]:
-        return {
-            "gameName": self.game["names"]["international"],
-            "categoryName": self.category_name,
-            "levelName": self.level["name"] if self.level else "",
-            "points": self._points,
-            "diminishedPoints": self.diminished_points,
-            "levelFraction": self.level_fraction
-        }
 
 
 PointsDistributionDto = list[list[dict[str, Union[str, int, bool]]]]
@@ -103,7 +109,7 @@ class User:
     _points: float = 0
     _name: str = ""
     _id: str = ""
-    _country_code: Optional[str] = None
+    _country_code: str | None = None
     _banned: bool = False
     _points_distribution: list[list[Run]] = [[], []]
 
@@ -117,7 +123,7 @@ class User:
     def get_points_distribution_dto(self) -> PointsDistributionDto:
         return [
             map_to_dto(self._points_distribution[0]),
-            map_to_dto(self._points_distribution[1])
+            map_to_dto(self._points_distribution[1]),
         ]
 
     def fetch_and_set_user_code_and_name(self) -> None:

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, cast, overload
+from typing import TYPE_CHECKING, cast
 
 from models.core_models import BaseModel, db
 from sqlalchemy import Column, Integer, String, orm
@@ -18,15 +18,14 @@ class GameValues(BaseModel):
     wr_points = db.Column(db.Integer, nullable=False)
     mean_time = db.Column(db.Integer, nullable=False)
 
-    if TYPE_CHECKING:
-        @overload
-        def __init__(  # type: ignore # pylint: disable=too-many-arguments
+    if TYPE_CHECKING:  # noqa: CCE002
+        def __init__(  # pylint: disable=too-many-arguments
             self,
             game_id: str | Column[String],
             category_id: str | Column[String],
             run_id: str | Column[String],
-            platform_id: Optional[str | Column[String]],
-            alternate_platforms: Optional[str | Column[String]],
+            platform_id: str | Column[String] | None,
+            alternate_platforms: str | Column[String] | None,
             wr_time: int | Column[Integer],
             wr_points: int | Column[Integer],
             mean_time: int | Column[Integer],
@@ -37,12 +36,13 @@ class GameValues(BaseModel):
     def create_or_update(
             game_id: str,
             category_id: str,
-            platform_id: Optional[str],
-            alternate_platforms: Optional[str],
+            platform_id: str | None,
+            alternate_platforms: str | None,
             wr_time: int,
             wr_points: int,
             mean_time: int,
-            run_id: str):
+            run_id: str,
+    ):
         existing_game_values = GameValues.get(game_id, category_id)
         if existing_game_values is None:
             return GameValues.create(
@@ -52,7 +52,8 @@ class GameValues(BaseModel):
                 alternate_platforms,
                 wr_time,
                 wr_points,
-                mean_time, run_id)
+                mean_time, run_id,
+            )
         existing_game_values.platform_id = platform_id
         existing_game_values.alternate_platforms = alternate_platforms
         existing_game_values.wr_time = wr_time
@@ -66,12 +67,13 @@ class GameValues(BaseModel):
     def create(
             game_id: str,
             category_id: str,
-            platform_id: Optional[str],
-            alternate_platforms: Optional[str],
+            platform_id: str | None,
+            alternate_platforms: str | None,
             wr_time: int,
             wr_points: int,
             mean_time: int,
-            run_id: str) -> GameValues:
+            run_id: str,
+    ) -> GameValues:
         game_values = GameValues(
             game_id=game_id,
             category_id=category_id,
@@ -80,7 +82,8 @@ class GameValues(BaseModel):
             wr_time=wr_time,
             wr_points=wr_points,
             mean_time=mean_time,
-            run_id=run_id)
+            run_id=run_id,
+        )
         db.session.add(game_values)
         db.session.commit()
 
@@ -95,7 +98,7 @@ class GameValues(BaseModel):
                 .query
                 .filter(GameValues.game_id == game_id)
                 .filter(GameValues.category_id == category_id)
-                .one()
+                .one(),
             )
         except orm.exc.NoResultFound:
             return None

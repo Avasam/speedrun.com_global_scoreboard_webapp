@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Any, Literal, Optional, Union, cast
 from urllib.parse import parse_qs, urlparse
 
 import configs
-from models.exceptions import SpeedrunComError, UnderALotOfPressure, UnhandledThreadException, UserUpdaterError
+from models.exceptions import SpeedrunComError, UnderALotOfPressureError, UnhandledThreadException, UserUpdaterError
 from models.src_dto import SrcDataResultDto, SrcErrorResultDto, SrcPaginatedDataResultDto, SrcPaginationResultDto
 from ratelimiter import RateLimiter
 from requests import Response
@@ -48,20 +48,20 @@ def __handle_json_error(response: Response, json_exception: ValueError):
             sleep(HTTP_ERROR_RETRY_DELAY_MIN)
             # No break or raise as we want to retry
         elif response.status_code == 503:
-            raise UnderALotOfPressure({
+            raise UnderALotOfPressureError({
                 "error": f"{response.status_code} (speedrun.com)",
-                "details": exception.args[0]
+                "details": exception.args[0],
             }) from exception
         else:
             raise UserUpdaterError({
                 "error": f"HTTPError {response.status_code}",
-                "details": exception.args[0]
+                "details": exception.args[0],
             }) from exception
     else:  # ... we don't know why (elevate the exception)
         print(f"ERROR/WARNING: response=({type(response)})'{response}'\n")
         raise UserUpdaterError({
             "error": "JSONDecodeError",
-            "details": f"{json_exception.args[0]} in:\n{response}"
+            "details": f"{json_exception.args[0]} in:\n{response}",
         }) from json_exception
 
 
@@ -76,8 +76,10 @@ def __handle_json_data(json_data: SrcErrorResultDto, response_status_code: int) 
         retry_delay = randint(HTTP_ERROR_RETRY_DELAY_MIN, HTTP_ERROR_RETRY_DELAY_MAX)  # nosec B311
         if status == 420:
             if "too busy" in message:
-                raise UnderALotOfPressure({"error": f"{response_status_code} (speedrun.com)",
-                                           "details": message})
+                raise UnderALotOfPressureError({
+                    "error": f"{response_status_code} (speedrun.com)",
+                    "details": message,
+                })
             print(f"Rate limit value: {len(rate_limiter.calls)}/{RATE_LIMIT}")
         print(f"WARNING: {status}. {message} Retrying in {retry_delay} seconds.")
         sleep(retry_delay)
@@ -91,7 +93,7 @@ def __get_request_cache_bust_if_disk_quota_exceeded(
     url: str,
     params: Optional[_Params],
     cached: Union[str, Literal[False]],
-    headers: Optional[dict[str, Any]]
+    headers: Optional[dict[str, Any]],
 ):
     try:
         response = use_session(cached).get(url, params=params, headers=headers)
@@ -125,7 +127,7 @@ def get_file(
     url: str,
     params: Optional[_Params] = None,
     cached: Union[str, Literal[False]] = False,
-    headers: Optional[dict[str, Any]] = None
+    headers: Optional[dict[str, Any]] = None,
 ) -> SrcDataResultDto:
     """
     Returns the content of "url" parsed as JSON dict.
@@ -196,8 +198,10 @@ def get_paginated_response(url: str, params: dict[str, Union[str, int]], related
                 # If it succeeds, slowly raise back up the page size
                 if results_per_page < initial_results_per_page:
                     increased_results_per_page = min(initial_results_per_page, ceil(results_per_page * 1.5))
-                    print("Reduced request successfull. Increasing the max results per page "
-                          + f"from {results_per_page} back to {increased_results_per_page}")
+                    print(
+                        "Reduced request successfull. Increasing the max results per page "
+                        + f"from {results_per_page} back to {increased_results_per_page}",
+                    )
                     update_next_params(increased_results_per_page)
                 else:
                     update_next_params()
@@ -212,8 +216,10 @@ def get_paginated_response(url: str, params: dict[str, Union[str, int]], related
                 if exception.args[0]["error"] != "HTTPError 500" or results_per_page <= MINIMUM_RESULTS_PER_PAGE:
                     raise
                 reduced_results_per_page = max(floor(results_per_page / 2.5), MINIMUM_RESULTS_PER_PAGE)
-                print("SR.C returned 500 for a paginated request. Reducing the max results per page "
-                      + f"from {results_per_page} to {reduced_results_per_page}")
+                print(
+                    "SR.C returned 500 for a paginated request. Reducing the max results per page "
+                    + f"from {results_per_page} to {reduced_results_per_page}",
+                )
                 update_next_params(reduced_results_per_page, False)
 
         # ... and combine it with previous ones
@@ -222,11 +228,11 @@ def get_paginated_response(url: str, params: dict[str, Union[str, int]], related
     return summed_results
 
 
-def parse_str_to_bool(string_to_parse: Optional[str]) -> bool:
+def parse_str_to_bool(string_to_parse: str | None) -> bool:
     return string_to_parse is not None and string_to_parse.lower() == "true"
 
 
-def parse_str_to_nullable_bool(string_to_parse: Optional[str]) -> Optional[bool]:
+def parse_str_to_nullable_bool(string_to_parse: str | None) -> Optional[bool]:
     return None if string_to_parse is None else string_to_parse.lower() == "true"
 
 
@@ -248,24 +254,25 @@ def start_and_wait_for_threads(fn: Callable, items: list):
                 print(
                     f"RuntimeError: Can't start {len(executor._threads) + 1}th thread. "
                     + f"Waiting {HTTP_ERROR_RETRY_DELAY_MAX}s before trying again. "
-                    + "Consider reducing MAX_THREADS_PER_WORKER")
+                    + "Consider reducing MAX_THREADS_PER_WORKER",
+                )
                 sleep(HTTP_ERROR_RETRY_DELAY_MAX)
     try:
         for future in futures:
             future.result()
-    except UnderALotOfPressure:
+    except UnderALotOfPressureError:
         raise
     except UserUpdaterError as exception:
         raise UnhandledThreadException(
             exception.args[0]["error"]
             + UNHANDLED_THREAD_EXCEPTION_MESSAGE
-            + str(exception.args[0]["details"])
+            + str(exception.args[0]["details"]),
         ) from exception
     except Exception as exception:
         raise UnhandledThreadException(
             "Unhandled exception in thread"
             + UNHANDLED_THREAD_EXCEPTION_MESSAGE
-            + traceback.format_exc()
+            + traceback.format_exc(),
         ) from exception
 
 
@@ -276,7 +283,4 @@ def get_duplicates(array: list):
 
 def has_duplicates(array: list):
     counter = Counter(array)
-    for key in counter:
-        if counter[key] > 1:
-            return True
-    return False
+    return any(counter[key] > 1 for key in counter)

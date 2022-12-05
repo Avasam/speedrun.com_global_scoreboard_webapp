@@ -14,95 +14,111 @@ on:
     paths:
       - "**.py"
       - "**.pyi"
+
+env:
+  python-version: "3.10"
+
 jobs:
+  isort:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ${{ github.repository }}/${{ github.ref }}
+        uses: actions/checkout@v3
+      - name: Set up Python ${{ env.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.python-version }}
+          cache: "pip"
+          cache-dependency-path: "scripts/requirements*.txt"
+      - name: Install dependencies
+        run: |
+          pip install wheel
+          pip install -r "scripts/requirements.txt"
+      - name: Analysing the code with ${{ job.name }}
+        run: isort backend/ typings/ --check-only
   add-trailing-comma:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout ${{ github.repository }}/${{ github.ref }}
         uses: actions/checkout@v3
-      - name: Set up Python 3.9
+      - name: Set up Python ${{ env.python-version }}
         uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
+          python-version: ${{ env.python-version }}
           cache: "pip"
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install wheel
-          pip install -r "scripts/requirements.txt"
-      - name: Analysing the code with add-trailing-comma
+          cache-dependency-path: "scripts/requirements*.txt"
+      - run: pip install add-trailing-comma
+      - name: Analysing the code with ${{ job.name }}
         run: add-trailing-comma $(git ls-files '**.py*') --py36-plus
-  Pyright:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout ${{ github.repository }}/${{ github.ref }}
-        uses: actions/checkout@v3
-      - name: Set up Node
-        uses: actions/setup-node@v3
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
-          cache: "pip"
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install wheel
-          pip install -r "scripts/requirements.txt"
-      - run: mv backend/configs.template.py backend/configs.py
-      - name: Analysing the code with ${{ job.name }}
-        run: pyright --warnings backend
-  Pylint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout ${{ github.repository }}/${{ github.ref }}
-        uses: actions/checkout@v3
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
-          cache: "pip"
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install wheel
-          pip install -r "scripts/requirements.txt"
-      - run: mv backend/configs.template.py backend/configs.py
-      - name: Analysing the code with ${{ job.name }}
-        run: pylint --reports=y --output-format=colorized $(git ls-files 'backend/*.py')
-  Flake8:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout ${{ github.repository }}/${{ github.ref }}
-        uses: actions/checkout@v3
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
-          cache: "pip"
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install wheel
-          pip install -r "scripts/requirements.txt"
-      - run: mv backend/configs.template.py backend/configs.py
-      - name: Analysing the code with ${{ job.name }}
-        run: flake8 backend
   Bandit:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout ${{ github.repository }}/${{ github.ref }}
         uses: actions/checkout@v3
-      - name: Set up Python 3.9
+      - name: Set up Python ${{ env.python-version }}
         uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
+          python-version: ${{ env.python-version }}
           cache: "pip"
+          cache-dependency-path: "scripts/requirements*.txt"
+      - run: pip install bandit
+      - run: mv backend/configs.template.py backend/configs.py
+      - name: Analysing the code with ${{ job.name }}
+        run: bandit -n 1 --severity-level medium --recursive backend
+  Pyright:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ${{ github.repository }}/${{ github.ref }}
+        uses: actions/checkout@v3
+      - name: Set up Python ${{ env.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.python-version }}
+          cache: "pip"
+          cache-dependency-path: "scripts/requirements*.txt"
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
           pip install wheel
           pip install -r "scripts/requirements.txt"
       - run: mv backend/configs.template.py backend/configs.py
       - name: Analysing the code with ${{ job.name }}
-        run: bandit -n 1 --severity-level medium --recursive backend
+        uses: jakebailey/pyright-action@v1
+        with:
+          working-directory: backend/
+          extra-args: --warnings
+  Pylint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ${{ github.repository }}/${{ github.ref }}
+        uses: actions/checkout@v3
+      - name: Set up Python ${{ env.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.python-version }}
+          cache: "pip"
+          cache-dependency-path: "scripts/requirements*.txt"
+      - name: Install dependencies
+        run: |
+          pip install wheel
+          pip install -r "scripts/requirements.txt"
+      - run: mv backend/configs.template.py backend/configs.py
+      - name: Analysing the code with ${{ job.name }}
+        run: pylint backend/ --reports=y --output-format=colorized
+  Flake8:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ${{ github.repository }}/${{ github.ref }}
+        uses: actions/checkout@v3
+      - name: Set up Python ${{ env.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.python-version }}
+          cache: "pip"
+          cache-dependency-path: "scripts/requirements*.txt"
+      - name: Install dependencies
+        run: |
+          pip install wheel
+          pip install -r "scripts/requirements.txt"
+      - run: mv backend/configs.template.py backend/configs.py
+      - name: Analysing the code with ${{ job.name }}
+        run: flake8 backend/ typings/

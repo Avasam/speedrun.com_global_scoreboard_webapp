@@ -15,11 +15,11 @@ from models.game_search_models import GameValues
 from models.global_scoreboard_models import PointsDistributionDto, Run, User
 from models.src_dto import SrcLeaderboardDto, SrcLevelDto, SrcRunDto
 from services.cached_requests import clear_cache_for_user
-from services.user_updater_helpers import (MIN_LEADERBOARD_SIZE, extract_sorted_valid_runs_from_leaderboard,
-                                           extract_top_runs_and_score, extract_valid_personal_bests,
-                                           get_probability_terms, get_subcategory_variables,
-                                           keep_runs_before_soft_cutoff, set_diminishing_returns,
-                                           update_runner_in_database)
+from services.user_updater_helpers import (
+    MIN_LEADERBOARD_SIZE, extract_sorted_valid_runs_from_leaderboard, extract_top_runs_and_score,
+    extract_valid_personal_bests, get_probability_terms, get_subcategory_variables, keep_runs_before_soft_cutoff,
+    set_diminishing_returns, update_runner_in_database,
+)
 from services.utils import MAXIMUM_RESULTS_PER_PAGE, get_file, get_paginated_response, start_and_wait_for_threads
 
 TIME_BONUS_DIVISOR = 3600 * 12  # 12h (1/2 day) for +100%
@@ -42,16 +42,20 @@ def get_updated_user(user_id: str) -> dict[str, Union[str, None, float, int, Poi
             # ID doesn't exists on speedrun.com but it does in the database, remove it
             player = Player.get(user._name)
             if player:
-                text_output = (f"User ID '{user._id}' not found on speedrun.com. "
-                               "\nRemoved them from the database.")
+                text_output = (
+                    f"User ID '{user._id}' not found on speedrun.com. "
+                    "\nRemoved them from the database."
+                )
                 result_state = "warning"
                 db.session.delete(player)
                 db.session.commit()
             else:
-                text_output = (f"User '{user._id}' not found. "
-                               "\nMake sure the name or ID is typed properly. "
-                               "It's possible the user you're looking for changed their name. "
-                               "In case of doubt, use their ID.")
+                text_output = (
+                    f"User '{user._id}' not found. "
+                    "\nMake sure the name or ID is typed properly. "
+                    "It's possible the user you're looking for changed their name. "
+                    "In case of doubt, use their ID."
+                )
                 result_state = "warning"
         else:
             # Setup a few checks
@@ -61,7 +65,7 @@ def get_updated_user(user_id: str) -> dict[str, Union[str, None, float, int, Poi
             if (
                 not player
                 or not player.last_update
-                or (datetime.now() - player.last_update).days >= configs.last_updated_days[0]
+                or (datetime.utcnow() - player.last_update).days >= configs.last_updated_days[0]
                 or configs.bypass_update_restrictions
             ):
                 __set_user_points(user)
@@ -88,20 +92,27 @@ def get_updated_user(user_id: str) -> dict[str, Union[str, None, float, int, Poi
         }
 
     except ServerNotFoundError as exception:
-        raise UserUpdaterError({
-            "error": "Server not found",
-            "details": f"{exception}\nPlease make sure you have an active internet connection"}
+        raise UserUpdaterError(
+            {
+                "error": "Server not found",
+                "details": f"{exception}\nPlease make sure you have an active internet connection",
+            },
         ) from exception
     except (requests.exceptions.ChunkedEncodingError, ConnectionAbortedError) as exception:
-        raise UserUpdaterError({
-            "error": "Connexion interrupted",
-            "details": exception}
+        raise UserUpdaterError(
+            {
+                "error": "Connexion interrupted",
+                "details": exception,
+            },
         ) from exception
     except OperationalError as exception:
-        raise UserUpdaterError({
-            "error": f"{type(exception).__name__}: {exception}",
-            "details": "There was an issue clearing the requests cache. It is probably stuck (known issue currently). "
-            + "Your request still completed, but a site administrator needs to go restart the cache."}
+        raise UserUpdaterError(
+            {
+                "error": f"{type(exception).__name__}: {exception}",
+                "details": "There was an issue clearing the requests cache. "
+                + "It is probably stuck (known issue currently). "
+                + "Your request still completed, but a site administrator needs to go restart the cache.",
+            },
         ) from exception
 
 
@@ -114,7 +125,9 @@ def __set_user_points(user: User) -> None:
         level = None
 
         if pb["level"]:
-            url = "https://www.speedrun.com/api/v1/games/{game}/levels".format(game=pb["game"]["data"]["id"])
+            url = "https://www.speedrun.com/api/v1/games/{game}/levels".format(  # pylint: disable=C0209
+                game=pb["game"]["data"]["id"],
+            )
             levels: list[SrcLevelDto] = get_file(url, {"max": str(MAXIMUM_RESULTS_PER_PAGE)}, "http_cache")["data"]
             level = next(level for level in levels if level["id"] == pb["level"])
             level_count = len(levels)
@@ -178,17 +191,22 @@ def __set_user_points(user: User) -> None:
 
 
 def __set_run_points_and_category_name(run: Run) -> None:
-    url = "https://www.speedrun.com/api/v1/leaderboards/{game}/{lvl_cat_str}{category}".format(
+    url = "https://www.speedrun.com/api/v1/leaderboards/{game}/{lvl_cat_str}{category}".format(  # pylint: disable=C0209
         game=run.game["id"],
         # If the run is an Individual Level, adapt the request url
-        lvl_cat_str="level/{level}/".format(level=run.level["id"]) if run.level else "category/",
-        category=run.category)
+        lvl_cat_str="level/{level}/".format(  # pylint: disable=C0209
+            level=run.level["id"],
+        ) if run.level else "category/",  # pylint: disable=C0209
+        category=run.category,
+    )
     params = {
         "video-only": True,
         "embed": "players",
-        **{f"var-{var_id}": var_value
-           for var_id, var_value
-           in run.variables.items()},
+        **{
+            f"var-{var_id}": var_value
+            for var_id, var_value
+            in run.variables.items()
+        },
     }
     try:
         leaderboard: SrcLeaderboardDto = get_file(url, params, "http_cache")["data"]
@@ -256,7 +274,7 @@ def __set_run_points_and_category_name(run: Run) -> None:
         unquote(leaderboard["weblink"].split("#")[1])
         .replace("_", " ")
         .title()
-        .replace("Ng1", "Ng+")
+        .replace("Ng1", "Ng+"),
     )
 
     # Set game search data

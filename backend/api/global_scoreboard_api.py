@@ -5,14 +5,14 @@ responses within the Global Scoreboard context
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional, cast
+from typing import cast
 
 import configs
 from api.api_wrappers import authentication_required
 from flask import Blueprint, jsonify, request
 from markupsafe import escape
 from models.core_models import Player
-from models.exceptions import UnderALotOfPressure, UnhandledThreadException, UserUpdaterError
+from models.exceptions import UnderALotOfPressureError, UnhandledThreadException, UserUpdaterError
 from services.user_updater import get_updated_user
 from services.utils import map_to_dto
 from sqlalchemy import exc
@@ -24,7 +24,7 @@ api = Blueprint("global_scoreboard_api", __name__)
 
 @api.route("/players", methods=("GET",))
 def get_all_players():
-    country_code_str: Optional[str] = request.args.get("region")
+    country_code_str: str | None = request.args.get("region")
     if country_code_str is None:
         return jsonify(map_to_dto(Player.get_all()))
     country_codes = list(set(country_code_str.split(",")))
@@ -54,10 +54,10 @@ def update_player(name_or_id: str):
         return error_message, 500
 
 
-def __do_update_player_bypass_restrictions(name_or_id: str, current_user: Optional[Player] = None):
+def __do_update_player_bypass_restrictions(name_or_id: str, current_user: Player | None = None):
     try:
         result = get_updated_user(name_or_id)
-    except UnderALotOfPressure:
+    except UnderALotOfPressureError:
         # Meme code for meme error
         return "", 418
     finally:
@@ -74,7 +74,7 @@ __currently_updating_to: dict[str, datetime] = {}
 
 @authentication_required
 def __do_update_player(current_user: Player, name_or_id: str):
-    now = datetime.now()
+    now = datetime.utcnow()
     minutes_5 = 5 * 60
 
     # Check if the current user is already updating someone
@@ -96,7 +96,7 @@ def __do_update_player(current_user: Player, name_or_id: str):
 @api.route("/players/current/friends", methods=("GET",))
 @authentication_required
 def get_friends_current(current_user: Player):
-    field: Optional[str] = request.args.get("field")
+    field: str | None = request.args.get("field")
     friends_dto = map_to_dto(current_user.get_friends())
 
     if field is None:

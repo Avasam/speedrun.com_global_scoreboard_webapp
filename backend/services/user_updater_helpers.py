@@ -49,7 +49,8 @@ def extract_valid_personal_bests(runs: list[SrcRunDto]):
 
 def extract_sorted_valid_runs_from_leaderboard(
         leaderboard: SrcLeaderboardDto,
-        level_fraction: float) -> list[BasicJSONType]:
+        level_fraction: float,
+) -> list[BasicJSONType]:
     """
     Check if the run is valid:
     - none of the players are banned
@@ -74,8 +75,10 @@ def extract_sorted_valid_runs_from_leaderboard(
     is_board_known_speedrun = False
 
     # Get a list of all banned players in this leaderboard
-    banned_players = [p["id"] for p in leaderboard["players"]["data"]
-                      if p.get("role") == "banned"]
+    banned_players = [
+        p["id"] for p in leaderboard["players"]["data"]
+        if p.get("role") == "banned"
+    ]
 
     valid_runs = []
     for run in leaderboard["runs"]:
@@ -259,11 +262,13 @@ def update_runner_in_database(player: Player, user: User):
             else:
                 text_output = f"{user} found. Updated their entry."
                 result_state = "success"
-            player.update(name=user._name,
-                          country_code=user._country_code,
-                          score=floor(user._points),
-                          score_details=json.dumps(user.get_points_distribution_dto()),
-                          last_update=timestamp)
+            player.update(
+                name=user._name,
+                country_code=user._country_code,
+                score=floor(user._points),
+                score_details=json.dumps(user.get_points_distribution_dto()),
+                last_update=timestamp,
+            )
         # User is banned: remove the database entry
         else:
             result_state = "warning"
@@ -273,12 +278,14 @@ def update_runner_in_database(player: Player, user: User):
     elif user._points >= 1:
         text_output = f"{user} not found. Added a new row."
         result_state = "success"
-        Player.create(user._id,
-                      name=user._name,
-                      country_code=user._country_code,
-                      score=user._points,
-                      score_details=json.dumps(user.get_points_distribution_dto()),
-                      last_update=timestamp)
+        Player.create(
+            user._id,
+            name=user._name,
+            country_code=user._country_code,
+            score=user._points,
+            score_details=json.dumps(user.get_points_distribution_dto()),
+            last_update=timestamp,
+        )
     else:
         text_output = f"Not inserting new data as {user} " + \
             f"{'is banned' if user._banned else 'has a score lower than 1'}."

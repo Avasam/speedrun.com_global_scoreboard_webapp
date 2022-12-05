@@ -2,7 +2,7 @@
 Provides the API endpoints for consuming and producing REST requests and
 responses within the Tournament Scheduler context
 """
-from typing import Optional, Union
+from __future__ import annotations
 
 from api.api_wrappers import authentication_required
 from flask import Blueprint, jsonify, request
@@ -22,13 +22,13 @@ def get_all_schedules(current_user: Player):
 
 
 @api.route("/schedules/<schedule_id>", methods=("GET",))
-def get_schedule(schedule_id: Union[str, int]):
+def get_schedule(schedule_id: str | int):
     try:
         schedule_id = int(schedule_id)
     except ValueError:
         return jsonify({"message": "/schedule_id is not a valid number", "authenticated": True}), 400
 
-    registration_key: Optional[str] = request.args.get("registrationKey")
+    registration_key: str | None = request.args.get("registrationKey")
 
     schedule = Schedule.get(schedule_id) \
         if registration_key is None \
@@ -43,7 +43,7 @@ def get_schedule(schedule_id: Union[str, int]):
 @api.route("/schedules", methods=("POST",))
 @authentication_required
 def post_schedule(current_user: Player):
-    data: Optional[JSONObjectType] = request.get_json()
+    data: JSONObjectType | None = request.get_json()
     error_message, name, is_active, deadline, time_slots, order = __validate_create_schedule(data)
     if error_message is not None:
         return jsonify({"message": error_message, "authenticated": True}), 400
@@ -53,13 +53,13 @@ def post_schedule(current_user: Player):
 
 @api.route("/schedules/<schedule_id>", methods=("PUT",))
 @authentication_required
-def put_schedule(current_user: Player, schedule_id: Union[str, int]):
+def put_schedule(current_user: Player, schedule_id: str | int):
     try:
         schedule_id = int(schedule_id)
     except ValueError:
         return jsonify({"message": "/schedule_id is not a valid number", "authenticated": True}), 400
 
-    data: Optional[JSONObjectType] = request.get_json()
+    data: JSONObjectType | None = request.get_json()
     error_message, name, is_active, deadline, time_slots, _ = __validate_create_schedule(data)
     if error_message is not None:
         return jsonify({"message": error_message, "authenticated": True}), 400
@@ -70,7 +70,7 @@ def put_schedule(current_user: Player, schedule_id: Union[str, int]):
 
 @api.route("/schedules/<schedule_id>", methods=("DELETE",))
 @authentication_required
-def delete_schedule(current_user: Player, schedule_id: Union[str, int]):
+def delete_schedule(current_user: Player, schedule_id: str | int):
     try:
         schedule_id = int(schedule_id)
     except ValueError:
@@ -83,7 +83,7 @@ def delete_schedule(current_user: Player, schedule_id: Union[str, int]):
 @api.route("/schedules/order", methods=("PUT",))
 @authentication_required
 def put_schedule_order(current_user: Player):
-    data: Optional[list[ScheduleOrderDict]] = request.get_json()
+    data: list[ScheduleOrderDict] | None = request.get_json()
     if not data:
         return "missing data", 400
 
@@ -97,7 +97,7 @@ def put_schedule_order(current_user: Player):
 
 @api.route("/schedules/<schedule_id>/group_id/<group_id>", methods=("PUT",))
 @authentication_required
-def put_schedule_group_id(current_user: Player, schedule_id: Union[str, int], group_id: Optional[Union[str, int]]):
+def put_schedule_group_id(current_user: Player, schedule_id: str | int, group_id: str | int | None):
     try:
         schedule_id = int(schedule_id)
     except ValueError:
@@ -120,7 +120,7 @@ def get_all_schedule_groups(current_user: Player):
 
 
 @api.route("/schedule_groups/<group_id>", methods=("GET",))
-def get_schedule_group(group_id: Union[str, int]):
+def get_schedule_group(group_id: str | int):
     try:
         group_id = int(group_id)
     except ValueError:
@@ -135,7 +135,7 @@ def get_schedule_group(group_id: Union[str, int]):
 
 
 @api.route("/schedule_groups/<group_id>/schedules", methods=("GET",))
-def get_schedules_from_group(group_id: Union[str, int]):
+def get_schedules_from_group(group_id: str | int):
     try:
         group_id = int(group_id)
     except ValueError:
@@ -146,7 +146,7 @@ def get_schedules_from_group(group_id: Union[str, int]):
 @api.route("/schedule_groups", methods=("POST",))
 @authentication_required
 def post_schedule_group(current_user: Player):
-    data: Optional[JSONObjectType] = request.get_json()
+    data: JSONObjectType | None = request.get_json()
     error_message, name, order = __validate_create_schedule_group(data)
     if error_message is not None:
         return jsonify({"message": error_message, "authenticated": True}), 400
@@ -156,12 +156,12 @@ def post_schedule_group(current_user: Player):
 
 @api.route("/schedule_groups/<group_id>", methods=("PUT",))
 @authentication_required
-def put_schedule_group(current_user: Player, group_id: Union[str, int]):
+def put_schedule_group(current_user: Player, group_id: str | int):
     try:
         group_id = int(group_id)
     except ValueError:
         return jsonify({"message": "/group_id is not a valid number", "authenticated": True}), 400
-    data: Optional[JSONObjectType] = request.get_json()
+    data: JSONObjectType | None = request.get_json()
     error_message, name, order = __validate_create_schedule_group(data)
     if error_message is not None:
         return jsonify({"message": error_message, "authenticated": True}), 400
@@ -172,7 +172,7 @@ def put_schedule_group(current_user: Player, group_id: Union[str, int]):
 
 @api.route("/schedule_groups/<group_id>", methods=("DELETE",))
 @authentication_required
-def delete_schedule_group(current_user: Player, group_id: Union[str, int]):
+def delete_schedule_group(current_user: Player, group_id: str | int):
     try:
         group_id = int(group_id)
     except ValueError:
@@ -187,13 +187,13 @@ def delete_schedule_group(current_user: Player, group_id: Union[str, int]):
 
 
 @api.route("/time-slots/<time_slot_id>/registrations", methods=("POST",))
-def post_registration(time_slot_id: Union[str, int]):
+def post_registration(time_slot_id: str | int):
     try:
         registration_id = int(time_slot_id)
     except ValueError:
         return jsonify({"message": "/time_slot_id is not a valid number", "authenticated": True}), 400
 
-    data: Optional[JSONObjectType] = request.get_json()
+    data: JSONObjectType | None = request.get_json()
     error_message, registration_key, participants = __validate_create_registration(data)
     if error_message is not None:
         return jsonify({"message": error_message, "authenticated": True}), 400
@@ -210,13 +210,13 @@ def post_registration(time_slot_id: Union[str, int]):
 
 @api.route("/registrations/<registration_id>", methods=("PUT",))
 @authentication_required
-def put_registration(current_user: Player, registration_id: Union[str, int]):
+def put_registration(current_user: Player, registration_id: str | int):
     try:
         registration_id = int(registration_id)
     except ValueError:
         return jsonify({"message": "/registration_id is not a valid number", "authenticated": True}), 400
 
-    data: Optional[JSONObjectType] = request.get_json()
+    data: JSONObjectType | None = request.get_json()
     error_message, _, participants = __validate_create_registration(data, False)
     if error_message is not None:
         return jsonify({"message": error_message, "authenticated": True}), 400
@@ -227,7 +227,7 @@ def put_registration(current_user: Player, registration_id: Union[str, int]):
 
 @api.route("/registrations/<registration_id>", methods=("DELETE",))
 @authentication_required
-def delete_registration(current_user: Player, registration_id: Union[str, int]):
+def delete_registration(current_user: Player, registration_id: str | int):
     try:
         registration_id = int(registration_id)
     except ValueError:
@@ -241,7 +241,7 @@ def delete_registration(current_user: Player, registration_id: Union[str, int]):
 # region Validation
 
 
-def __validate_create_registration(data: Optional[JSONObjectType], with_registration_key=True):
+def __validate_create_registration(data: JSONObjectType | None, with_registration_key=True):
     registration_key = ""
     participants = []
     if not data:
@@ -262,7 +262,7 @@ def __validate_create_registration(data: Optional[JSONObjectType], with_registra
     return None, registration_key, participants
 
 
-def __validate_create_schedule_group(data: Optional[JSONObjectType]):
+def __validate_create_schedule_group(data: JSONObjectType | None):
     error_message = ""
     name = ""
     order = None
@@ -279,10 +279,10 @@ def __validate_create_schedule_group(data: Optional[JSONObjectType]):
             error_message += "order has to be defined"
         except ValueError:
             error_message += "order has to be a number"
-    return None if not error_message else error_message, name, order
+    return error_message if error_message else None, name, order
 
 
-def __validate_create_schedule(data: Optional[JSONObjectType]):
+def __validate_create_schedule(data: JSONObjectType | None):
     error_message = ""
     name = ""
     is_active = False
@@ -336,6 +336,6 @@ def __validate_create_schedule(data: Optional[JSONObjectType]):
             except KeyError:
                 error_message += "timeSlots.participantsPerEntry has to be defined"
 
-    return None if not error_message else error_message, name, is_active, deadline, time_slots, order
+    return error_message if error_message else None, name, is_active, deadline, time_slots, order
 
 # endregion

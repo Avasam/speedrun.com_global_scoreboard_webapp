@@ -1,4 +1,5 @@
 {
+  "typescript.tsdk": "./tournament-scheduler/node_modules/typescript/lib",
   "editor.rulers": [
     80,
     120
@@ -8,6 +9,11 @@
       72
     ]
   },
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "files.trimTrailingWhitespace": true,
+  "editor.comments.insertSpace": true,
+  "editor.insertSpaces": true,
   "editor.detectIndentation": false,
   "editor.tabSize": 2,
   "editor.formatOnSave": true,
@@ -17,32 +23,33 @@
     "source.fixAll.convertImportFormat": true,
     "source.organizeImports": false,
   },
+  "trailing-spaces.includeEmptyLines": true,
+  "trailing-spaces.trimOnSave": true,
+  "trailing-spaces.syntaxIgnore": [
+    "markdown"
+  ],
+  "emeraldwalk.runonsave": {
+    "commands": [
+      {
+        "match": "\\.pyi?",
+        "cmd": "unify ${file} --in-place --quote=\"\\\"\""
+      },
+      {
+        "match": "\\.pyi?",
+        "cmd": "add-trailing-comma ${file} --py36-plus"
+      },
+    ]
+  },
   // Set the default formatter to help avoid Prettier
-  "[json]": {
-    "editor.defaultFormatter": "vscode.json-language-features",
-  },
-  "[jsonc]": {
-    "editor.defaultFormatter": "vscode.json-language-features",
-  },
-  "[html]": {
+  "[json][jsonc][html]": {
     "editor.defaultFormatter": "vscode.html-language-features",
   },
-  "[javascript]": {
-    "editor.defaultFormatter": "vscode.typescript-language-features",
-  },
-  "[javascriptreact]": {
-    "editor.defaultFormatter": "vscode.typescript-language-features",
-  },
-  "[typescript]": {
-    "editor.defaultFormatter": "vscode.typescript-language-features",
-  },
-  "[typescriptreact]": {
+  "[javascript][javascriptreact][typescript][typescriptreact]": {
     "editor.defaultFormatter": "vscode.typescript-language-features",
   },
   "javascript.preferences.quoteStyle": "single",
   "typescript.preferences.quoteStyle": "single",
   "html.format.wrapAttributes": "force-expand-multiline",
-  "typescript.tsdk": "./tournament-scheduler/node_modules/typescript/lib",
   "javascript.format.semicolons": "remove",
   "typescript.format.semicolons": "remove",
   "eslint.validate": [
@@ -60,18 +67,10 @@
       "severity": "downgrade"
     }
   ],
-  "files.insertFinalNewline": true,
-  "trailing-spaces.includeEmptyLines": true,
-  "trailing-spaces.trimOnSave": true,
-  "trailing-spaces.syntaxIgnore": [
-    "markdown"
-  ],
   "javascript.preferences.importModuleSpecifier": "non-relative",
   "typescript.preferences.importModuleSpecifier": "non-relative",
   "files.associations": {
-    "*.json": "json",
-    "extensions.json": "jsonc",
-    "settings.json": "jsonc",
+    ".flake8": "properties",
     ".eslintrc*.json": "jsonc",
     "tsconfig*.json": "jsonc",
     // "*.html": "jinja-html"
@@ -85,7 +84,7 @@
     "**/.DS_Store": true,
     "**/Thumbs.db": true,
     "build": true,
-    ".mypy_cache": true,
+    "**/.mypy_cache": true,
     "**/__pycache__/": true,
     "**/node_modules": false,
     "*.zip": true,
@@ -99,27 +98,42 @@
     "**/*.code-search": true,
     "*.lock": true,
     "package-lock.json": true,
-    "typings": true,
   },
   "[python]": {
+    // Cannot use autotpep8 until https://github.com/microsoft/vscode-autopep8/issues/32 is fixed
+    "editor.defaultFormatter": "ms-python.python",
     "editor.tabSize": 4,
     "editor.rulers": [
       72, // PEP8-17 docstrings
       // 79, // PEP8-17 default max
       // 88, // Black default
-      99, // PEP8-17 acceptable max
+      // 99, // PEP8-17 acceptable max
       120, // Our hard rule
     ],
     "editor.codeActionsOnSave": {
       "source.organizeImports": true,
     },
   },
+  // Important to follow the config in pyrightconfig.json
+  "python.analysis.useLibraryCodeForTypes": false,
+  "python.analysis.diagnosticMode": "workspace",
+  "python.formatting.provider": "autopep8",
+  "isort.check": true,
+  "isort.importStrategy": "fromEnvironment",
   "python.linting.enabled": true,
-  "python.linting.pylintEnabled": true,
-  "python.linting.pylintCategorySeverity.convention": "Warning",
-  "python.linting.pylintCategorySeverity.refactor": "Warning",
+  // Use the new Pylint extension instead
+  "python.linting.pylintEnabled": false,
+  "pylint.severity": {
+    "convention": "Warning",
+    "error": "Error",
+    "fatal": "Error",
+    "refactor": "Warning",
+    "warning": "Warning",
+    "info": "Information"
+  },
   // Use the new Flake8 extension instead
   "python.linting.flake8Enabled": false,
+  // Partial codes don't work yet: https://github.com/microsoft/vscode-flake8/issues/7
   "flake8.severity": {
     "convention": "Warning",
     "error": "Error",
@@ -164,4 +178,5 @@
   "powershell.codeFormatting.useCorrectCasing": true,
   "powershell.codeFormatting.whitespaceBetweenParameters": true,
   "powershell.integratedConsole.showOnStartup": false,
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
 }

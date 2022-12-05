@@ -4,13 +4,17 @@
     "bungcip.better-toml",
     "davidanson.vscode-markdownlint",
     "dbaeumer.vscode-eslint",
+    "dotenv.dotenv-vscode",
     "eamodio.gitlens",
+    "emeraldwalk.runonsave",
     "meganrogge.template-string-converter",
-    "mikestead.dotenv",
+    "ms-python.autopep8",
     "ms-python.flake8",
-    "ms-vscode.powershell",
+    "ms-python.isort",
+    "ms-python.pylint",
     "ms-python.python",
     "ms-python.vscode-pylance",
+    "ms-vscode.powershell",
     "ms-vscode.vscode-typescript-next",
     "pkief.material-icon-theme",
     "redhat.vscode-yaml",
@@ -27,6 +31,8 @@
     // Replaced by ESLint
     "eg2.tslint",
     "ms-vscode.vscode-typescript-tslint-plugin",
+    // Replaced by
+    "mikestead.dotenv",
     // Obsoleted by Pylance
     "ms-pyright.pyright",
     // Not configurable per workspace, tends to conflict with other linters

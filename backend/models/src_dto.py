@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Literal, Optional, TypedDict
+from typing import Any, Literal, TypedDict
 
 SrcDataResultDto = dict[Literal["data"], Any]
 SrcPaginatedDataResultDto = dict[Literal["data"], list]
@@ -13,30 +13,30 @@ class SrcPaginationResultDto(TypedDict):
 
 class __PaginationData(TypedDict):
     offset: int
-    max: int
+    max: int  # noqa: A003
     size: int
     links: list[__RelUriData]
 
 
 class SrcProfileDto(TypedDict):
-    id: str
+    id: str  # noqa: A003
     names: __NamesData
     pronouns: str
     weblink: str
     role: str
     signup: str
     location: __LocationData
-    twitch: Optional[__UriData]
-    hitbox: Optional[__UriData]
-    youtube: Optional[__UriData]
-    twitter: Optional[__UriData]
-    speedrunslive: Optional[__UriData]
+    twitch: __UriData | None
+    hitbox: __UriData | None
+    youtube: __UriData | None
+    twitter: __UriData | None
+    speedrunslive: __UriData | None
     assets: _AssetsData
     links: list[__RelUriData]
 
 
 class SrcRunDto(TypedDict):
-    id: str
+    id: str  # noqa: A003
     weblink: str
     game: dict[Literal["data"], SrcGameDto]
     # game: str # when not embedding
@@ -47,7 +47,7 @@ class SrcRunDto(TypedDict):
     #     # To simplify typings we assume truthyness
     #     SrcLevelDto | None
     # ]
-    level: Optional[str]
+    level: str | None
     category: str
     videos: dict[Literal["links"], list[__UriData]]
     comment: str
@@ -62,7 +62,7 @@ class SrcRunDto(TypedDict):
 
 
 class SrcGameDto(TypedDict):
-    id: str
+    id: str  # noqa: A003
     names: __NamesData
     abbreviation: str
     weblink: str
@@ -81,17 +81,17 @@ class SrcGameDto(TypedDict):
     created: str
     assets: dict[str, __UriData]
     links: list[__RelUriData]
-    variables: dict[Literal["data"], list[dict[str, Optional[str]]]]
+    variables: dict[Literal["data"], list[dict[str, str | None]]]
 
 
 class SrcLeaderboardDto(TypedDict):
     weblink: str
     game: str
     category: str
-    level: Optional[str]
-    platform: Optional[str]
-    region: Optional[str]
-    emulators: Optional[str]
+    level: str | None
+    platform: str | None
+    region: str | None
+    emulators: str | None
     timing: str
     value: dict
     runs: list[__LeaderboardRunData]
@@ -100,7 +100,7 @@ class SrcLeaderboardDto(TypedDict):
 
 
 class SrcLevelDto(TypedDict):
-    id: str
+    id: str  # noqa: A003
     name: str
     weblink: str
     rules: str
@@ -119,7 +119,7 @@ class __LeaderboardRunData(TypedDict):
 
 
 class __SystemData(TypedDict):
-    platform: Optional[str]
+    platform: str | None
     emulated: bool
     region: str
 
@@ -129,15 +129,15 @@ class __TimesData(TypedDict):
     primary_t: float
     realtime: str
     realtime_t: float
-    realtime_noloads: Optional[str]
+    realtime_noloads: str | None
     realtime_noloads_t: float
-    ingame: Optional[str]
+    ingame: str | None
     ingame_t: float
 
 
 class __StatusData(TypedDict):
     status: str
-    examiner: Optional[str]
+    examiner: str | None
 
 
 class __LocationData(TypedDict):
@@ -167,4 +167,4 @@ class __RelUriData(__UriData):
 
 
 class __PlayersData(__RelUriData):
-    id: str
+    id: str  # noqa: A003
