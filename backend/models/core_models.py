@@ -312,15 +312,19 @@ class Player(BaseModel):
             for existing_time_slot in schedule_to_update.time_slots:
                 if time_slot_to_edit["id"] == existing_time_slot.time_slot_id:
                     new_time_slot = existing_time_slot
+                    new_time_slot.date_time = datetime.strptime(time_slot_to_edit["dateTime"], DATETIME_FORMAT)
+                    new_time_slot.maximum_entries = time_slot_to_edit["maximumEntries"]
+                    new_time_slot.participants_per_entry = time_slot_to_edit["participantsPerEntry"]
+                    new_time_slot.schedule_id = schedule_id
                     break
             # ... otherwise, create a brand new TimeSlot
             else:
-                new_time_slot = TimeSlot()  # type: ignore
-            # Do the necessary modifications
-            new_time_slot.schedule_id = schedule_id
-            new_time_slot.date_time = datetime.strptime(time_slot_to_edit["dateTime"], DATETIME_FORMAT)
-            new_time_slot.maximum_entries = time_slot_to_edit["maximumEntries"]
-            new_time_slot.participants_per_entry = time_slot_to_edit["participantsPerEntry"]
+                new_time_slot = TimeSlot(
+                    date_time=datetime.strptime(time_slot_to_edit["dateTime"], DATETIME_FORMAT),
+                    maximum_entries=time_slot_to_edit["maximumEntries"],
+                    participants_per_entry=time_slot_to_edit["participantsPerEntry"],
+                    schedule_id=schedule_id,
+                )
 
             new_time_slots.append(new_time_slot)
 

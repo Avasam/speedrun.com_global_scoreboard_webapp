@@ -4,9 +4,12 @@ on:
   push:
     branches:
       - main
+      - develop
     paths:
       - "**.py"
       - "**.pyi"
+      - ".github/workflows/lint-python.yml"
+      - "scripts/requirements*.txt"
   pull_request:
     branches:
       - main
@@ -14,13 +17,19 @@ on:
     paths:
       - "**.py"
       - "**.pyi"
+      - ".github/workflows/lint-python.yml"
+      - "scripts/requirements*.txt"
 
 env:
+  # https://help.pythonanywhere.com/pages/ChangingSystemImage/#available-python-versions-for-system-images
   python-version: "3.10"
+  # https://help.pythonanywhere.com/pages/ChangingSystemImage/#base-ubuntu-version-for-each-system-image
+  pythonanywhere-image: "ubuntu-20.04"
 
 jobs:
+  # Jobs that don't need dependencies installed
   isort:
-    runs-on: ubuntu-latest
+    runs-on: ${{ env.pythonanywhere-image }}
     steps:
       - name: Checkout ${{ github.repository }}/${{ github.ref }}
         uses: actions/checkout@v3
@@ -29,15 +38,12 @@ jobs:
         with:
           python-version: ${{ env.python-version }}
           cache: "pip"
-          cache-dependency-path: "scripts/requirements*.txt"
-      - name: Install dependencies
-        run: |
-          pip install wheel
-          pip install -r "scripts/requirements.txt"
+          cache-dependency-path: "scripts/requirements-dev.txt"
+      - run: pip install isort
       - name: Analysing the code with ${{ job.name }}
         run: isort backend/ typings/ --check-only
   add-trailing-comma:
-    runs-on: ubuntu-latest
+    runs-on: ${{ env.pythonanywhere-image }}
     steps:
       - name: Checkout ${{ github.repository }}/${{ github.ref }}
         uses: actions/checkout@v3
@@ -46,12 +52,12 @@ jobs:
         with:
           python-version: ${{ env.python-version }}
           cache: "pip"
-          cache-dependency-path: "scripts/requirements*.txt"
+          cache-dependency-path: "scripts/requirements-dev.txt"
       - run: pip install add-trailing-comma
       - name: Analysing the code with ${{ job.name }}
         run: add-trailing-comma $(git ls-files '**.py*') --py36-plus
   Bandit:
-    runs-on: ubuntu-latest
+    runs-on: ${{ env.pythonanywhere-image }}
     steps:
       - name: Checkout ${{ github.repository }}/${{ github.ref }}
         uses: actions/checkout@v3
@@ -60,13 +66,14 @@ jobs:
         with:
           python-version: ${{ env.python-version }}
           cache: "pip"
-          cache-dependency-path: "scripts/requirements*.txt"
+          cache-dependency-path: "scripts/requirements-dev.txt"
       - run: pip install bandit
-      - run: mv backend/configs.template.py backend/configs.py
       - name: Analysing the code with ${{ job.name }}
         run: bandit -n 1 --severity-level medium --recursive backend
+
+  # Jobs that do need dependencies installed
   Pyright:
-    runs-on: ubuntu-latest
+    runs-on: ${{ env.pythonanywhere-image }}
     steps:
       - name: Checkout ${{ github.repository }}/${{ github.ref }}
         uses: actions/checkout@v3
@@ -79,7 +86,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install wheel
-          pip install -r "scripts/requirements.txt"
+          pip install -r "scripts/requirements-dev.txt"
       - run: mv backend/configs.template.py backend/configs.py
       - name: Analysing the code with ${{ job.name }}
         uses: jakebailey/pyright-action@v1
@@ -87,7 +94,7 @@ jobs:
           working-directory: backend/
           extra-args: --warnings
   Pylint:
-    runs-on: ubuntu-latest
+    runs-on: ${{ env.pythonanywhere-image }}
     steps:
       - name: Checkout ${{ github.repository }}/${{ github.ref }}
         uses: actions/checkout@v3
@@ -100,12 +107,12 @@ jobs:
       - name: Install dependencies
         run: |
           pip install wheel
-          pip install -r "scripts/requirements.txt"
+          pip install -r "scripts/requirements-dev.txt"
       - run: mv backend/configs.template.py backend/configs.py
       - name: Analysing the code with ${{ job.name }}
         run: pylint backend/ --reports=y --output-format=colorized
   Flake8:
-    runs-on: ubuntu-latest
+    runs-on: ${{ env.pythonanywhere-image }}
     steps:
       - name: Checkout ${{ github.repository }}/${{ github.ref }}
         uses: actions/checkout@v3
@@ -114,11 +121,7 @@ jobs:
         with:
           python-version: ${{ env.python-version }}
           cache: "pip"
-          cache-dependency-path: "scripts/requirements*.txt"
-      - name: Install dependencies
-        run: |
-          pip install wheel
-          pip install -r "scripts/requirements.txt"
-      - run: mv backend/configs.template.py backend/configs.py
+          cache-dependency-path: "scripts/requirements-dev.txt"
+      - run: pip install -r "scripts/requirements-dev.txt"
       - name: Analysing the code with ${{ job.name }}
         run: flake8 backend/ typings/

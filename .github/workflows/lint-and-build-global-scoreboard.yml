@@ -4,14 +4,17 @@ on:
   push:
     branches:
       - main
+      - develop
     paths:
-      - 'global-scoreboard/**'
+      - "global-scoreboard/**"
+      - ".github/workflows/lint-and-build-global-scoreboard.yml"
   pull_request:
     branches:
       - main
       - develop
     paths:
-      - 'global-scoreboard/**'
+      - "global-scoreboard/**"
+      - ".github/workflows/lint-and-build-global-scoreboard.yml"
 jobs:
   ESLint:
     runs-on: ubuntu-latest
