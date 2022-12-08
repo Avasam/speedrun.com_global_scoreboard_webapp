@@ -6,3 +6,4 @@ if [ -f global-scoreboard-build.zip ]; then
   rm -rfv global-scoreboard/build
   unzip -o global-scoreboard-build.zip -d global-scoreboard/
 fi
+pip install -r scripts/requirements.txt

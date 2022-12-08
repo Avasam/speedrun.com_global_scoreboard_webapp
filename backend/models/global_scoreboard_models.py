@@ -127,7 +127,7 @@ class User:
         ]
 
     def fetch_and_set_user_code_and_name(self) -> None:
-        url = "https://www.speedrun.com/api/v1/users/{user}".format(user=self._id)
+        url = "https://www.speedrun.com/api/v1/users/{user}".format(user=self._id)  # pylint: disable=C0209
         infos: SrcProfileDto = get_file(url, {}, "http_cache")["data"]
 
         self._id = infos["id"]

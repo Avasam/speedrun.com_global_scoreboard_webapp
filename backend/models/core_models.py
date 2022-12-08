@@ -6,7 +6,7 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, TypedDict, Union, cast
 
-from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import Model, SQLAlchemy  # pylint: disable=no-name-in-module
 from models.exceptions import SpeedrunComError, UserUpdaterError
 from models.src_dto import SrcProfileDto
 from services.utils import get_file
@@ -21,22 +21,20 @@ DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 db = SQLAlchemy()
 
-if TYPE_CHECKING:
-    from flask_sqlalchemy.model import Model
-    BaseModel = db.make_declarative_base(Model)
-else:
-    BaseModel = db.Model
+BaseModel: type[Model] = db.Model  # pyright: ignore[reportGeneralTypeIssues]
+# TODO: Validate and maybe fix stubs
+# pyright: reportOptionalMemberAccess=false
 
 friend = db.Table(
     "friend",
-    db.Column(
+    Column(
         "user_id",
-        db.String(8),
+        String(8),
         db.ForeignKey("player.user_id"),
     ),
-    db.Column(
+    Column(
         "friend_id",
-        db.String(8),
+        String(8),
         db.ForeignKey("player.user_id"),
     ),
 )
@@ -58,13 +56,13 @@ class ScheduleOrderDict(TypedDict):
 class Player(BaseModel):
     __tablename__ = "player"
 
-    user_id = db.Column(db.String(8), primary_key=True)
-    name = db.Column(db.String(32), nullable=False)
+    user_id = Column(String(8), primary_key=True)
+    name = Column(String(32), nullable=False)
     # The biggest region code I found so far was "us/co/coloradosprings" at 21
-    country_code = db.Column(db.String(24))
-    score = db.Column(db.Integer, nullable=False)
-    score_details = db.Column(db.String())
-    last_update = db.Column(db.DateTime())
+    country_code = Column(String(24))
+    score = Column(Integer, nullable=False)
+    score_details = Column(String())
+    last_update = Column(DateTime())
     rank: int | None = None
 
     schedules = db.relationship("Schedule", back_populates="owner")
@@ -312,15 +310,19 @@ class Player(BaseModel):
             for existing_time_slot in schedule_to_update.time_slots:
                 if time_slot_to_edit["id"] == existing_time_slot.time_slot_id:
                     new_time_slot = existing_time_slot
+                    new_time_slot.date_time = datetime.strptime(time_slot_to_edit["dateTime"], DATETIME_FORMAT)
+                    new_time_slot.maximum_entries = time_slot_to_edit["maximumEntries"]
+                    new_time_slot.participants_per_entry = time_slot_to_edit["participantsPerEntry"]
+                    new_time_slot.schedule_id = schedule_id
                     break
             # ... otherwise, create a brand new TimeSlot
             else:
-                new_time_slot = TimeSlot()  # type: ignore
-            # Do the necessary modifications
-            new_time_slot.schedule_id = schedule_id
-            new_time_slot.date_time = datetime.strptime(time_slot_to_edit["dateTime"], DATETIME_FORMAT)
-            new_time_slot.maximum_entries = time_slot_to_edit["maximumEntries"]
-            new_time_slot.participants_per_entry = time_slot_to_edit["participantsPerEntry"]
+                new_time_slot = TimeSlot(
+                    date_time=datetime.strptime(time_slot_to_edit["dateTime"], DATETIME_FORMAT),
+                    maximum_entries=time_slot_to_edit["maximumEntries"],
+                    participants_per_entry=time_slot_to_edit["participantsPerEntry"],
+                    schedule_id=schedule_id,
+                )
 
             new_time_slots.append(new_time_slot)
 

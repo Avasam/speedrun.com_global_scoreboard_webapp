@@ -12,6 +12,14 @@
   "files.insertFinalNewline": true,
   "files.trimFinalNewlines": true,
   "files.trimTrailingWhitespace": true,
+  "[markdown]": {
+    "files.trimTrailingWhitespace": false,
+  },
+  "trailing-spaces.includeEmptyLines": true,
+  "trailing-spaces.trimOnSave": true,
+  "trailing-spaces.syntaxIgnore": [
+    "markdown"
+  ],
   "editor.comments.insertSpace": true,
   "editor.insertSpaces": true,
   "editor.detectIndentation": false,
@@ -23,11 +31,6 @@
     "source.fixAll.convertImportFormat": true,
     "source.organizeImports": false,
   },
-  "trailing-spaces.includeEmptyLines": true,
-  "trailing-spaces.trimOnSave": true,
-  "trailing-spaces.syntaxIgnore": [
-    "markdown"
-  ],
   "emeraldwalk.runonsave": {
     "commands": [
       {

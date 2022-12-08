@@ -68,8 +68,8 @@ Note: The soft cutoff works great on games such as Barney. But is too punishing 
 
 ## Dev environment setup
 
-Get yourself a [MySQL server](https://dev.mysql.com/downloads/mysql/) (as of 2021/06/01, PythonAnywhere uses version 5.7.27)  
-Install [Python](https://www.python.org/downloads/) 3.7 or above (validated up to 3.9)  
+Get yourself a [MySQL server](https://dev.mysql.com/downloads/mysql/) (as of 2022/13/08, PythonAnywhere uses version 8.0.25, MySQL Server 5.7.34)  
+Install [Python](https://www.python.org/downloads/) 3.9 or above (PythonAnywhere runs on 3.10)  
 Run `./scripts/install.bat` to install the required dependencies.  
 Copy `configs.template.py` as `configs.py` and update the file as needed.  
 If needed, copy `.env.development` as `.env.development.local` and update the file.  

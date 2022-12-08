@@ -11,4 +11,4 @@ api = Blueprint("game_search_api", __name__)
 
 @api.route("/game-values", methods=("GET",))
 def get_all_game_values():
-    return jsonify(map_to_dto(GameValues.query.all()))
+    return jsonify(map_to_dto(GameValues.query.all()))  # pyright: ignore[reportOptionalMemberAccess]
