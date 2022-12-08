@@ -2,7 +2,7 @@
 
 # Linters
 bandit
-flake8>=5,<6  # flake8-pyi deprecation warnings  #  flake8-quotes doesn't support v6 yet
+flake8>=5,<7  # flake8-pyi deprecation warnings  #  flake8-quotes doesn't support v6 yet
 flake8-builtins
 flake8-bugbear
 flake8-class-attributes-order
