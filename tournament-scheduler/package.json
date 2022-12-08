@@ -12,11 +12,6 @@
     "upgrade": "npx npm-check-updates -u & npm i",
     "postinstall": "npm audit --production --audit-level=none & patch-package"
   },
-  "// node 17": "issue with Webpack: https://github.com/webpack/webpack/issues/14532",
-  "engines": {
-    "node": "18",
-    "npm": ">=8"
-  },
   "dependencies": {
     "@culturehq/add-to-calendar": "^1.1.2",
     "@emotion/react": "^11.10.4",
