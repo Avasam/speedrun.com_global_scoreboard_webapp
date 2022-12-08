@@ -9,7 +9,7 @@ from math import ceil, floor
 from random import randint
 from sqlite3 import OperationalError
 from time import sleep
-from typing import TYPE_CHECKING, Any, Literal, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Literal, cast
 from urllib.parse import parse_qs, urlparse
 
 import configs
@@ -65,7 +65,7 @@ def __handle_json_error(response: Response, json_exception: ValueError):
         }) from json_exception
 
 
-def __handle_json_data(json_data: SrcErrorResultDto, response_status_code: int) -> Optional[SrcDataResultDto]:
+def __handle_json_data(json_data: SrcErrorResultDto, response_status_code: int) -> SrcDataResultDto | None:
     if "status" not in json_data:
         return json_data
 
@@ -91,9 +91,9 @@ def __handle_json_data(json_data: SrcErrorResultDto, response_status_code: int) 
 
 def __get_request_cache_bust_if_disk_quota_exceeded(
     url: str,
-    params: Optional[_Params],
-    cached: Union[str, Literal[False]],
-    headers: Optional[dict[str, Any]],
+    params: _Params | None,
+    cached: str | Literal[False],
+    headers: dict[str, Any] | None,
 ):
     try:
         response = use_session(cached).get(url, params=params, headers=headers)
@@ -125,9 +125,9 @@ def __get_request_cache_bust_if_disk_quota_exceeded(
 
 def get_file(
     url: str,
-    params: Optional[_Params] = None,
-    cached: Union[str, Literal[False]] = False,
-    headers: Optional[dict[str, Any]] = None,
+    params: _Params | None = None,
+    cached: str | Literal[False] = False,
+    headers: dict[str, Any] | None = None,
 ) -> SrcDataResultDto:
     """
     Returns the content of "url" parsed as JSON dict.
@@ -163,13 +163,13 @@ def get_file(
 def params_from_url(url: str):
     if not url:
         return {}
-    params: dict[str, Union[str, int]] = {k: v[0] for k, v in parse_qs(urlparse(url).query).items()}
+    params: dict[str, str | int] = {k: v[0] for k, v in parse_qs(urlparse(url).query).items()}
     if not params.get("max"):
         params["max"] = MINIMUM_RESULTS_PER_PAGE
     return params
 
 
-def get_paginated_response(url: str, params: dict[str, Union[str, int]], related_user_id: str):
+def get_paginated_response(url: str, params: dict[str, str | int], related_user_id: str):
     next_params = params
     if not next_params.get("max"):
         next_params["max"] = MINIMUM_RESULTS_PER_PAGE
@@ -177,7 +177,7 @@ def get_paginated_response(url: str, params: dict[str, Union[str, int]], related
     summed_results: SrcPaginatedDataResultDto = {"data": []}
     results_per_page = initial_results_per_page = int(next_params["max"])
 
-    def update_next_params(new_results_per_page: Optional[int] = None, take_next: bool = True):
+    def update_next_params(new_results_per_page: int | None = None, take_next: bool = True):
         nonlocal next_params
         nonlocal results_per_page
         pagination_max = int(next_params["max"])
@@ -232,11 +232,11 @@ def parse_str_to_bool(string_to_parse: str | None) -> bool:
     return string_to_parse is not None and string_to_parse.lower() == "true"
 
 
-def parse_str_to_nullable_bool(string_to_parse: str | None) -> Optional[bool]:
+def parse_str_to_nullable_bool(string_to_parse: str | None) -> bool | None:
     return None if string_to_parse is None else string_to_parse.lower() == "true"
 
 
-def map_to_dto(dto_mappable_object_list) -> list[dict[str, Union[str, bool, int]]]:
+def map_to_dto(dto_mappable_object_list) -> list[dict[str, str | bool | int]]:
     return [dto_mappable_object.to_dto() for dto_mappable_object in dto_mappable_object_list]
 
 

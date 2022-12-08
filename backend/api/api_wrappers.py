@@ -1,11 +1,15 @@
+from __future__ import annotations
+
 import json
 from datetime import datetime, timedelta
 from functools import wraps
-from typing import Union
 
 import jwt
 from flask import current_app, jsonify, request
 from models.core_models import Player
+
+# TODO: Validate and maybe fix stubs
+# pyright: reportOptionalMemberAccess=false
 
 
 def authentication_required(fn):
@@ -45,7 +49,7 @@ def authentication_required(fn):
         if not isinstance(response, tuple) or not isinstance(response[0], str):
             return response
 
-        extended_token: Union[bytes, str] = jwt.encode(
+        extended_token: bytes | str = jwt.encode(
             {
                 "sub": data["sub"],
                 "iat": data["iat"],

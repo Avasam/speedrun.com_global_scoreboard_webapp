@@ -1,37 +1,16 @@
-flask
-flask_sqlalchemy
-httplib2
-mysql-connector
-pyjwt
+# Pythonanywhere pre-installed
+# https://www.pythonanywhere.com/batteries_included/
+# Set image to "haggis" and Python version to "3.10"
+Flask>=2.1.2
+Flask-SQLAlchemy>=2.5.1
+httplib2>=0.20.4
+# Stuck on this version until I can figure out how to tell the engine to use collation=utf8_general_ci, and/or fix the charset 255 issue
+mysql-connector-python<=8.0.16
+# mysql-connector-python>=8.0.29
+PyJWT>=2.4.0
+requests>=2.28.1
+requests-cache>=0.9.4
+SQLAlchemy>=1.4.36
+# Custom requirements
 ratelimiter
 redislite ; sys_platform != 'win32'
-requests
-requests-cache>=0.9.3
-sqlalchemy
-
-# Linters
-bandit
-flake8>=5,<6  # flake8-pyi deprecation warnings  #  flake8-quotes doesn't support v6 yet
-flake8-builtins
-flake8-bugbear
-flake8-class-attributes-order
-flake8-comprehensions>=3.8  # flake8 5 support
-flake8-datetimez
-flake8-pyi>=22.11.0  # flake8 6 support
-flake8-quotes
-flake8-simplify
-pep8-naming
-pylint>=2.14,<3.0.0  # New checks  # 3.0 still in pre-release
-pylint-flask
-pylint-flask-sqlalchemy
-# Formatters
-add-trailing-comma>=2.3.0  # Added support for with statement
-autopep8>=2.0.0 # New checks
-isort
-unify
-
-# types
-types-Flask # TODO: Deprecated, update Flask instead!
-types-Flask-SQLAlchemy
-types-httplib2
-types-requests

@@ -20,6 +20,8 @@ reportMissingSuperCall="none" # False positives on base classes
 reportPropertyTypeMismatch="error"
 reportUninitializedInstanceVariable="error"
 reportUnnecessaryTypeIgnoreComment="error"
+# Use `pyright: ignore`, not `type: ignore`
+enableTypeIgnoreComments=false
 # Ignore must be specified for Pylance to stop displaying errors
 ignore = [
   # We expect stub files to be incomplete or contain useless statements

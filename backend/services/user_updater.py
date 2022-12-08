@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 from datetime import datetime
 from math import exp, floor, pi
 from re import sub
 from sqlite3 import OperationalError
 from time import strftime
-from typing import Union
+from typing import cast
 from urllib.parse import unquote
 
 import configs
@@ -25,7 +27,7 @@ from services.utils import MAXIMUM_RESULTS_PER_PAGE, get_file, get_paginated_res
 TIME_BONUS_DIVISOR = 3600 * 12  # 12h (1/2 day) for +100%
 
 
-def get_updated_user(user_id: str) -> dict[str, Union[str, None, float, int, PointsDistributionDto]]:
+def get_updated_user(user_id: str) -> dict[str, str | float | int | PointsDistributionDto | None]:
     """Called from flask_app and AutoUpdateUsers.run()"""
     text_output: str = user_id
     result_state: str = "info"
@@ -65,7 +67,7 @@ def get_updated_user(user_id: str) -> dict[str, Union[str, None, float, int, Poi
             if (
                 not player
                 or not player.last_update
-                or (datetime.utcnow() - player.last_update).days >= configs.last_updated_days[0]
+                or (datetime.utcnow() - cast(datetime, player.last_update)).days >= configs.last_updated_days[0]
                 or configs.bypass_update_restrictions
             ):
                 __set_user_points(user)

@@ -9,14 +9,14 @@ from sqlalchemy import Column, Integer, String, orm
 class GameValues(BaseModel):
     __tablename__ = "game_values"
 
-    game_id = db.Column(db.String(8), primary_key=True)
-    category_id = db.Column(db.String(8), primary_key=True)
-    run_id = db.Column(db.String(8), nullable=False)
-    platform_id = db.Column(db.String(8))
-    alternate_platforms = db.Column(db.String())
-    wr_time = db.Column(db.Integer, nullable=False)
-    wr_points = db.Column(db.Integer, nullable=False)
-    mean_time = db.Column(db.Integer, nullable=False)
+    game_id = Column(String(8), primary_key=True)
+    category_id = Column(String(8), primary_key=True)
+    run_id = Column(String(8), nullable=False)
+    platform_id = Column(String(8))
+    alternate_platforms = Column(String())
+    wr_time = Column(Integer, nullable=False)
+    wr_points = Column(Integer, nullable=False)
+    mean_time = Column(Integer, nullable=False)
 
     if TYPE_CHECKING:  # noqa: CCE002
         def __init__(  # pylint: disable=too-many-arguments
@@ -96,7 +96,7 @@ class GameValues(BaseModel):
                 GameValues,
                 GameValues
                 .query
-                .filter(GameValues.game_id == game_id)
+                .filter(GameValues.game_id == game_id)  # pyright: ignore[reportOptionalMemberAccess]
                 .filter(GameValues.category_id == category_id)
                 .one(),
             )

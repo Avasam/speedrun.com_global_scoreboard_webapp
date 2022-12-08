@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import sys
 from datetime import timedelta
-from typing import Literal, Union, cast
+from typing import Literal, cast
 
 import configs
 from requests import Session
@@ -58,7 +60,7 @@ def __make_cache_session(user_id: str = "http_cache"):
     return session
 
 
-def use_session(user_id: Union[str, Literal[False]] = "http_cache"):
+def use_session(user_id: str | Literal[False] = "http_cache"):
     """
     @param user_id: User specific cache. Omit or "http_cache" for global. False for uncached.
     """

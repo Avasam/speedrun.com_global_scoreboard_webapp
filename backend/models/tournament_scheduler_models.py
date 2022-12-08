@@ -7,18 +7,21 @@ from models.core_models import BaseModel, Player, db
 from services.utils import map_to_dto
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, orm
 
+# TODO: Validate and maybe fix stubs
+# pyright: reportOptionalMemberAccess=false
+
 CASCADE = "all,delete,delete-orphan"
 
 
 class Schedule(BaseModel):
     __tablename__ = "schedule"
 
-    schedule_id = db.Column(db.Integer, primary_key=True)
-    name: str | Column[String] = db.Column(db.String(128), nullable=False, default="")
-    owner_id = db.Column(db.String(8), db.ForeignKey("player.user_id"), nullable=False)
-    registration_key = db.Column(db.String(36), nullable=False)
-    is_active: bool | Column[Boolean] = db.Column(db.Boolean, nullable=False, default=True)
-    deadline: Optional[datetime | Column[DateTime]] = db.Column(db.DateTime, nullable=True)
+    schedule_id = Column(Integer, primary_key=True)
+    name: str | Column[String] = Column(String(128), nullable=False, default="")
+    owner_id = Column(String(8), db.ForeignKey("player.user_id"), nullable=False)
+    registration_key = Column(String(36), nullable=False)
+    is_active: bool | Column[Boolean] = Column(db.Boolean, nullable=False, default=True)
+    deadline: datetime | Column[DateTime] | None = Column(DateTime, nullable=True)
 
     owner: Player = db.relationship("Player", back_populates="schedules")
     time_slots: list[TimeSlot] = db.relationship(
@@ -27,8 +30,8 @@ class Schedule(BaseModel):
         back_populates="schedule",
     )
 
-    group_id: int | Column[Integer] | None = db.Column(db.Integer, nullable=True)
-    order: int | Column[Integer] | None = db.Column(db.Integer, nullable=False, default=-1)
+    group_id: int | Column[Integer] | None = Column(Integer, nullable=True)
+    order: int | Column[Integer] | None = Column(Integer, nullable=False, default=-1)
 
     if TYPE_CHECKING:  # noqa: CCE002
         def __init__(  # pylint: disable=too-many-arguments
@@ -40,8 +43,8 @@ class Schedule(BaseModel):
             time_slots: list[TimeSlot] = ...,
             group_id: int | Column[Integer] | None = ...,
             name: str | Column[String] | None = ...,
-            is_active: Optional[bool | Column[Boolean]] = ...,
-            deadline: Optional[datetime | Column[DateTime]] = ...,
+            is_active: bool | Column[Boolean] | None = ...,
+            deadline: datetime | Column[DateTime] | None = ...,
             order: int | Column[Integer] | None = ...,
         ):
             ...
@@ -80,10 +83,10 @@ class Schedule(BaseModel):
 class ScheduleGroup(BaseModel):
     __tablename__ = "schedule_group"
 
-    group_id = db.Column(db.Integer, primary_key=True)
-    name: str | Column[String] = db.Column(db.String(128), nullable=False, default="")
-    owner_id = db.Column(db.String(8), db.ForeignKey("player.user_id"), nullable=False)
-    order: int | Column[Integer] | None = db.Column(db.Integer, nullable=False, default=-1)
+    group_id = Column(Integer, primary_key=True)
+    name: str | Column[String] = Column(String(128), nullable=False, default="")
+    owner_id = Column(String(8), db.ForeignKey("player.user_id"), nullable=False)
+    order: int | Column[Integer] | None = Column(Integer, nullable=False, default=-1)
 
     if TYPE_CHECKING:  # noqa: CCE002
         def __init__(  # pylint: disable=too-many-arguments
@@ -117,11 +120,11 @@ class ScheduleGroup(BaseModel):
 class TimeSlot(BaseModel):
     __tablename__ = "time_slot"
 
-    time_slot_id = db.Column(db.Integer, primary_key=True)
-    schedule_id: int | Column[Integer] = db.Column(db.Integer, db.ForeignKey("schedule.schedule_id"), nullable=False)
-    date_time: datetime | Column[DateTime] = db.Column(db.DateTime, nullable=False)
-    maximum_entries: int | Column[Integer] = db.Column(db.Integer, nullable=False)
-    participants_per_entry: int | Column[Integer] = db.Column(db.Integer, nullable=False)
+    time_slot_id = Column(Integer, primary_key=True)
+    schedule_id: int | Column[Integer] = Column(Integer, db.ForeignKey("schedule.schedule_id"), nullable=False)
+    date_time: datetime | Column[DateTime] = Column(DateTime, nullable=False)
+    maximum_entries: int | Column[Integer] = Column(Integer, nullable=False)
+    participants_per_entry: int | Column[Integer] = Column(Integer, nullable=False)
 
     schedule: Schedule = db.relationship("Schedule", back_populates="time_slots")
     registrations: list[Registration] = db.relationship(
@@ -144,7 +147,7 @@ class TimeSlot(BaseModel):
             ...
 
     @ staticmethod
-    def get_with_key(time_slot_id: int, registration_key: str) -> Optional[TimeSlot]:
+    def get_with_key(time_slot_id: int, registration_key: str) -> TimeSlot | None:
         try:
             parent_schedule = cast(
                 Schedule,
@@ -195,8 +198,8 @@ class TimeSlot(BaseModel):
 class Registration(BaseModel):
     __tablename__ = "registration"
 
-    registration_id = db.Column(db.Integer, primary_key=True)
-    time_slot_id = db.Column(db.Integer, db.ForeignKey("time_slot.time_slot_id"), nullable=False)
+    registration_id = Column(Integer, primary_key=True)
+    time_slot_id = Column(Integer, db.ForeignKey("time_slot.time_slot_id"), nullable=False)
 
     timeslot: TimeSlot = db.relationship("TimeSlot", back_populates="registrations")
     participants: list[Participant] = db.relationship(
@@ -218,17 +221,18 @@ class Registration(BaseModel):
     def to_dto(self):
         return {
             "id": self.registration_id,
-            "participants": [participant.name for participant in self.participants],
+            # TODO: Report false-positive
+            "participants": [participant.name for participant in self.participants],  # pylint: disable=E1133
         }
 
 
 class Participant(BaseModel):
     __tablename__ = "participant"
 
-    registration_id: int | Column[Integer] = db.Column(
-        db.Integer, db.ForeignKey("registration.registration_id"), primary_key=True,
+    registration_id: int | Column[Integer] = Column(
+        Integer, db.ForeignKey("registration.registration_id"), primary_key=True,
     )
-    name: str | Column[String] = db.Column(db.String(128), primary_key=True)
+    name: str | Column[String] = Column(String(128), primary_key=True)
 
     registration: Registration = db.relationship("Registration", back_populates="participants")
 

@@ -4,14 +4,17 @@ on:
   push:
     branches:
       - main
+      - develop
     paths:
-      - 'tournament-scheduler/**'
+      - "tournament-scheduler/**"
+      - ".github/workflows/lint-and-build-tournament-scheduler.yml"
   pull_request:
     branches:
       - main
       - develop
     paths:
-      - 'tournament-scheduler/**'
+      - "tournament-scheduler/**"
+      - ".github/workflows/lint-and-build-tournament-scheduler.yml"
 jobs:
   ESLint:
     runs-on: ubuntu-latest

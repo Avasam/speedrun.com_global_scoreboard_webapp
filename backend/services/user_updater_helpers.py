@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import json
 import math
 from math import floor
 from time import strftime
-from typing import Any, Optional
+from typing import Any
 
 from models.core_models import Player
 from models.global_scoreboard_models import Run, User
@@ -226,7 +228,7 @@ def extract_top_runs_and_score(runs: list[Run]):
     # Check if it's possible to replace a handful of ILs by a full run, starting backward.
     # This can happen when there's not enough ILs to fill in for the weight of a full run.
     # See: https://github.com/Avasam/speedrun.com_global_scoreboard_webapp/issues/174
-    first_lesser_full_game: Optional[Run] = next((run for run in lesser_runs if run.level_fraction == 1), None)
+    first_lesser_full_game: Run | None = next((run for run in lesser_runs if run.level_fraction == 1), None)
     if first_lesser_full_game is not None and position < MIN_SAMPLE_SIZE:
         runs_to_transfer_weight = MIN_SAMPLE_SIZE - position
         runs_to_transfer_reversed: list[Run] = []
