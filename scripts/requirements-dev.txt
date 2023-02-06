@@ -12,7 +12,7 @@ flake8-pyi>=22.11.0  # flake8 6 support
 flake8-quotes
 flake8-simplify
 pep8-naming
-pylint>=2.14,<2.16.0  # New checks  # 2.16 still in pre-release, and older
+pylint>=2.14,<2.17.0  # New checks  # 2.16 still in pre-release, and older
 pylint-flask
 pylint-flask-sqlalchemy
 # Formatters
