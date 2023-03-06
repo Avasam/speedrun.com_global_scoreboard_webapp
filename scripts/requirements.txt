@@ -11,6 +11,7 @@ PyJWT>=2.4.0
 requests>=2.28.1
 requests-cache>=0.9.4
 SQLAlchemy>=1.4.36
+
 # Custom requirements
 ratelimiter
 redislite ; sys_platform != 'win32'

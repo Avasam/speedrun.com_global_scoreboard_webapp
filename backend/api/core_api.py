@@ -30,7 +30,7 @@ def login():
     if not player:
         return jsonify({"message": error_message, "authenticated": False}), 401
 
-    token: str = jwt.encode(
+    token: bytes | str = jwt.encode(
         {
             "sub": player.user_id,
             "iat": datetime.utcnow(),
