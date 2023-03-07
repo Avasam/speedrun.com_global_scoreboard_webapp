@@ -8,4 +8,3 @@ If ($IsWindows) {
 # Ensures installation tools are up to date. This also aliases pip to pip3 on MacOS.
 python3 -m pip install wheel pip setuptools --upgrade
 pip install -r "$PSScriptRoot/requirements-dev.txt" --upgrade
-npm i --global pyright@latest

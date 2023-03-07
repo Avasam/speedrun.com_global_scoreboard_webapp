@@ -34,14 +34,14 @@ class GameValues(BaseModel):
 
     @staticmethod
     def create_or_update(  # noqa: PLR0913
-            game_id: str,
-            category_id: str,
-            platform_id: str | None,
-            alternate_platforms: str | None,
-            wr_time: int,
-            wr_points: int,
-            mean_time: int,
-            run_id: str,
+        game_id: str,
+        category_id: str,
+        platform_id: str | None,
+        alternate_platforms: str | None,
+        wr_time: int,
+        wr_points: int,
+        mean_time: int,
+        run_id: str,
     ):
         existing_game_values = GameValues.get(game_id, category_id)
         if existing_game_values is None:
@@ -52,7 +52,8 @@ class GameValues(BaseModel):
                 alternate_platforms,
                 wr_time,
                 wr_points,
-                mean_time, run_id,
+                mean_time,
+                run_id,
             )
         existing_game_values.platform_id = platform_id
         existing_game_values.alternate_platforms = alternate_platforms
@@ -65,14 +66,14 @@ class GameValues(BaseModel):
 
     @staticmethod
     def create(  # noqa: PLR0913
-            game_id: str,
-            category_id: str,
-            platform_id: str | None,
-            alternate_platforms: str | None,
-            wr_time: int,
-            wr_points: int,
-            mean_time: int,
-            run_id: str,
+        game_id: str,
+        category_id: str,
+        platform_id: str | None,
+        alternate_platforms: str | None,
+        wr_time: int,
+        wr_points: int,
+        mean_time: int,
+        run_id: str,
     ) -> GameValues:
         game_values = GameValues(
             game_id=game_id,

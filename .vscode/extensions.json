@@ -35,13 +35,13 @@
     // Not configurable per workspace, tends to conflict with other linters
     // Use eslint-plugin-sonarjs for JS/TS projects
     "sonarsource.sonarlint-vscode",
-    //
-    // Don't recommend to autoinstall //
-    //
     // Use Ruff instead
     "ms-python.flake8",
     "ms-python.isort",
     "ms-python.pylint",
+    //
+    // Don't recommend to autoinstall //
+    //
     // This is a Git project
     "johnstoncode.svn-scm",
     // Prefer using VSCode itself as a text editor

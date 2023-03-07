@@ -4,6 +4,8 @@ from threading import Lock
 from types import TracebackType
 from typing import Literal
 
+from typing_extensions import Self
+
 __author__: str
 __version__: str
 __license__: str
@@ -23,23 +25,15 @@ class RateLimiter:
     # Lock to protect creation of self._alock
     s_init_lock: Lock
 
-    def __init__(self, max_calls: int, period: int = ..., callback: Callable | None = ...) -> None:
-        ...
-
-    def __call__(self, f: Callable) -> Callable:
-        ...
-
-    def __enter__(self) -> ...:
-        ...
+    def __init__(self, max_calls: int, period: int = ..., callback: Callable | None = ...) -> None: ...
+    def __call__(self, f: Callable) -> Callable: ...
+    def __enter__(self) -> Self: ...
 
     def __exit__(
         self,
         exc_type: type[BaseException] | None,
         exc_val: BaseException | None,
         exc_tb: TracebackType | None,
-    ) -> None:
-        ...
-
+    ) -> None: ...
     @property
-    def _timespan(self) -> float:
-        ...
+    def _timespan(self) -> float: ...
