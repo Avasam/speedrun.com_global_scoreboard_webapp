@@ -49,11 +49,11 @@ class Schedule(BaseModel):
         ):
             ...
 
-    @ staticmethod
+    @staticmethod
     def get(schedule_id: int):
         return cast(Optional[Schedule], Schedule.query.get(schedule_id))
 
-    @ staticmethod
+    @staticmethod
     def get_with_key(schedule_id: int, registration_key: str):
         try:
             return cast(
@@ -98,11 +98,11 @@ class ScheduleGroup(BaseModel):
         ):
             ...
 
-    @ staticmethod
+    @staticmethod
     def get(group_id: int):
         return cast(Optional[ScheduleGroup], ScheduleGroup.query.get(group_id))
 
-    @ staticmethod
+    @staticmethod
     def get_schedules(group_id: int):
         try:
             return cast(list[Schedule], Schedule.query.filter(Schedule.group_id == group_id).all())
@@ -146,7 +146,7 @@ class TimeSlot(BaseModel):
         ):
             ...
 
-    @ staticmethod
+    @staticmethod
     def get_with_key(time_slot_id: int, registration_key: str) -> TimeSlot | None:
         try:
             parent_schedule = cast(
@@ -229,7 +229,9 @@ class Participant(BaseModel):
     __tablename__ = "participant"
 
     registration_id: int | Column[Integer] = Column(
-        Integer, db.ForeignKey("registration.registration_id"), primary_key=True,
+        Integer,
+        db.ForeignKey("registration.registration_id"),
+        primary_key=True,
     )
     name: str | Column[String] = Column(String(128), primary_key=True)
 

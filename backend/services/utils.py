@@ -32,9 +32,10 @@ MAXIMUM_RESULTS_PER_PAGE = 200
 # "your processes number limit is 128" in server.log
 # From testing on a single worker PA server: "Can't start 119th thread."
 MAX_THREADS_PER_WORKER = 118
-UNHANDLED_THREAD_EXCEPTION_MESSAGE = \
-    "\nPlease report to: https://github.com/Avasam/Global_Speedrunning_Scoreboard/issues\n" + \
-    "\nNot uploading data as some errors were caught during execution:\n"
+UNHANDLED_THREAD_EXCEPTION_MESSAGE = (
+    "\nPlease report to: https://github.com/Avasam/Global_Speedrunning_Scoreboard/issues\n"
+    + "\nNot uploading data as some errors were caught during execution:\n"
+)
 executor = ThreadPoolExecutor(max_workers=MAX_THREADS_PER_WORKER)
 rate_limiter = RateLimiter(max_calls=RATE_LIMIT, period=60)
 

@@ -40,18 +40,20 @@ def extract_valid_personal_bests(runs: list[SrcRunDto]):
             best_know_runs[identifier] = run
 
     for run in runs:
-        if (not run["level"] or run["times"]["primary_t"] >= 60) \
-                and GAMETYPE_MULTI_GAME not in run["game"]["data"]["gametypes"] \
-                and run["category"] \
-                and run.get("videos"):
+        if (
+            (not run["level"] or run["times"]["primary_t"] >= 60)
+            and GAMETYPE_MULTI_GAME not in run["game"]["data"]["gametypes"]
+            and run["category"]
+            and run.get("videos")
+        ):
             keep_if_pb(run)
 
     return list(best_know_runs.values())
 
 
 def extract_sorted_valid_runs_from_leaderboard(
-        leaderboard: SrcLeaderboardDto,
-        level_fraction: float,
+    leaderboard: SrcLeaderboardDto,
+    level_fraction: float,
 ) -> list[BasicJSONType]:
     """
     Check if the run is valid:
@@ -95,9 +97,11 @@ def extract_sorted_valid_runs_from_leaderboard(
                 is_board_known_speedrun = True
 
         # Check if the run is valid
-        if run["place"] > 0 \
-                and run["run"].get("videos") \
-                and not any(p.get("id") in banned_players for p in run["run"]["players"]):
+        if (
+            run["place"] > 0
+            and run["run"].get("videos")
+            and not any(p.get("id") in banned_players for p in run["run"]["players"])
+        ):
             valid_runs.append(run)
 
     return sorted(valid_runs, key=lambda r: r["run"]["times"]["primary_t"])

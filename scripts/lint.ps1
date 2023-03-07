@@ -2,30 +2,29 @@ $originalDirectory = $pwd
 Set-Location "$PSScriptRoot/.."
 $exitCodes = 0
 
+function Update-Results {
+  param ($Name)
+  $exitCodes += $LastExitCode
+  if ($LastExitCode -gt 0) {
+    Write-Host "`n$Name failed ($LastExitCode)" -ForegroundColor Red
+  }
+  else {
+    Write-Host "`n$Name passed" -ForegroundColor Green
+  }
+}
+
 Write-Host "`nRunning formatting..."
 autopep8 $(git ls-files '**.py*') --in-place
 add-trailing-comma $(git ls-files '**.py*') --py36-plus
 
 Write-Host "`nRunning Ruff..."
 ruff check . --fix
-$exitCodes += $LastExitCode
-if ($LastExitCode -gt 0) {
-  Write-Host "`Ruff failed ($LastExitCode)" -ForegroundColor Red
-}
-else {
-  Write-Host "`Ruff passed" -ForegroundColor Green
-}
+Update-Results('Ruff')
 
 Write-Host "`nRunning Pyright..."
 $Env:PYRIGHT_PYTHON_FORCE_VERSION = 'latest'
-pyright backend/ --warnings
-$exitCodes += $LastExitCode
-if ($LastExitCode -gt 0) {
-  Write-Host "`Pyright failed ($LastExitCode)" -ForegroundColor Red
-}
-else {
-  Write-Host "`Pyright passed" -ForegroundColor Green
-}
+npx --yes 'pyright@latest' backend/ --warnings
+Update-Results('Pyright')
 
 if ($exitCodes -gt 0) {
   Write-Host "`nLinting failed ($exitCodes)" -ForegroundColor Red

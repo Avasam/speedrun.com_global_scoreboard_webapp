@@ -75,8 +75,7 @@ def get_updated_user(
             if (
                 not player
                 or not player.last_update
-                or (datetime.utcnow() - cast(datetime, player.last_update)).days
-                >= configs.last_updated_days[0]
+                or (datetime.utcnow() - cast(datetime, player.last_update)).days >= configs.last_updated_days[0]
                 or configs.bypass_update_restrictions
             ):
                 __set_user_points(user)
@@ -145,7 +144,9 @@ def __set_user_points(user: User) -> None:
                 game=pb["game"]["data"]["id"],
             )
             levels: list[SrcLevelDto] = get_file(
-                url, {"max": str(MAXIMUM_RESULTS_PER_PAGE)}, "http_cache",
+                url,
+                {"max": str(MAXIMUM_RESULTS_PER_PAGE)},
+                "http_cache",
             )["data"]
             level = next(level for level in levels if level["id"] == pb["level"])
             level_count = len(levels)
@@ -233,7 +234,8 @@ def __set_run_points_and_category_name(run: Run) -> None:
         raise
 
     valid_runs = extract_sorted_valid_runs_from_leaderboard(
-        leaderboard, run.level_fraction,
+        leaderboard,
+        run.level_fraction,
     )
     len_valid_runs = len(valid_runs)
 
