@@ -15,11 +15,6 @@
   "[markdown]": {
     "files.trimTrailingWhitespace": false,
   },
-  "trailing-spaces.includeEmptyLines": true,
-  "trailing-spaces.trimOnSave": true,
-  "trailing-spaces.syntaxIgnore": [
-    "markdown"
-  ],
   "editor.comments.insertSpace": true,
   "editor.insertSpaces": true,
   "editor.detectIndentation": false,
@@ -35,16 +30,15 @@
     "commands": [
       {
         "match": "\\.pyi?",
-        "cmd": "unify ${file} --in-place --quote=\"\\\"\""
-      },
-      {
-        "match": "\\.pyi?",
         "cmd": "add-trailing-comma ${file} --py36-plus"
       },
     ]
   },
   // Set the default formatter to help avoid Prettier
-  "[json][jsonc][html]": {
+  "[json][jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features",
+  },
+  "[html]": {
     "editor.defaultFormatter": "vscode.html-language-features",
   },
   "[javascript][javascriptreact][typescript][typescriptreact]": {
@@ -73,7 +67,6 @@
   "javascript.preferences.importModuleSpecifier": "non-relative",
   "typescript.preferences.importModuleSpecifier": "non-relative",
   "files.associations": {
-    ".flake8": "properties",
     ".eslintrc*.json": "jsonc",
     "tsconfig*.json": "jsonc",
     // "*.html": "jinja-html"
@@ -103,6 +96,7 @@
     "package-lock.json": true,
   },
   "[python]": {
+    // Ruff is not yet a formatter: https://github.com/charliermarsh/ruff/issues/1904
     // Cannot use autotpep8 until https://github.com/microsoft/vscode-autopep8/issues/32 is fixed
     "editor.defaultFormatter": "ms-python.python",
     "editor.tabSize": 4,
@@ -114,66 +108,26 @@
       120, // Our hard rule
     ],
     "editor.codeActionsOnSave": {
-      "source.organizeImports": true,
+      // TODO: Ruff is supposed to be able to take care of this
+      "source.organizeImports": false,
     },
   },
   // Important to follow the config in pyrightconfig.json
   "python.analysis.useLibraryCodeForTypes": false,
   "python.analysis.diagnosticMode": "workspace",
   "python.formatting.provider": "autopep8",
-  "isort.check": true,
-  "isort.importStrategy": "fromEnvironment",
   "python.linting.enabled": true,
-  // Use the new Pylint extension instead
-  "python.linting.pylintEnabled": false,
-  "pylint.severity": {
-    "convention": "Warning",
-    "error": "Error",
-    "fatal": "Error",
-    "refactor": "Warning",
-    "warning": "Warning",
-    "info": "Information"
-  },
-  // Use the new Flake8 extension instead
+  "ruff.importStrategy": "fromEnvironment",
+  // Use the Ruff extension instead
+  "isort.check": false,
+  "python.linting.banditEnabled": false,
   "python.linting.flake8Enabled": false,
-  // Partial codes don't work yet: https://github.com/microsoft/vscode-flake8/issues/7
-  "flake8.severity": {
-    "convention": "Warning",
-    "error": "Error",
-    "fatal": "Error",
-    "refactor": "Warning",
-    "warning": "Warning",
-    "info": "Warning",
-    // builtins
-    "A": "Warning",
-    // mccabe
-    "C": "Warning",
-    // class attributes order
-    "CCE": "Warning",
-    // pycodestyles
-    "E": "Warning",
-    "E9": "Error", // Runtime
-    "W": "Warning",
-    "W6": "Error", // Deprecation warning
-    // Pyflakes
-    "F": "Warning",
-    // PEP8 Naming convention
-    "N": "Warning",
-    // Simplify
-    "SIM": "Warning",
-    "SIM9": "Information",
-    // PYI
-    "Y": "Warning",
-  },
-  // PyRight obsoletes mypy
-  "python.linting.mypyEnabled": false,
-  // Is already wrapped by Flake8, prospector and pylama
-  "python.linting.pycodestyleEnabled": false,
-  // Just another wrapper, use Flake8 OR this
   "python.linting.prospectorEnabled": false,
-  // Just another wrapper, use Flake8 OR this
+  "python.linting.pycodestyleEnabled": false,
   "python.linting.pylamaEnabled": false,
-  "python.linting.banditEnabled": true,
+  "python.linting.pylintEnabled": false,
+  // Use Pyright/Pylance instead
+  "python.linting.mypyEnabled": false,
   "powershell.codeFormatting.pipelineIndentationStyle": "IncreaseIndentationForFirstPipeline",
   "powershell.codeFormatting.autoCorrectAliases": true,
   "powershell.codeFormatting.trimWhitespaceAroundPipe": true,

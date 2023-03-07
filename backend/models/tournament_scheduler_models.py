@@ -33,8 +33,8 @@ class Schedule(BaseModel):
     group_id: int | Column[Integer] | None = Column(Integer, nullable=True)
     order: int | Column[Integer] | None = Column(Integer, nullable=False, default=-1)
 
-    if TYPE_CHECKING:  # noqa: CCE002
-        def __init__(  # pylint: disable=too-many-arguments
+    if TYPE_CHECKING:
+        def __init__(  # noqa: PLR0913
             self,
             registration_key: str | Column[String],
             schedule_id: int | Column[Integer] = ...,
@@ -88,8 +88,8 @@ class ScheduleGroup(BaseModel):
     owner_id = Column(String(8), db.ForeignKey("player.user_id"), nullable=False)
     order: int | Column[Integer] | None = Column(Integer, nullable=False, default=-1)
 
-    if TYPE_CHECKING:  # noqa: CCE002
-        def __init__(  # pylint: disable=too-many-arguments
+    if TYPE_CHECKING:
+        def __init__(
             self,
             group_id: int | Column[Integer] = ...,
             name: str | Column[String] = ...,
@@ -133,8 +133,8 @@ class TimeSlot(BaseModel):
         back_populates="timeslot",
     )
 
-    if TYPE_CHECKING:  # noqa: CCE002
-        def __init__(  # pylint: disable=too-many-arguments
+    if TYPE_CHECKING:
+        def __init__(  # noqa: PLR0913
             self,
             date_time: datetime | Column[DateTime],
             maximum_entries: int | Column[Integer],
@@ -208,8 +208,8 @@ class Registration(BaseModel):
         back_populates="registration",
     )
 
-    if TYPE_CHECKING:  # noqa: CCE002
-        def __init__(  # pylint: disable=too-many-arguments
+    if TYPE_CHECKING:
+        def __init__(
             self,
             time_slot_id: int | Column[Integer],
             registration_id: int | Column[Integer] = ...,
@@ -221,8 +221,7 @@ class Registration(BaseModel):
     def to_dto(self):
         return {
             "id": self.registration_id,
-            # TODO: Report false-positive
-            "participants": [participant.name for participant in self.participants],  # pylint: disable=E1133
+            "participants": [participant.name for participant in self.participants],
         }
 
 
@@ -236,8 +235,8 @@ class Participant(BaseModel):
 
     registration: Registration = db.relationship("Registration", back_populates="participants")
 
-    if TYPE_CHECKING:  # noqa: CCE002
-        def __init__(  # pylint: disable=too-many-arguments
+    if TYPE_CHECKING:
+        def __init__(
             self,
             registration_id: int | Column[Integer] = ...,
             name: str | Column[String] = ...,

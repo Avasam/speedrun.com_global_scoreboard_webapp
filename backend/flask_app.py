@@ -1,5 +1,4 @@
 #!/usr/bin/python3.9
-# -*- coding: utf-8 -*-
 """
 Ava's Global Speedrunning Scoreboard
 Copyright (C) 2020 Samuel Therrien
@@ -20,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Contact:
 samuel.06@hotmail.com
 """
+from __future__ import annotations
 
 import configs
 from api.core_api import api as core_api
@@ -44,7 +44,7 @@ app.register_blueprint(global_scoreboard_api, url_prefix="/api")
 app.register_blueprint(tournament_scheduler_api, url_prefix="/api")
 
 # Setup the dal (SQLAlchemy)
-SQLALCHEMY_DATABASE_URI = "mysql+{connector}://{username}:{password}@{hostname}/{database_name}".format(  # pylint: disable=C0209  # noqa: E501
+SQLALCHEMY_DATABASE_URI = "mysql+{connector}://{username}:{password}@{hostname}/{database_name}".format(
     connector=configs.sql_connector,
     username=configs.sql_username,
     password=configs.sql_password,
@@ -84,6 +84,6 @@ def index():
 if __name__ == "__main__":
     if configs.flask_environment == "development":
         print(" * Running on http://localhost:5000/ (Press CTRL+C to quit)")
-        app.run(host="0.0.0.0")  # nosec B104
+        app.run(host="0.0.0.0")  # noqa: S104
     else:
         app.run()

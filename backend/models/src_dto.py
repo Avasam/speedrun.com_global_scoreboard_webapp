@@ -25,7 +25,7 @@ class SrcProfileDto(TypedDict):
     weblink: str
     role: str
     signup: str
-    location: __LocationData
+    location: __LocationData | None
     twitch: __UriData | None
     hitbox: __UriData | None
     youtube: __UriData | None
