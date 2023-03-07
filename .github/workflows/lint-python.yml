@@ -28,7 +28,7 @@ env:
 
 jobs:
   # Jobs that don't need dependencies installed
-  isort:
+  ruff:
     runs-on: "ubuntu-20.04"
     steps:
       - name: Checkout ${{ github.repository }}/${{ github.ref }}
@@ -39,8 +39,8 @@ jobs:
           python-version: ${{ env.python-version }}
           cache: "pip"
           cache-dependency-path: "scripts/requirements-dev.txt"
-      - run: pip install isort
-      - run: isort backend/ typings/ --check-only
+      - run: pip install ruff
+      - run: ruff check .
   add-trailing-comma:
     runs-on: "ubuntu-20.04"
     steps:
@@ -54,19 +54,6 @@ jobs:
           cache-dependency-path: "scripts/requirements-dev.txt"
       - run: pip install add-trailing-comma
       - run: add-trailing-comma $(git ls-files '**.py*') --py36-plus
-  Bandit:
-    runs-on: "ubuntu-20.04"
-    steps:
-      - name: Checkout ${{ github.repository }}/${{ github.ref }}
-        uses: actions/checkout@v3
-      - name: Set up Python ${{ env.python-version }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.python-version }}
-          cache: "pip"
-          cache-dependency-path: "scripts/requirements-dev.txt"
-      - run: pip install bandit
-      - run: bandit -n 1 --severity-level medium --recursive backend
 
   # Jobs that do need dependencies installed
   Pyright:
@@ -89,33 +76,3 @@ jobs:
         with:
           working-directory: backend/
           extra-args: --warnings
-  Pylint:
-    runs-on: "ubuntu-20.04"
-    steps:
-      - name: Checkout ${{ github.repository }}/${{ github.ref }}
-        uses: actions/checkout@v3
-      - name: Set up Python ${{ env.python-version }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.python-version }}
-          cache: "pip"
-          cache-dependency-path: "scripts/requirements*.txt"
-      - name: Install dependencies
-        run: |
-          pip install wheel
-          pip install -r "scripts/requirements-dev.txt"
-      - run: mv backend/configs.template.py backend/configs.py
-      - run: pylint backend/ --reports=y --output-format=colorized
-  Flake8:
-    runs-on: "ubuntu-20.04"
-    steps:
-      - name: Checkout ${{ github.repository }}/${{ github.ref }}
-        uses: actions/checkout@v3
-      - name: Set up Python ${{ env.python-version }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.python-version }}
-          cache: "pip"
-          cache-dependency-path: "scripts/requirements-dev.txt"
-      - run: pip install -r "scripts/requirements-dev.txt"
-      - run: flake8 backend/ typings/

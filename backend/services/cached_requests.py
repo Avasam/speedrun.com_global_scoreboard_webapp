@@ -75,9 +75,9 @@ def use_session(user_id: str | Literal[False] = "http_cache"):
 
 __REDIS = None
 if sys.platform != "win32" and configs.cached_session_backend == "redis":
-    import redislite  # pyright: ignore # pylint: disable=import-error
+    import redislite
     __REDIS = redislite.Redis(
-        dbfilename="/tmp/redis-requests-cache.db",  # nosec B108
+        dbfilename="/tmp/redis-requests-cache.db",  # noqa: S108
         # Ignore failures to persist rather than crashing on Prod. Data is non-critical.
         serverconfig={"stop-writes-on-bgsave-error": "yes" if configs.debug else "no"},
     )

@@ -1,10 +1,8 @@
-import sys
 from collections import deque
 from collections.abc import Callable
 from threading import Lock
 from types import TracebackType
-
-from typing_extensions import Literal
+from typing import Literal
 
 __author__: str
 __version__: str

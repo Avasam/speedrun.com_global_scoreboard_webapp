@@ -282,7 +282,7 @@ def __validate_create_schedule_group(data: JSONObjectType | None):
     return error_message if error_message else None, name, order
 
 
-def __validate_create_schedule(data: JSONObjectType | None):
+def __validate_create_schedule(data: JSONObjectType | None):  # noqa: PLR0912,PLR0915
     error_message = ""
     name = ""
     is_active = False

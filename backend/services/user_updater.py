@@ -18,16 +18,24 @@ from models.global_scoreboard_models import PointsDistributionDto, Run, User
 from models.src_dto import SrcLeaderboardDto, SrcLevelDto, SrcRunDto
 from services.cached_requests import clear_cache_for_user
 from services.user_updater_helpers import (
-    MIN_LEADERBOARD_SIZE, extract_sorted_valid_runs_from_leaderboard, extract_top_runs_and_score,
-    extract_valid_personal_bests, get_probability_terms, get_subcategory_variables, keep_runs_before_soft_cutoff,
-    set_diminishing_returns, update_runner_in_database,
+    MIN_LEADERBOARD_SIZE,
+    extract_sorted_valid_runs_from_leaderboard,
+    extract_top_runs_and_score,
+    extract_valid_personal_bests,
+    get_probability_terms,
+    get_subcategory_variables,
+    keep_runs_before_soft_cutoff,
+    set_diminishing_returns,
+    update_runner_in_database,
 )
 from services.utils import MAXIMUM_RESULTS_PER_PAGE, get_file, get_paginated_response, start_and_wait_for_threads
 
 TIME_BONUS_DIVISOR = 3600 * 12  # 12h (1/2 day) for +100%
 
 
-def get_updated_user(user_id: str) -> dict[str, str | float | int | PointsDistributionDto | None]:
+def get_updated_user(
+    user_id: str,
+) -> dict[str, str | float | int | PointsDistributionDto | None]:
     """Called from flask_app and AutoUpdateUsers.run()"""
     text_output: str = user_id
     result_state: str = "info"
@@ -46,7 +54,7 @@ def get_updated_user(user_id: str) -> dict[str, str | float | int | PointsDistri
             if player:
                 text_output = (
                     f"User ID '{user._id}' not found on speedrun.com. "
-                    "\nRemoved them from the database."
+                    + "\nRemoved them from the database."
                 )
                 result_state = "warning"
                 db.session.delete(player)
@@ -54,9 +62,9 @@ def get_updated_user(user_id: str) -> dict[str, str | float | int | PointsDistri
             else:
                 text_output = (
                     f"User '{user._id}' not found. "
-                    "\nMake sure the name or ID is typed properly. "
-                    "It's possible the user you're looking for changed their name. "
-                    "In case of doubt, use their ID."
+                    + "\nMake sure the name or ID is typed properly. "
+                    + "It's possible the user you're looking for changed their name. "
+                    + "In case of doubt, use their ID."
                 )
                 result_state = "warning"
         else:
@@ -67,15 +75,18 @@ def get_updated_user(user_id: str) -> dict[str, str | float | int | PointsDistri
             if (
                 not player
                 or not player.last_update
-                or (datetime.utcnow() - cast(datetime, player.last_update)).days >= configs.last_updated_days[0]
+                or (datetime.utcnow() - cast(datetime, player.last_update)).days
+                >= configs.last_updated_days[0]
                 or configs.bypass_update_restrictions
             ):
                 __set_user_points(user)
                 text_output, result_state = update_runner_in_database(player, user)
             else:
                 cant_update_time = configs.last_updated_days[0]
-                text_output = "This user has already been updated in the past " + \
-                    f"{cant_update_time} day{'s' if cant_update_time != 1 else ''}"
+                text_output = (
+                    "This user has already been updated in the past "
+                    + f"{cant_update_time} day{'s' if cant_update_time != 1 else ''}"
+                )
                 result_state = "warning"
 
         # When we can finally successfully update a player, clear the cache of their specific responses
@@ -100,7 +111,10 @@ def get_updated_user(user_id: str) -> dict[str, str | float | int | PointsDistri
                 "details": f"{exception}\nPlease make sure you have an active internet connection",
             },
         ) from exception
-    except (requests.exceptions.ChunkedEncodingError, ConnectionAbortedError) as exception:
+    except (
+        requests.exceptions.ChunkedEncodingError,
+        ConnectionAbortedError,
+    ) as exception:
         raise UserUpdaterError(
             {
                 "error": "Connexion interrupted",
@@ -127,10 +141,12 @@ def __set_user_points(user: User) -> None:
         level = None
 
         if pb["level"]:
-            url = "https://www.speedrun.com/api/v1/games/{game}/levels".format(  # pylint: disable=C0209
+            url = "https://www.speedrun.com/api/v1/games/{game}/levels".format(
                 game=pb["game"]["data"]["id"],
             )
-            levels: list[SrcLevelDto] = get_file(url, {"max": str(MAXIMUM_RESULTS_PER_PAGE)}, "http_cache")["data"]
+            levels: list[SrcLevelDto] = get_file(
+                url, {"max": str(MAXIMUM_RESULTS_PER_PAGE)}, "http_cache",
+            )["data"]
             level = next(level for level in levels if level["id"] == pb["level"])
             level_count = len(levels)
 
@@ -193,22 +209,20 @@ def __set_user_points(user: User) -> None:
 
 
 def __set_run_points_and_category_name(run: Run) -> None:
-    url = "https://www.speedrun.com/api/v1/leaderboards/{game}/{lvl_cat_str}{category}".format(  # pylint: disable=C0209
+    url = "https://www.speedrun.com/api/v1/leaderboards/{game}/{lvl_cat_str}{category}".format(
         game=run.game["id"],
         # If the run is an Individual Level, adapt the request url
-        lvl_cat_str="level/{level}/".format(  # pylint: disable=C0209
+        lvl_cat_str="level/{level}/".format(
             level=run.level["id"],
-        ) if run.level else "category/",  # pylint: disable=C0209
+        )
+        if run.level
+        else "category/",
         category=run.category,
     )
     params = {
         "video-only": True,
         "embed": "players",
-        **{
-            f"var-{var_id}": var_value
-            for var_id, var_value
-            in run.variables.items()
-        },
+        **{f"var-{var_id}": var_value for var_id, var_value in run.variables.items()},
     }
     try:
         leaderboard: SrcLeaderboardDto = get_file(url, params, "http_cache")["data"]
@@ -218,7 +232,9 @@ def __set_run_points_and_category_name(run: Run) -> None:
             return
         raise
 
-    valid_runs = extract_sorted_valid_runs_from_leaderboard(leaderboard, run.level_fraction)
+    valid_runs = extract_sorted_valid_runs_from_leaderboard(
+        leaderboard, run.level_fraction,
+    )
     len_valid_runs = len(valid_runs)
 
     # CHECK: Avoid useless computation and errors
@@ -226,7 +242,7 @@ def __set_run_points_and_category_name(run: Run) -> None:
         return
 
     # Remove last 5%
-    valid_runs = valid_runs[:int(len_valid_runs * 0.95) or None]
+    valid_runs = valid_runs[: int(len_valid_runs * 0.95) or None]
 
     # Find the time that's most often repeated in the leaderboard
     # (after the 80th percentile) and cut off everything after that

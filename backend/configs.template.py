@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from requests_cache.backends import BackendSpecifier
 
 # import os

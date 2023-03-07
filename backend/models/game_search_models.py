@@ -18,8 +18,8 @@ class GameValues(BaseModel):
     wr_points = Column(Integer, nullable=False)
     mean_time = Column(Integer, nullable=False)
 
-    if TYPE_CHECKING:  # noqa: CCE002
-        def __init__(  # pylint: disable=too-many-arguments
+    if TYPE_CHECKING:
+        def __init__(  # noqa: PLR0913
             self,
             game_id: str | Column[String],
             category_id: str | Column[String],
@@ -33,7 +33,7 @@ class GameValues(BaseModel):
             ...
 
     @staticmethod
-    def create_or_update(
+    def create_or_update(  # noqa: PLR0913
             game_id: str,
             category_id: str,
             platform_id: str | None,
@@ -64,7 +64,7 @@ class GameValues(BaseModel):
         return existing_game_values
 
     @staticmethod
-    def create(
+    def create(  # noqa: PLR0913
             game_id: str,
             category_id: str,
             platform_id: str | None,

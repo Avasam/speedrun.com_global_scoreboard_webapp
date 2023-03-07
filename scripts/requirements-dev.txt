@@ -1,25 +1,8 @@
 -r requirements.txt
 
-# Linters
-bandit
-flake8>=5,<6  # flake8-pyi deprecation warnings  #  flake8-quotes doesn't support v6 yet
-flake8-builtins
-flake8-bugbear
-flake8-class-attributes-order
-flake8-comprehensions>=3.8  # flake8 5 support
-flake8-datetimez
-flake8-pyi>=22.11.0  # flake8 6 support
-flake8-quotes
-flake8-simplify
-pep8-naming
-pylint>=2.14,<2.16.0  # New checks  # 2.16 still in pre-release, and older
-pylint-flask
-pylint-flask-sqlalchemy
-# Formatters
 add-trailing-comma>=2.3.0  # Added support for with statement
 autopep8>=2.0.0 # New checks
-isort
-unify
+ruff
 
 # types
 types-Flask-SQLAlchemy

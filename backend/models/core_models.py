@@ -6,7 +6,7 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, TypedDict, Union, cast
 
-from flask_sqlalchemy import Model, SQLAlchemy  # pylint: disable=no-name-in-module
+from flask_sqlalchemy import Model, SQLAlchemy
 from models.exceptions import SpeedrunComError, UserUpdaterError
 from models.src_dto import SrcProfileDto
 from services.utils import get_file
@@ -67,8 +67,8 @@ class Player(BaseModel):
 
     schedules = db.relationship("Schedule", back_populates="owner")
 
-    if TYPE_CHECKING:  # noqa: CCE002
-        def __init__(  # pylint: disable=too-many-arguments
+    if TYPE_CHECKING:
+        def __init__(  # noqa: PLR0913
             self,
             user_id: str | Column[String],
             name: str | Column[String],
@@ -91,7 +91,7 @@ class Player(BaseModel):
             if isinstance(exception, SpeedrunComError) and exception.args[0]["error"].startswith("403"):
                 return None, "Invalid SR.C API key"
             return None, f"Error: {exception.args[0]['error']}\n{exception.args[0]['details']}"
-        except Exception:  # pylint: disable=broad-except  # Do catch unknown errors
+        except Exception:  # Do catch unknown errors
             print(f"\nError: Unknown\n{traceback.format_exc()}")
             return None, traceback.format_exc()
 
@@ -115,9 +115,9 @@ class Player(BaseModel):
     @staticmethod
     def get_all():
         sql = text(
-            "SELECT user_id, name, country_code, score, last_update, CONVERT(rank, SIGNED INT) rank "  # nosec B608
-            + "FROM ( "  # nosec B608
-            + "    SELECT *, "  # nosec B608
+            "SELECT user_id, name, country_code, score, last_update, CONVERT(rank, SIGNED INT) rank "  # noqa: S608
+            + "FROM ( "
+            + "    SELECT *, "
             + "        IF(score = @_last_score, @cur_rank := @cur_rank, @cur_rank := @_sequence) AS rank, "
             + "        @_sequence := @_sequence + 1, "
             + "        @_last_score := score "
@@ -151,8 +151,7 @@ class Player(BaseModel):
             y for x in [
                 (
                     Player.country_code == country_code,
-                    # https://github.com/PyCQA/pylint/issues/3334#issuecomment-1036944735
-                    Player.country_code.like(f"{country_code}/%"),  # pylint: disable=no-member
+                    Player.country_code.like(f"{country_code}/%"),
                 ) for country_code in country_codes
             ]
             for y in x
@@ -185,7 +184,7 @@ class Player(BaseModel):
 
         return player
 
-    def update(self, **kwargs: str | float | datetime | None):  # noqa: CCE001
+    def update(self, **kwargs: str | float | datetime | None):
         """
         kwargs:
         - name: str
@@ -207,7 +206,7 @@ class Player(BaseModel):
 
     def get_friends(self) -> list[Player]:
         sql = text(
-            "SELECT f.friend_id, p.name, p.country_code, p.score, p.last_update FROM friend f "  # nosec B608
+            "SELECT f.friend_id, p.name, p.country_code, p.score, p.last_update FROM friend f "  # noqa: S608
             + "JOIN player p ON p.user_id = f.friend_id "
             + "WHERE f.user_id = :user_id;",
         )
@@ -226,14 +225,14 @@ class Player(BaseModel):
         if self.user_id == friend_id:
             return False
         sql = text(
-            "INSERT INTO friend (user_id, friend_id) "
+            "INSERT INTO friend (user_id, friend_id) "  # noqa: S608
             + "VALUES (:user_id, :friend_id);",
         )
         return db.engine.execute(sql, user_id=self.user_id, friend_id=friend_id).rowcount > 0
 
     def unfriend(self, friend_id: str) -> bool:
         sql = text(
-            "DELETE FROM friend "  # nosec B608
+            "DELETE FROM friend "  # noqa: S608
             + "WHERE user_id = :user_id AND friend_id = :friend_id",
         )
         return db.engine.execute(sql, user_id=self.user_id, friend_id=friend_id).rowcount > 0
@@ -523,5 +522,4 @@ class Player(BaseModel):
 
 
 if "models.tournament_scheduler_models" not in sys.modules:
-    # pylint: disable=ungrouped-imports
     from models.tournament_scheduler_models import Participant, Registration, Schedule, ScheduleGroup, TimeSlot

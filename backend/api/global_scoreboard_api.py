@@ -44,7 +44,6 @@ def update_player(name_or_id: str):
     try:
         if configs.bypass_update_restrictions:
             return __do_update_player_bypass_restrictions(name_or_id)
-        # pylint: disable=no-value-for-parameter # TODO: Raise this issue upstream
         return __do_update_player(name_or_id)  # pyright: ignore[reportGeneralTypeIssues]
     except UserUpdaterError as exception:
         error_message = f"Error: {exception.args[0]['error']}\n{exception.args[0]['details']}"

@@ -9,16 +9,12 @@
     "emeraldwalk.runonsave",
     "meganrogge.template-string-converter",
     "ms-python.autopep8",
-    "ms-python.flake8",
-    "ms-python.isort",
-    "ms-python.pylint",
     "ms-python.python",
     "ms-python.vscode-pylance",
     "ms-vscode.powershell",
     "ms-vscode.vscode-typescript-next",
     "pkief.material-icon-theme",
     "redhat.vscode-yaml",
-    "shardulm94.trailing-spaces",
   ],
   "unwantedRecommendations": [
     // Must disable in this workspace //
@@ -26,6 +22,7 @@
     // VSCode has implemented an optimized version
     "coenraads.bracket-pair-colorizer",
     "coenraads.bracket-pair-colorizer-2",
+    "shardulm94.trailing-spaces",
     // Lots of conflicts
     "esbenp.prettier-vscode",
     // Replaced by ESLint
@@ -41,6 +38,10 @@
     //
     // Don't recommend to autoinstall //
     //
+    // Use Ruff instead
+    "ms-python.flake8",
+    "ms-python.isort",
+    "ms-python.pylint",
     // This is a Git project
     "johnstoncode.svn-scm",
     // Prefer using VSCode itself as a text editor
