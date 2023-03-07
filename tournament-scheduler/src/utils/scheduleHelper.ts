@@ -38,7 +38,7 @@ export const getDeadlineDueText = (deadlineDaysLeft: number) => {
     case 0:
       return 'today'
     case 1:
-      return 'tomorow'
+      return 'tomorrow'
     default:
       return deadlineDaysLeft > 0 ? `in ${deadlineDaysLeft} days` : `${-deadlineDaysLeft} days ago`
   }
