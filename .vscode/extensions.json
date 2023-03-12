@@ -1,7 +1,6 @@
 // Keep in alphabetical order
 {
   "recommendations": [
-    "bungcip.better-toml",
     "davidanson.vscode-markdownlint",
     "dbaeumer.vscode-eslint",
     "dotenv.dotenv-vscode",
@@ -12,13 +11,15 @@
     "ms-python.python",
     "ms-python.vscode-pylance",
     "ms-vscode.powershell",
-    "ms-vscode.vscode-typescript-next",
     "pkief.material-icon-theme",
-    "redhat.vscode-yaml",
+    "redhat.vscode-yaml",   
+    "tamasfe.even-better-toml",
   ],
   "unwantedRecommendations": [
     // Must disable in this workspace //
     //
+    // Use workspace version
+    "ms-vscode.vscode-typescript-next",
     // VSCode has implemented an optimized version
     "coenraads.bracket-pair-colorizer",
     "coenraads.bracket-pair-colorizer-2",
