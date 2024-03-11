@@ -29,7 +29,7 @@ env:
 jobs:
   # Jobs that don't need dependencies installed
   ruff:
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-22.04"
     steps:
       - name: Checkout ${{ github.repository }}/${{ github.ref }}
         uses: actions/checkout@v3
@@ -42,7 +42,7 @@ jobs:
       - run: pip install ruff
       - run: ruff check .
   add-trailing-comma:
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-22.04"
     steps:
       - name: Checkout ${{ github.repository }}/${{ github.ref }}
         uses: actions/checkout@v3
@@ -57,7 +57,7 @@ jobs:
 
   # Jobs that do need dependencies installed
   Pyright:
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-22.04"
     steps:
       - name: Checkout ${{ github.repository }}/${{ github.ref }}
         uses: actions/checkout@v3
