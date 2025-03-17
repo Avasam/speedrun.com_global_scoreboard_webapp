@@ -25,7 +25,7 @@
     "react-div-100vh": "^0.7.0",
     "react-dom": "^18.2.0",
     "react-helmet": "^6.1.0",
-    "react-router-dom": "^6.4.0",
+    "react-router-dom": "^7.0.0",
     "react-text-mask": "^5.4.3"
   },
   "// minimist": "Prototype Pollution in minimist <= 1.2.5",
